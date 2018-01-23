@@ -453,7 +453,7 @@ class DiffProcessor(object):
         return self.adds, self.removes
 
 
-_escape_re = re.compile(r'(&)|(<)|(>)|(\t)|(\r)|(?<=.)( \n| $)')
+_escape_re = re.compile(r'(&)|(<)|(>)|(\t)|(\r)|(?<=.)( \n| $)|(\t\n|\t$)')
 
 
 def _escaper(string):
@@ -470,11 +470,13 @@ def _escaper(string):
         if groups[2]:
             return '&gt;'
         if groups[3]:
-            return '<u>\t</u>'
+            return '<u>\t</u>'  # Note: trailing tabs will get a longer match later
         if groups[4]:
             return '<u class="cr"></u>'
         if groups[5]:
             return ' <i></i>'
+        if groups[6]:
+            return '<u>\t</u><i></i>'
         assert False
 
     return _escape_re.sub(substitute, safe_str(string))
