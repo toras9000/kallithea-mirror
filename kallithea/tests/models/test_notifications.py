@@ -103,6 +103,7 @@ class TestNotifications(base.TestController):
                             status_change=[None, 'Approved'],
                             cs_target_repo='http://example.com/repo_target',
                             cs_url='http://changeset.com',
+                            cs_author_username=User.get(self.u2).username,
                             cs_author=User.get(self.u2))),
                         (NotificationModel.TYPE_MESSAGE,
                          'This is the \'body\' of the "test" message\n - nothing interesting here except indentation.',

@@ -105,6 +105,7 @@ class ChangesetCommentsModel(object):
                 'message': cs.message,
                 'message_short': h.shorter(cs.message, 50, firstline=True),
                 'cs_author': cs_author,
+                'cs_author_username': cs_author.username,
                 'repo_name': repo.repo_name,
                 'short_id': h.short_id(revision),
                 'branch': cs.branch,

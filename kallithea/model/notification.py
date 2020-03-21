@@ -165,7 +165,7 @@ class EmailNotificationModel(object):
             self.TYPE_PULL_REQUEST_COMMENT: 'pull_request_comment',
         }
         self._subj_map = {
-            self.TYPE_CHANGESET_COMMENT: _('[Comment] %(repo_name)s changeset %(short_id)s "%(message_short)s" on %(branch)s'),
+            self.TYPE_CHANGESET_COMMENT: _('[Comment] %(repo_name)s changeset %(short_id)s "%(message_short)s" on %(branch)s by %(cs_author_username)s'),
             self.TYPE_MESSAGE: 'Test Message',
             # self.TYPE_PASSWORD_RESET
             self.TYPE_REGISTRATION: _('New user %(new_username)s registered'),
