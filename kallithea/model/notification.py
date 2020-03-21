@@ -126,12 +126,18 @@ class NotificationModel(object):
         email_html_body = EmailNotificationModel() \
                             .get_email_tmpl(type_, 'html', **html_kwargs)
 
-        # don't send email to person who created this comment
-        rec_objs = set(recipients_objs).difference(set([created_by_obj]))
+        # don't send email to the person who caused the notification, except for
+        # notifications about new pull requests where the author is explicitly
+        # added.
+        rec_mails = set(obj.email for obj in recipients_objs)
+        if type_ == NotificationModel.TYPE_PULL_REQUEST:
+            rec_mails.add(created_by_obj.email)
+        else:
+            rec_mails.discard(created_by_obj.email)
 
-        # send email with notification to all other participants
-        for rec in rec_objs:
-            tasks.send_email([rec.email], email_subject, email_txt_body,
+        # send email with notification to participants
+        for rec_mail in sorted(rec_mails):
+            tasks.send_email([rec_mail], email_subject, email_txt_body,
                      email_html_body, headers,
                      from_name=created_by_obj.full_name_or_username)
 
