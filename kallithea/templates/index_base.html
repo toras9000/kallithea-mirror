@@ -16,11 +16,10 @@
                 <%
                     gr_name = c.group.group_name if c.group else None
                     # create repositories with write permission on group is set to true
-                    create_on_write = h.HasPermissionAny('hg.create.write_on_repogroup.true')()
                     group_admin = h.HasRepoGroupPermissionLevel('admin')(gr_name, 'can write into group index page')
                     group_write = h.HasRepoGroupPermissionLevel('write')(gr_name, 'can write into group index page')
                 %>
-                %if h.HasPermissionAny('hg.admin','hg.create.repository')() or (group_admin or (group_write and create_on_write)):
+                %if h.HasPermissionAny('hg.admin','hg.create.repository')() or group_admin or group_write:
                   %if c.group:
                         <a href="${h.url('new_repo',parent_group=c.group.group_id)}" class="btn btn-default btn-xs"><i class="icon-plus"></i>${_('Add Repository')}</a>
                         %if h.HasPermissionAny('hg.admin')() or h.HasRepoGroupPermissionLevel('admin')(c.group.group_name):

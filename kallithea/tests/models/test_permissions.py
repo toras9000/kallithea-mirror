@@ -290,7 +290,7 @@ class TestPermissions(base.TestController):
                               'hg.register.manual_activate',
                               'hg.extern_activate.auto',
                               'repository.read', 'group.read',
-                              'usergroup.read', 'hg.create.write_on_repogroup.true'])
+                              'usergroup.read'])
 
     def test_inherit_sad_permissions_from_default_user(self):
         user_model = UserModel()
@@ -307,7 +307,7 @@ class TestPermissions(base.TestController):
                               'hg.register.manual_activate',
                               'hg.extern_activate.auto',
                               'repository.read', 'group.read',
-                              'usergroup.read', 'hg.create.write_on_repogroup.true'])
+                              'usergroup.read'])
 
     def test_inherit_more_permissions_from_default_user(self):
         user_model = UserModel()
@@ -333,7 +333,7 @@ class TestPermissions(base.TestController):
                               'hg.register.manual_activate',
                               'hg.extern_activate.auto',
                               'repository.read', 'group.read',
-                              'usergroup.read', 'hg.create.write_on_repogroup.true'])
+                              'usergroup.read'])
 
     def test_inherit_less_permissions_from_default_user(self):
         user_model = UserModel()
@@ -359,7 +359,7 @@ class TestPermissions(base.TestController):
                               'hg.register.manual_activate',
                               'hg.extern_activate.auto',
                               'repository.read', 'group.read',
-                              'usergroup.read', 'hg.create.write_on_repogroup.true'])
+                              'usergroup.read'])
 
     def test_inactive_user_group_does_not_affect_global_permissions(self):
         # Add user to inactive user group, set specific permissions on user
@@ -391,7 +391,7 @@ class TestPermissions(base.TestController):
                               'hg.extern_activate.auto',
                               'repository.read', 'group.read',
                               'usergroup.read',
-                              'hg.create.write_on_repogroup.true'])
+                              ])
 
     def test_inactive_user_group_does_not_affect_global_permissions_inverse(self):
         # Add user to inactive user group, set specific permissions on user
@@ -423,7 +423,7 @@ class TestPermissions(base.TestController):
                               'hg.extern_activate.auto',
                               'repository.read', 'group.read',
                               'usergroup.read',
-                              'hg.create.write_on_repogroup.true'])
+                              ])
 
     def test_inactive_user_group_does_not_affect_repo_permissions(self):
         self.ug1 = fixture.create_user_group('G1')

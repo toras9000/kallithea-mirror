@@ -1562,9 +1562,6 @@ class Permission(Base, BaseDbModel):
         ('hg.create.none', _('Only admins can create top level repositories')),
         ('hg.create.repository', _('Non-admins can create top level repositories')),
 
-        ('hg.create.write_on_repogroup.true', _('Repository creation enabled with write permission to a repository group')),
-        ('hg.create.write_on_repogroup.false', _('Repository creation disabled with write permission to a repository group')),
-
         ('hg.fork.none', _('Only admins can fork repositories')),
         ('hg.fork.repository', _('Non-admins can fork repositories')),
 
@@ -1582,7 +1579,6 @@ class Permission(Base, BaseDbModel):
         'group.read',
         'usergroup.read',
         'hg.create.repository',
-        'hg.create.write_on_repogroup.true',
         'hg.fork.repository',
         'hg.register.manual_activate',
         'hg.extern_activate.auto',
@@ -1615,9 +1611,6 @@ class Permission(Base, BaseDbModel):
 
         'hg.create.none': 0,
         'hg.create.repository': 1,
-
-        'hg.create.write_on_repogroup.false': 0,
-        'hg.create.write_on_repogroup.true': 1,
 
         'hg.register.none': 0,
         'hg.register.manual_activate': 1,

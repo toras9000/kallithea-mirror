@@ -89,11 +89,6 @@ class PermissionsController(BaseController):
         c.repo_create_choices = [('hg.create.none', _('Disabled')),
                                  ('hg.create.repository', _('Enabled'))]
 
-        c.repo_create_on_write_choices = [
-            ('hg.create.write_on_repogroup.true', _('Enabled')),
-            ('hg.create.write_on_repogroup.false', _('Disabled')),
-        ]
-
         c.user_group_create_choices = [('hg.usergroup.create.false', _('Disabled')),
                                        ('hg.usergroup.create.true', _('Enabled'))]
 
@@ -109,7 +104,6 @@ class PermissionsController(BaseController):
                 [x[0] for x in c.group_perms_choices],
                 [x[0] for x in c.user_group_perms_choices],
                 [x[0] for x in c.repo_create_choices],
-                [x[0] for x in c.repo_create_on_write_choices],
                 [x[0] for x in c.repo_group_create_choices],
                 [x[0] for x in c.user_group_create_choices],
                 [x[0] for x in c.fork_choices],
@@ -153,9 +147,6 @@ class PermissionsController(BaseController):
 
             if p.permission.permission_name.startswith('usergroup.'):
                 defaults['default_user_group_perm'] = p.permission.permission_name
-
-            if p.permission.permission_name.startswith('hg.create.write_on_repogroup.'):
-                defaults['create_on_write'] = p.permission.permission_name
 
             elif p.permission.permission_name.startswith('hg.create.'):
                 defaults['default_repo_create'] = p.permission.permission_name

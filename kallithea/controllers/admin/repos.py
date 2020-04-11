@@ -39,7 +39,7 @@ from webob.exc import HTTPForbidden, HTTPFound, HTTPInternalServerError, HTTPNot
 import kallithea
 from kallithea.config.routing import url
 from kallithea.lib import helpers as h
-from kallithea.lib.auth import HasPermissionAny, HasRepoPermissionLevelDecorator, LoginRequired, NotAnonymous
+from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired, NotAnonymous
 from kallithea.lib.base import BaseRepoController, jsonify, render
 from kallithea.lib.exceptions import AttachedForksError
 from kallithea.lib.utils import action_logger
@@ -76,13 +76,9 @@ class ReposController(BaseRepoController):
         return repo_obj
 
     def __load_defaults(self, repo=None):
-        if HasPermissionAny('hg.create.write_on_repogroup.true')():
-            repo_group_perm_level = 'write'
-        else:
-            repo_group_perm_level = 'admin'
         extras = [] if repo is None else [repo.group]
 
-        c.repo_groups = AvailableRepoGroupChoices(repo_group_perm_level, extras)
+        c.repo_groups = AvailableRepoGroupChoices('write', extras)
 
         c.landing_revs_choices, c.landing_revs = ScmModel().get_repo_landing_revs(repo)
 

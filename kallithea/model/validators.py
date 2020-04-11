@@ -456,12 +456,11 @@ def CanWriteGroup(old_data=None):
             gr_name = gr.group_name if gr is not None else None # None means ROOT location
 
             # create repositories with write permission on group is set to true
-            create_on_write = HasPermissionAny('hg.create.write_on_repogroup.true')()
             group_admin = HasRepoGroupPermissionLevel('admin')(gr_name,
                                             'can write into group validator')
             group_write = HasRepoGroupPermissionLevel('write')(gr_name,
                                             'can write into group validator')
-            forbidden = not (group_admin or (group_write and create_on_write))
+            forbidden = not (group_admin or group_write)
             can_create_repos = HasPermissionAny('hg.admin', 'hg.create.repository')
             gid = (old_data['repo_group'].get('group_id')
                    if (old_data and 'repo_group' in old_data) else None)

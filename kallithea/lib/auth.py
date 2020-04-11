@@ -149,7 +149,6 @@ def _cached_perms_data(user_id, user_is_admin):
         # based on default permissions, just set everything to admin
         #==================================================================
         permissions[GLOBAL].add('hg.admin')
-        permissions[GLOBAL].add('hg.create.write_on_repogroup.true')
 
         # repositories
         for perm in default_repo_perms:
@@ -242,7 +241,7 @@ def _cached_perms_data(user_id, user_is_admin):
 
     # for each kind of global permissions, only keep the one with heighest weight
     kind_max_perm = {}
-    for perm in sorted(permissions[GLOBAL], key=lambda n: PERM_WEIGHTS[n]):
+    for perm in sorted(permissions[GLOBAL], key=lambda n: PERM_WEIGHTS.get(n, -1)):
         kind = perm.rsplit('.', 1)[0]
         kind_max_perm[kind] = perm
     permissions[GLOBAL] = set(kind_max_perm.values())
