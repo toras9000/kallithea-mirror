@@ -120,7 +120,6 @@ class PermissionModel(object):
                                  'default_user_group_perm',
                                  'default_repo_create',
                                  'create_on_write', # special case for create repos on write access to group
-                                 #'default_repo_group_create', # not implemented yet
                                  'default_user_group_create',
                                  'default_fork',
                                  'default_register',

@@ -1556,9 +1556,6 @@ class Permission(Base, BaseDbModel):
         ('usergroup.write', _('Default user has write access to new user groups')),
         ('usergroup.admin', _('Default user has admin access to new user groups')),
 
-        ('hg.repogroup.create.false', _('Only admins can create repository groups')),
-        ('hg.repogroup.create.true', _('Non-admins can create repository groups')),
-
         ('hg.usergroup.create.false', _('Only admins can create user groups')),
         ('hg.usergroup.create.true', _('Non-admins can create user groups')),
 
@@ -1609,9 +1606,6 @@ class Permission(Base, BaseDbModel):
         'usergroup.read': 1,
         'usergroup.write': 3,
         'usergroup.admin': 4,
-
-        'hg.repogroup.create.false': 0,
-        'hg.repogroup.create.true': 1,
 
         'hg.usergroup.create.false': 0,
         'hg.usergroup.create.true': 1,

@@ -413,7 +413,6 @@ def DefaultPermissionsForm(repo_perms_choices, group_perms_choices,
         default_repo_create = v.OneOf(create_choices)
         create_on_write = v.OneOf(create_on_write_choices)
         default_user_group_create = v.OneOf(user_group_create_choices)
-        #default_repo_group_create = v.OneOf(repo_group_create_choices) #not impl. yet
         default_fork = v.OneOf(fork_choices)
 
         default_register = v.OneOf(register_choices)
