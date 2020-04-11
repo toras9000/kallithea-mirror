@@ -63,7 +63,7 @@ class RepoGroupsController(BaseController):
         exclude is used for not moving group to itself TODO: also exclude descendants
         Note: only admin can create top level groups
         """
-        repo_groups = AvailableRepoGroupChoices([], 'admin', extras)
+        repo_groups = AvailableRepoGroupChoices('admin', extras)
         exclude_group_ids = set(rg.group_id for rg in exclude)
         c.repo_groups = [rg for rg in repo_groups
                          if rg[0] not in exclude_group_ids]

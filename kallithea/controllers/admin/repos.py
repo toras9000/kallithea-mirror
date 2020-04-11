@@ -76,14 +76,13 @@ class ReposController(BaseRepoController):
         return repo_obj
 
     def __load_defaults(self, repo=None):
-        top_perms = ['hg.create.repository']
         if HasPermissionAny('hg.create.write_on_repogroup.true')():
             repo_group_perm_level = 'write'
         else:
             repo_group_perm_level = 'admin'
         extras = [] if repo is None else [repo.group]
 
-        c.repo_groups = AvailableRepoGroupChoices(top_perms, repo_group_perm_level, extras)
+        c.repo_groups = AvailableRepoGroupChoices(repo_group_perm_level, extras)
 
         c.landing_revs_choices, c.landing_revs = ScmModel().get_repo_landing_revs(repo)
 

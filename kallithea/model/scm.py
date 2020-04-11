@@ -748,7 +748,7 @@ class ScmModel(object):
                 log.debug('skipping writing hook file')
 
 
-def AvailableRepoGroupChoices(top_perms, repo_group_perm_level, extras=()):
+def AvailableRepoGroupChoices(repo_group_perm_level, extras=()):
     """Return group_id,string tuples with choices for all the repo groups where
     the user has the necessary permissions.
 
@@ -759,7 +759,7 @@ def AvailableRepoGroupChoices(top_perms, repo_group_perm_level, extras=()):
         groups.append(None)
     else:
         groups = list(RepoGroupList(groups, perm_level=repo_group_perm_level))
-        if top_perms and HasPermissionAny(*top_perms)('available repo groups'):
+        if HasPermissionAny('hg.create.repository')('available repo groups'):
             groups.append(None)
         for extra in extras:
             if not any(rg == extra for rg in groups):

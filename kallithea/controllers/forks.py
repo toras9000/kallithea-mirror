@@ -58,7 +58,7 @@ class ForksController(BaseRepoController):
             repo_group_perm_level = 'write'
         else:
             repo_group_perm_level = 'admin'
-        c.repo_groups = AvailableRepoGroupChoices(['hg.create.repository'], repo_group_perm_level)
+        c.repo_groups = AvailableRepoGroupChoices(repo_group_perm_level)
 
         c.landing_revs_choices, c.landing_revs = ScmModel().get_repo_landing_revs()
 
