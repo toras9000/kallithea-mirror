@@ -37,11 +37,9 @@ import sqlalchemy
 from sqlalchemy.engine import create_engine
 
 from kallithea.model.base import init_model
-from kallithea.model.db import Permission, RepoGroup, Repository, Setting, Ui, User, UserRepoGroupToPerm, UserToPerm
-#from kallithea.model import meta
+from kallithea.model.db import Repository, Setting, Ui, User
 from kallithea.model.meta import Base, Session
 from kallithea.model.permission import PermissionModel
-from kallithea.model.repo_group import RepoGroupModel
 from kallithea.model.user import UserModel
 
 
@@ -128,42 +126,6 @@ class DbManage(object):
 
         log.info('Created tables for %s', self.dbname)
 
-    def fix_repo_paths(self):
-        """
-        Fixes a old kallithea version path into new one without a '*'
-        """
-
-        paths = Ui.query() \
-                .filter(Ui.ui_key == '/') \
-                .scalar()
-
-        paths.ui_value = paths.ui_value.replace('*', '')
-
-        self.sa.commit()
-
-    def fix_default_user(self):
-        """
-        Fixes a old default user with some 'nicer' default values,
-        used mostly for anonymous access
-        """
-        def_user = User.query().filter_by(is_default_user=True).one()
-
-        def_user.name = 'Anonymous'
-        def_user.lastname = 'User'
-        def_user.email = 'anonymous@kallithea-scm.org'
-
-        self.sa.commit()
-
-    def fix_settings(self):
-        """
-        Fixes kallithea settings adds ga_code key for google analytics
-        """
-
-        hgsettings3 = Setting('ga_code', '')
-
-        self.sa.add(hgsettings3)
-        self.sa.commit()
-
     def admin_prompt(self, second=False):
         if not self.tests:
             import getpass
@@ -243,45 +205,6 @@ class DbManage(object):
                 continue
             setting = Setting(k, v, t)
             self.sa.add(setting)
-
-    def fixup_groups(self):
-        def_usr = User.get_default_user()
-        for g in RepoGroup.query().all():
-            g.group_name = g.get_new_name(g.name)
-            # get default perm
-            default = UserRepoGroupToPerm.query() \
-                .filter(UserRepoGroupToPerm.group == g) \
-                .filter(UserRepoGroupToPerm.user == def_usr) \
-                .scalar()
-
-            if default is None:
-                log.debug('missing default permission for group %s adding', g)
-                RepoGroupModel()._create_default_perms(g)
-
-    def reset_permissions(self, username):
-        """
-        Resets permissions to default state, useful when old systems had
-        bad permissions, we must clean them up
-
-        :param username:
-        """
-        default_user = User.get_by_username(username)
-        if not default_user:
-            return
-
-        u2p = UserToPerm.query() \
-            .filter(UserToPerm.user == default_user).all()
-        fixed = False
-        if len(u2p) != len(Permission.DEFAULT_USER_PERMISSIONS):
-            for p in u2p:
-                Session().delete(p)
-            fixed = True
-            self.populate_default_permissions()
-        return fixed
-
-    def update_repo_info(self):
-        for repo in Repository.query():
-            repo.update_changeset_cache()
 
     def prompt_repo_root_path(self, test_repo_path='', retries=3):
         _path = self.cli_args.get('repos_location')
