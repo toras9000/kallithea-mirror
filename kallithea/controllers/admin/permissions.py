@@ -61,18 +61,22 @@ class PermissionsController(BaseController):
         super(PermissionsController, self)._before(*args, **kwargs)
 
     def __load_data(self):
+        # Permissions for the Default user on new repositories
         c.repo_perms_choices = [('repository.none', _('None'),),
                                    ('repository.read', _('Read'),),
                                    ('repository.write', _('Write'),),
                                    ('repository.admin', _('Admin'),)]
+        # Permissions for the Default user on new repository groups
         c.group_perms_choices = [('group.none', _('None'),),
                                  ('group.read', _('Read'),),
                                  ('group.write', _('Write'),),
                                  ('group.admin', _('Admin'),)]
+        # Permissions for the Default user on new user groups
         c.user_group_perms_choices = [('usergroup.none', _('None'),),
                                       ('usergroup.read', _('Read'),),
                                       ('usergroup.write', _('Write'),),
                                       ('usergroup.admin', _('Admin'),)]
+        # Registration - allow new Users to create an account
         c.register_choices = [
             ('hg.register.none',
                 _('Disabled')),
@@ -80,18 +84,18 @@ class PermissionsController(BaseController):
                 _('Allowed with manual account activation')),
             ('hg.register.auto_activate',
                 _('Allowed with automatic account activation')), ]
-
+        # External auth account activation
         c.extern_activate_choices = [
             ('hg.extern_activate.manual', _('Manual activation of external account')),
             ('hg.extern_activate.auto', _('Automatic activation of external account')),
         ]
-
+        # Top level repository creation
         c.repo_create_choices = [('hg.create.none', _('Disabled')),
                                  ('hg.create.repository', _('Enabled'))]
-
+        # User group creation
         c.user_group_create_choices = [('hg.usergroup.create.false', _('Disabled')),
                                        ('hg.usergroup.create.true', _('Enabled'))]
-
+        # Repository forking:
         c.fork_choices = [('hg.fork.none', _('Disabled')),
                           ('hg.fork.repository', _('Enabled'))]
 
