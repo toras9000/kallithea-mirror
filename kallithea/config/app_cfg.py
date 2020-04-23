@@ -47,62 +47,41 @@ from kallithea.model import db
 log = logging.getLogger(__name__)
 
 
-class KallitheaAppConfig(AppConfig):
-    # Note: AppConfig has a misleading name, as it's not the application
-    # configuration, but the application configurator. The AppConfig values are
-    # used as a template to create the actual configuration, which might
-    # overwrite or extend the one provided by the configurator template.
+base_config = AppConfig(**{
+    'package': kallithea,
 
-    # To make it clear, AppConfig creates the config and sets into it the same
-    # values that AppConfig itself has. Then the values from the config file and
-    # gearbox options are loaded and merged into the configuration. Then an
-    # after_init_config(conf) method of AppConfig is called for any change that
-    # might depend on options provided by configuration files.
+    # Rendering Engines Configuration
+    'renderers': [
+        'json',
+        'mako',
+    ],
+    'default_renderer': 'mako',
+    'use_dotted_templatenames': False,
 
-    def __init__(self):
-        super(KallitheaAppConfig, self).__init__()
+    # Configure Sessions, store data as JSON to avoid pickle security issues
+    'session.enabled': True,
+    'session.data_serializer': 'json',
 
-        self['package'] = kallithea
+    # Configure the base SQLALchemy Setup
+    'use_sqlalchemy': True,
+    'model': kallithea.model.base,
+    'DBSession': kallithea.model.meta.Session,
 
-        self['prefer_toscawidgets2'] = False
-        self['use_toscawidgets'] = False
+    # Configure App without an authentication backend.
+    'auth_backend': None,
 
-        self['renderers'] = []
+    # Use custom error page for these errors. By default, Turbogears2 does not add
+    # 400 in this list.
+    # Explicitly listing all is considered more robust than appending to defaults,
+    # in light of possible future framework changes.
+    'errorpage.status_codes': [400, 401, 403, 404],
 
-        # Enable json in expose
-        self['renderers'].append('json')
+    # Disable transaction manager -- currently Kallithea takes care of transactions itself
+    'tm.enabled': False,
 
-        # Configure template rendering
-        self['renderers'].append('mako')
-        self['default_renderer'] = 'mako'
-        self['use_dotted_templatenames'] = False
-
-        # Configure Sessions, store data as JSON to avoid pickle security issues
-        self['session.enabled'] = True
-        self['session.data_serializer'] = 'json'
-
-        # Configure the base SQLALchemy Setup
-        self['use_sqlalchemy'] = True
-        self['model'] = kallithea.model.base
-        self['DBSession'] = kallithea.model.meta.Session
-
-        # Configure App without an authentication backend.
-        self['auth_backend'] = None
-
-        # Use custom error page for these errors. By default, Turbogears2 does not add
-        # 400 in this list.
-        # Explicitly listing all is considered more robust than appending to defaults,
-        # in light of possible future framework changes.
-        self['errorpage.status_codes'] = [400, 401, 403, 404]
-
-        # Disable transaction manager -- currently Kallithea takes care of transactions itself
-        self['tm.enabled'] = False
-
-        # Set the default i18n source language so TG doesn't search beyond 'en' in Accept-Language.
-        self['i18n.lang'] = 'en'
-
-
-base_config = KallitheaAppConfig()
+    # Set the default i18n source language so TG doesn't search beyond 'en' in Accept-Language.
+    'i18n.lang': 'en',
+})
 
 # DebugBar, a debug toolbar for TurboGears2.
 # (https://github.com/TurboGears/tgext.debugbar)
