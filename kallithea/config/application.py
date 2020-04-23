@@ -14,11 +14,11 @@
 """WSGI middleware initialization for the Kallithea application."""
 
 from kallithea.config.app_cfg import base_config
-from kallithea.config.environment import load_environment
 
 
 __all__ = ['make_app']
 
+load_environment = base_config.make_load_environment()
 # Use base_config to setup the necessary PasteDeploy application factory.
 # make_base_app will wrap the TurboGears2 app with all the middleware it needs.
 make_base_app = base_config.setup_tg_wsgi_app(load_environment)
