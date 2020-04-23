@@ -23,7 +23,7 @@ import click
 import paste.deploy
 
 import kallithea
-import kallithea.config.middleware
+import kallithea.config.application
 
 
 # kallithea_cli is usually invoked through the 'kallithea-cli' wrapper script
@@ -77,7 +77,7 @@ def register_command(config_file=False, config_file_initialize_app=False, hidden
                 logging.config.fileConfig(cp,
                     {'__file__': path_to_ini_file, 'here': os.path.dirname(path_to_ini_file)})
                 if config_file_initialize_app:
-                    kallithea.config.middleware.make_app(kallithea.CONFIG.global_conf, **kallithea.CONFIG.local_conf)
+                    kallithea.config.application.make_app(kallithea.CONFIG.global_conf, **kallithea.CONFIG.local_conf)
                 return annotated(*args, **kwargs)
             return cli_command(runtime_wrapper)
         return annotator

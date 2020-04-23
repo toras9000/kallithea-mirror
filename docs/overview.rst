@@ -172,7 +172,7 @@ There are several web server options:
 
   The web server used by ``gearbox`` is configured in the ``.ini`` file passed
   to it. The entry point for the WSGI application is configured
-  in ``setup.py`` as ``kallithea.config.middleware:make_app``.
+  in ``setup.py`` as ``kallithea.config.application:make_app``.
 
 - `Apache httpd`_ can serve WSGI applications directly using mod_wsgi_ and a
   simple Python file with the necessary configuration. This is a good option if

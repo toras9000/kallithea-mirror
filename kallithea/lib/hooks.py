@@ -307,14 +307,14 @@ def _hook_environment(repo_path):
     connect to the database.
     """
     import paste.deploy
-    import kallithea.config.middleware
+    import kallithea.config.application
 
     extras = get_hook_environment()
 
     path_to_ini_file = extras['config']
     kallithea.CONFIG = paste.deploy.appconfig('config:' + path_to_ini_file)
     #logging.config.fileConfig(ini_file_path) # Note: we are in a different process - don't use configured logging
-    kallithea.config.middleware.make_app(kallithea.CONFIG.global_conf, **kallithea.CONFIG.local_conf)
+    kallithea.config.application.make_app(kallithea.CONFIG.global_conf, **kallithea.CONFIG.local_conf)
 
     # fix if it's not a bare repo
     if repo_path.endswith(os.sep + '.git'):

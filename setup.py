@@ -156,6 +156,6 @@ setuptools.setup(
     kallithea-cli =    kallithea.bin.kallithea_cli:cli
 
     [paste.app_factory]
-    main = kallithea.config.middleware:make_app
+    main = kallithea.config.application:make_app
     """,
 )
