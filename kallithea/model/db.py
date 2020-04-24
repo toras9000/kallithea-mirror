@@ -46,7 +46,7 @@ from webob.exc import HTTPNotFound
 import kallithea
 from kallithea.lib import ext_json
 from kallithea.lib.exceptions import DefaultUserException
-from kallithea.lib.utils2 import (Optional, ascii_bytes, aslist, get_changeset_safe, get_clone_url, remove_prefix, safe_bytes, safe_int, safe_str, str2bool,
+from kallithea.lib.utils2 import (Optional, asbool, ascii_bytes, aslist, get_changeset_safe, get_clone_url, remove_prefix, safe_bytes, safe_int, safe_str,
                                   urlreadable)
 from kallithea.lib.vcs import get_backend
 from kallithea.lib.vcs.backends.base import EmptyChangeset
@@ -185,7 +185,7 @@ class Setting(Base, BaseDbModel):
         'str': safe_bytes,
         'int': safe_int,
         'unicode': safe_str,
-        'bool': str2bool,
+        'bool': asbool,
         'list': functools.partial(aslist, sep=',')
     }
     DEFAULT_UPDATE_URL = ''
@@ -1164,7 +1164,7 @@ class Repository(Base, BaseDbModel):
         if with_pullrequests:
             data['pull_requests'] = repo.pull_requests_other
         rc_config = Setting.get_app_settings()
-        repository_fields = str2bool(rc_config.get('repository_fields'))
+        repository_fields = asbool(rc_config.get('repository_fields'))
         if repository_fields:
             for f in self.extra_fields:
                 data[f.field_key_prefixed] = f.field_value

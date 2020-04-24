@@ -119,12 +119,10 @@ class TestLibs(base.TestController):
                            ('F', False),
                            ('FALSE', False),
                            ('0', False),
-                           ('-1', False),
-                           ('', False)
     ])
-    def test_str2bool(self, str_bool, expected):
-        from kallithea.lib.utils2 import str2bool
-        assert str2bool(str_bool) == expected
+    def test_asbool(self, str_bool, expected):
+        from kallithea.lib.utils2 import asbool
+        assert asbool(str_bool) == expected
 
     def test_mention_extractor(self):
         from kallithea.lib.utils2 import extract_mentioned_usernames

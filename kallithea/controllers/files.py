@@ -46,7 +46,7 @@ from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController, jsonify, render
 from kallithea.lib.exceptions import NonRelativePathError
 from kallithea.lib.utils import action_logger
-from kallithea.lib.utils2 import convert_line_endings, detect_mode, safe_int, safe_str, str2bool
+from kallithea.lib.utils2 import asbool, convert_line_endings, detect_mode, safe_int, safe_str
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.conf import settings
 from kallithea.lib.vcs.exceptions import (ChangesetDoesNotExistError, ChangesetError, EmptyRepositoryError, ImproperArchiveTypeError, NodeAlreadyExistsError,
@@ -577,7 +577,7 @@ class FilesController(BaseRepoController):
         # to reduce JS and callbacks
 
         if request.GET.get('show_rev'):
-            if str2bool(request.GET.get('annotate', 'False')):
+            if asbool(request.GET.get('annotate', 'False')):
                 _url = url('files_annotate_home', repo_name=c.repo_name,
                            revision=diff1, f_path=c.f_path)
             else:

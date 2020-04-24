@@ -21,7 +21,7 @@ import click
 
 import kallithea
 import kallithea.bin.kallithea_cli_base as cli_base
-from kallithea.lib.utils2 import str2bool
+from kallithea.lib.utils2 import asbool
 from kallithea.lib.vcs.backends.git.ssh import GitSshHandler
 from kallithea.lib.vcs.backends.hg.ssh import MercurialSshHandler
 from kallithea.model.ssh_key import SshKeyModel, SshKeyModelException
@@ -40,8 +40,7 @@ def ssh_serve(user_id, key_id):
     protocol access. The access will be granted as the specified user ID, and
     logged as using the specified key ID.
     """
-    ssh_enabled = kallithea.CONFIG.get('ssh_enabled', False)
-    if not str2bool(ssh_enabled):
+    if not asbool(kallithea.CONFIG.get('ssh_enabled', False)):
         sys.stderr.write("SSH access is disabled.\n")
         return sys.exit(1)
 

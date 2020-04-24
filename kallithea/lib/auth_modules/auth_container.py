@@ -29,7 +29,7 @@ import logging
 
 from kallithea.lib import auth_modules
 from kallithea.lib.compat import hybrid_property
-from kallithea.lib.utils2 import str2bool
+from kallithea.lib.utils2 import asbool
 from kallithea.model.db import Setting
 
 
@@ -131,7 +131,7 @@ class KallitheaAuthPlugin(auth_modules.KallitheaExternalAuthPlugin):
             username = environ.get(header)
             log.debug('extracted %s:%s', header, username)
 
-        if username and str2bool(settings.get('clean_username')):
+        if username and asbool(settings.get('clean_username')):
             log.debug('Received username %s from container', username)
             username = self._clean_username(username)
             log.debug('New cleanup user is: %s', username)

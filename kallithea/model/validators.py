@@ -32,7 +32,7 @@ from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel
 from kallithea.lib.compat import OrderedSet
 from kallithea.lib.exceptions import InvalidCloneUriException, LdapImportError
 from kallithea.lib.utils import is_valid_repo_uri
-from kallithea.lib.utils2 import aslist, repo_name_slug, str2bool
+from kallithea.lib.utils2 import asbool, aslist, repo_name_slug
 from kallithea.model import db
 from kallithea.model.db import RepoGroup, Repository, User, UserGroup
 
@@ -568,7 +568,7 @@ def ValidPerms(type_='repo'):
                          'g': 'users_group'
                     }[k[0]]
                     if member_name == User.DEFAULT_USER_NAME:
-                        if str2bool(value.get('repo_private')):
+                        if asbool(value.get('repo_private')):
                             # set none for default when updating to
                             # private repo protects against form manipulation
                             v = EMPTY_PERM

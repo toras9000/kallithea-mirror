@@ -42,7 +42,7 @@ from kallithea.lib.helpers import person
 from kallithea.lib.hooks import log_create_repository
 from kallithea.lib.rcmail.smtp_mailer import SmtpMailer
 from kallithea.lib.utils import action_logger
-from kallithea.lib.utils2 import ascii_bytes, str2bool
+from kallithea.lib.utils2 import asbool, ascii_bytes
 from kallithea.lib.vcs.utils import author_email
 from kallithea.model.db import RepoGroup, Repository, Statistics, User
 
@@ -289,9 +289,9 @@ def send_email(recipients, subject, body='', html_body='', headers=None, from_na
     passwd = email_config.get('smtp_password')
     mail_server = email_config.get('smtp_server')
     mail_port = email_config.get('smtp_port')
-    tls = str2bool(email_config.get('smtp_use_tls'))
-    ssl = str2bool(email_config.get('smtp_use_ssl'))
-    debug = str2bool(email_config.get('debug'))
+    tls = asbool(email_config.get('smtp_use_tls'))
+    ssl = asbool(email_config.get('smtp_use_ssl'))
+    debug = asbool(email_config.get('debug'))
     smtp_auth = email_config.get('smtp_auth')
 
     logmsg = ("Mail details:\n"

@@ -29,7 +29,7 @@ from tg import config
 from tg.i18n import ugettext as _
 
 from kallithea.lib import ssh
-from kallithea.lib.utils2 import str2bool
+from kallithea.lib.utils2 import asbool
 from kallithea.lib.vcs.exceptions import RepositoryError
 from kallithea.model.db import User, UserSshKeys
 from kallithea.model.meta import Session
@@ -95,7 +95,7 @@ class SshKeyModel(object):
         return user_ssh_keys
 
     def write_authorized_keys(self):
-        if not str2bool(config.get('ssh_enabled', False)):
+        if not asbool(config.get('ssh_enabled', False)):
             log.error("Will not write SSH authorized_keys file - ssh_enabled is not configured")
             return
         authorized_keys = config.get('ssh_authorized_keys')

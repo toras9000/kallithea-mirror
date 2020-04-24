@@ -21,7 +21,7 @@ import traceback
 
 from kallithea.lib.auth import AuthUser, PasswordGenerator
 from kallithea.lib.compat import hybrid_property
-from kallithea.lib.utils2 import str2bool
+from kallithea.lib.utils2 import asbool
 from kallithea.model.db import Setting, User
 from kallithea.model.meta import Session
 from kallithea.model.user import UserModel
@@ -350,7 +350,7 @@ def authenticate(username, password, environ=None):
             plugin_settings[v["name"]] = setting.app_settings_value if setting else None
         log.debug('Settings for auth plugin %s: %s', plugin_name, plugin_settings)
 
-        if not str2bool(plugin_settings["enabled"]):
+        if not asbool(plugin_settings["enabled"]):
             log.info("Authentication plugin %s is disabled, skipping for %s",
                      module, username)
             continue

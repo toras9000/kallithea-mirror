@@ -26,7 +26,7 @@ Original author and date, and relevant copyright and licensing information is be
 """
 
 
-from kallithea.lib.utils2 import str2bool
+from kallithea.lib.utils2 import asbool
 
 
 class HttpsFixup(object):
@@ -37,11 +37,11 @@ class HttpsFixup(object):
 
     def __call__(self, environ, start_response):
         self.__fixup(environ)
-        debug = str2bool(self.config.get('debug'))
+        debug = asbool(self.config.get('debug'))
         is_ssl = environ['wsgi.url_scheme'] == 'https'
 
         def custom_start_response(status, headers, exc_info=None):
-            if is_ssl and str2bool(self.config.get('use_htsts')) and not debug:
+            if is_ssl and asbool(self.config.get('use_htsts')) and not debug:
                 headers.append(('Strict-Transport-Security',
                                 'max-age=8640000; includeSubDomains'))
             return start_response(status, headers, exc_info)
@@ -66,7 +66,7 @@ class HttpsFixup(object):
         org_proto = proto
 
         # if we have force, just override
-        if str2bool(self.config.get('force_https')):
+        if asbool(self.config.get('force_https')):
             proto = 'https'
 
         environ['wsgi.url_scheme'] = proto

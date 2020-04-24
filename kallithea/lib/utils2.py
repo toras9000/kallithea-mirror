@@ -38,6 +38,7 @@ import urllib.parse
 import urlobject
 from tg.i18n import ugettext as _
 from tg.i18n import ungettext
+from tg.support.converters import asbool, aslist
 from webhelpers2.text import collapse, remove_formatting, strip_tags
 
 from kallithea.lib.vcs.utils import ascii_bytes, ascii_str, safe_bytes, safe_str  # re-export
@@ -51,49 +52,13 @@ except ImportError:
 
 
 # mute pyflakes "imported but unused"
+assert asbool
+assert aslist
 assert ascii_bytes
 assert ascii_str
 assert safe_bytes
 assert safe_str
 assert LazyProperty
-
-
-def str2bool(_str):
-    """
-    returns True/False value from given string, it tries to translate the
-    string into boolean
-
-    :param _str: string value to translate into boolean
-    :rtype: boolean
-    :returns: boolean from given string
-    """
-    if _str is None:
-        return False
-    if _str in (True, False):
-        return _str
-    _str = str(_str).strip().lower()
-    return _str in ('t', 'true', 'y', 'yes', 'on', '1')
-
-
-def aslist(obj, sep=None, strip=True):
-    """
-    Returns given string separated by sep as list
-
-    :param obj:
-    :param sep:
-    :param strip:
-    """
-    if isinstance(obj, (str)):
-        lst = obj.split(sep)
-        if strip:
-            lst = [v.strip() for v in lst]
-        return lst
-    elif isinstance(obj, (list, tuple)):
-        return obj
-    elif obj is None:
-        return []
-    else:
-        return [obj]
 
 
 def convert_line_endings(line, mode):

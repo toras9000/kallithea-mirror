@@ -49,7 +49,7 @@ from kallithea.lib import auth_modules, ext_json
 from kallithea.lib.auth import AuthUser, HasPermissionAnyMiddleware
 from kallithea.lib.exceptions import UserCreationError
 from kallithea.lib.utils import get_repo_slug, is_valid_repo
-from kallithea.lib.utils2 import AttributeDict, ascii_bytes, safe_int, safe_str, set_hook_environment, str2bool
+from kallithea.lib.utils2 import AttributeDict, asbool, ascii_bytes, safe_int, safe_str, set_hook_environment
 from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError, EmptyRepositoryError, RepositoryError
 from kallithea.model import meta
 from kallithea.model.db import PullRequest, Repository, Setting, User
@@ -375,14 +375,14 @@ class BaseController(TGController):
         c.visual = AttributeDict({})
 
         ## DB stored
-        c.visual.show_public_icon = str2bool(rc_config.get('show_public_icon'))
-        c.visual.show_private_icon = str2bool(rc_config.get('show_private_icon'))
-        c.visual.stylify_metalabels = str2bool(rc_config.get('stylify_metalabels'))
+        c.visual.show_public_icon = asbool(rc_config.get('show_public_icon'))
+        c.visual.show_private_icon = asbool(rc_config.get('show_private_icon'))
+        c.visual.stylify_metalabels = asbool(rc_config.get('stylify_metalabels'))
         c.visual.page_size = safe_int(rc_config.get('dashboard_items', 100))
         c.visual.admin_grid_items = safe_int(rc_config.get('admin_grid_items', 100))
-        c.visual.repository_fields = str2bool(rc_config.get('repository_fields'))
-        c.visual.show_version = str2bool(rc_config.get('show_version'))
-        c.visual.use_gravatar = str2bool(rc_config.get('use_gravatar'))
+        c.visual.repository_fields = asbool(rc_config.get('repository_fields'))
+        c.visual.show_version = asbool(rc_config.get('show_version'))
+        c.visual.use_gravatar = asbool(rc_config.get('use_gravatar'))
         c.visual.gravatar_url = rc_config.get('gravatar_url')
 
         c.ga_code = rc_config.get('ga_code')
@@ -404,9 +404,9 @@ class BaseController(TGController):
         c.clone_ssh_tmpl = rc_config.get('clone_ssh_tmpl') or Repository.DEFAULT_CLONE_SSH
 
         ## INI stored
-        c.visual.allow_repo_location_change = str2bool(config.get('allow_repo_location_change', True))
-        c.visual.allow_custom_hooks_settings = str2bool(config.get('allow_custom_hooks_settings', True))
-        c.ssh_enabled = str2bool(config.get('ssh_enabled', False))
+        c.visual.allow_repo_location_change = asbool(config.get('allow_repo_location_change', True))
+        c.visual.allow_custom_hooks_settings = asbool(config.get('allow_custom_hooks_settings', True))
+        c.ssh_enabled = asbool(config.get('ssh_enabled', False))
 
         c.instance_id = config.get('instance_id')
         c.issues_url = config.get('bugtracker', url('issues_url'))

@@ -31,7 +31,7 @@ import traceback
 
 from sqlalchemy.exc import DatabaseError
 
-from kallithea.lib.utils2 import str2bool
+from kallithea.lib.utils2 import asbool
 from kallithea.model.db import Permission, Session, User, UserRepoGroupToPerm, UserRepoToPerm, UserToPerm, UserUserGroupToPerm
 
 
@@ -97,7 +97,7 @@ class PermissionModel(object):
         try:
             # stage 1 set anonymous access
             if perm_user.is_default_user:
-                perm_user.active = str2bool(form_result['anonymous'])
+                perm_user.active = asbool(form_result['anonymous'])
 
             # stage 2 reset defaults and set them from form data
             def _make_new(usr, perm_name):

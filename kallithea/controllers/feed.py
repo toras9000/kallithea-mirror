@@ -39,7 +39,7 @@ from kallithea.lib import helpers as h
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController
 from kallithea.lib.diffs import DiffProcessor
-from kallithea.lib.utils2 import safe_int, safe_str, str2bool
+from kallithea.lib.utils2 import asbool, safe_int, safe_str
 
 
 log = logging.getLogger(__name__)
@@ -92,7 +92,7 @@ class FeedController(BaseRepoController):
         desc_msg.append(h.urlify_text(cs.message))
         desc_msg.append('\n')
         desc_msg.extend(changes)
-        if str2bool(CONFIG.get('rss_include_diff', False)):
+        if asbool(CONFIG.get('rss_include_diff', False)):
             desc_msg.append('\n\n')
             desc_msg.append(safe_str(raw_diff))
         desc_msg.append('</pre>')
