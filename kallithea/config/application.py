@@ -18,22 +18,14 @@ from kallithea.config.app_cfg import base_config
 
 __all__ = ['make_app']
 
-load_environment = base_config.make_load_environment()
-# Use base_config to setup the necessary PasteDeploy application factory.
-# make_base_app will wrap the TurboGears2 app with all the middleware it needs.
-make_base_app = base_config.setup_tg_wsgi_app(load_environment)
 
-
-def make_app(global_conf, full_stack=True, **app_conf):
+def make_app(global_conf, **app_conf):
     """
     Set up Kallithea with the settings found in the PasteDeploy configuration
     file used.
 
     :param global_conf: The global settings for Kallithea (those
         defined under the ``[DEFAULT]`` section).
-    :type global_conf: dict
-    :param full_stack: Should the whole TurboGears2 stack be set up?
-    :type full_stack: str or bool
     :return: The Kallithea application with all the relevant middleware
         loaded.
 
@@ -44,4 +36,5 @@ def make_app(global_conf, full_stack=True, **app_conf):
     """
     assert app_conf.get('sqlalchemy.url')  # must be called with a Kallithea .ini file, which for example must have this config option
     assert global_conf.get('here') and global_conf.get('__file__')  # app config should be initialized the paste way ...
-    return make_base_app(global_conf, full_stack=full_stack, **app_conf)
+
+    return base_config.make_wsgi_app(global_conf, app_conf, wrap_app=None)

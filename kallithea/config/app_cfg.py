@@ -28,7 +28,7 @@ import tg
 from alembic.migration import MigrationContext
 from alembic.script.base import ScriptDirectory
 from sqlalchemy import create_engine
-from tg.configuration import AppConfig
+from tg import FullStackApplicationConfigurator
 
 import kallithea.lib.locale
 import kallithea.model.base
@@ -47,7 +47,9 @@ from kallithea.model import db
 log = logging.getLogger(__name__)
 
 
-base_config = AppConfig(**{
+base_config = FullStackApplicationConfigurator()
+
+base_config.update_blueprint({
     'package': kallithea,
 
     # Rendering Engines Configuration
@@ -189,4 +191,4 @@ def setup_application(app):
     return app
 
 
-tg.hooks.register('before_config', setup_application)
+tg.hooks.register('before_wsgi_middlewares', setup_application)
