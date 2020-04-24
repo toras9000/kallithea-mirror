@@ -34,11 +34,6 @@ import kallithea.lib.locale
 import kallithea.model.base
 import kallithea.model.meta
 from kallithea.lib import celerypylons
-from kallithea.lib.middleware.https_fixup import HttpsFixup
-from kallithea.lib.middleware.permanent_repo_url import PermanentRepoUrl
-from kallithea.lib.middleware.simplegit import SimpleGit
-from kallithea.lib.middleware.simplehg import SimpleHg
-from kallithea.lib.middleware.wrapper import RequestWrapper
 from kallithea.lib.utils import check_git_version, load_rcextensions, set_app_settings, set_indexer_config, set_vcs_config
 from kallithea.lib.utils2 import asbool
 from kallithea.model import db
@@ -168,27 +163,3 @@ def setup_configuration(app):
 
 
 tg.hooks.register('configure_new_app', setup_configuration)
-
-
-def setup_application(app):
-    config = app.config
-
-    # we want our low level middleware to get to the request ASAP. We don't
-    # need any stack middleware in them - especially no StatusCodeRedirect buffering
-    app = SimpleHg(app, config)
-    app = SimpleGit(app, config)
-
-    # Enable https redirects based on HTTP_X_URL_SCHEME set by proxy
-    if any(asbool(config.get(x)) for x in ['https_fixup', 'force_https', 'use_htsts']):
-        app = HttpsFixup(app, config)
-
-    app = PermanentRepoUrl(app, config)
-
-    # Optional and undocumented wrapper - gives more verbose request/response logging, but has a slight overhead
-    if asbool(config.get('use_wsgi_wrapper')):
-        app = RequestWrapper(app, config)
-
-    return app
-
-
-tg.hooks.register('before_wsgi_middlewares', setup_application)
