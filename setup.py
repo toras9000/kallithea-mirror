@@ -53,7 +53,7 @@ requirements = [
     "FormEncode >= 1.3.1, < 1.4",
     "SQLAlchemy >= 1.2.9, < 1.4",
     "Mako >= 0.9.1, < 1.2",
-    "Pygments >= 2.2.0, < 2.6",
+    "Pygments >= 2.2.0, < 2.7",
     "Whoosh >= 2.7.1, < 2.8",
     "celery >= 4.3, < 4.5, != 4.4.4", # 4.4.4 is broken due to unexpressed dependency on 'future', see https://github.com/celery/celery/pull/6146
     "Babel >= 1.3, < 2.9",
@@ -65,7 +65,7 @@ requirements = [
     "dulwich >= 0.19.0, < 0.20",
     "mercurial >= 5.2, < 5.5",
     "decorator >= 4.2.1, < 4.5",
-    "Paste >= 2.0.3, < 3.4",
+    "Paste >= 2.0.3, < 3.5",
     "bleach >= 3.0, < 3.1.4",
     "Click >= 7.0, < 8",
     "ipaddr >= 2.2.0, < 2.3",
