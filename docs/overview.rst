@@ -7,6 +7,42 @@ Installation overview
 Some overview and some details that can help understanding the options when
 installing Kallithea.
 
+1. **Prepare environment and external dependencies.**
+    Kallithea needs:
+
+    * A filesystem where the Mercurial and Git repositories can be stored.
+    * A database where meta data can be stored.
+    * A Python environment where the Kallithea application and its dependencies
+      can be installed.
+    * A web server that can host the Kallithea web application using the WSGI
+      API.
+
+2. **Install Kallithea software.**
+    This makes the ``kallithea-cli`` command line tool available.
+
+3. **Create low level configuration file.**
+    Use ``kallithea-cli config-create`` to create a ``.ini`` file with database
+    connection info, mail server information, some web server configuration,
+    etc.
+
+4. **Populate the database.**
+    Use ``kallithea-cli db-create`` with the ``.ini`` file to create the
+    database schema and insert the most basic information: the location of the
+    repository store and an initial local admin user.
+
+5. **Configure the web server.**
+    The web server must invoke the WSGI entrypoint for the Kallithea software
+    using the ``.ini`` file (and thus the database). This makes the web
+    application available so the local admin user can log in and tweak the
+    configuration further.
+
+6. **Configure users.**
+    The initial admin user can create additional local users, or configure how
+    users can be created and authenticated from other user directories.
+
+See the subsequent sections, the separate OS-specific instructions, and
+:ref:`setup` for details on these steps.
+
 
 Python environment
 ------------------
