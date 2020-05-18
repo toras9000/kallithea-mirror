@@ -1,12 +1,12 @@
 ${h.form(url('admin_settings_global'), method='post')}
     <div class="form">
-             <div class="form-group">
+            <div class="form-group">
                 <label class="control-label" for="title">${_('Site branding')}:</label>
                 <div>
                     ${h.text('title',size=30,class_='form-control')}
                     <span class="help-block">${_('Set a custom title for your Kallithea Service.')}</span>
                 </div>
-             </div>
+            </div>
 
             <div class="form-group">
                 <label class="control-label" for="realm">${_('HTTP authentication realm')}:</label>
@@ -49,6 +49,6 @@ ${h.form(url('admin_settings_global'), method='post')}
                     ${h.submit('save',_('Save Settings'),class_="btn btn-default")}
                     ${h.reset('reset',_('Reset'),class_="btn btn-default")}
                 </div>
-           </div>
+            </div>
     </div>
 ${h.end_form()}

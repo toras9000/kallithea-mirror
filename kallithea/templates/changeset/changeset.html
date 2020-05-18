@@ -139,8 +139,8 @@ ${self.repo_context_bar('changelog', c.changeset.raw_id)}
               % else:
                   ${ungettext('%s file changed with %s insertions and %s deletions', '%s files changed with %s insertions and %s deletions', len(file_diff_data)) % (len(file_diff_data), c.lines_added, c.lines_deleted)}:
               %endif
-              </div>
-              <div class="cs_files">
+            </div>
+            <div class="cs_files">
                 %for fid, url_fid, op, a_path, path, diff, stats in file_diff_data:
                     <div class="cs_${op} clearfix">
                       <span class="node">
@@ -182,7 +182,7 @@ ${self.repo_context_bar('changelog', c.changeset.raw_id)}
     ## main comment form and it status
     ${comment.comments()}
 
-    </div>
+  </div>
 
     ## FORM FOR MAKING JS ACTION AS CHANGESET COMMENTS
     <script>
@@ -202,5 +202,5 @@ ${self.repo_context_bar('changelog', c.changeset.raw_id)}
 
     </script>
 
-  </div>
+</div>
 </%def>

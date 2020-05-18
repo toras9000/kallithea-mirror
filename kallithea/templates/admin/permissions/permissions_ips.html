@@ -14,9 +14,9 @@
               </td>
           </tr>
         %endfor
-       %else:
+      %else:
         <tr><td><div class="ip">${_('All IP addresses are allowed.')}</div></td></tr>
-       %endif
+      %endif
 </table>
 
 ${h.form(url('edit_user_ips_update', id=c.user.user_id))}

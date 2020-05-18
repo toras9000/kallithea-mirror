@@ -126,13 +126,13 @@ ${self.repo_context_bar('summary')}
         </div>
         <ul id="summary-menu-stats" class="list-group pull-right">
             <li class="list-group-item">
-               <a title="${_('Owner')} ${c.db_repo.owner.email}">
+              <a title="${_('Owner')} ${c.db_repo.owner.email}">
                 <i class="icon-user"></i>${c.db_repo.owner.username}
                 ${h.gravatar_div(c.db_repo.owner.email, size=18, div_class="pull-right")}
               </a>
             </li>
             <li class="list-group-item">
-               <a title="${_('Followers')}" href="${h.url('repo_followers_home',repo_name=c.repo_name)}">
+              <a title="${_('Followers')}" href="${h.url('repo_followers_home',repo_name=c.repo_name)}">
                 <i class="icon-heart"></i>${_('Followers')}
                 <span class="badge pull-right" id="current_followers_count">${c.repository_followers}</span>
               </a>
@@ -180,7 +180,7 @@ ${self.repo_context_bar('summary')}
             ${h.link_to(_('Latest Changes'),h.url('changelog_home',repo_name=c.repo_name))}
         %else:
             ${_('Quick Start')}
-         %endif
+        %endif
         </div>
     </div>
     <div class="panel-body">

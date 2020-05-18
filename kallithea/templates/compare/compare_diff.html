@@ -30,11 +30,14 @@ ${self.repo_context_bar('changelog')}
                 ## divs are "inline-block" and cannot have whitespace between them.
                 <span>
                     ${h.hidden('compare_org')}
-                </span><span>
+                </span><!--
+             --><span>
                     <i class="icon-right"></i>
-                </span><span>
+                </span><!--
+             --><span>
                     ${h.hidden('compare_other')}
-                </span><span>
+                </span><!--
+             --><span>
                     %if not c.compare_home:
                         <a class="btn btn-default btn-sm" href="${c.swap_url}"><i class="icon-arrows-cw"></i>${_('Swap')}</a>
                     %endif
