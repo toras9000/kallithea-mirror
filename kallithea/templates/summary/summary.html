@@ -54,11 +54,7 @@ ${self.repo_context_bar('summary')}
             <div class="form-group form-inline">
                 <label>${_('Clone URL')}:</label>
                 <div id="clone-url">
-                  <div id="clone_by_name" class="input-group"
-                    %if c.ssh_repo_url:
-                        style="display:none"
-                    %endif
-                    >
+                  <div id="clone_by_name" class="input-group" style="${'display:none' if c.ssh_repo_url else ''}">
                     <span class="input-group-addon">${self.repolabel(c.db_repo)}</span>
                     <input class="form-control" size="80" readonly="readonly" value="${c.clone_repo_url}"/>
                     <span class="input-group-addon btn use-id">${_('Use ID')}</span>
