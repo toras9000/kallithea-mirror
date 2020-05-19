@@ -27,7 +27,8 @@
   <link href="${h.url('atom_feed_home',repo_name=c.db_repo.repo_name,api_key=request.authuser.api_key)}" rel="alternate" title="${_('%s ATOM feed') % c.repo_name}" type="application/atom+xml" />
   <link href="${h.url('rss_feed_home',repo_name=c.db_repo.repo_name,api_key=request.authuser.api_key)}" rel="alternate" title="${_('%s RSS feed') % c.repo_name}" type="application/rss+xml" />
 
-  <script>'use strict';
+  <script>
+  'use strict';
   function redirect_hash_branch(){
     var branch = window.location.hash.replace(/^#(.*)/, '$1');
     if (branch){
@@ -238,7 +239,8 @@ hg push ${c.clone_repo_url}
 </div>
 %endif
 
-<script>'use strict';
+<script>
+'use strict';
 $(document).ready(function(){
     $('#clone-url input').click(function(){
         if($(this).hasClass('selected')){
@@ -334,7 +336,8 @@ $(document).ready(function(){
 </script>
 
 %if c.show_stats:
-<script>'use strict';
+<script>
+'use strict';
 $(document).ready(function(){
     var data = ${h.js(c.trending_languages)};
     var total = 0;

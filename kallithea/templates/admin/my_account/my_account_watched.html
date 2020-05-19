@@ -4,7 +4,8 @@
     <table class="table" id="datatable_list_wrap" width="100%"></table>
 </div>
 
-<script>'use strict';
+<script>
+  'use strict';
   var data = ${h.js(c.data)};
   $("#datatable_list_wrap").DataTable({
         data: data.records,
