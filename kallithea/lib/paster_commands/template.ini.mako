@@ -1,7 +1,7 @@
 ## -*- coding: utf-8 -*-
 <%text>##</%text>#################################################################################
 <%text>##</%text>#################################################################################
-<%text>##</%text> Kallithea config file generated with kallithea-config                         ##
+<%text>##</%text> Kallithea config file generated with kallithea-config ${'%-24s' % version    }##
 <%text>##</%text>                                                                               ##
 <%text>##</%text> The %(here)s variable will be replaced with the parent directory of this file ##
 <%text>##</%text>#################################################################################
