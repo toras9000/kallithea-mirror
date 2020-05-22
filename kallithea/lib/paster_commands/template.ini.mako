@@ -3,7 +3,8 @@
 <%text>##</%text>#################################################################################
 <%text>##</%text> Kallithea config file generated with kallithea-config ${'%-24s' % version    }##
 <%text>##</%text>                                                                               ##
-<%text>##</%text> The %(here)s variable will be replaced with the parent directory of this file ##
+<%text>##</%text> The %(here)s variable will generally be replaced with the parent directory of ##
+<%text>##</%text> this file. Other use of % must be escaped as %% .                             ##
 <%text>##</%text>#################################################################################
 <%text>##</%text>#################################################################################
 
