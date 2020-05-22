@@ -2295,7 +2295,6 @@ class UserSshKeys(Base, BaseDbModel):
     __tablename__ = 'user_ssh_keys'
     __table_args__ = (
         Index('usk_fingerprint_idx', 'fingerprint'),
-        UniqueConstraint('fingerprint'),
         _table_args_default_dict
     )
     __mapper_args__ = {}
