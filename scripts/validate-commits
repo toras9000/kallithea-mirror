@@ -11,6 +11,12 @@ if ! hg update --check -q .; then
     exit 1
 fi
 
+revset=$1
+if [ -z "$revset" ]; then
+    echo "Warning: no revisions specified, checking draft changes up to the current one."
+    revset='draft() and ancestors(.)'
+fi
+
 venv=$(mktemp -d kallithea-validatecommits-env-XXXXXX)
 resultfile=$(mktemp kallithea-validatecommits-result-XXXXXX)
 echo > "$resultfile"
@@ -29,7 +35,7 @@ finish()
 }
 trap finish EXIT
 
-for rev in $(hg log -r "$1" -T '{node}\n'); do
+for rev in $(hg log -r "$revset" -T '{node}\n'); do
     hg log -r "$rev"
     hg update "$rev"
 
