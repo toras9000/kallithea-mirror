@@ -153,7 +153,6 @@ setuptools.setup(
     [console_scripts]
     kallithea-api =    kallithea.bin.kallithea_api:main
     kallithea-gist =   kallithea.bin.kallithea_gist:main
-    kallithea-config = kallithea.bin.kallithea_config:main
     kallithea-cli =    kallithea.bin.kallithea_cli:cli
 
     [paste.app_factory]
