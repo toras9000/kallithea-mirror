@@ -168,4 +168,11 @@ class TestGistsController(base.TestController):
         assert response.body == b'GIST BODY'
 
     def test_edit(self):
-        response = self.app.get(base.url('edit_gist', gist_id=1))
+        gist = _create_gist('gist-edit')
+        response = self.app.get(base.url('edit_gist', gist_id=gist.gist_access_id), status=302)
+        assert 'login' in response.location
+
+        self.log_user(base.TEST_USER_REGULAR_LOGIN, base.TEST_USER_REGULAR_PASS)
+        response = self.app.get(base.url('edit_gist', gist_id=gist.gist_access_id))
+
+        # FIXME actually test editing the gist
