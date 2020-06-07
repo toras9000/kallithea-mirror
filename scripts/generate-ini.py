@@ -55,7 +55,7 @@ def main():
     print('reading:', makofile)
     mako_org = open(makofile).read()
     mako_no_text_markup = re.sub(r'</?%text>', '', mako_org)
-    mako_marked_up = re.sub(r'\n(##.*)', r'\n<%text>\1</%text>', mako_no_text_markup, flags=re.MULTILINE)
+    mako_marked_up = re.sub(r'\n##(.*)', r'\n<%text>##</%text>\1', mako_no_text_markup, flags=re.MULTILINE)
     if mako_marked_up != mako_org:
         print('writing:', makofile)
         open(makofile, 'w').write(mako_marked_up)

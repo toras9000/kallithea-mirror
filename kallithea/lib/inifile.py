@@ -40,6 +40,7 @@ default_variables = {
     'host': '127.0.0.1',
     'port': '5000',
     'uuid': lambda: 'VERY-SECRET',
+    'version': '',
 }
 
 variable_options = {

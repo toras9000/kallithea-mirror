@@ -55,7 +55,7 @@ requirements = [
     "Mako >= 0.9.1, < 1.2",
     "Pygments >= 2.2.0, < 2.6",
     "Whoosh >= 2.7.1, < 2.8",
-    "celery >= 4.3, < 4.5",
+    "celery >= 4.3, < 4.5, != 4.4.4", # 4.4.4 is broken due to unexpressed dependency on 'future', see https://github.com/celery/celery/pull/6146
     "Babel >= 1.3, < 2.9",
     "python-dateutil >= 2.1.0, < 2.9",
     "Markdown >= 2.2.1, < 3.2",
@@ -153,7 +153,6 @@ setuptools.setup(
     [console_scripts]
     kallithea-api =    kallithea.bin.kallithea_api:main
     kallithea-gist =   kallithea.bin.kallithea_gist:main
-    kallithea-config = kallithea.bin.kallithea_config:main
     kallithea-cli =    kallithea.bin.kallithea_cli:cli
 
     [paste.app_factory]
