@@ -453,19 +453,20 @@ logview.pylons.util = #eee
 <%text>##</%text>#######################
 
 %if database_engine == 'sqlite':
-<%text>##</%text> SQLITE [default]
 sqlalchemy.url = sqlite:///%(here)s/kallithea.db?timeout=60
-
-%elif database_engine == 'postgres':
-<%text>##</%text> POSTGRESQL
-sqlalchemy.url = postgresql://user:pass@localhost/kallithea
-
-%elif database_engine == 'mysql':
-<%text>##</%text> MySQL
-sqlalchemy.url = mysql://user:pass@localhost/kallithea?charset=utf8
-
+%else:
+#sqlalchemy.url = sqlite:///%(here)s/kallithea.db?timeout=60
 %endif
-<%text>##</%text> see sqlalchemy docs for other backends
+%if database_engine == 'postgres':
+sqlalchemy.url = postgresql://user:pass@localhost/kallithea
+%else:
+#sqlalchemy.url = postgresql://user:pass@localhost/kallithea
+%endif
+%if database_engine == 'mysql':
+sqlalchemy.url = mysql://user:pass@localhost/kallithea?charset=utf8
+%else:
+#sqlalchemy.url = mysql://user:pass@localhost/kallithea?charset=utf8
+%endif
 
 sqlalchemy.pool_recycle = 3600
 
