@@ -69,7 +69,7 @@ host = ${host}
 port = ${port}
 
 %if http_server == 'gearbox':
-<%text>##</%text> Gearbox default web server ##
+<%text>##</%text> Gearbox serve uses the built-in development web server ##
 use = egg:gearbox#wsgiref
 <%text>##</%text> nr of worker threads to spawn
 threadpool_workers = 1
@@ -79,22 +79,22 @@ threadpool_max_requests = 100
 use_threadpool = true
 
 %elif http_server == 'gevent':
-<%text>##</%text> Gearbox gevent web server ##
+<%text>##</%text> Gearbox serve uses the gevent web server ##
 use = egg:gearbox#gevent
 
 %elif http_server == 'waitress':
-<%text>##</%text> WAITRESS ##
+<%text>##</%text> Gearbox serve uses the Waitress web server ##
 use = egg:waitress#main
-<%text>##</%text> number of worker threads
+<%text>##</%text> avoid multi threading
 threads = 1
-<%text>##</%text> MAX BODY SIZE 100GB
+<%text>##</%text> allow push of repos bigger than the default of 1 GB
 max_request_body_size = 107374182400
 <%text>##</%text> use poll instead of select, fixes fd limits, may not work on old
 <%text>##</%text> windows systems.
 #asyncore_use_poll = True
 
 %elif http_server == 'gunicorn':
-<%text>##</%text> GUNICORN ##
+<%text>##</%text> Gearbox serve uses the Gunicorn web server ##
 use = egg:gunicorn#main
 <%text>##</%text> number of process workers. You must set `instance_id = *` when this option
 <%text>##</%text> is set to more than one worker
