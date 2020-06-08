@@ -22,8 +22,8 @@ installing Kallithea.
 
 3. **Create low level configuration file.**
     Use ``kallithea-cli config-create`` to create a ``.ini`` file with database
-    connection info, mail server information, some web server configuration,
-    etc.
+    connection info, mail server information, configuration for the specified
+    web server, etc.
 
 4. **Populate the database.**
     Use ``kallithea-cli db-create`` with the ``.ini`` file to create the
@@ -166,19 +166,24 @@ There are several web server options:
   Actual use in production might have different requirements and need extra
   work to make it manageable as a scalable system service.
 
-  Gearbox comes with its own built-in web server but Kallithea defaults to use
-  Waitress_. Gunicorn_ is also an option. These web servers have different
-  limited feature sets.
+  Gearbox comes with its own built-in web server for development but Kallithea
+  defaults to using Waitress_. Gunicorn_ and Gevent_ are also options. These
+  web servers have different limited feature sets.
 
-  The web server used by ``gearbox`` is configured in the ``.ini`` file passed
-  to it. The entry point for the WSGI application is configured
-  in ``setup.py`` as ``kallithea.config.middleware:make_app``.
+  The web server used by ``gearbox serve`` is configured in the ``.ini`` file.
+  Create it with ``config-create`` using for example ``http_server=waitress``
+  to get a configuration starting point for your choice of web server.
+
+  (Gearbox will do like ``paste`` and use the WSGI application entry point
+  ``kallithea.config.middleware:make_app`` as specified in ``setup.py``.)
 
 - `Apache httpd`_ can serve WSGI applications directly using mod_wsgi_ and a
   simple Python file with the necessary configuration. This is a good option if
   Apache is an option.
 
-- uWSGI_ is also a full web server with built-in WSGI module.
+- uWSGI_ is also a full web server with built-in WSGI module. Use
+  ``config-create`` with ``http_server=uwsgi`` to get a ``.ini`` file with
+  uWSGI configuration.
 
 - IIS_ can also server WSGI applications directly using isapi-wsgi_.
 
@@ -200,6 +205,7 @@ continuous hammering from the internet.
 
 .. _Python: http://www.python.org/
 .. _Gunicorn: http://gunicorn.org/
+.. _Gevent: http://www.gevent.org/
 .. _Waitress: http://waitress.readthedocs.org/en/latest/
 .. _Gearbox: http://turbogears.readthedocs.io/en/latest/turbogears/gearbox.html
 .. _PyPI: https://pypi.python.org/pypi
