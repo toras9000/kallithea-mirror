@@ -61,9 +61,9 @@
                       <i class="icon-file-code"></i></a>
                   <a href="${h.url('files_diff_2way_home',repo_name=cs_repo_name,f_path=cs_filename,diff2=cs_rev,diff1=a_rev,diff='diff',fulldiff=1)}" data-toggle="tooltip" title="${_('Show full side-by-side diff for this file')}">
                       <i class="icon-docs"></i></a>
-                  <a href="${h.url('files_diff_home',repo_name=cs_repo_name,f_path=cs_filename,diff2=cs_rev,diff1=a_rev,diff='raw')}" data-toggle="tooltip" title="${_('Raw diff')}">
+                  <a href="${h.url('files_diff_home',repo_name=cs_repo_name,f_path=cs_filename,diff2=cs_rev,diff1=a_rev,diff='raw')}" data-toggle="tooltip" title="${_('Raw diff for this file')}">
                       <i class="icon-diff"></i></a>
-                  <a href="${h.url('files_diff_home',repo_name=cs_repo_name,f_path=cs_filename,diff2=cs_rev,diff1=a_rev,diff='download')}" data-toggle="tooltip" title="${_('Download diff')}">
+                  <a href="${h.url('files_diff_home',repo_name=cs_repo_name,f_path=cs_filename,diff2=cs_rev,diff1=a_rev,diff='download')}" data-toggle="tooltip" title="${_('Download diff for this file')}">
                       <i class="icon-floppy"></i></a>
                   ${c.ignorews_url(request.GET, url_fid)}
                   ${c.context_url(request.GET, url_fid)}
