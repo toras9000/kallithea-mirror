@@ -463,6 +463,7 @@ sqlalchemy.url = postgresql://user:pass@localhost/kallithea
 %elif database_engine == 'mysql':
 <%text>##</%text> MySQL
 sqlalchemy.url = mysql://user:pass@localhost/kallithea?charset=utf8
+<%text>##</%text> Note: the mysql:// prefix should also be used for MariaDB
 
 %endif
 <%text>##</%text> see sqlalchemy docs for other backends

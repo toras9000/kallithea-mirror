@@ -24,7 +24,7 @@ Next, you need to create the databases used by Kallithea. It is recommended to
 use PostgreSQL or SQLite (default). If you choose a database other than the
 default, ensure you properly adjust the database URL in your ``my.ini``
 configuration file to use this other database. Kallithea currently supports
-PostgreSQL, SQLite and MySQL databases. Create the database by running
+PostgreSQL, SQLite and MariaDB/MySQL databases. Create the database by running
 the following command::
 
     kallithea-cli db-create -c my.ini
