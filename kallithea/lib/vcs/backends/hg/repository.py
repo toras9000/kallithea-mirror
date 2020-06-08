@@ -272,7 +272,7 @@ class MercurialRepository(BaseRepository):
             self.get_changeset(rev1)
         self.get_changeset(rev2)
         if path:
-            file_filter = mercurial.match.exact(path)
+            file_filter = mercurial.match.exact([safe_bytes(path)])
         else:
             file_filter = None
 
