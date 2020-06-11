@@ -295,7 +295,7 @@ class TestDiffLib(base.TestController):
             l.append('%(action)-7s %(new_lineno)3s %(old_lineno)3s %(line)r\n' % d)
         s = ''.join(l)
         assert s == r'''
-context ... ... '@@ -51,6 +51,13 @@\n'
+context         '@@ -51,6 +51,13 @@\n'
 unmod    51  51 '<u>\t</u>begin();\n'
 unmod    52  52 '<u>\t</u>\n'
 add      53     '<u>\t</u>int foo;<u class="cr"></u>\n'

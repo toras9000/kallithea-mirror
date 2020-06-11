@@ -107,12 +107,9 @@ def as_html(table_class='code-difftable', line_class='line',
                     'filename': _safe_id(file_info['filename']),
                     'newline_no': change['new_lineno']
                 }
-                cond_old = (change['old_lineno'] != '...' and
-                            change['old_lineno'])
-                cond_new = (change['new_lineno'] != '...' and
-                            change['new_lineno'])
-                no_lineno = (change['old_lineno'] == '...' and
-                             change['new_lineno'] == '...')
+                cond_old = change['old_lineno']
+                cond_new = change['new_lineno']
+                no_lineno = not change['old_lineno'] and not change['new_lineno']
                 if cond_old:
                     anchor_old_id = 'id="%s"' % anchor_old
                 if cond_new:
@@ -587,8 +584,8 @@ def _parse_lines(diff_lines):
                 # skip context only if it's first line
                 if int(gr[0]) > 1:
                     lines.append({
-                        'old_lineno': '...',
-                        'new_lineno': '...',
+                        'old_lineno': '',
+                        'new_lineno': '',
                         'action':     'context',
                         'line':       line,
                     })
@@ -632,8 +629,8 @@ def _parse_lines(diff_lines):
                     # we need to append to lines, since this is not
                     # counted in the line specs of diff
                     lines.append({
-                        'old_lineno':   '...',
-                        'new_lineno':   '...',
+                        'old_lineno':   '',
+                        'new_lineno':   '',
                         'action':       'context',
                         'line':         line,
                     })
