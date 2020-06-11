@@ -89,10 +89,10 @@ def as_html(table_class='code-difftable', line_class='line',
         'table_class': table_class
     })
 
-    for diff in parsed_lines:
-        for line in diff['chunks']:
+    for file_info in parsed_lines:
+        for chunk in file_info['chunks']:
             _html_empty = False
-            for change in line:
+            for change in chunk:
                 _html.append('''<tr class="%(lc)s %(action)s">\n''' % {
                     'lc': line_class,
                     'action': change['action']
@@ -100,12 +100,12 @@ def as_html(table_class='code-difftable', line_class='line',
                 anchor_old_id = ''
                 anchor_new_id = ''
                 anchor_old = "%(filename)s_o%(oldline_no)s" % {
-                    'filename': _safe_id(diff['filename']),
+                    'filename': _safe_id(file_info['filename']),
                     'oldline_no': change['old_lineno']
                 }
-                anchor_new = "%(filename)s_n%(oldline_no)s" % {
-                    'filename': _safe_id(diff['filename']),
-                    'oldline_no': change['new_lineno']
+                anchor_new = "%(filename)s_n%(newline_no)s" % {
+                    'filename': _safe_id(file_info['filename']),
+                    'newline_no': change['new_lineno']
                 }
                 cond_old = (change['old_lineno'] != '...' and
                             change['old_lineno'])
