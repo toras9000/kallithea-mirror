@@ -61,10 +61,6 @@ log = logging.getLogger(__name__)
 # BASE CLASSES
 #==============================================================================
 
-def _hash_key(k):
-    return hashlib.md5(safe_bytes(k)).hexdigest()
-
-
 class BaseDbModel(object):
     """
     Base Model for all classes
