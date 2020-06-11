@@ -70,19 +70,6 @@ def as_html(table_class='code-difftable', line_class='line',
     """
     Return given diff as html table with customized css classes
     """
-    def _link_to_if(condition, label, url):
-        """
-        Generates a link if condition is meet or just the label if not.
-        """
-
-        if condition:
-            return '''<a href="%(url)s" data-pseudo-content="%(label)s"></a>''' % {
-                'url': url,
-                'label': label
-            }
-        else:
-            return label
-
     _html_empty = True
     _html = []
     _html.append('''<table class="%(table_class)s">\n''' % {
@@ -97,50 +84,51 @@ def as_html(table_class='code-difftable', line_class='line',
                     'lc': line_class,
                     'action': change['action']
                 })
-                anchor_old_id = ''
-                anchor_new_id = ''
-                anchor_old = "%(filename)s_o%(oldline_no)s" % {
-                    'filename': _safe_id(file_info['filename']),
-                    'oldline_no': change['old_lineno']
-                }
-                anchor_new = "%(filename)s_n%(newline_no)s" % {
-                    'filename': _safe_id(file_info['filename']),
-                    'newline_no': change['new_lineno']
-                }
-                cond_old = change['old_lineno']
-                cond_new = change['new_lineno']
-                no_lineno = not change['old_lineno'] and not change['new_lineno']
-                if cond_old:
-                    anchor_old_id = 'id="%s"' % anchor_old
-                if cond_new:
-                    anchor_new_id = 'id="%s"' % anchor_new
-                ###########################################################
-                # OLD LINE NUMBER
-                ###########################################################
-                _html.append('''\t<td %(a_id)s class="%(olc)s" %(colspan)s>''' % {
-                    'a_id': anchor_old_id,
-                    'olc': no_lineno_class if no_lineno else old_lineno_class,
-                    'colspan': 'colspan="2"' if no_lineno else ''
-                })
-
-                _html.append('''%(link)s''' % {
-                    'link': _link_to_if(not no_lineno, change['old_lineno'],
-                                        '#%s' % anchor_old)
-                })
-                _html.append('''</td>\n''')
-                ###########################################################
-                # NEW LINE NUMBER
-                ###########################################################
-
-                if not no_lineno:
+                if change['old_lineno'] or change['new_lineno']:
+                    ###########################################################
+                    # OLD LINE NUMBER
+                    ###########################################################
+                    anchor_old = "%(filename)s_o%(oldline_no)s" % {
+                        'filename': _safe_id(file_info['filename']),
+                        'oldline_no': change['old_lineno']
+                    }
+                    anchor_old_id = ''
+                    if change['old_lineno']:
+                        anchor_old_id = 'id="%s"' % anchor_old
+                    _html.append('''\t<td %(a_id)s class="%(olc)s">''' % {
+                        'a_id': anchor_old_id,
+                        'olc': old_lineno_class,
+                    })
+                    _html.append('''<a href="%(url)s" data-pseudo-content="%(label)s"></a>''' % {
+                        'label': change['old_lineno'],
+                        'url': '#%s' % anchor_old,
+                    })
+                    _html.append('''</td>\n''')
+                    ###########################################################
+                    # NEW LINE NUMBER
+                    ###########################################################
+                    anchor_new = "%(filename)s_n%(newline_no)s" % {
+                        'filename': _safe_id(file_info['filename']),
+                        'newline_no': change['new_lineno']
+                    }
+                    anchor_new_id = ''
+                    if change['new_lineno']:
+                        anchor_new_id = 'id="%s"' % anchor_new
                     _html.append('''\t<td %(a_id)s class="%(nlc)s">''' % {
                         'a_id': anchor_new_id,
                         'nlc': new_lineno_class
                     })
-
-                    _html.append('''%(link)s''' % {
-                        'link': _link_to_if(True, change['new_lineno'],
-                                            '#%s' % anchor_new)
+                    _html.append('''<a href="%(url)s" data-pseudo-content="%(label)s"></a>''' % {
+                        'label': change['new_lineno'],
+                        'url': '#%s' % anchor_new,
+                    })
+                    _html.append('''</td>\n''')
+                else:
+                    ###########################################################
+                    # NO LINE NUMBER
+                    ###########################################################
+                    _html.append('''\t<td class="%(olc)s" colspan="2">''' % {
+                        'olc': no_lineno_class,
                     })
                     _html.append('''</td>\n''')
                 ###########################################################
