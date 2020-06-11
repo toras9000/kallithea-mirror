@@ -932,7 +932,7 @@ def gravatar(email_address, cls='', size=30):
     else:
         # if src is empty then there was no gravatar, so we use a font icon
         html = ("""<i class="icon-user {cls}" style="font-size: {size}px;"></i>"""
-            .format(cls=cls, size=size, src=src))
+            .format(cls=cls, size=size))
 
     return literal(html)
 
