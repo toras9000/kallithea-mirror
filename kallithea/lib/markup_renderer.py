@@ -74,13 +74,13 @@ class MarkupRenderer(object):
 
         :param text:
         """
-        from hashlib import md5
+        from hashlib import sha1
 
         # Extract pre blocks.
         extractions = {}
 
         def pre_extraction_callback(matchobj):
-            digest = md5(matchobj.group(0)).hexdigest()
+            digest = sha1(matchobj.group(0)).hexdigest()
             extractions[digest] = matchobj.group(0)
             return "{gfm-extraction-%s}" % digest
         pattern = re.compile(r'<pre>.*?</pre>', re.MULTILINE | re.DOTALL)
