@@ -204,6 +204,14 @@ dynamically generated pages from a relatively slow Python process. Kallithea is
 also often used inside organizations with a limited amount of users and thus no
 continuous hammering from the internet.
 
+.. note::
+   Kallithea, the libraries it uses, and Python itself do in several places use
+   simple caching in memory. Caches and memory are not always released in a way
+   that is suitable for long-running processes. They might appear to be leaking
+   memory. The worker processes should thus regularly be restarted - for
+   example after 1000 requests and/or one hour. This can usually be done by the
+   web server or the tool used for running it as a system service.
+
 
 .. _Python: http://www.python.org/
 .. _Gunicorn: http://gunicorn.org/
