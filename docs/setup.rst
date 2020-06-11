@@ -54,7 +54,9 @@ path to the root).
           but when trying to do a push it will fail with permission
           denied errors unless it has write access.
 
-Finally, prepare the front-end by running::
+Finally, the front-end files must be prepared. This requires ``npm`` version 6
+or later, which needs ``node.js`` (version 12 or later). Prepare the front-end
+by running::
 
     kallithea-cli front-end-build
 

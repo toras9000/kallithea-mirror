@@ -141,9 +141,11 @@ installed.
   but build the Kallithea package itself locally instead of downloading it.)
 
 .. note::
-   Kallithea includes front-end code that needs to be processed first.
-   The tool npm_ is used to download external dependencies and orchestrate the
-   processing. The ``npm`` binary must thus be available.
+   Kallithea includes front-end code that needs to be processed to prepare
+   static files that can be served at run time and used on the client side. The
+   tool npm_ is used to download external dependencies and orchestrate the
+   processing. The ``npm`` binary must thus be available at install time but is
+   not used at run time.
 
 
 Web server
