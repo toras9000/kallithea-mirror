@@ -77,6 +77,7 @@ def as_html(table_class='code-difftable', line_class='line',
     })
 
     for file_info in parsed_lines:
+        count_no_lineno = 0  # counter to allow comments on lines without new/old line numbers
         for chunk in file_info['chunks']:
             _html_empty = False
             for change in chunk:
@@ -127,7 +128,13 @@ def as_html(table_class='code-difftable', line_class='line',
                     ###########################################################
                     # NO LINE NUMBER
                     ###########################################################
-                    _html.append('''\t<td class="%(olc)s" colspan="2">''' % {
+                    anchor = "%(filename)s_%(count_no_lineno)s" % {
+                        'filename': _safe_id(file_info['filename']),
+                        'count_no_lineno': count_no_lineno,
+                    }
+                    count_no_lineno += 1
+                    _html.append('''\t<td id="%(anchor)s" class="%(olc)s" colspan="2">''' % {
+                        'anchor': anchor,
                         'olc': no_lineno_class,
                     })
                     _html.append('''</td>\n''')
