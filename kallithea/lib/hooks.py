@@ -218,6 +218,19 @@ def log_create_user(user_dict, created_by, **kwargs):
         callback(created_by=created_by, **user_dict)
 
 
+def log_create_pullrequest(pullrequest_dict, created_by, **kwargs):
+    """
+    Post create pull request hook.
+
+    :param pullrequest_dict: dict dump of pull request object
+    """
+    from kallithea import EXTENSIONS
+    callback = getattr(EXTENSIONS, 'CREATE_PULLREQUEST_HOOK', None)
+    if callable(callback):
+        return callback(created_by=created_by, **pullrequest_dict)
+
+    return 0
+
 def log_delete_repository(repository_dict, deleted_by, **kwargs):
     """
     Post delete repository Hook.

@@ -104,6 +104,28 @@ def CREATE_USER_HOOK(*args, **kwargs):
 
 
 #==============================================================================
+# POST CREATE PULLREQUEST HOOK
+#==============================================================================
+# this function will be executed after a pull request is created
+def CREATE_PULLREQUEST_HOOK(*args, **kwargs):
+    """
+    Post create pull request HOOK
+    kwargs available:
+      :param pull_request_id:
+      :param title:
+      :param description:
+      :param created_on:
+      :param org_repo_id:
+      :param org_ref:
+      :param other_repo_id:
+      :param other_ref:
+      :param created_by:
+    There are other fields in 'class PullRequest' (kallithea/model/db.py) which
+    may or may not be useful for this hook.
+    """
+
+
+#==============================================================================
 # POST DELETE REPOSITORY HOOK
 #==============================================================================
 # this function will be executed after each repository deletion

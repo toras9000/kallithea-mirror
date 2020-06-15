@@ -33,6 +33,7 @@ from tg import request
 from tg.i18n import ugettext as _
 
 from kallithea.lib import helpers as h
+from kallithea.lib.hooks import log_create_pullrequest
 from kallithea.lib.utils2 import ascii_bytes, extract_mentioned_users
 from kallithea.model.db import ChangesetStatus, PullRequest, PullRequestReviewer, User
 from kallithea.model.meta import Session
@@ -295,6 +296,8 @@ class CreatePullRequestAction(object):
 
         mention_recipients = extract_mentioned_users(self.description)
         PullRequestModel().add_reviewers(created_by, pr, self.reviewers, mention_recipients)
+
+        log_create_pullrequest(pr.get_dict(), created_by)
 
         return pr
 
