@@ -2163,6 +2163,7 @@ class PullRequestReviewer(Base, BaseDbModel):
     __tablename__ = 'pull_request_reviewers'
     __table_args__ = (
         Index('pull_request_reviewers_user_id_idx', 'user_id'),
+        UniqueConstraint('pull_request_id', 'user_id'),
         _table_args_default_dict,
     )
 
