@@ -167,7 +167,6 @@ class BaseDbModel(object):
 
 _table_args_default_dict = {'extend_existing': True,
                             'mysql_engine': 'InnoDB',
-                            'mysql_charset': 'utf8mb4',
                             'sqlite_autoincrement': True,
                            }
 

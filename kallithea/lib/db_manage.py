@@ -97,7 +97,7 @@ class DbManage(object):
                 engine = sqlalchemy.create_engine(url)
                 with engine.connect() as conn:
                     conn.execute('DROP DATABASE IF EXISTS `%s`' % database)
-                    conn.execute('CREATE DATABASE `%s`' % database)
+                    conn.execute('CREATE DATABASE `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci' % database)
             elif url.drivername == 'postgresql':
                 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
                 url.database = 'postgres'  # connect to the system database (as the real one might not exist)
