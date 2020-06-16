@@ -59,11 +59,6 @@ def _update_with_GET(params, GET):
         params[k] += GET.getall(k)
 
 
-def anchor_url(revision, path, GET):
-    fid = h.FID(revision, path)
-    return h.url.current(anchor=fid, **dict(GET))
-
-
 def get_ignore_ws(fid, GET):
     ig_ws_global = GET.get('ignorews')
     ig_ws = [k for k in GET.getall(fid) if k.startswith('WS')]
@@ -292,7 +287,6 @@ class ChangesetController(BaseRepoController):
 
     def _index(self, revision, method):
         c.pull_request = None
-        c.anchor_url = anchor_url
         c.ignorews_url = _ignorews_url
         c.context_url = _context_url
         c.fulldiff = request.GET.get('fulldiff') # for reporting number of changed files

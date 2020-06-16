@@ -39,7 +39,7 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPFound, HTTPNotFound
 
 from kallithea.config.routing import url
-from kallithea.controllers.changeset import _context_url, _ignorews_url, anchor_url, get_ignore_ws, get_line_ctx
+from kallithea.controllers.changeset import _context_url, _ignorews_url, get_ignore_ws, get_line_ctx
 from kallithea.lib import diffs
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
@@ -567,7 +567,6 @@ class FilesController(BaseRepoController):
         c.f_path = f_path
         c.big_diff = False
         fulldiff = request.GET.get('fulldiff')
-        c.anchor_url = anchor_url
         c.ignorews_url = _ignorews_url
         c.context_url = _context_url
         c.changes = OrderedDict()
