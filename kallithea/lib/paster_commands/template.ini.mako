@@ -467,6 +467,7 @@ sqlalchemy.url = mysql://user:pass@localhost/kallithea?charset=utf8
 %else:
 #sqlalchemy.url = mysql://user:pass@localhost/kallithea?charset=utf8
 %endif
+<%text>##</%text> Note: the mysql:// prefix should also be used for MariaDB
 
 sqlalchemy.pool_recycle = 3600
 

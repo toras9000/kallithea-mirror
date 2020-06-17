@@ -329,7 +329,7 @@ class MercurialChangeset(BaseChangeset):
             #vals = url,rev,type
             loc = vals[0]
             cs = vals[1]
-            dirnodes.append(SubModuleNode(k, url=loc, changeset=cs,
+            dirnodes.append(SubModuleNode(safe_str(k), url=safe_str(loc), changeset=cs,
                                           alias=als))
         nodes = dirnodes + filenodes
         for node in nodes:

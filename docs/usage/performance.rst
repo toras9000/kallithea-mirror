@@ -40,7 +40,7 @@ SQLite is a good option when having a small load on the system. But due to
 locking issues with SQLite, it is not recommended to use it for larger
 deployments.
 
-Switching to MySQL or PostgreSQL will result in an immediate performance
+Switching to PostgreSQL or MariaDB/MySQL will result in an immediate performance
 increase. A tool like SQLAlchemyGrate_ can be used for migrating to another
 database platform.
 

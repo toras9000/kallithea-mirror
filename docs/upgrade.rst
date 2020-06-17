@@ -51,7 +51,7 @@ file.
 If using PostgreSQL, please consult the documentation for the ``pg_dump``
 utility.
 
-If using MySQL, please consult the documentation for the ``mysqldump``
+If using MariaDB/MySQL, please consult the documentation for the ``mysqldump``
 utility.
 
 Look for ``sqlalchemy.url`` in your configuration file to determine

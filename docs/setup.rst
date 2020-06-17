@@ -24,7 +24,7 @@ Next, you need to create the databases used by Kallithea. It is recommended to
 use PostgreSQL or SQLite (default). If you choose a database other than the
 default, ensure you properly adjust the database URL in your ``my.ini``
 configuration file to use this other database. Kallithea currently supports
-PostgreSQL, SQLite and MySQL databases. Create the database by running
+PostgreSQL, SQLite and MariaDB/MySQL databases. Create the database by running
 the following command::
 
     kallithea-cli db-create -c my.ini
@@ -54,7 +54,9 @@ path to the root).
           but when trying to do a push it will fail with permission
           denied errors unless it has write access.
 
-Finally, prepare the front-end by running::
+Finally, the front-end files must be prepared. This requires ``npm`` version 6
+or later, which needs ``node.js`` (version 12 or later). Prepare the front-end
+by running::
 
     kallithea-cli front-end-build
 

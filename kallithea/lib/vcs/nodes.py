@@ -603,4 +603,4 @@ class SubModuleNode(Node):
         then only last part is returned.
         """
         org = self.path.rstrip('/').rsplit('/', 1)[-1]
-        return '%s @ %s' % (org, self.changeset.short_id)
+        return '%s @ %s' % (org, safe_str(self.changeset.short_id))

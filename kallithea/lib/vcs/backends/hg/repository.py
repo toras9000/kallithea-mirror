@@ -230,7 +230,7 @@ class MercurialRepository(BaseRepository):
             return {}
 
         return OrderedDict(sorted(
-            ((safe_str(n), ascii_str(h)) for n, h in self._repo._bookmarks.items()),
+            ((safe_str(n), ascii_str(mercurial.node.hex(h))) for n, h in self._repo._bookmarks.items()),
             reverse=True,
             key=lambda x: x[0],  # sort by name
         ))
