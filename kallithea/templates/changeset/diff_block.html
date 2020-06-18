@@ -70,7 +70,7 @@
                 </div>
                 <div class="pull-right">
                     ${_('Show inline comments')}
-                    ${h.checkbox('checkbox-show-inline-' + id_fid, checked="checked",class_="show-inline-comments",**{'data-id_for':id_fid})}
+                    ${h.checkbox('checkbox-show-inline-' + id_fid, checked="checked",class_="show-inline-comments",**{'data-for':id_fid})}
                 </div>
         </div>
         <div class="no-padding panel-body" data-f_path="${cs_filename}">
@@ -137,7 +137,7 @@ $(document).ready(function(){
         if(target == null){
             target = this;
         }
-        var boxid = $(target).data('id_for');
+        var boxid = $(target).data('for');
         if(target.checked){
             $('#{0} .inline-comments'.format(boxid)).show();
         }else{
