@@ -70,7 +70,7 @@ def get_ignore_ws(fid, GET):
     return ig_ws_global
 
 
-def _ignorews_url(GET, fileid=None):
+def _ignorews_url(GET, fileid=None, anchor=None):
     fileid = str(fileid) if fileid else None
     params = defaultdict(list)
     _update_with_GET(params, GET)
@@ -96,7 +96,7 @@ def _ignorews_url(GET, fileid=None):
     if ln_ctx:
         params[ctx_key] += [ctx_val]
 
-    params['anchor'] = fileid
+    params['anchor'] = anchor
     icon = h.literal('<i class="icon-strike"></i>')
     return h.link_to(icon, h.url.current(**params), title=lbl, **{'data-toggle': 'tooltip'})
 
@@ -122,7 +122,7 @@ def get_line_ctx(fid, GET):
         return 3
 
 
-def _context_url(GET, fileid=None):
+def _context_url(GET, fileid=None, anchor=None):
     """
     Generates url for context lines
 
@@ -156,7 +156,7 @@ def _context_url(GET, fileid=None):
 
     lbl = _('Increase diff context to %(num)s lines') % {'num': ln_ctx}
 
-    params['anchor'] = fileid
+    params['anchor'] = anchor
     icon = h.literal('<i class="icon-sort"></i>')
     return h.link_to(icon, h.url.current(**params), title=lbl, **{'data-toggle': 'tooltip'})
 
