@@ -351,11 +351,11 @@ class ChangesetController(BaseRepoController):
 
             cs2 = changeset.raw_id
             cs1 = changeset.parents[0].raw_id if changeset.parents else EmptyChangeset().raw_id
-            context_lcl = get_line_ctx('', request.GET)
-            ign_whitespace_lcl = get_ignore_ws('', request.GET)
+            diff_context_size = get_line_ctx('', request.GET)
+            ignore_whitespace_diff = get_ignore_ws('', request.GET)
 
             raw_diff = diffs.get_diff(c.db_repo_scm_instance, cs1, cs2,
-                ignore_whitespace=ign_whitespace_lcl, context=context_lcl)
+                ignore_whitespace=ignore_whitespace_diff, context=diff_context_size)
             diff_limit = None if c.fulldiff else self.cut_off_limit
             file_diff_data = []
             if method == 'show':

@@ -212,8 +212,8 @@ class CompareController(BaseRepoController):
         # set callbacks for generating markup for icons
         c.ignorews_url = _ignorews_url
         c.context_url = _context_url
-        ignore_whitespace = request.GET.get('ignorews') == '1'
-        line_context = safe_int(request.GET.get('context'), 3)
+        ignore_whitespace_diff = request.GET.get('ignorews') == '1'
+        diff_context_size = safe_int(request.GET.get('context'), 3)
 
         c.a_rev = self._get_ref_rev(c.a_repo, org_ref_type, org_ref_name,
             returnempty=True)
@@ -275,8 +275,8 @@ class CompareController(BaseRepoController):
         log.debug('running diff between %s and %s in %s',
                   rev1, c.cs_rev, org_repo.scm_instance.path)
         raw_diff = diffs.get_diff(org_repo.scm_instance, rev1=rev1, rev2=c.cs_rev,
-                                      ignore_whitespace=ignore_whitespace,
-                                      context=line_context)
+                                      ignore_whitespace=ignore_whitespace_diff,
+                                      context=diff_context_size)
 
         diff_processor = diffs.DiffProcessor(raw_diff, diff_limit=diff_limit)
         c.limited_diff = diff_processor.limited_diff

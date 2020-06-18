@@ -569,8 +569,8 @@ class PullrequestsController(BaseRepoController):
         c.cs_comments = c.cs_repo.get_comments(raw_ids)
         c.cs_statuses = c.cs_repo.statuses(raw_ids)
 
-        ignore_whitespace = request.GET.get('ignorews') == '1'
-        line_context = safe_int(request.GET.get('context'), 3)
+        ignore_whitespace_diff = request.GET.get('ignorews') == '1'
+        diff_context_size = safe_int(request.GET.get('context'), 3)
         c.ignorews_url = _ignorews_url
         c.context_url = _context_url
         fulldiff = request.GET.get('fulldiff')
@@ -581,7 +581,7 @@ class PullrequestsController(BaseRepoController):
                   c.a_rev, c.cs_rev, org_scm_instance.path)
         try:
             raw_diff = diffs.get_diff(org_scm_instance, rev1=c.a_rev, rev2=c.cs_rev,
-                                      ignore_whitespace=ignore_whitespace, context=line_context)
+                                      ignore_whitespace=ignore_whitespace_diff, context=diff_context_size)
         except ChangesetDoesNotExistError:
             raw_diff = safe_bytes(_("The diff can't be shown - the PR revisions could not be found."))
         diff_processor = diffs.DiffProcessor(raw_diff, diff_limit=diff_limit)

@@ -558,8 +558,8 @@ class FilesController(BaseRepoController):
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
     def diff(self, repo_name, f_path):
-        ignore_whitespace = request.GET.get('ignorews') == '1'
-        line_context = safe_int(request.GET.get('context'), 3)
+        ignore_whitespace_diff = request.GET.get('ignorews') == '1'
+        diff_context_size = safe_int(request.GET.get('context'), 3)
         diff2 = request.GET.get('diff2', '')
         diff1 = request.GET.get('diff1', '') or diff2
         c.action = request.GET.get('diff')
@@ -623,8 +623,8 @@ class FilesController(BaseRepoController):
 
         if c.action == 'download':
             raw_diff = diffs.get_gitdiff(node1, node2,
-                                      ignore_whitespace=ignore_whitespace,
-                                      context=line_context)
+                                      ignore_whitespace=ignore_whitespace_diff,
+                                      context=diff_context_size)
             diff_name = '%s_vs_%s.diff' % (diff1, diff2)
             response.content_type = 'text/plain'
             response.content_disposition = (
@@ -634,22 +634,21 @@ class FilesController(BaseRepoController):
 
         elif c.action == 'raw':
             raw_diff = diffs.get_gitdiff(node1, node2,
-                                      ignore_whitespace=ignore_whitespace,
-                                      context=line_context)
+                                      ignore_whitespace=ignore_whitespace_diff,
+                                      context=diff_context_size)
             response.content_type = 'text/plain'
             return raw_diff
 
         else:
             fid = h.FID(diff2, node2.path)
-            line_context_lcl = get_line_ctx(fid, request.GET)
-            ign_whitespace_lcl = get_ignore_ws(fid, request.GET)
-
+            diff_context_size = get_line_ctx(fid, request.GET)
+            ignore_whitespace_diff = get_ignore_ws(fid, request.GET)
             diff_limit = None if fulldiff else self.cut_off_limit
             c.a_rev, c.cs_rev, a_path, diff, st, op = diffs.wrapped_diff(filenode_old=node1,
                                          filenode_new=node2,
                                          diff_limit=diff_limit,
-                                         ignore_whitespace=ign_whitespace_lcl,
-                                         line_context=line_context_lcl,
+                                         ignore_whitespace=ignore_whitespace_diff,
+                                         line_context=diff_context_size,
                                          enable_comments=False)
             c.file_diff_data = [(fid, fid, op, a_path, node2.path, diff, st)]
 
