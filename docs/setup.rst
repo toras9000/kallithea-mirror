@@ -8,6 +8,11 @@ Setup
 Setting up Kallithea
 --------------------
 
+Some further details to the steps mentioned in the overview.
+
+Create low level configuration file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 First, you will need to create a Kallithea configuration file. Run the
 following command to do so::
 
@@ -19,6 +24,9 @@ proxy port, email settings, usage of static files, cache, Celery
 settings, and logging. Extra settings can be specified like::
 
     kallithea-cli config-create my.ini host=8.8.8.8 "[handler_console]" formatter=color_formatter
+
+Populate the database
+^^^^^^^^^^^^^^^^^^^^^
 
 Next, you need to create the databases used by Kallithea. It is recommended to
 use PostgreSQL or SQLite (default). If you choose a database other than the
@@ -54,11 +62,17 @@ path to the root).
           but when trying to do a push it will fail with permission
           denied errors unless it has write access.
 
+Prepare front-end files
+^^^^^^^^^^^^^^^^^^^^^^^
+
 Finally, the front-end files must be prepared. This requires ``npm`` version 6
 or later, which needs ``node.js`` (version 12 or later). Prepare the front-end
 by running::
 
     kallithea-cli front-end-build
+
+Running
+^^^^^^^
 
 You are now ready to use Kallithea. To run it simply execute::
 

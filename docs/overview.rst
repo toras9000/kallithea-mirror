@@ -30,13 +30,17 @@ installing Kallithea.
     database schema and insert the most basic information: the location of the
     repository store and an initial local admin user.
 
-5. **Configure the web server.**
+5. **Prepare front-end files**
+    Some front-end files must be fetched or created using ``npm`` tooling so
+    they can be served to the client as static files.
+
+6. **Configure the web server.**
     The web server must invoke the WSGI entrypoint for the Kallithea software
     using the ``.ini`` file (and thus the database). This makes the web
     application available so the local admin user can log in and tweak the
     configuration further.
 
-6. **Configure users.**
+7. **Configure users.**
     The initial admin user can create additional local users, or configure how
     users can be created and authenticated from other user directories.
 
