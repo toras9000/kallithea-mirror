@@ -37,11 +37,11 @@ the following command::
 
     kallithea-cli db-create -c my.ini
 
-This will prompt you for a "root" path. This "root" path is the location where
-Kallithea will store all of its repositories on the current machine. After
-entering this "root" path ``db-create`` will also prompt you for a username
-and password for the initial admin account which ``db-create`` sets
-up for you.
+This will first prompt you for a "root" path. This "root" path is the location
+where Kallithea will store all of its repositories on the current machine. This
+location must be writable for the running Kallithea application. Next,
+``db-create`` will prompt you for a username and password for the initial admin
+account it sets up for you.
 
 The ``db-create`` values can also be given on the command line.
 Example::
@@ -56,11 +56,6 @@ repositories Kallithea will add all of the repositories at the chosen
 location to its database.  (Note: make sure you specify the correct
 path to the root).
 
-.. note:: the given path for Mercurial_ repositories **must** be write
-          accessible for the application. It's very important since
-          the Kallithea web interface will work without write access,
-          but when trying to do a push it will fail with permission
-          denied errors unless it has write access.
 
 Prepare front-end files
 ^^^^^^^^^^^^^^^^^^^^^^^
