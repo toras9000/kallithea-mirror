@@ -72,7 +72,7 @@ class DbManage(object):
             init_model(engine)
             self.sa = Session()
 
-    def create_tables(self, override=False):
+    def create_tables(self):
         """
         Create a auth database
         """
@@ -110,8 +110,7 @@ class DbManage(object):
                 # known to work on SQLite - possibly not on other databases with strong referential integrity
                 Base.metadata.drop_all()
 
-        checkfirst = not override
-        Base.metadata.create_all(checkfirst=checkfirst)
+        Base.metadata.create_all(checkfirst=False)
 
         # Create an Alembic configuration and generate the version table,
         # "stamping" it with the most recent Alembic migration revision, to
