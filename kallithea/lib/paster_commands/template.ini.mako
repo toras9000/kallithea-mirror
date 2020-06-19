@@ -458,14 +458,14 @@ sqlalchemy.url = sqlite:///%(here)s/kallithea.db?timeout=60
 #sqlalchemy.url = sqlite:///%(here)s/kallithea.db?timeout=60
 %endif
 %if database_engine == 'postgres':
-sqlalchemy.url = postgresql://user:pass@localhost/kallithea
+sqlalchemy.url = postgresql://kallithea:password@localhost/kallithea
 %else:
-#sqlalchemy.url = postgresql://user:pass@localhost/kallithea
+#sqlalchemy.url = postgresql://kallithea:password@localhost/kallithea
 %endif
 %if database_engine == 'mysql':
-sqlalchemy.url = mysql://user:pass@localhost/kallithea?charset=utf8
+sqlalchemy.url = mysql://kallithea:password@localhost/kallithea?charset=utf8
 %else:
-#sqlalchemy.url = mysql://user:pass@localhost/kallithea?charset=utf8
+#sqlalchemy.url = mysql://kallithea:password@localhost/kallithea?charset=utf8
 %endif
 <%text>##</%text> Note: the mysql:// prefix should also be used for MariaDB
 

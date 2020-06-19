@@ -13,27 +13,55 @@ Some further details to the steps mentioned in the overview.
 Create low level configuration file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-First, you will need to create a Kallithea configuration file. Run the
-following command to do so::
+First, you will need to create a Kallithea configuration file. The
+configuration file is a ``.ini`` file that contains various low level settings
+for Kallithea, e.g. configuration of how to use database, web server, email,
+and logging.
 
-    kallithea-cli config-create my.ini
+Run the following command to create the file ``my.ini`` in the current
+directory::
 
-This will create the file ``my.ini`` in the current directory. This
-configuration file contains the various settings for Kallithea, e.g.
-proxy port, email settings, usage of static files, cache, Celery
-settings, and logging. Extra settings can be specified like::
+    kallithea-cli config-create my.ini http_server=waitress
+
+To get a good starting point for your configuration, specify the http server
+you intend to use. It can be ``waitress``, ``gearbox``, ``gevent``,
+``gunicorn``, or ``uwsgi``. (Apache ``mod_wsgi`` will not use this
+configuration file, and it is fine to keep the default http_server configuration
+unused. ``mod_wsgi`` is configured using ``httpd.conf`` directives and a WSGI
+wrapper script.)
+
+Extra custom settings can be specified like::
 
     kallithea-cli config-create my.ini host=8.8.8.8 "[handler_console]" formatter=color_formatter
 
 Populate the database
 ^^^^^^^^^^^^^^^^^^^^^
 
-Next, you need to create the databases used by Kallithea. It is recommended to
-use PostgreSQL or SQLite (default). If you choose a database other than the
-default, ensure you properly adjust the database URL in your ``my.ini``
-configuration file to use this other database. Kallithea currently supports
-PostgreSQL, SQLite and MariaDB/MySQL databases. Create the database by running
-the following command::
+Next, you need to create the databases used by Kallithea. Kallithea currently
+supports PostgreSQL, SQLite and MariaDB/MySQL databases. It is recommended to
+start out using SQLite (the default) and move to PostgreSQL if it becomes a
+bottleneck or to get a "proper" database. MariaDB/MySQL is also supported.
+
+For PostgreSQL, run ``pip install psycopg2`` to get the database driver. Make
+sure the PostgreSQL server is initialized and running. Make sure you have a
+database user with password authentication with permissions to create databases
+- for example by running::
+
+    sudo -u postgres createuser 'kallithea' --pwprompt --createdb
+
+For MariaDB/MySQL, run ``pip install mysqlclient`` to get the ``MySQLdb``
+database driver. Make sure the database server is initialized and running. Make
+sure you have a database user with password authentication with permissions to
+create the database - for example by running::
+
+    echo 'CREATE USER "kallithea"@"localhost" IDENTIFIED BY "password"' | sudo -u mysql mysql
+    echo 'GRANT ALL PRIVILEGES ON `kallithea`.* TO "kallithea"@"localhost"' | sudo -u mysql mysql
+
+Check and adjust ``sqlalchemy.url`` in your ``my.ini`` configuration file to use
+this database.
+
+Create the database, tables, and initial content by running the following
+command::
 
     kallithea-cli db-create -c my.ini
 
@@ -56,7 +84,6 @@ repositories Kallithea will add all of the repositories at the chosen
 location to its database.  (Note: make sure you specify the correct
 path to the root).
 
-
 Prepare front-end files
 ^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -69,7 +96,8 @@ by running::
 Running
 ^^^^^^^
 
-You are now ready to use Kallithea. To run it simply execute::
+You are now ready to use Kallithea. To run it using a gearbox web server,
+simply execute::
 
     gearbox serve -c my.ini
 
