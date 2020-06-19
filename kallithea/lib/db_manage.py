@@ -96,16 +96,16 @@ class DbManage(object):
                 url.database = None  # don't connect to the database (it might not exist)
                 engine = sqlalchemy.create_engine(url)
                 with engine.connect() as conn:
-                    conn.execute('DROP DATABASE IF EXISTS ' + database)
-                    conn.execute('CREATE DATABASE ' + database)
+                    conn.execute('DROP DATABASE IF EXISTS `%s`' % database)
+                    conn.execute('CREATE DATABASE `%s`' % database)
             elif url.drivername == 'postgresql':
                 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
                 url.database = 'postgres'  # connect to the system database (as the real one might not exist)
                 engine = sqlalchemy.create_engine(url)
                 with engine.connect() as conn:
                     conn.connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-                    conn.execute('DROP DATABASE IF EXISTS ' + database)
-                    conn.execute('CREATE DATABASE ' + database)
+                    conn.execute('DROP DATABASE IF EXISTS "%s"' % database)
+                    conn.execute('CREATE DATABASE "%s"' % database)
             else:
                 # known to work on SQLite - possibly not on other databases with strong referential integrity
                 Base.metadata.drop_all()
