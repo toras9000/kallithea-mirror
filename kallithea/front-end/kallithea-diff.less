@@ -62,6 +62,7 @@ BIN_FILENODE = 6
   border-collapse: collapse;
   border-radius: 0px !important;
   width: 100%;
+  table-layout: fixed;
 
   /* line coloring */
   .context {
@@ -107,9 +108,7 @@ BIN_FILENODE = 6
 
   /* line number columns */
   td.lineno {
-    padding-left: 2px;
-    padding-right: 2px !important;
-    width: 30px;
+    width: 4em;
     border-right: 1px solid @panel-default-border !important;
     vertical-align: middle !important;
     font-size: 11px;
@@ -117,17 +116,14 @@ BIN_FILENODE = 6
     line-height: normal;
     text-align: center;
   }
-  td.lineno.new {
-    text-align: right;
-  }
-  td.lineno.old {
-    text-align: right;
+  td.lineno[colspan="2"] {
+    width: 8em;
   }
   td.lineno a {
     color: #aaa !important;
-    padding-left: 6px;
-    padding-right: 6px;
-    display: block;
+    display: inline-block;
+    min-width: 2em;
+    text-align: right;
   }
   tr.line:hover td.lineno a {
     color: #333 !important;
