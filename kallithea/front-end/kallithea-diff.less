@@ -105,31 +105,31 @@ BIN_FILENODE = 6
     border-color: rgba(0, 0, 0, 0.3);
   }
 
-  /* line numbers */
-  .lineno {
+  /* line number columns */
+  td.lineno {
     padding-left: 2px;
     padding-right: 2px !important;
     width: 30px;
     border-right: 1px solid @panel-default-border !important;
     vertical-align: middle !important;
-    text-align: center;
-  }
-  .lineno.new {
-    text-align: right;
-  }
-  .lineno.old {
-    text-align: right;
-  }
-  .lineno a {
-    color: #aaa !important;
     font-size: 11px;
     font-family: @font-family-monospace;
     line-height: normal;
+    text-align: center;
+  }
+  td.lineno.new {
+    text-align: right;
+  }
+  td.lineno.old {
+    text-align: right;
+  }
+  td.lineno a {
+    color: #aaa !important;
     padding-left: 6px;
     padding-right: 6px;
     display: block;
   }
-  .line:hover .lineno a {
+  tr.line:hover td.lineno a {
     color: #333 !important;
   }
   /** CODE **/
