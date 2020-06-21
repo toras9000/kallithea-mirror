@@ -39,14 +39,13 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPFound, HTTPNotFound
 
 from kallithea.config.routing import url
-from kallithea.controllers.changeset import _context_url, _ignorews_url, get_ignore_ws, get_line_ctx
 from kallithea.lib import diffs
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController, jsonify, render
 from kallithea.lib.exceptions import NonRelativePathError
 from kallithea.lib.utils import action_logger
-from kallithea.lib.utils2 import asbool, convert_line_endings, detect_mode, safe_int, safe_str
+from kallithea.lib.utils2 import asbool, convert_line_endings, detect_mode, safe_str
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.conf import settings
 from kallithea.lib.vcs.exceptions import (ChangesetDoesNotExistError, ChangesetError, EmptyRepositoryError, ImproperArchiveTypeError, NodeAlreadyExistsError,
@@ -558,8 +557,8 @@ class FilesController(BaseRepoController):
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
     def diff(self, repo_name, f_path):
-        ignore_whitespace_diff = request.GET.get('ignorews') == '1'
-        diff_context_size = safe_int(request.GET.get('context'), 3)
+        ignore_whitespace_diff = h.get_ignore_whitespace_diff(request.GET)
+        diff_context_size = h.get_diff_context_size(request.GET)
         diff2 = request.GET.get('diff2', '')
         diff1 = request.GET.get('diff1', '') or diff2
         c.action = request.GET.get('diff')
@@ -567,8 +566,6 @@ class FilesController(BaseRepoController):
         c.f_path = f_path
         c.big_diff = False
         fulldiff = request.GET.get('fulldiff')
-        c.ignorews_url = _ignorews_url
-        c.context_url = _context_url
         c.changes = OrderedDict()
         c.changes[diff2] = []
 
@@ -641,8 +638,6 @@ class FilesController(BaseRepoController):
 
         else:
             fid = h.FID(diff2, node2.path)
-            diff_context_size = get_line_ctx(fid, request.GET)
-            ignore_whitespace_diff = get_ignore_ws(fid, request.GET)
             diff_limit = None if fulldiff else self.cut_off_limit
             c.a_rev, c.cs_rev, a_path, diff, st, op = diffs.wrapped_diff(filenode_old=node1,
                                          filenode_new=node2,
@@ -651,7 +646,6 @@ class FilesController(BaseRepoController):
                                          line_context=diff_context_size,
                                          enable_comments=False)
             c.file_diff_data = [(fid, fid, op, a_path, node2.path, diff, st)]
-
             return render('files/file_diff.html')
 
     @LoginRequired(allow_default_user=True)

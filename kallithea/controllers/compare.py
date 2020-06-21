@@ -37,13 +37,12 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest, HTTPFound, HTTPNotFound
 
 from kallithea.config.routing import url
-from kallithea.controllers.changeset import _context_url, _ignorews_url
 from kallithea.lib import diffs
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController, render
 from kallithea.lib.graphmod import graph_data
-from kallithea.lib.utils2 import ascii_bytes, ascii_str, safe_bytes, safe_int
+from kallithea.lib.utils2 import ascii_bytes, ascii_str, safe_bytes
 from kallithea.model.db import Repository
 
 
@@ -208,12 +207,8 @@ class CompareController(BaseRepoController):
             other_repo=c.a_repo.repo_name,
             other_ref_type=org_ref_type, other_ref_name=org_ref_name,
             merge=merge or '')
-
-        # set callbacks for generating markup for icons
-        c.ignorews_url = _ignorews_url
-        c.context_url = _context_url
-        ignore_whitespace_diff = request.GET.get('ignorews') == '1'
-        diff_context_size = safe_int(request.GET.get('context'), 3)
+        ignore_whitespace_diff = h.get_ignore_whitespace_diff(request.GET)
+        diff_context_size = h.get_diff_context_size(request.GET)
 
         c.a_rev = self._get_ref_rev(c.a_repo, org_ref_type, org_ref_name,
             returnempty=True)

@@ -36,7 +36,7 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest, HTTPForbidden, HTTPFound, HTTPNotFound
 
 from kallithea.config.routing import url
-from kallithea.controllers.changeset import _context_url, _ignorews_url, create_cs_pr_comment, delete_cs_pr_comment
+from kallithea.controllers.changeset import create_cs_pr_comment, delete_cs_pr_comment
 from kallithea.lib import diffs
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
@@ -569,10 +569,8 @@ class PullrequestsController(BaseRepoController):
         c.cs_comments = c.cs_repo.get_comments(raw_ids)
         c.cs_statuses = c.cs_repo.statuses(raw_ids)
 
-        ignore_whitespace_diff = request.GET.get('ignorews') == '1'
-        diff_context_size = safe_int(request.GET.get('context'), 3)
-        c.ignorews_url = _ignorews_url
-        c.context_url = _context_url
+        ignore_whitespace_diff = h.get_ignore_whitespace_diff(request.GET)
+        diff_context_size = h.get_diff_context_size(request.GET)
         fulldiff = request.GET.get('fulldiff')
         diff_limit = None if fulldiff else self.cut_off_limit
 

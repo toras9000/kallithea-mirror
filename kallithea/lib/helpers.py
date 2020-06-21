@@ -213,12 +213,48 @@ def FID(raw_id, path):
     """
     Creates a unique ID for filenode based on it's hash of path and revision
     it's safe to use in urls
-
-    :param raw_id:
-    :param path:
     """
-
     return 'C-%s-%s' % (short_id(raw_id), hashlib.md5(safe_bytes(path)).hexdigest()[:12])
+
+
+def get_ignore_whitespace_diff(GET):
+    """Return true if URL requested whitespace to be ignored"""
+    return bool(GET.get('ignorews'))
+
+
+def ignore_whitespace_link(GET, anchor=None):
+    """Return snippet with link to current URL with whitespace ignoring toggled"""
+    params = dict(GET)  # ignoring duplicates
+    if get_ignore_whitespace_diff(GET):
+        params.pop('ignorews')
+        title = _("Show whitespace changes")
+    else:
+        params['ignorews'] = '1'
+        title = _("Ignore whitespace changes")
+    params['anchor'] = anchor
+    return link_to(
+        literal('<i class="icon-strike"></i>'),
+        url.current(**params),
+        title=title,
+        **{'data-toggle': 'tooltip'})
+
+
+def get_diff_context_size(GET):
+    """Return effective context size requested in URL"""
+    return safe_int(GET.get('context'), default=3)
+
+
+def increase_context_link(GET, anchor=None):
+    """Return snippet with link to current URL with double context size"""
+    context = get_diff_context_size(GET) * 2
+    params = dict(GET)  # ignoring duplicates
+    params['context'] = str(context)
+    params['anchor'] = anchor
+    return link_to(
+        literal('<i class="icon-sort"></i>'),
+        url.current(**params),
+        title=_('Increase diff context to %(num)s lines') % {'num': context},
+        **{'data-toggle': 'tooltip'})
 
 
 class _FilesBreadCrumbs(object):

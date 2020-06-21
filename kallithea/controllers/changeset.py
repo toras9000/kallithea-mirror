@@ -28,7 +28,7 @@ Original author and date, and relevant copyright and licensing information is be
 import binascii
 import logging
 import traceback
-from collections import OrderedDict, defaultdict
+from collections import OrderedDict
 
 from tg import request, response
 from tg import tmpl_context as c
@@ -52,113 +52,6 @@ from kallithea.model.pull_request import PullRequestModel
 
 
 log = logging.getLogger(__name__)
-
-
-def _update_with_GET(params, GET):
-    for k in ['diff1', 'diff2', 'diff']:
-        params[k] += GET.getall(k)
-
-
-def get_ignore_ws(fid, GET):
-    ig_ws_global = GET.get('ignorews')
-    ig_ws = [k for k in GET.getall(fid) if k.startswith('WS')]
-    if ig_ws:
-        try:
-            return int(ig_ws[0].split(':')[-1])
-        except ValueError:
-            raise HTTPBadRequest()
-    return ig_ws_global
-
-
-def _ignorews_url(GET, fileid=None, anchor=None):
-    fileid = str(fileid) if fileid else None
-    params = defaultdict(list)
-    _update_with_GET(params, GET)
-    lbl = _('Show whitespace')
-    ig_ws = get_ignore_ws(fileid, GET)
-    ln_ctx = get_line_ctx(fileid, GET)
-    # global option
-    if fileid is None:
-        if ig_ws is None:
-            params['ignorews'] += [1]
-            lbl = _('Ignore whitespace')
-        ctx_key = 'context'
-        ctx_val = ln_ctx
-    # per file options
-    else:
-        if ig_ws is None:
-            params[fileid] += ['WS:1']
-            lbl = _('Ignore whitespace')
-
-        ctx_key = fileid
-        ctx_val = 'C:%s' % ln_ctx
-    # if we have passed in ln_ctx pass it along to our params
-    if ln_ctx:
-        params[ctx_key] += [ctx_val]
-
-    params['anchor'] = anchor
-    icon = h.literal('<i class="icon-strike"></i>')
-    return h.link_to(icon, h.url.current(**params), title=lbl, **{'data-toggle': 'tooltip'})
-
-
-def get_line_ctx(fid, GET):
-    ln_ctx_global = GET.get('context')
-    if fid:
-        ln_ctx = [k for k in GET.getall(fid) if k.startswith('C')]
-    else:
-        _ln_ctx = [k for k in GET if k.startswith('C')]
-        ln_ctx = GET.get(_ln_ctx[0]) if _ln_ctx else ln_ctx_global
-        if ln_ctx:
-            ln_ctx = [ln_ctx]
-
-    if ln_ctx:
-        retval = ln_ctx[0].split(':')[-1]
-    else:
-        retval = ln_ctx_global
-
-    try:
-        return int(retval)
-    except Exception:
-        return 3
-
-
-def _context_url(GET, fileid=None, anchor=None):
-    """
-    Generates url for context lines
-
-    :param fileid:
-    """
-
-    fileid = str(fileid) if fileid else None
-    ig_ws = get_ignore_ws(fileid, GET)
-    ln_ctx = (get_line_ctx(fileid, GET) or 3) * 2
-
-    params = defaultdict(list)
-    _update_with_GET(params, GET)
-
-    # global option
-    if fileid is None:
-        if ln_ctx > 0:
-            params['context'] += [ln_ctx]
-
-        if ig_ws:
-            ig_ws_key = 'ignorews'
-            ig_ws_val = 1
-
-    # per file option
-    else:
-        params[fileid] += ['C:%s' % ln_ctx]
-        ig_ws_key = fileid
-        ig_ws_val = 'WS:%s' % 1
-
-    if ig_ws:
-        params[ig_ws_key] += [ig_ws_val]
-
-    lbl = _('Increase diff context to %(num)s lines') % {'num': ln_ctx}
-
-    params['anchor'] = anchor
-    icon = h.literal('<i class="icon-sort"></i>')
-    return h.link_to(icon, h.url.current(**params), title=lbl, **{'data-toggle': 'tooltip'})
 
 
 def create_cs_pr_comment(repo_name, revision=None, pull_request=None, allowed_to_change_status=True):
@@ -287,8 +180,6 @@ class ChangesetController(BaseRepoController):
 
     def _index(self, revision, method):
         c.pull_request = None
-        c.ignorews_url = _ignorews_url
-        c.context_url = _context_url
         c.fulldiff = request.GET.get('fulldiff') # for reporting number of changed files
         # get ranges of revisions if preset
         rev_range = revision.split('...')[:2]
@@ -351,9 +242,8 @@ class ChangesetController(BaseRepoController):
 
             cs2 = changeset.raw_id
             cs1 = changeset.parents[0].raw_id if changeset.parents else EmptyChangeset().raw_id
-            diff_context_size = get_line_ctx('', request.GET)
-            ignore_whitespace_diff = get_ignore_ws('', request.GET)
-
+            ignore_whitespace_diff = h.get_ignore_whitespace_diff(request.GET)
+            diff_context_size = h.get_diff_context_size(request.GET)
             raw_diff = diffs.get_diff(c.db_repo_scm_instance, cs1, cs2,
                 ignore_whitespace=ignore_whitespace_diff, context=diff_context_size)
             diff_limit = None if c.fulldiff else self.cut_off_limit
