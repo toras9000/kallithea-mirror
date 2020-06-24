@@ -358,6 +358,7 @@ class TestVCSOperations(base.TestController):
         # <UserLog('id:new_git_XXX:user_created_repo')>
         # <UserLog('id:new_git_XXX:pull')>
         # <UserLog('id:new_git_XXX:push:aed9d4c1732a1927da3be42c47eb9afdc200d427,d38b083a07af10a9f44193486959a96a23db78da,4841ff9a2b385bec995f4679ef649adb3f437622')>
+        Session.close()  # make sure SA fetches all new log entries (apparently only needed for MariaDB/MySQL ...)
         action_parts = [ul.action.split(':', 1) for ul in UserLog.query().order_by(UserLog.user_log_id)]
         assert [(t[0], (t[1].count(',') + 1) if len(t) == 2 else 0) for t in action_parts] == ([
             ('started_following_repo', 0),
@@ -389,6 +390,7 @@ class TestVCSOperations(base.TestController):
             assert 'Repository size' in stdout
             assert 'Last revision is now' in stdout
 
+        Session.close()  # make sure SA fetches all new log entries (apparently only needed for MariaDB/MySQL ...)
         action_parts = [ul.action.split(':', 1) for ul in UserLog.query().order_by(UserLog.user_log_id)]
         assert [(t[0], (t[1].count(',') + 1) if len(t) == 2 else 0) for t in action_parts] == \
             [('pull', 0), ('push', 3)]
@@ -403,6 +405,7 @@ class TestVCSOperations(base.TestController):
 
         clone_url = vt.repo_url_param(webserver, vt.repo_name)
         stdout, stderr = Command(dest_dir).execute(vt.repo_type, 'pull', clone_url)
+        Session.close()  # make sure SA fetches all new log entries (apparently only needed for MariaDB/MySQL ...)
 
         if vt.repo_type == 'git':
             assert 'FETCH_HEAD' in stderr
@@ -448,11 +451,10 @@ class TestVCSOperations(base.TestController):
 
         stdout, stderr = _add_files_and_push(webserver, vt, dest_dir, files_no=1, clone_url=clone_url)
 
-        Session().commit()  # expire test session to make sure SA fetch new Repository instances after last_changeset has been updated server side hook in other process
-
         if vt.repo_type == 'git':
             _check_proper_git_push(stdout, stderr)
 
+        Session.close()  # expire session to make sure SA fetches new Repository instances after last_changeset has been updated by server side hook in another process
         post_cached_tip = [repo.get_api_data()['last_changeset']['short_id'] for repo in Repository.query().filter(Repository.repo_name == testfork[vt.repo_type])]
         assert pre_cached_tip != post_cached_tip
 
@@ -487,6 +489,7 @@ class TestVCSOperations(base.TestController):
         elif vt.repo_type == 'hg':
             assert 'abort: HTTP Error 403: Forbidden' in stderr or 'abort: push failed on remote' in stderr and 'remote: Push access to %r denied' % str(vt.repo_name) in stdout
 
+        Session.close()  # make sure SA fetches all new log entries (apparently only needed for MariaDB/MySQL ...)
         action_parts = [ul.action.split(':', 1) for ul in UserLog.query().order_by(UserLog.user_log_id)]
         assert [(t[0], (t[1].count(',') + 1) if len(t) == 2 else 0) for t in action_parts] == \
             [('pull', 0)]
