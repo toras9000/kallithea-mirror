@@ -20,6 +20,8 @@ from kallithea.model.meta import Session
 
 
 @cli_base.register_command(config_file=True)
+@click.option('--reuse/--no-reuse', default=False,
+        help='Reuse and clean existing database instead of dropping and creating (default: no reuse)')
 @click.option('--user', help='Username of administrator account.')
 @click.option('--password', help='Password for administrator account.')
 @click.option('--email', help='Email address of administrator account.')
@@ -28,7 +30,7 @@ from kallithea.model.meta import Session
 @click.option('--force-no', is_flag=True, help='Answer no to every question.')
 @click.option('--public-access/--no-public-access', default=True,
         help='Enable/disable public access on this installation (default: enable)')
-def db_create(user, password, email, repos, force_yes, force_no, public_access):
+def db_create(user, password, email, repos, force_yes, force_no, public_access, reuse):
     """Initialize the database.
 
     Create all required tables in the database specified in the configuration
@@ -57,7 +59,7 @@ def db_create(user, password, email, repos, force_yes, force_no, public_access):
     )
     dbmanage = DbManage(dbconf=dbconf, root=kallithea.CONFIG['here'],
                         tests=False, cli_args=cli_args)
-    dbmanage.create_tables()
+    dbmanage.create_tables(reuse_database=reuse)
     repo_root_path = dbmanage.prompt_repo_root_path(None)
     dbmanage.create_settings(repo_root_path)
     dbmanage.create_default_user()

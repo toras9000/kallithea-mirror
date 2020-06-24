@@ -72,20 +72,28 @@ class DbManage(object):
             init_model(engine)
             self.sa = Session()
 
-    def create_tables(self):
+    def create_tables(self, reuse_database=False):
         """
         Create database (optional) and tables.
-        The database will be dropped (if it exists) and a new one created.
+        If reuse_database is false, the database will be dropped (if it exists)
+        and a new one created. If true, the existing database will be reused
+        and cleaned for content.
         """
         url = sqlalchemy.engine.url.make_url(self.dburi)
         database = url.database
-        log.info("The existing database %r will be destroyed and created." % database)
+        if reuse_database:
+            log.info("The content of the database %r will be destroyed and new tables created." % database)
+        else:
+            log.info("The existing database %r will be destroyed and a new one created." % database)
+
         if not self.tests:
             if not self._ask_ok('Are you sure to destroy old database? [y/n]'):
                 print('Nothing done.')
                 sys.exit(0)
 
-        if True:
+        if reuse_database:
+            Base.metadata.drop_all()
+        else:
             if url.drivername == 'mysql':
                 url.database = None  # don't connect to the database (it might not exist)
                 engine = sqlalchemy.create_engine(url)

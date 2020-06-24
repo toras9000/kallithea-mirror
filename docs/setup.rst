@@ -84,6 +84,15 @@ repositories Kallithea will add all of the repositories at the chosen
 location to its database.  (Note: make sure you specify the correct
 path to the root).
 
+.. note:: It is also possible to use an existing database. For example,
+          when using PostgreSQL without granting general createdb privileges to
+          the PostgreSQL kallithea user, set ``sqlalchemy.url =
+          postgresql://kallithea:password@localhost/kallithea`` and create the
+          database like::
+
+              sudo -u postgres createdb 'kallithea' --owner 'kallithea'
+              kallithea-cli db-create -c my.ini --reuse
+
 Prepare front-end files
 ^^^^^^^^^^^^^^^^^^^^^^^
 
