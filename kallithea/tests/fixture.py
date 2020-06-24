@@ -349,7 +349,7 @@ class Fixture(object):
 # Global test environment setup
 #==============================================================================
 
-def create_test_env(repos_test_path, config):
+def create_test_env(repos_test_path, config, reuse_database):
     """
     Makes a fresh database and
     install test repository into tmp dir
@@ -366,7 +366,7 @@ def create_test_env(repos_test_path, config):
 
     dbmanage = DbManage(dbconf=dbconf, root=config['here'],
                         tests=True)
-    dbmanage.create_tables()
+    dbmanage.create_tables(reuse_database=reuse_database)
     # for tests dynamically set new root paths based on generated content
     dbmanage.create_settings(dbmanage.prompt_repo_root_path(repos_test_path))
     dbmanage.create_default_user()

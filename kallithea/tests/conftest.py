@@ -59,8 +59,12 @@ def pytest_configure():
             'formatter': 'color_formatter_sql',
         },
     }
-    if os.environ.get('TEST_DB'):
-        ini_settings['[app:main]']['sqlalchemy.url'] = os.environ.get('TEST_DB')
+    create_database = os.environ.get('TEST_DB')  # TODO: rename to 'CREATE_TEST_DB'
+    if create_database:
+        ini_settings['[app:main]']['sqlalchemy.url'] = create_database
+    reuse_database = os.environ.get('REUSE_TEST_DB')
+    if reuse_database:
+        ini_settings['[app:main]']['sqlalchemy.url'] = reuse_database
 
     test_ini_file = os.path.join(TESTS_TMP_PATH, 'test.ini')
     inifile.create(test_ini_file, None, ini_settings)
@@ -70,7 +74,7 @@ def pytest_configure():
 
     # set KALLITHEA_NO_TMP_PATH=1 to disable re-creating the database and test repos
     if not int(os.environ.get('KALLITHEA_NO_TMP_PATH', 0)):
-        create_test_env(TESTS_TMP_PATH, context.config())
+        create_test_env(TESTS_TMP_PATH, context.config(), reuse_database=bool(reuse_database))
 
     # set KALLITHEA_WHOOSH_TEST_DISABLE=1 to disable whoosh index during tests
     if not int(os.environ.get('KALLITHEA_WHOOSH_TEST_DISABLE', 0)):

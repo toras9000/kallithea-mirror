@@ -92,6 +92,17 @@ Note that on unix systems, the temporary directory (``/tmp`` or where
 and the test suite creates repositories in the temporary directory. Linux
 systems with /tmp mounted noexec will thus fail.
 
+Tests can be run on PostgreSQL like::
+
+    sudo -u postgres createuser 'kallithea-test' --pwprompt  # password password
+    sudo -u postgres createdb 'kallithea-test' --owner 'kallithea-test'
+    REUSE_TEST_DB='postgresql://kallithea-test:password@localhost/kallithea-test' py.test
+
+Tests can be run on MariaDB/MySQL like::
+
+    echo "GRANT ALL PRIVILEGES ON \`kallithea-test\`.* TO 'kallithea-test'@'localhost' IDENTIFIED BY 'password'" | sudo -u mysql mysql
+    TEST_DB='mysql://kallithea-test:password@localhost/kallithea-test?charset=utf8' py.test
+
 You can also use ``tox`` to run the tests with all supported Python versions.
 
 When running tests, Kallithea generates a `test.ini` based on template values
