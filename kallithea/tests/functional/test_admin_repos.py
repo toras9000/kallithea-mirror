@@ -14,7 +14,7 @@ from kallithea.model.repo import RepoModel
 from kallithea.model.repo_group import RepoGroupModel
 from kallithea.model.user import UserModel
 from kallithea.tests import base
-from kallithea.tests.fixture import Fixture, error_function
+from kallithea.tests.fixture import Fixture, raise_exception
 
 
 fixture = Fixture()
@@ -592,7 +592,7 @@ class _BaseTestCase(base.TestController):
         RepoModel().delete(repo_name)
         Session().commit()
 
-    @mock.patch.object(RepoModel, '_create_filesystem_repo', error_function)
+    @mock.patch.object(RepoModel, '_create_filesystem_repo', raise_exception)
     def test_create_repo_when_filesystem_op_fails(self):
         self.log_user()
         repo_name = self.NEW_REPO

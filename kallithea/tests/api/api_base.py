@@ -36,7 +36,8 @@ from kallithea.model.scm import ScmModel
 from kallithea.model.user import UserModel
 from kallithea.model.user_group import UserGroupModel
 from kallithea.tests import base
-from kallithea.tests.fixture import Fixture
+from kallithea.tests.fixture import Fixture, raise_exception
+
 
 
 API_URL = '/_admin/api'
@@ -61,10 +62,6 @@ def _build_data(apikey, method, **kw):
 
 
 jsonify = lambda obj: ext_json.loads(ext_json.dumps(obj))
-
-
-def crash(*args, **kwargs):
-    raise Exception('Total Crash !')
 
 
 def api_call(test_obj, params):
@@ -349,7 +346,7 @@ class _BaseTestApi(object):
         expected = {'added': [], 'removed': []}
         self._compare_ok(id_, expected, given=response.body)
 
-    @mock.patch.object(ScmModel, 'repo_scan', crash)
+    @mock.patch.object(ScmModel, 'repo_scan', raise_exception)
     def test_api_rescann_error(self):
         id_, params = _build_data(self.apikey, 'rescan_repos', )
         response = api_call(self, params)
@@ -439,7 +436,7 @@ class _BaseTestApi(object):
         finally:
             fixture.destroy_user(usr.user_id)
 
-    @mock.patch.object(UserModel, 'create_or_update', crash)
+    @mock.patch.object(UserModel, 'create_or_update', raise_exception)
     def test_api_create_user_when_exception_happened(self):
 
         username = 'test_new_api_user'
@@ -473,7 +470,7 @@ class _BaseTestApi(object):
         expected = ret
         self._compare_ok(id_, expected, given=response.body)
 
-    @mock.patch.object(UserModel, 'delete', crash)
+    @mock.patch.object(UserModel, 'delete', raise_exception)
     def test_api_delete_user_when_exception_happened(self):
         usr = UserModel().create_or_update(username='test_user',
                                            password='qweqwe',
@@ -561,7 +558,7 @@ class _BaseTestApi(object):
         expected = 'editing default user is forbidden'
         self._compare_error(id_, expected, given=response.body)
 
-    @mock.patch.object(UserModel, 'update_user', crash)
+    @mock.patch.object(UserModel, 'update_user', raise_exception)
     def test_api_update_user_when_exception_happens(self):
         usr = User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
         ret = jsonify(usr.get_api_data())
@@ -1020,7 +1017,7 @@ class _BaseTestApi(object):
         self._compare_error(id_, expected, given=response.body)
         fixture.destroy_repo(repo_name)
 
-    @mock.patch.object(RepoModel, 'create', crash)
+    @mock.patch.object(RepoModel, 'create', raise_exception)
     def test_api_create_repo_exception_occurred(self):
         repo_name = 'api-repo'
         id_, params = _build_data(self.apikey, 'create_repo',
@@ -1140,7 +1137,7 @@ class _BaseTestApi(object):
         finally:
             fixture.destroy_repo(repo_name)
 
-    @mock.patch.object(RepoModel, 'update', crash)
+    @mock.patch.object(RepoModel, 'update', raise_exception)
     def test_api_update_repo_exception_occurred(self):
         repo_name = 'api_update_me'
         fixture.create_repo(repo_name, repo_type=self.REPO_TYPE)
@@ -1264,7 +1261,7 @@ class _BaseTestApi(object):
         repo_name = 'api_delete_me'
         fixture.create_repo(repo_name, repo_type=self.REPO_TYPE)
         try:
-            with mock.patch.object(RepoModel, 'delete', crash):
+            with mock.patch.object(RepoModel, 'delete', raise_exception):
                 id_, params = _build_data(self.apikey, 'delete_repo',
                                           repoid=repo_name, )
                 response = api_call(self, params)
@@ -1412,7 +1409,7 @@ class _BaseTestApi(object):
         expected = "repo `%s` already exist" % fork_name
         self._compare_error(id_, expected, given=response.body)
 
-    @mock.patch.object(RepoModel, 'create_fork', crash)
+    @mock.patch.object(RepoModel, 'create_fork', raise_exception)
     def test_api_fork_repo_exception_occurred(self):
         fork_name = 'api-repo-fork'
         id_, params = _build_data(self.apikey, 'fork_repo',
@@ -1484,7 +1481,7 @@ class _BaseTestApi(object):
         expected = "user group `%s` already exist" % TEST_USER_GROUP
         self._compare_error(id_, expected, given=response.body)
 
-    @mock.patch.object(UserGroupModel, 'create', crash)
+    @mock.patch.object(UserGroupModel, 'create', raise_exception)
     def test_api_get_user_group_exception_occurred(self):
         group_name = 'exception_happens'
         id_, params = _build_data(self.apikey, 'create_user_group',
@@ -1520,7 +1517,7 @@ class _BaseTestApi(object):
                 gr_name = updates['group_name']
             fixture.destroy_user_group(gr_name)
 
-    @mock.patch.object(UserGroupModel, 'update', crash)
+    @mock.patch.object(UserGroupModel, 'update', raise_exception)
     def test_api_update_user_group_exception_occurred(self):
         gr_name = 'test_group'
         fixture.create_user_group(gr_name)
@@ -1559,7 +1556,7 @@ class _BaseTestApi(object):
         expected = 'user group `%s` does not exist' % 'false-group'
         self._compare_error(id_, expected, given=response.body)
 
-    @mock.patch.object(UserGroupModel, 'add_user_to_group', crash)
+    @mock.patch.object(UserGroupModel, 'add_user_to_group', raise_exception)
     def test_api_add_user_to_user_group_exception_occurred(self):
         gr_name = 'test_group'
         fixture.create_user_group(gr_name)
@@ -1592,7 +1589,7 @@ class _BaseTestApi(object):
         finally:
             fixture.destroy_user_group(gr_name)
 
-    @mock.patch.object(UserGroupModel, 'remove_user_from_group', crash)
+    @mock.patch.object(UserGroupModel, 'remove_user_from_group', raise_exception)
     def test_api_remove_user_from_user_group_exception_occurred(self):
         gr_name = 'test_group_3'
         gr = fixture.create_user_group(gr_name)
@@ -1651,7 +1648,7 @@ class _BaseTestApi(object):
                                   usergroupid=gr_name)
 
         try:
-            with mock.patch.object(UserGroupModel, 'delete', crash):
+            with mock.patch.object(UserGroupModel, 'delete', raise_exception):
                 response = api_call(self, params)
                 expected = 'failed to delete user group ID:%s %s' % (gr_id, gr_name)
                 self._compare_error(id_, expected, given=response.body)
@@ -1693,7 +1690,7 @@ class _BaseTestApi(object):
         expected = 'permission `%s` does not exist' % perm
         self._compare_error(id_, expected, given=response.body)
 
-    @mock.patch.object(RepoModel, 'grant_user_permission', crash)
+    @mock.patch.object(RepoModel, 'grant_user_permission', raise_exception)
     def test_api_grant_user_permission_exception_when_adding(self):
         perm = 'repository.read'
         id_, params = _build_data(self.apikey,
@@ -1723,7 +1720,7 @@ class _BaseTestApi(object):
         }
         self._compare_ok(id_, expected, given=response.body)
 
-    @mock.patch.object(RepoModel, 'revoke_user_permission', crash)
+    @mock.patch.object(RepoModel, 'revoke_user_permission', raise_exception)
     def test_api_revoke_user_permission_exception_when_adding(self):
         id_, params = _build_data(self.apikey,
                                   'revoke_user_permission',
@@ -1771,7 +1768,7 @@ class _BaseTestApi(object):
         expected = 'permission `%s` does not exist' % perm
         self._compare_error(id_, expected, given=response.body)
 
-    @mock.patch.object(RepoModel, 'grant_user_group_permission', crash)
+    @mock.patch.object(RepoModel, 'grant_user_group_permission', raise_exception)
     def test_api_grant_user_group_permission_exception_when_adding(self):
         perm = 'repository.read'
         id_, params = _build_data(self.apikey,
@@ -1805,7 +1802,7 @@ class _BaseTestApi(object):
         }
         self._compare_ok(id_, expected, given=response.body)
 
-    @mock.patch.object(RepoModel, 'revoke_user_group_permission', crash)
+    @mock.patch.object(RepoModel, 'revoke_user_group_permission', raise_exception)
     def test_api_revoke_user_group_permission_exception_when_adding(self):
         id_, params = _build_data(self.apikey,
                                   'revoke_user_group_permission',
@@ -1907,7 +1904,7 @@ class _BaseTestApi(object):
         expected = 'permission `%s` does not exist' % perm
         self._compare_error(id_, expected, given=response.body)
 
-    @mock.patch.object(RepoGroupModel, 'grant_user_permission', crash)
+    @mock.patch.object(RepoGroupModel, 'grant_user_permission', raise_exception)
     def test_api_grant_user_permission_to_repo_group_exception_when_adding(self):
         perm = 'group.read'
         id_, params = _build_data(self.apikey,
@@ -1992,7 +1989,7 @@ class _BaseTestApi(object):
             expected = 'repository group `%s` does not exist' % TEST_REPO_GROUP
             self._compare_error(id_, expected, given=response.body)
 
-    @mock.patch.object(RepoGroupModel, 'revoke_user_permission', crash)
+    @mock.patch.object(RepoGroupModel, 'revoke_user_permission', raise_exception)
     def test_api_revoke_user_permission_from_repo_group_exception_when_adding(self):
         id_, params = _build_data(self.apikey,
                                   'revoke_user_permission_from_repo_group',
@@ -2096,7 +2093,7 @@ class _BaseTestApi(object):
         expected = 'permission `%s` does not exist' % perm
         self._compare_error(id_, expected, given=response.body)
 
-    @mock.patch.object(RepoGroupModel, 'grant_user_group_permission', crash)
+    @mock.patch.object(RepoGroupModel, 'grant_user_group_permission', raise_exception)
     def test_api_grant_user_group_permission_exception_when_adding_to_repo_group(self):
         perm = 'group.read'
         id_, params = _build_data(self.apikey,
@@ -2180,7 +2177,7 @@ class _BaseTestApi(object):
             expected = 'repository group `%s` does not exist' % TEST_REPO_GROUP
             self._compare_error(id_, expected, given=response.body)
 
-    @mock.patch.object(RepoGroupModel, 'revoke_user_group_permission', crash)
+    @mock.patch.object(RepoGroupModel, 'revoke_user_group_permission', raise_exception)
     def test_api_revoke_user_group_permission_from_repo_group_exception_when_adding(self):
         id_, params = _build_data(self.apikey, 'revoke_user_group_permission_from_repo_group',
                                   repogroupid=TEST_REPO_GROUP,
@@ -2301,7 +2298,7 @@ class _BaseTestApi(object):
         }
         self._compare_ok(id_, expected, given=response.body)
 
-    @mock.patch.object(GistModel, 'create', crash)
+    @mock.patch.object(GistModel, 'create', raise_exception)
     def test_api_create_gist_exception_occurred(self):
         id_, params = _build_data(self.apikey_regular, 'create_gist',
                                   files={})
@@ -2333,7 +2330,7 @@ class _BaseTestApi(object):
         expected = 'gist `%s` does not exist' % (gist_id,)
         self._compare_error(id_, expected, given=response.body)
 
-    @mock.patch.object(GistModel, 'delete', crash)
+    @mock.patch.object(GistModel, 'delete', raise_exception)
     def test_api_delete_gist_exception_occurred(self):
         gist_id = fixture.create_gist().gist_access_id
         id_, params = _build_data(self.apikey, 'delete_gist',

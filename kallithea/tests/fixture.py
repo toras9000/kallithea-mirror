@@ -50,8 +50,8 @@ log = logging.getLogger(__name__)
 FIXTURES = os.path.join(dirname(dirname(os.path.abspath(__file__))), 'tests', 'fixtures')
 
 
-def error_function(*args, **kwargs):
-    raise Exception('Total Crash !')
+def raise_exception(*args, **kwargs):
+    raise Exception('raise_exception raised exception')
 
 
 class Fixture(object):
