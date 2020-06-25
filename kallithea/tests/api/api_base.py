@@ -39,7 +39,6 @@ from kallithea.tests import base
 from kallithea.tests.fixture import Fixture, raise_exception
 
 
-
 API_URL = '/_admin/api'
 TEST_USER_GROUP = 'test_user_group'
 TEST_REPO_GROUP = 'test_repo_group'
