@@ -74,24 +74,18 @@ class DbManage(object):
 
     def create_tables(self):
         """
-        Create a auth database
+        Create database (optional) and tables.
+        The database will be dropped (if it exists) and a new one created.
         """
+        url = sqlalchemy.engine.url.make_url(self.dburi)
+        database = url.database
+        log.info("The existing database %r will be destroyed and created." % database)
+        if not self.tests:
+            if not self._ask_ok('Are you sure to destroy old database? [y/n]'):
+                print('Nothing done.')
+                sys.exit(0)
 
-        log.info("Any existing database is going to be destroyed")
-        if self.tests:
-            destroy = True
-        else:
-            destroy = self._ask_ok('Are you sure to destroy old database ? [y/n]')
-        if not destroy:
-            print('Nothing done.')
-            sys.exit(0)
-        if destroy:
-            # drop and re-create old schemas
-
-            url = sqlalchemy.engine.url.make_url(self.dburi)
-            database = url.database
-
-            # Some databases enforce foreign key constraints and Base.metadata.drop_all() doesn't work
+        if True:
             if url.drivername == 'mysql':
                 url.database = None  # don't connect to the database (it might not exist)
                 engine = sqlalchemy.create_engine(url)
@@ -107,6 +101,7 @@ class DbManage(object):
                     conn.execute('DROP DATABASE IF EXISTS "%s"' % database)
                     conn.execute('CREATE DATABASE "%s"' % database)
             else:
+                # Some databases enforce foreign key constraints and Base.metadata.drop_all() doesn't work, but this is
                 # known to work on SQLite - possibly not on other databases with strong referential integrity
                 Base.metadata.drop_all()
 
