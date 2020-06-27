@@ -2139,6 +2139,8 @@ class PullRequest(Base, BaseDbModel):
             status=self.status,
             comments=self.comments,
             statuses=self.statuses,
+            created_on=self.created_on.replace(microsecond=0),
+            updated_on=self.updated_on.replace(microsecond=0),
         )
 
     def url(self, **kwargs):

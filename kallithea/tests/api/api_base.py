@@ -2467,6 +2467,8 @@ class _BaseTestApi(object):
             "statuses": [{"status": "under_review", "reviewer": base.TEST_USER_ADMIN_LOGIN, "modified_at": "2000-01-01T00:00:00"} for i in range(0, len(self.TEST_PR_REVISIONS))],
             "title": "get test",
             "revisions": self.TEST_PR_REVISIONS,
+            "created_on": "2000-01-01T00:00:00",
+            "updated_on": "2000-01-01T00:00:00",
         }
         self._compare_ok(random_id, expected,
                          given=re.sub(br"\d\d\d\d\-\d\d\-\d\dT\d\d\:\d\d\:\d\d",
