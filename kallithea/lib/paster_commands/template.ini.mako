@@ -463,9 +463,9 @@ sqlalchemy.url = postgresql://kallithea:password@localhost/kallithea
 #sqlalchemy.url = postgresql://kallithea:password@localhost/kallithea
 %endif
 %if database_engine == 'mysql':
-sqlalchemy.url = mysql://kallithea:password@localhost/kallithea?charset=utf8
+sqlalchemy.url = mysql://kallithea:password@localhost/kallithea?charset=utf8mb4
 %else:
-#sqlalchemy.url = mysql://kallithea:password@localhost/kallithea?charset=utf8
+#sqlalchemy.url = mysql://kallithea:password@localhost/kallithea?charset=utf8mb4
 %endif
 <%text>##</%text> Note: the mysql:// prefix should also be used for MariaDB
 

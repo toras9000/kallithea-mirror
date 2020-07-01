@@ -101,7 +101,7 @@ Tests can be run on PostgreSQL like::
 Tests can be run on MariaDB/MySQL like::
 
     echo "GRANT ALL PRIVILEGES ON \`kallithea-test\`.* TO 'kallithea-test'@'localhost' IDENTIFIED BY 'password'" | sudo -u mysql mysql
-    TEST_DB='mysql://kallithea-test:password@localhost/kallithea-test?charset=utf8' py.test
+    TEST_DB='mysql://kallithea-test:password@localhost/kallithea-test?charset=utf8mb4' py.test
 
 You can also use ``tox`` to run the tests with all supported Python versions.
 
