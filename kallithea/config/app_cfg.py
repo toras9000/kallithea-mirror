@@ -109,7 +109,7 @@ def setup_configuration(app):
         mercurial.encoding.encoding = hgencoding
 
     if config.get('ignore_alembic_revision', False):
-        log.warn('database alembic revision checking is disabled')
+        log.warning('database alembic revision checking is disabled')
     else:
         dbconf = config['sqlalchemy.url']
         alembic_cfg = alembic.config.Config()
