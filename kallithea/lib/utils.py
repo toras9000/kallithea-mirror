@@ -500,7 +500,7 @@ def repo2db_mapper(initial_repo_dict, remove_obsolete=False,
             new_repo.update_changeset_cache()
         elif install_git_hooks:
             if db_repo.repo_type == 'git':
-                ScmModel().install_git_hooks(db_repo.scm_instance, force_create=overwrite_git_hooks)
+                ScmModel().install_git_hooks(db_repo.scm_instance, force=overwrite_git_hooks)
 
     removed = []
     # remove from database those repositories that are not in the filesystem

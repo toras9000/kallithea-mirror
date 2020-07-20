@@ -691,12 +691,12 @@ class ScmModel(object):
                 or sys.executable
                 or '/usr/bin/env python3')
 
-    def install_git_hooks(self, repo, force_create=False):
+    def install_git_hooks(self, repo, force=False):
         """
         Creates a kallithea hook inside a git repository
 
         :param repo: Instance of VCS repo
-        :param force_create: Create even if same name hook exists
+        :param force: Overwrite existing non-Kallithea hooks
         """
 
         hooks_path = os.path.join(repo.path, 'hooks')
@@ -716,7 +716,7 @@ class ScmModel(object):
 
         for h_type, tmpl in [('pre', tmpl_pre), ('post', tmpl_post)]:
             hook_file = os.path.join(hooks_path, '%s-receive' % h_type)
-            has_hook = False
+            other_hook = False
             log.debug('Installing git hook in repo %s', repo)
             if os.path.exists(hook_file):
                 # let's take a look at this hook, maybe it's kallithea ?
@@ -725,17 +725,15 @@ class ScmModel(object):
                     data = f.read()
                     matches = re.search(br'^KALLITHEA_HOOK_VER\s*=\s*(.*)$', data, flags=re.MULTILINE)
                     if matches:
-                        try:
-                            ver = matches.groups()[0]
-                            log.debug('Found Kallithea hook - it has KALLITHEA_HOOK_VER %r', ver)
-                            has_hook = True
-                        except Exception:
-                            log.error(traceback.format_exc())
-            else:
-                # there is no hook in this dir, so we want to create one
-                has_hook = True
+                        ver = matches.groups()[0]
+                        log.debug('Found Kallithea hook - it has KALLITHEA_HOOK_VER %r', ver)
+                    else:
+                        log.debug('Found non-Kallithea hook at %s', hook_file)
+                        other_hook = True
 
-            if has_hook or force_create:
+            if other_hook and not force:
+                log.warning('skipping overwriting hook file %s', hook_file)
+            else:
                 log.debug('writing %s hook file !', h_type)
                 try:
                     with open(hook_file, 'wb') as f:
@@ -743,9 +741,7 @@ class ScmModel(object):
                         f.write(tmpl)
                     os.chmod(hook_file, 0o755)
                 except IOError as e:
-                    log.error('error writing %s: %s', hook_file, e)
-            else:
-                log.debug('skipping writing hook file')
+                    log.error('error writing hook %s: %s', hook_file, e)
 
 
 def AvailableRepoGroupChoices(repo_group_perm_level, extras=()):

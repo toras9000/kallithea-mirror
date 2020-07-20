@@ -666,7 +666,7 @@ class RepoModel(object):
         elif repo_type == 'git':
             repo = backend(repo_path, create=True, src_url=clone_uri, bare=True)
             # add kallithea hook into this repo
-            ScmModel().install_git_hooks(repo=repo)
+            ScmModel().install_git_hooks(repo)
         else:
             raise Exception('Not supported repo_type %s expected hg/git' % repo_type)
 
