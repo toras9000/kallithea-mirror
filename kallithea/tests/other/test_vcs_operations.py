@@ -308,7 +308,7 @@ class TestVCSOperations(base.TestController):
         if vt.repo_type == 'git':
             assert 'not found' in stderr or 'abort: Access to %r denied' % 'trololo' in stderr
         elif vt.repo_type == 'hg':
-            assert 'HTTP Error 404: Not Found' in stderr or 'abort: no suitable response from remote hg' in stderr and 'remote: abort: Access to %r denied' % 'trololo' in stdout
+            assert 'HTTP Error 404: Not Found' in stderr or 'abort: no suitable response from remote hg' in stderr and 'remote: abort: Access to %r denied' % 'trololo' in stdout + stderr
 
     @parametrize_vcs_test
     def test_push_new_repo(self, webserver, vt):
@@ -429,7 +429,7 @@ class TestVCSOperations(base.TestController):
             if vt.repo_type == 'git':
                 assert "abort: Access to './%s' denied" % vt.repo_name in stderr
             else:
-                assert "abort: Access to './%s' denied" % vt.repo_name in stdout
+                assert "abort: Access to './%s' denied" % vt.repo_name in stdout + stderr
 
         stdout, stderr = Command(dest_dir).execute(vt.repo_type, 'pull', clone_url.replace('/' + vt.repo_name, '/%s/' % vt.repo_name), ignoreReturnCode=True)
         if vt.repo_type == 'git':
@@ -525,7 +525,7 @@ class TestVCSOperations(base.TestController):
                 # The message apparently changed in Git 1.8.3, so match it loosely.
                 assert re.search(r'\b403\b', stderr) or 'abort: User test_admin from 127.0.0.127 cannot be authorized' in stderr
             elif vt.repo_type == 'hg':
-                assert 'abort: HTTP Error 403: Forbidden' in stderr or 'remote: abort: User test_admin from 127.0.0.127 cannot be authorized' in stdout
+                assert 'abort: HTTP Error 403: Forbidden' in stderr or 'remote: abort: User test_admin from 127.0.0.127 cannot be authorized' in stdout + stderr
         finally:
             # release IP restrictions
             for ip in UserIpMap.query():
