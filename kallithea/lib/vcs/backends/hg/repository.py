@@ -320,7 +320,7 @@ class MercurialRepository(BaseRepository):
 
         req = urllib.request.Request(
             "%s?%s" % (
-                test_uri,
+                safe_str(test_uri),
                 urllib.parse.urlencode({
                     'cmd': 'between',
                     'pairs': "%s-%s" % ('0' * 40, '0' * 40),

@@ -344,6 +344,19 @@ class _BaseTestCase(base.TestController):
                                                 _session_csrf_secret_token=self.session_csrf_secret_token()))
         response.mustcontain('Invalid repository URL')
 
+    def test_create_remote_repo_wrong_clone_uri_http_auth(self):
+        self.log_user()
+        repo_name = self.NEW_REPO
+        description = 'description for newly created repo'
+        response = self.app.post(base.url('repos'),
+                        fixture._get_repo_create_params(repo_private=False,
+                                                repo_name=repo_name,
+                                                repo_type=self.REPO_TYPE,
+                                                repo_description=description,
+                                                clone_uri='http://user:pass@127.0.0.1/repo',
+                                                _session_csrf_secret_token=self.session_csrf_secret_token()))
+        response.mustcontain('Invalid repository URL')
+
     def test_delete(self):
         self.log_user()
         repo_name = 'vcs_test_new_to_delete_%s' % self.REPO_TYPE
