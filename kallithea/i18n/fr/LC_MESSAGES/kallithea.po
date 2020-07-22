@@ -829,17 +829,20 @@ msgstr ""
 "partie base64, comme 'ssh-rsa ASRNeaZu4FA...xlJp='"
 
 msgid "Incorrect SSH key - it must start with 'ssh-(rsa|dss|ed25519)'"
-msgstr "Clé SSH incorrecte – elle doit commencer par « ssh-(rsa|dss|ed25519) »"
+msgstr ""
+"Clé SSH incorrecte – elle doit commencer par « ssh-(rsa|dss|ed25519) »"
 
 msgid "Incorrect SSH key - unexpected characters in base64 part %r"
-msgstr "Clé SSH incorrecte – caractères inattendus dans la partie base 64 %r"
+msgstr ""
+"Clé SSH incorrecte – caractères inattendus dans la partie base 64 %r"
 
 msgid "Incorrect SSH key - failed to decode base64 part %r"
 msgstr "Clé SSH incorrecte – échec du décodage de la partie base64 %r"
 
 msgid "Incorrect SSH key - base64 part is not %r as claimed but %r"
 msgstr ""
-"Clé SSH incorrecte – la partie base 64 n'est pas %r comme il est dit mais %r"
+"Clé SSH incorrecte – la partie base 64 n'est pas %r comme il est dit mais "
+"%r"
 
 msgid "%d year"
 msgid_plural "%d years"
@@ -1714,6 +1717,9 @@ msgstr "Nom"
 msgid "Fingerprint"
 msgstr "Empreinte"
 
+msgid "Last Used"
+msgstr "Dernière utilisation"
+
 msgid "Confirm to remove this SSH key: %s"
 msgstr "Confirmer la suppression de cette clé SSH : %s"
 
@@ -1725,6 +1731,9 @@ msgstr "Nouvelle clé SSH"
 
 msgid "Public key"
 msgstr "Clé publique"
+
+msgid "Public key (contents of e.g. ~/.ssh/id_rsa.pub)"
+msgstr "Clé publique (contenus de par ex. ~/.ssh/id_rsa.pub)"
 
 msgid "Repositories You are Watching"
 msgstr "Dépôts que vous surveillez"
