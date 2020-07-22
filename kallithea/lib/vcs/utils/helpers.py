@@ -6,6 +6,9 @@ import datetime
 import os
 import re
 import time
+import urllib.request
+
+import mercurial.url
 
 from kallithea.lib.vcs.exceptions import RepositoryError, VCSError
 from kallithea.lib.vcs.utils.paths import abspath
@@ -217,3 +220,17 @@ def get_dict_for_attrs(obj, attrs):
     for attr in attrs:
         data[attr] = getattr(obj, attr)
     return data
+
+def get_urllib_request_handlers(url_obj):
+    handlers = []
+    test_uri, authinfo = url_obj.authinfo()
+
+    if authinfo:
+        # create a password manager
+        passmgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
+        passmgr.add_password(*authinfo)
+
+        handlers.extend((mercurial.url.httpbasicauthhandler(passmgr),
+                         mercurial.url.httpdigestauthhandler(passmgr)))
+
+    return test_uri, handlers
