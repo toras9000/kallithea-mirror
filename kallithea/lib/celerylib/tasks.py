@@ -323,8 +323,8 @@ def send_email(recipients, subject, body='', html_body='', headers=None, from_na
 @celerylib.task
 @celerylib.dbsession
 def create_repo(form_data, cur_user):
-    from kallithea.model.repo import RepoModel
     from kallithea.model.db import Setting
+    from kallithea.model.repo import RepoModel
 
     DBS = celerylib.get_session()
 

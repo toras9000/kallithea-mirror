@@ -307,8 +307,10 @@ class Setting(Base, BaseDbModel):
 
     @classmethod
     def get_server_info(cls):
-        import pkg_resources
         import platform
+
+        import pkg_resources
+
         from kallithea.lib.utils import check_git_version
         mods = [(p.project_name, p.version) for p in pkg_resources.working_set]
         info = {
@@ -595,7 +597,8 @@ class User(Base, BaseDbModel):
 
         :param author:
         """
-        from kallithea.lib.helpers import email, author_name
+        from kallithea.lib.helpers import author_name, email
+
         # Valid email in the attribute passed, see if they're in the system
         _email = email(author)
         if _email:

@@ -59,8 +59,7 @@ class UserModel(object):
         if not cur_user:
             cur_user = getattr(get_current_authuser(), 'username', None)
 
-        from kallithea.lib.hooks import log_create_user, \
-            check_allowed_create_user
+        from kallithea.lib.hooks import check_allowed_create_user, log_create_user
         _fd = form_data
         user_data = {
             'username': _fd['username'],
@@ -111,9 +110,8 @@ class UserModel(object):
         if not cur_user:
             cur_user = getattr(get_current_authuser(), 'username', None)
 
-        from kallithea.lib.auth import get_crypt_password, check_password
-        from kallithea.lib.hooks import log_create_user, \
-            check_allowed_create_user
+        from kallithea.lib.auth import check_password, get_crypt_password
+        from kallithea.lib.hooks import check_allowed_create_user, log_create_user
         user_data = {
             'username': username, 'password': password,
             'email': email, 'firstname': firstname, 'lastname': lastname,
@@ -168,8 +166,8 @@ class UserModel(object):
             raise
 
     def create_registration(self, form_data):
-        from kallithea.model.notification import NotificationModel
         import kallithea.lib.helpers as h
+        from kallithea.model.notification import NotificationModel
 
         form_data['admin'] = False
         form_data['extern_type'] = User.DEFAULT_AUTH_TYPE
@@ -317,9 +315,9 @@ class UserModel(object):
         allowing users to copy-paste or manually enter the token from the
         email.
         """
+        import kallithea.lib.helpers as h
         from kallithea.lib.celerylib import tasks
         from kallithea.model.notification import EmailNotificationModel
-        import kallithea.lib.helpers as h
 
         user_email = data['email']
         user = User.get_by_email(user_email)
@@ -386,8 +384,8 @@ class UserModel(object):
         return expected_token == token
 
     def reset_password(self, user_email, new_passwd):
-        from kallithea.lib.celerylib import tasks
         from kallithea.lib import auth
+        from kallithea.lib.celerylib import tasks
         user = User.get_by_email(user_email)
         if user is not None:
             if not self.can_change_password(user):

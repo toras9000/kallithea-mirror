@@ -145,7 +145,7 @@ class _BaseTestApi(object):
         assert 'trololo' == Optional.extract('trololo')
 
     def test_Optional_OAttr(self):
-        from kallithea.controllers.api.api import Optional, OAttr
+        from kallithea.controllers.api.api import OAttr, Optional
 
         option1 = Optional(OAttr('apiuser'))
         assert 'apiuser' == Optional.extract(option1)

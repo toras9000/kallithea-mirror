@@ -307,6 +307,7 @@ def _hook_environment(repo_path):
     connect to the database.
     """
     import paste.deploy
+
     import kallithea.config.application
 
     extras = get_hook_environment()

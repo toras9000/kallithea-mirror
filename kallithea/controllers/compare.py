@@ -130,8 +130,8 @@ class CompareController(BaseRepoController):
 
         elif alias == 'git':
             if org_repo != other_repo:
-                from dulwich.repo import Repo
                 from dulwich.client import SubprocessGitClient
+                from dulwich.repo import Repo
 
                 gitrepo = Repo(org_repo.path)
                 SubprocessGitClient(thin_packs=False).fetch(other_repo.path, gitrepo)

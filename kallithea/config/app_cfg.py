@@ -86,8 +86,8 @@ base_config.update_blueprint({
 # 'debug = true' (not in production!)
 # See the Kallithea documentation for more information.
 try:
+    import kajiki  # only to check its existence
     from tgext.debugbar import enable_debugbar
-    import kajiki # only to check its existence
     assert kajiki
 except ImportError:
     pass

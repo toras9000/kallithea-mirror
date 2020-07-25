@@ -19,7 +19,6 @@ import shutil
 import sys
 
 import click
-
 import i18n_utils
 
 
@@ -90,11 +89,8 @@ def normalized_merge(local, base, other, output, merge_pot_file, strip):
 
     and then invoke merge/rebase/graft with the additional argument '--tool i18n'.
     """
-    from mercurial import (
-        context,
-        simplemerge,
-        ui as uimod,
-    )
+    from mercurial import context, simplemerge
+    from mercurial import ui as uimod
 
     print('i18n normalized-merge: normalizing and merging %s' % output)
 

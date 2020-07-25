@@ -189,8 +189,8 @@ class RepoGroupModel(object):
     def _update_permissions(self, repo_group, perms_new=None,
                             perms_updates=None, recursive=None,
                             check_perms=True):
-        from kallithea.model.repo import RepoModel
         from kallithea.lib.auth import HasUserGroupPermissionLevel
+        from kallithea.model.repo import RepoModel
 
         if not perms_new:
             perms_new = []

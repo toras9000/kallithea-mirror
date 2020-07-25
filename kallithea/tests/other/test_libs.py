@@ -156,8 +156,9 @@ class TestLibs(base.TestController):
         (dict(years= -3, months= -2), '3 years and 2 months ago'),
     ])
     def test_age(self, age_args, expected):
-        from kallithea.lib.utils2 import age
         from dateutil import relativedelta
+
+        from kallithea.lib.utils2 import age
         with test_context(self.app):
             n = datetime.datetime(year=2012, month=5, day=17)
             delt = lambda *args, **kwargs: relativedelta.relativedelta(*args, **kwargs)
@@ -181,8 +182,9 @@ class TestLibs(base.TestController):
         (dict(years= -4, months= -8), '5 years ago'),
     ])
     def test_age_short(self, age_args, expected):
-        from kallithea.lib.utils2 import age
         from dateutil import relativedelta
+
+        from kallithea.lib.utils2 import age
         with test_context(self.app):
             n = datetime.datetime(year=2012, month=5, day=17)
             delt = lambda *args, **kwargs: relativedelta.relativedelta(*args, **kwargs)
@@ -200,8 +202,9 @@ class TestLibs(base.TestController):
         (dict(years=1, months=1), 'in 1 year and 1 month')
     ])
     def test_age_in_future(self, age_args, expected):
-        from kallithea.lib.utils2 import age
         from dateutil import relativedelta
+
+        from kallithea.lib.utils2 import age
         with test_context(self.app):
             n = datetime.datetime(year=2012, month=5, day=17)
             delt = lambda *args, **kwargs: relativedelta.relativedelta(*args, **kwargs)
@@ -297,6 +300,7 @@ class TestLibs(base.TestController):
         :param text:
         """
         import re
+
         # quickly change expected url[] into a link
         url_pattern = re.compile(r'(?:url\[)(.+?)(?:\])')
 
@@ -570,11 +574,11 @@ class TestLibs(base.TestController):
         ('http://www.example.org/kallithea/repos/', 'abc/xyz/', 'http://www.example.org/kallithea/repos/abc/xyz/'),
     ])
     def test_canonical_url(self, canonical, test, expected):
-        from kallithea.lib.helpers import canonical_url
-        from tg import request
-
         # setup url(), used by canonical_url
         import routes
+        from tg import request
+
+        from kallithea.lib.helpers import canonical_url
         m = routes.Mapper()
         m.connect('about', '/about-page')
         url = routes.URLGenerator(m, {'HTTP_HOST': 'http_host.example.org'})
@@ -594,11 +598,12 @@ class TestLibs(base.TestController):
         ('http://www.example.org/kallithea/repos/', 'www.example.org'),
     ])
     def test_canonical_hostname(self, canonical, expected):
-        from kallithea.lib.helpers import canonical_hostname
+        import routes
         from tg import request
 
+        from kallithea.lib.helpers import canonical_hostname
+
         # setup url(), used by canonical_hostname
-        import routes
         m = routes.Mapper()
         url = routes.URLGenerator(m, {'HTTP_HOST': 'http_host.example.org'})
 

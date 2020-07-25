@@ -108,8 +108,8 @@ def get_highlighted_code(name, code, type='terminal'):
     except ImportError:
         return code
     from pygments import highlight
-    from pygments.lexers import guess_lexer_for_filename, ClassNotFound
     from pygments.formatters import TerminalFormatter
+    from pygments.lexers import ClassNotFound, guess_lexer_for_filename
 
     try:
         lexer = guess_lexer_for_filename(name, code)

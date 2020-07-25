@@ -109,7 +109,8 @@ class RepoModel(object):
 
     @classmethod
     def _render_datatable(cls, tmpl, *args, **kwargs):
-        from tg import tmpl_context as c, request, app_globals
+        from tg import app_globals, request
+        from tg import tmpl_context as c
         from tg.i18n import ugettext as _
 
         _tmpl_lookup = app_globals.mako_lookup
@@ -128,7 +129,9 @@ class RepoModel(object):
         admin: return data for action column.
         """
         _render = self._render_datatable
-        from tg import tmpl_context as c, request
+        from tg import request
+        from tg import tmpl_context as c
+
         from kallithea.model.scm import ScmModel
 
         def repo_lnk(name, rtype, rstate, private, fork_of):

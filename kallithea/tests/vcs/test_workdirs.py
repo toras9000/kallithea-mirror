@@ -68,6 +68,7 @@ class WorkdirTestCaseMixin(_BackendTestMixin):
 
     def test_checkout_branch(self):
         from kallithea.lib.vcs.exceptions import BranchDoesNotExistError
+
         # first, 'foobranch' does not exist.
         with pytest.raises(BranchDoesNotExistError):
             self.repo.workdir.checkout_branch(branch='foobranch')

@@ -331,9 +331,8 @@ def get_changeset_safe(repo, rev):
     :param repo:
     :param rev:
     """
-    from kallithea.lib.vcs.backends.base import BaseRepository
+    from kallithea.lib.vcs.backends.base import BaseRepository, EmptyChangeset
     from kallithea.lib.vcs.exceptions import RepositoryError
-    from kallithea.lib.vcs.backends.base import EmptyChangeset
     if not isinstance(repo, BaseRepository):
         raise Exception('You must pass an Repository '
                         'object as first argument got %s' % type(repo))

@@ -632,6 +632,7 @@ def person(author, show_attr="username"):
     """Find the user identified by 'author', return one of the users attributes,
     default to the username attribute, None if there is no user"""
     from kallithea.model.db import User
+
     # if author is already an instance use it for extraction
     if isinstance(author, User):
         return getattr(author, show_attr)
@@ -646,6 +647,7 @@ def person(author, show_attr="username"):
 
 def person_by_id(id_, show_attr="username"):
     from kallithea.model.db import User
+
     # maybe it's an ID ?
     if str(id_).isdigit() or isinstance(id_, int):
         id_ = int(id_)
@@ -974,10 +976,8 @@ def gravatar(email_address, cls='', size=30):
 
 
 def gravatar_url(email_address, size=30, default=''):
-    # doh, we need to re-import those to mock it later
-    from kallithea.config.routing import url
-    from kallithea.model.db import User
     from tg import tmpl_context as c
+
     if not c.visual.use_gravatar:
         return ""
 
@@ -986,6 +986,10 @@ def gravatar_url(email_address, size=30, default=''):
 
     if email_address == _def:
         return default
+
+    # re-import url so tests can mock it
+    from kallithea.config.routing import url
+    from kallithea.model.db import User
 
     parsed_url = urllib.parse.urlparse(url.current(qualified=True))
     url = (c.visual.gravatar_url or User.DEFAULT_GRAVATAR_URL) \
@@ -1022,8 +1026,7 @@ def fancy_file_stats(stats):
 
     :param stats: two element list of added/deleted lines of code
     """
-    from kallithea.lib.diffs import NEW_FILENODE, DEL_FILENODE, \
-        MOD_FILENODE, RENAMED_FILENODE, CHMOD_FILENODE, BIN_FILENODE
+    from kallithea.lib.diffs import BIN_FILENODE, CHMOD_FILENODE, DEL_FILENODE, MOD_FILENODE, NEW_FILENODE, RENAMED_FILENODE
 
     a, d = stats['added'], stats['deleted']
     width = 100
