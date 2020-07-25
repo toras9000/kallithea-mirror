@@ -108,7 +108,6 @@ class PermissionsController(BaseController):
                 [x[0] for x in c.group_perms_choices],
                 [x[0] for x in c.user_group_perms_choices],
                 [x[0] for x in c.repo_create_choices],
-                [x[0] for x in c.repo_group_create_choices],
                 [x[0] for x in c.user_group_create_choices],
                 [x[0] for x in c.fork_choices],
                 [x[0] for x in c.register_choices],

@@ -396,7 +396,6 @@ def ApplicationUiSettingsForm():
 
 def DefaultPermissionsForm(repo_perms_choices, group_perms_choices,
                            user_group_perms_choices, create_choices,
-                           repo_group_create_choices,
                            user_group_create_choices, fork_choices,
                            register_choices, extern_activate_choices):
     class _DefaultPermissionsForm(formencode.Schema):
