@@ -466,7 +466,7 @@ def repo2db_mapper(initial_repo_dict, remove_obsolete=False,
     enable_downloads = defs.get('repo_enable_downloads')
     private = defs.get('repo_private')
 
-    for name, repo in initial_repo_dict.items():
+    for name, repo in sorted(initial_repo_dict.items()):
         group = map_groups(name)
         db_repo = repo_model.get_by_repo_name(name)
         # found repo that is on filesystem not in Kallithea database
