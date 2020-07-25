@@ -699,11 +699,11 @@ class ScmModel(object):
         :param force_create: Create even if same name hook exists
         """
 
-        loc = os.path.join(repo.path, 'hooks')
+        hooks_path = os.path.join(repo.path, 'hooks')
         if not repo.bare:
-            loc = os.path.join(repo.path, '.git', 'hooks')
-        if not os.path.isdir(loc):
-            os.makedirs(loc)
+            hooks_path = os.path.join(repo.path, '.git', 'hooks')
+        if not os.path.isdir(hooks_path):
+            os.makedirs(hooks_path)
 
         tmpl_post = b"#!%s\n" % safe_bytes(self._get_git_hook_interpreter())
         tmpl_post += pkg_resources.resource_string(
@@ -715,13 +715,13 @@ class ScmModel(object):
         )
 
         for h_type, tmpl in [('pre', tmpl_pre), ('post', tmpl_post)]:
-            _hook_file = os.path.join(loc, '%s-receive' % h_type)
+            hook_file = os.path.join(hooks_path, '%s-receive' % h_type)
             has_hook = False
             log.debug('Installing git hook in repo %s', repo)
-            if os.path.exists(_hook_file):
+            if os.path.exists(hook_file):
                 # let's take a look at this hook, maybe it's kallithea ?
                 log.debug('hook exists, checking if it is from kallithea')
-                with open(_hook_file, 'rb') as f:
+                with open(hook_file, 'rb') as f:
                     data = f.read()
                     matches = re.search(br'^KALLITHEA_HOOK_VER\s*=\s*(.*)$', data, flags=re.MULTILINE)
                     if matches:
@@ -738,12 +738,12 @@ class ScmModel(object):
             if has_hook or force_create:
                 log.debug('writing %s hook file !', h_type)
                 try:
-                    with open(_hook_file, 'wb') as f:
+                    with open(hook_file, 'wb') as f:
                         tmpl = tmpl.replace(b'_TMPL_', safe_bytes(kallithea.__version__))
                         f.write(tmpl)
-                    os.chmod(_hook_file, 0o755)
+                    os.chmod(hook_file, 0o755)
                 except IOError as e:
-                    log.error('error writing %s: %s', _hook_file, e)
+                    log.error('error writing %s: %s', hook_file, e)
             else:
                 log.debug('skipping writing hook file')
 
