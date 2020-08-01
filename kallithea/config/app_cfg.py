@@ -92,7 +92,7 @@ try:
 except ImportError:
     pass
 else:
-    base_config['renderers'].append('kajiki')
+    base_config.get_blueprint_value('renderers').append('kajiki')
     enable_debugbar(base_config)
 
 
