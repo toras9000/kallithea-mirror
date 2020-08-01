@@ -224,7 +224,7 @@ continuous hammering from the internet.
 .. _Gearbox: https://turbogears.readthedocs.io/en/latest/turbogears/gearbox.html
 .. _PyPI: https://pypi.python.org/pypi
 .. _Apache httpd: http://httpd.apache.org/
-.. _mod_wsgi: https://code.google.com/p/modwsgi/
+.. _mod_wsgi: https://modwsgi.readthedocs.io/
 .. _isapi-wsgi: https://github.com/hexdump42/isapi-wsgi
 .. _uWSGI: https://uwsgi-docs.readthedocs.io/
 .. _nginx: http://nginx.org/en/
