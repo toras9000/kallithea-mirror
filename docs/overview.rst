@@ -220,13 +220,13 @@ continuous hammering from the internet.
 .. _Python: http://www.python.org/
 .. _Gunicorn: http://gunicorn.org/
 .. _Gevent: http://www.gevent.org/
-.. _Waitress: http://waitress.readthedocs.org/en/latest/
-.. _Gearbox: http://turbogears.readthedocs.io/en/latest/turbogears/gearbox.html
+.. _Waitress: https://docs.pylonsproject.org/projects/waitress/
+.. _Gearbox: https://turbogears.readthedocs.io/en/latest/turbogears/gearbox.html
 .. _PyPI: https://pypi.python.org/pypi
 .. _Apache httpd: http://httpd.apache.org/
 .. _mod_wsgi: https://code.google.com/p/modwsgi/
 .. _isapi-wsgi: https://github.com/hexdump42/isapi-wsgi
-.. _uWSGI: https://uwsgi-docs.readthedocs.org/en/latest/
+.. _uWSGI: https://uwsgi-docs.readthedocs.io/
 .. _nginx: http://nginx.org/en/
 .. _iis: http://en.wikipedia.org/wiki/Internet_Information_Services
 .. _pip: http://en.wikipedia.org/wiki/Pip_%28package_manager%29

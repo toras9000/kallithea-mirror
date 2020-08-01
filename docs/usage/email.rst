@@ -89,8 +89,8 @@ a name and an address in the following format: `Kallithea Errors
 References
 ----------
 
-- `Error Middleware (Pylons documentation) <http://pylons-webframework.readthedocs.org/en/latest/debugging.html#error-middleware>`_
-- `ErrorHandler (Pylons modules documentation) <http://pylons-webframework.readthedocs.org/en/latest/modules/middleware.html#pylons.middleware.ErrorHandler>`_
+- `Error Middleware (Pylons documentation) <https://pylons-webframework.readthedocs.io/en/latest/debugging.html#error-middleware>`_
+- `ErrorHandler (Pylons modules documentation) <https://pylons-webframework.readthedocs.io/en/latest/modules/middleware.html#pylons.middleware.ErrorHandler>`_
 
 
 .. _backlash: https://github.com/TurboGears/backlash
