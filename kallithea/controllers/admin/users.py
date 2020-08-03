@@ -182,6 +182,7 @@ class UsersController(BaseController):
 
     def delete(self, id):
         usr = User.get_or_404(id)
+        has_ssh_keys = bool(usr.ssh_keys)
         try:
             UserModel().delete(usr)
             Session().commit()
@@ -192,6 +193,9 @@ class UsersController(BaseController):
             log.error(traceback.format_exc())
             h.flash(_('An error occurred during deletion of user'),
                     category='error')
+        else:
+            if has_ssh_keys:
+                SshKeyModel().write_authorized_keys()
         raise HTTPFound(location=url('users'))
 
     def _get_user_or_raise_if_default(self, id):
