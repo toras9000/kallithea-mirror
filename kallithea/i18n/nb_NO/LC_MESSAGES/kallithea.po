@@ -289,6 +289,9 @@ msgstr "API-nøkkel tilbakestilt"
 msgid "API key successfully deleted"
 msgstr "API-nøkkel slettet"
 
+msgid "SSH key %s successfully added"
+msgstr "SSH-nøkkel %s lagt til"
+
 msgid "Read"
 msgstr "LEs"
 
@@ -1164,3 +1167,6 @@ msgstr "Gruppe"
 
 msgid "Select changeset"
 msgstr "Velg endringssett"
+
+msgid "%s comments"
+msgstr "%s kommentarer"
