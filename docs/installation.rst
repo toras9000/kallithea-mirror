@@ -49,7 +49,7 @@ Installation from repository source
 -----------------------------------
 
 To install Kallithea in a virtualenv using the stable branch of the development
-repository, follow the instructions below::
+repository, use the following commands in your bash shell::
 
         hg clone https://kallithea-scm.org/repos/kallithea -u stable
         cd kallithea
@@ -79,7 +79,8 @@ An additional benefit of virtualenv is that it doesn't require root privileges.
     python3 -m venv /srv/kallithea/venv
 
 - Activate the virtualenv in your current shell session and make sure the
-  basic requirements are up-to-date by running::
+  basic requirements are up-to-date by running the following commands in your
+  bash shell::
 
     . /srv/kallithea/venv/bin/activate
     pip install --upgrade pip setuptools

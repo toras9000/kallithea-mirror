@@ -28,7 +28,8 @@ for more details.
 Getting started
 ---------------
 
-To get started with Kallithea development::
+To get started with Kallithea development run the following commands in your
+bash shell::
 
         hg clone https://kallithea-scm.org/repos/kallithea
         cd kallithea
