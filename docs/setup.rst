@@ -608,11 +608,6 @@ that, you'll need to:
 
   .. code-block:: python
 
-      import os
-
-      # sometimes it's needed to set the current dir
-      os.chdir('/srv/kallithea/')
-
       import site
       site.addsitedir("/srv/kallithea/venv/lib/python3.7/site-packages")
 
