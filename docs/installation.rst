@@ -141,9 +141,13 @@ You can now proceed to :ref:`install-front-end`.
 Prepare front-end files
 -----------------------
 
-Finally, the front-end files must be prepared. This requires ``npm`` version 6
-or later, which needs ``node.js`` (version 12 or later). Prepare the front-end
-by running::
+Finally, the front-end files with CSS and JavaScript must be prepared. This
+depends on having some commands available in the shell search path: ``npm``
+version 6 or later, and ``node.js`` (version 12 or later) available as
+``node``. The installation method for these dependencies varies between
+operating systems and distributions.
+
+Prepare the front-end by running::
 
     kallithea-cli front-end-build
 

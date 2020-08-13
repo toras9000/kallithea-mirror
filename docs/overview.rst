@@ -21,8 +21,8 @@ installing Kallithea.
     This makes the ``kallithea-cli`` command line tool available.
 
 3. **Prepare front-end files**
-    Some front-end files must be fetched or created using ``npm`` tooling so
-    they can be served to the client as static files.
+    Some front-end files must be fetched or created using ``npm`` and ``node``
+    tooling so they can be served to the client as static files.
 
 4. **Create low level configuration file.**
     Use ``kallithea-cli config-create`` to create a ``.ini`` file with database
