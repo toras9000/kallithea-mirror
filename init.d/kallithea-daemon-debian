@@ -37,7 +37,7 @@ DAEMON_OPTS="serve --daemon \
 
 start() {
   echo "Starting $APP_NAME"
-  PYTHON_EGG_CACHE="/tmp" start-stop-daemon -d $APP_PATH \
+  start-stop-daemon -d $APP_PATH \
       --start --quiet \
       --pidfile $PID_PATH \
       --user $RUN_AS \

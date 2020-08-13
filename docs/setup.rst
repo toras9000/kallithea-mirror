@@ -609,7 +609,6 @@ that, you'll need to:
   .. code-block:: python
 
       import os
-      os.environ['PYTHON_EGG_CACHE'] = '/srv/kallithea/.egg-cache'
 
       # sometimes it's needed to set the current dir
       os.chdir('/srv/kallithea/')

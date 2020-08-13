@@ -63,7 +63,7 @@ ensure_pid_dir () {
 
 start_kallithea () {
     ensure_pid_dir
-    PYTHON_EGG_CACHE="/tmp" daemon --pidfile $PID_PATH \
+    daemon --pidfile $PID_PATH \
         --user $RUN_AS "$DAEMON $DAEMON_OPTS"
     RETVAL=$?
     [ $RETVAL -eq 0 ] && touch $LOCK_FILE
