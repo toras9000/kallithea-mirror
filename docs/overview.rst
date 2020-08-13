@@ -20,19 +20,19 @@ installing Kallithea.
 2. **Install Kallithea software.**
     This makes the ``kallithea-cli`` command line tool available.
 
-3. **Create low level configuration file.**
+3. **Prepare front-end files**
+    Some front-end files must be fetched or created using ``npm`` tooling so
+    they can be served to the client as static files.
+
+4. **Create low level configuration file.**
     Use ``kallithea-cli config-create`` to create a ``.ini`` file with database
     connection info, mail server information, configuration for the specified
     web server, etc.
 
-4. **Populate the database.**
+5. **Populate the database.**
     Use ``kallithea-cli db-create`` with the ``.ini`` file to create the
     database schema and insert the most basic information: the location of the
     repository store and an initial local admin user.
-
-5. **Prepare front-end files**
-    Some front-end files must be fetched or created using ``npm`` tooling so
-    they can be served to the client as static files.
 
 6. **Configure the web server.**
     The web server must invoke the WSGI entrypoint for the Kallithea software

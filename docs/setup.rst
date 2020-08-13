@@ -93,15 +93,6 @@ path to the root).
               sudo -u postgres createdb 'kallithea' --owner 'kallithea'
               kallithea-cli db-create -c my.ini --reuse
 
-Prepare front-end files
-^^^^^^^^^^^^^^^^^^^^^^^
-
-Finally, the front-end files must be prepared. This requires ``npm`` version 6
-or later, which needs ``node.js`` (version 12 or later). Prepare the front-end
-by running::
-
-    kallithea-cli front-end-build
-
 Running
 ^^^^^^^
 

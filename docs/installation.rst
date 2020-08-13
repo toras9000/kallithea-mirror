@@ -59,7 +59,7 @@ repository, use the following commands in your bash shell::
         pip install --upgrade -e .
         python3 setup.py compile_catalog   # for translation of the UI
 
-You can now proceed to :ref:`setup`.
+You can now proceed to :ref:`install-front-end`.
 
 .. _installation-virtualenv:
 
@@ -114,7 +114,7 @@ An additional benefit of virtualenv is that it doesn't require root privileges.
 - This will install Kallithea together with all other required
   Python libraries into the activated virtualenv.
 
-You can now proceed to :ref:`setup`.
+You can now proceed to :ref:`install-front-end`.
 
 .. _installation-without-virtualenv:
 
@@ -132,5 +132,19 @@ globally without using the system's package manager.
 To install as a regular user in ``~/.local``, you can use::
 
     pip install --user kallithea
+
+You can now proceed to :ref:`install-front-end`.
+
+.. _install-front-end:
+
+
+Prepare front-end files
+-----------------------
+
+Finally, the front-end files must be prepared. This requires ``npm`` version 6
+or later, which needs ``node.js`` (version 12 or later). Prepare the front-end
+by running::
+
+    kallithea-cli front-end-build
 
 You can now proceed to :ref:`setup`.
