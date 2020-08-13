@@ -602,32 +602,14 @@ that, you'll need to:
 
     WSGIRestrictEmbedded On
 
-- Create a WSGI dispatch script, like the one below. Make sure you
-  check that the paths correctly point to where you installed Kallithea
-  and its Python Virtual Environment.
+- Create a WSGI dispatch script, like the one below. The ``WSGIDaemonProcess``
+  ``python-home`` directive will make sure it uses the right Python Virtual
+  Environment and that paste thus can pick up the right Kallithea
+  application.
 
   .. code-block:: python
-
-      import site
-      site.addsitedir("/srv/kallithea/venv/lib/python3.7/site-packages")
 
       ini = '/srv/kallithea/my.ini'
-      from logging.config import fileConfig
-      fileConfig(ini, {'__file__': ini, 'here': '/srv/kallithea'})
-      from paste.deploy import loadapp
-      application = loadapp('config:' + ini)
-
-  Or using proper virtualenv activation:
-
-  .. code-block:: python
-
-      activate_this = '/srv/kallithea/venv/bin/activate_this.py'
-      execfile(activate_this, dict(__file__=activate_this))
-
-      import os
-      os.environ['HOME'] = '/srv/kallithea'
-
-      ini = '/srv/kallithea/kallithea.ini'
       from logging.config import fileConfig
       fileConfig(ini, {'__file__': ini, 'here': '/srv/kallithea'})
       from paste.deploy import loadapp
@@ -653,15 +635,6 @@ that, you'll need to:
 
       WSGIDaemonProcess kallithea processes=5 threads=1 maximum-requests=100 \
           python-home=/srv/kallithea/venv lang=C.UTF-8
-      WSGIProcessGroup kallithea
-      WSGIScriptAlias / /srv/kallithea/dispatch.wsgi
-      WSGIPassAuthorization On
-
-  Or if using a dispatcher WSGI script with proper virtualenv activation:
-
-  .. code-block:: apache
-
-      WSGIDaemonProcess kallithea processes=5 threads=1 maximum-requests=100 lang=en_US.utf8
       WSGIProcessGroup kallithea
       WSGIScriptAlias / /srv/kallithea/dispatch.wsgi
       WSGIPassAuthorization On
