@@ -166,7 +166,7 @@ cache_dir = %(here)s/data
 index_dir = %(here)s/data/index
 
 <%text>##</%text> uncomment and set this path to use archive download cache
-archive_cache_dir = %(here)s/tarballcache
+archive_cache_dir = %(here)s/data/tarballcache
 
 <%text>##</%text> change this to unique ID for security
 app_instance_uuid = ${uuid()}
