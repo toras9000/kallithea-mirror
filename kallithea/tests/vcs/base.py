@@ -73,10 +73,13 @@ class _BackendTestMixin(object):
 
         for commit in cls._get_commits():
             for node in commit.get('added', []):
+                assert isinstance(node, FileNode)
                 cls.imc.add(FileNode(node.path, content=node.content))
             for node in commit.get('changed', []):
+                assert isinstance(node, FileNode)
                 cls.imc.change(FileNode(node.path, content=node.content))
             for node in commit.get('removed', []):
+                assert isinstance(node, FileNode)
                 cls.imc.remove(FileNode(node.path))
 
             cls.tip = cls.imc.commit(message=commit['message'],
