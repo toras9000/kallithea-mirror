@@ -301,8 +301,8 @@ class UserModel(object):
         guaranteed not to occur in any of the values.
         """
         app_secret = config.get('app_instance_uuid')
-        return hmac.HMAC(
-            key='\0'.join([app_secret, user.password]).encode('utf-8'),
+        return hmac.new(
+            '\0'.join([app_secret, user.password]).encode('utf-8'),
             msg='\0'.join([session_id, str(user.user_id), user.email, str(timestamp)]).encode('utf-8'),
             digestmod=hashlib.sha1,
         ).hexdigest()
