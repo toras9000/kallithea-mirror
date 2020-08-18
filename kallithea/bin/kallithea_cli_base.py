@@ -71,15 +71,17 @@ def register_command(needs_config_file=False, config_file_initialize_app=False, 
             @functools.wraps(annotated) # reuse meta data from the wrapped function so click can see other options
             def runtime_wrapper(config_file, *args, **kwargs):
                 path_to_ini_file = os.path.realpath(config_file)
-                kallithea.CONFIG = paste.deploy.appconfig('config:' + path_to_ini_file)
+                config = paste.deploy.appconfig('config:' + path_to_ini_file)
                 cp = configparser.ConfigParser(strict=False)
                 cp.read_string(read_config(path_to_ini_file, strip_section_prefix=annotated.__name__))
                 logging.config.fileConfig(cp,
                     {'__file__': path_to_ini_file, 'here': os.path.dirname(path_to_ini_file)})
                 if config_file_initialize_app:
                     if needs_config_file:  # special case for db creation: also call annotated function (with config parameter) *before* app initialization
-                        annotated(*args, config=kallithea.CONFIG, **kwargs)
-                    kallithea.config.application.make_app(kallithea.CONFIG.global_conf, **kallithea.CONFIG.local_conf)
+                        annotated(*args, config=config, **kwargs)
+                    kallithea.config.application.make_app(config.global_conf, **config.local_conf)
+                else:
+                    kallithea.CONFIG = dict(config)  # config is a dict subclass
                 return annotated(*args, **kwargs)
             return cli_command(runtime_wrapper)
         return annotator
