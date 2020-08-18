@@ -21,9 +21,8 @@ class smtplib_mock(object):
 
     def sendmail(self, sender, dest, msg):
         smtplib_mock.lastsender = sender
-        smtplib_mock.lastdest = dest
+        smtplib_mock.lastdest = set(dest)
         smtplib_mock.lastmsg = msg
-        pass
 
 
 @mock.patch('kallithea.lib.rcmail.smtp_mailer.smtplib', smtplib_mock)

@@ -96,7 +96,7 @@ class SmtpMailer(object):
         if self.user and self.passwd:
             smtp_serv.login(self.user, self.passwd)
 
-        smtp_serv.sendmail(msg.sender, msg.send_to, raw_msg.as_string())
+        smtp_serv.sendmail(msg.sender, list(msg.send_to), raw_msg.as_string())
         logging.info('MAIL SENT TO: %s' % recipients)
 
         try:
