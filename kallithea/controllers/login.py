@@ -118,7 +118,7 @@ class LoginController(BaseController):
     @HasPermissionAnyDecorator('hg.admin', 'hg.register.auto_activate',
                                'hg.register.manual_activate')
     def register(self):
-        def_user_perms = AuthUser(dbuser=User.get_default_user()).permissions['global']
+        def_user_perms = AuthUser(dbuser=User.get_default_user()).global_permissions
         c.auto_active = 'hg.register.auto_activate' in def_user_perms
 
         settings = Setting.get_app_settings()

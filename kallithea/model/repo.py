@@ -102,7 +102,7 @@ class RepoModel(object):
         from kallithea.lib.auth import AuthUser
         auth_user = AuthUser(dbuser=User.guess_instance(user))
         repos = [repo_name
-            for repo_name, perm in auth_user.permissions['repositories'].items()
+            for repo_name, perm in auth_user.repository_permissions.items()
             if perm in ['repository.read', 'repository.write', 'repository.admin']
             ]
         return Repository.query().filter(Repository.repo_name.in_(repos))

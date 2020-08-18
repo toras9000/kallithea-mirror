@@ -43,7 +43,6 @@ import kallithea
 from kallithea.config.routing import url
 from kallithea.lib.utils import get_repo_group_slug, get_repo_slug, get_user_group_slug
 from kallithea.lib.utils2 import ascii_bytes, ascii_str, safe_bytes
-from kallithea.lib.vcs.utils.lazy import LazyProperty
 from kallithea.model.db import (Permission, UserApiKeys, UserGroup, UserGroupMember, UserGroupRepoGroupToPerm, UserGroupRepoToPerm, UserGroupToPerm,
                                 UserGroupUserGroupToPerm, UserIpMap, UserToPerm)
 from kallithea.model.meta import Session
@@ -117,24 +116,24 @@ def check_password(password, hashed):
     return False
 
 
-def _cached_perms_data(user_id, user_is_admin):
-    RK = 'repositories'
-    GK = 'repositories_groups'
-    UK = 'user_groups'
-    GLOBAL = 'global'
+def get_user_permissions(user_id, user_is_admin):
     PERM_WEIGHTS = Permission.PERM_WEIGHTS
-    permissions = {RK: {}, GK: {}, UK: {}, GLOBAL: set()}
+    repository_permissions = {}
+    repository_group_permissions = {}
+    user_group_permissions = {}
+    global_permissions = set()
 
-    def bump_permission(kind, key, new_perm):
-        """Add a new permission for kind and key.
+
+    def bump_permission(permissions, key, new_perm):
+        """Add a new permission for key to permissions.
         Assuming the permissions are comparable, set the new permission if it
         has higher weight, else drop it and keep the old permission.
         """
-        cur_perm = permissions[kind][key]
+        cur_perm = permissions[key]
         new_perm_val = PERM_WEIGHTS[new_perm]
         cur_perm_val = PERM_WEIGHTS[cur_perm]
         if new_perm_val > cur_perm_val:
-            permissions[kind][key] = new_perm
+            permissions[key] = new_perm
 
     #======================================================================
     # fetch default permissions
@@ -148,26 +147,26 @@ def _cached_perms_data(user_id, user_is_admin):
         # admin users have all rights;
         # based on default permissions, just set everything to admin
         #==================================================================
-        permissions[GLOBAL].add('hg.admin')
+        global_permissions.add('hg.admin')
 
         # repositories
         for perm in default_repo_perms:
             r_k = perm.repository.repo_name
             p = 'repository.admin'
-            permissions[RK][r_k] = p
+            repository_permissions[r_k] = p
 
         # repository groups
         for perm in default_repo_groups_perms:
             rg_k = perm.group.group_name
             p = 'group.admin'
-            permissions[GK][rg_k] = p
+            repository_group_permissions[rg_k] = p
 
         # user groups
         for perm in default_user_group_perms:
             u_k = perm.user_group.users_group_name
             p = 'usergroup.admin'
-            permissions[UK][u_k] = p
-        return permissions
+            user_group_permissions[u_k] = p
+        return (repository_permissions, repository_group_permissions, user_group_permissions, global_permissions)
 
     #==================================================================
     # SET DEFAULTS GLOBAL, REPOS, REPOSITORY GROUPS
@@ -179,7 +178,7 @@ def _cached_perms_data(user_id, user_is_admin):
         .options(joinedload(UserToPerm.permission))
 
     for perm in default_global_perms:
-        permissions[GLOBAL].add(perm.permission.permission_name)
+        global_permissions.add(perm.permission.permission_name)
 
     # defaults for repositories, taken from default user
     for perm in default_repo_perms:
@@ -190,21 +189,21 @@ def _cached_perms_data(user_id, user_is_admin):
             p = 'repository.none'
         else:
             p = perm.permission.permission_name
-        permissions[RK][r_k] = p
+        repository_permissions[r_k] = p
 
     # defaults for repository groups taken from default user permission
     # on given group
     for perm in default_repo_groups_perms:
         rg_k = perm.group.group_name
         p = perm.permission.permission_name
-        permissions[GK][rg_k] = p
+        repository_group_permissions[rg_k] = p
 
     # defaults for user groups taken from default user permission
     # on given user group
     for perm in default_user_group_perms:
         u_k = perm.user_group.users_group_name
         p = perm.permission.permission_name
-        permissions[UK][u_k] = p
+        user_group_permissions[u_k] = p
 
     #======================================================================
     # !! Augment GLOBALS with user permissions if any found !!
@@ -229,7 +228,7 @@ def _cached_perms_data(user_id, user_is_admin):
                                   lambda x:x.users_group)]
     for gr, perms in _grouped:
         for perm in perms:
-            permissions[GLOBAL].add(perm.permission.permission_name)
+            global_permissions.add(perm.permission.permission_name)
 
     # user specific global permissions
     user_perms = Session().query(UserToPerm) \
@@ -237,14 +236,14 @@ def _cached_perms_data(user_id, user_is_admin):
             .filter(UserToPerm.user_id == user_id).all()
 
     for perm in user_perms:
-        permissions[GLOBAL].add(perm.permission.permission_name)
+        global_permissions.add(perm.permission.permission_name)
 
     # for each kind of global permissions, only keep the one with heighest weight
     kind_max_perm = {}
-    for perm in sorted(permissions[GLOBAL], key=lambda n: PERM_WEIGHTS.get(n, -1)):
+    for perm in sorted(global_permissions, key=lambda n: PERM_WEIGHTS.get(n, -1)):
         kind = perm.rsplit('.', 1)[0]
         kind_max_perm[kind] = perm
-    permissions[GLOBAL] = set(kind_max_perm.values())
+    global_permissions = set(kind_max_perm.values())
     ## END GLOBAL PERMISSIONS
 
     #======================================================================
@@ -269,14 +268,14 @@ def _cached_perms_data(user_id, user_is_admin):
         .all()
 
     for perm in user_repo_perms_from_users_groups:
-        bump_permission(RK,
+        bump_permission(repository_permissions,
             perm.repository.repo_name,
             perm.permission.permission_name)
 
     # user permissions for repositories
     user_repo_perms = Permission.get_default_perms(user_id)
     for perm in user_repo_perms:
-        bump_permission(RK,
+        bump_permission(repository_permissions,
             perm.repository.repo_name,
             perm.permission.permission_name)
 
@@ -300,14 +299,14 @@ def _cached_perms_data(user_id, user_is_admin):
      .all()
 
     for perm in user_repo_group_perms_from_users_groups:
-        bump_permission(GK,
+        bump_permission(repository_group_permissions,
             perm.group.group_name,
             perm.permission.permission_name)
 
     # user explicit permissions for repository groups
     user_repo_groups_perms = Permission.get_default_group_perms(user_id)
     for perm in user_repo_groups_perms:
-        bump_permission(GK,
+        bump_permission(repository_group_permissions,
             perm.group.group_name,
             perm.permission.permission_name)
 
@@ -329,18 +328,18 @@ def _cached_perms_data(user_id, user_is_admin):
      .all()
 
     for perm in user_group_user_groups_perms:
-        bump_permission(UK,
+        bump_permission(user_group_permissions,
             perm.target_user_group.users_group_name,
             perm.permission.permission_name)
 
     # user explicit permission for user groups
     user_user_groups_perms = Permission.get_default_user_group_perms(user_id)
     for perm in user_user_groups_perms:
-        bump_permission(UK,
+        bump_permission(user_group_permissions,
             perm.user_group.users_group_name,
             perm.permission.permission_name)
 
-    return permissions
+    return (repository_permissions, repository_group_permissions, user_group_permissions, global_permissions)
 
 
 class AuthUser(object):
@@ -428,17 +427,15 @@ class AuthUser(object):
             self.is_default_user = dbuser.is_default_user
         log.debug('Auth User is now %s', self)
 
-    @LazyProperty
-    def permissions(self):
-        """
-        Fills user permission attribute with permissions taken from database
-        works for permissions given for repositories, and for permissions that
-        are granted to groups
-
-        :param user: `AuthUser` instance
-        """
         log.debug('Getting PERMISSION tree for %s', self)
-        return _cached_perms_data(self.user_id, self.is_admin)
+        (self.repository_permissions, self.repository_group_permissions, self.user_group_permissions, self.global_permissions,
+        )= get_user_permissions(self.user_id, self.is_admin)
+        self.permissions = {
+            'global': self.global_permissions,
+            'repositories': self.repository_permissions,
+            'repositories_groups': self.repository_group_permissions,
+            'user_groups': self.user_group_permissions,
+        } # backwards compatibility
 
     def has_repository_permission_level(self, repo_name, level, purpose=None):
         required_perms = {
@@ -446,7 +443,7 @@ class AuthUser(object):
             'write': ['repository.write', 'repository.admin'],
             'admin': ['repository.admin'],
         }[level]
-        actual_perm = self.permissions['repositories'].get(repo_name)
+        actual_perm = self.repository_permissions.get(repo_name)
         ok = actual_perm in required_perms
         log.debug('Checking if user %r can %r repo %r (%s): %s (has %r)',
             self.username, level, repo_name, purpose, ok, actual_perm)
@@ -458,7 +455,7 @@ class AuthUser(object):
             'write': ['group.write', 'group.admin'],
             'admin': ['group.admin'],
         }[level]
-        actual_perm = self.permissions['repositories_groups'].get(repo_group_name)
+        actual_perm = self.repository_group_permissions.get(repo_group_name)
         ok = actual_perm in required_perms
         log.debug('Checking if user %r can %r repo group %r (%s): %s (has %r)',
             self.username, level, repo_group_name, purpose, ok, actual_perm)
@@ -470,7 +467,7 @@ class AuthUser(object):
             'write': ['usergroup.write', 'usergroup.admin'],
             'admin': ['usergroup.admin'],
         }[level]
-        actual_perm = self.permissions['user_groups'].get(user_group_name)
+        actual_perm = self.user_group_permissions.get(user_group_name)
         ok = actual_perm in required_perms
         log.debug('Checking if user %r can %r user group %r (%s): %s (has %r)',
             self.username, level, user_group_name, purpose, ok, actual_perm)
@@ -497,7 +494,7 @@ class AuthUser(object):
         """
         Returns list of repositories you're an admin of
         """
-        return [x[0] for x in self.permissions['repositories'].items()
+        return [x[0] for x in self.repository_permissions.items()
                 if x[1] == 'repository.admin']
 
     @property
@@ -505,7 +502,7 @@ class AuthUser(object):
         """
         Returns list of repository groups you're an admin of
         """
-        return [x[0] for x in self.permissions['repositories_groups'].items()
+        return [x[0] for x in self.repository_group_permissions.items()
                 if x[1] == 'group.admin']
 
     @property
@@ -513,7 +510,7 @@ class AuthUser(object):
         """
         Returns list of user groups you're an admin of
         """
-        return [x[0] for x in self.permissions['user_groups'].items()
+        return [x[0] for x in self.user_group_permissions.items()
                 if x[1] == 'usergroup.admin']
 
     def __repr__(self):
@@ -672,8 +669,7 @@ class HasPermissionAnyDecorator(_PermsDecorator):
     """
 
     def check_permissions(self, user):
-        global_permissions = user.permissions['global'] # usually very short
-        return any(p in global_permissions for p in self.required_perms)
+        return any(p in user.global_permissions for p in self.required_perms)
 
 
 class _PermDecorator(_PermsDecorator):
@@ -739,8 +735,7 @@ class _PermsFunction(object):
 class HasPermissionAny(_PermsFunction):
 
     def __call__(self, purpose=None):
-        global_permissions = request.authuser.permissions['global'] # usually very short
-        ok = any(p in global_permissions for p in self.required_perms)
+        ok = any(p in request.authuser.global_permissions for p in self.required_perms)
 
         log.debug('Check %s for global %s (%s): %s',
             request.authuser.username, self.required_perms, purpose, ok)
@@ -783,7 +778,7 @@ class HasPermissionAnyMiddleware(object):
 
     def __call__(self, authuser, repo_name, purpose=None):
         try:
-            ok = authuser.permissions['repositories'][repo_name] in self.required_perms
+            ok = authuser.repository_permissions[repo_name] in self.required_perms
         except KeyError:
             ok = False
 

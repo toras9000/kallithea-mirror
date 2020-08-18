@@ -240,7 +240,7 @@ class KallitheaExternalAuthPlugin(KallitheaAuthPluginBase):
             userobj, username, passwd, settings, **kwargs)
         if user_data is not None:
             if userobj is None: # external authentication of unknown user that will be created soon
-                def_user_perms = AuthUser(dbuser=User.get_default_user()).permissions['global']
+                def_user_perms = AuthUser(dbuser=User.get_default_user()).global_permissions
                 active = 'hg.extern_activate.auto' in def_user_perms
             else:
                 active = userobj.active
