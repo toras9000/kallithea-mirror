@@ -29,7 +29,7 @@ import kallithea.bin.kallithea_cli_base as cli_base
 from kallithea.lib.utils2 import ask_ok
 
 
-@cli_base.register_command(config_file=True)
+@cli_base.register_command(needs_config_file=True)
 def extensions_create():
     """Write template file for extending Kallithea in Python.
 

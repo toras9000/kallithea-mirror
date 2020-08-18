@@ -19,7 +19,7 @@ from kallithea.lib.db_manage import DbManage
 from kallithea.model.meta import Session
 
 
-@cli_base.register_command(config_file=True)
+@cli_base.register_command(needs_config_file=True)
 @click.option('--reuse/--no-reuse', default=False,
         help='Reuse and clean existing database instead of dropping and creating (default: no reuse)')
 @click.option('--user', help='Username of administrator account.')

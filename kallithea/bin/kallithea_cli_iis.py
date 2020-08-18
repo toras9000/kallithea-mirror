@@ -57,7 +57,7 @@ if __name__=='__main__':
     HandleCommandLine(params)
 '''
 
-@cli_base.register_command(config_file=True)
+@cli_base.register_command(needs_config_file=True)
 @click.option('--virtualdir', default='/',
         help='The virtual folder to install into on IIS.')
 def iis_install(virtualdir):

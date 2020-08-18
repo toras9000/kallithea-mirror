@@ -53,10 +53,10 @@ def read_config(ini_file_name, strip_section_prefix):
 def cli():
     """Various commands to manage a Kallithea instance."""
 
-def register_command(config_file=False, config_file_initialize_app=False, hidden=False):
+def register_command(needs_config_file=False, config_file_initialize_app=False, hidden=False):
     """Register a kallithea-cli subcommand.
 
-    If one of the config_file flags are true, a config file must be specified
+    If one of the needs_config_file flags are true, a config file must be specified
     with -c and it is read and logging is configured. The configuration is
     available in the kallithea.CONFIG dict.
 
@@ -64,7 +64,7 @@ def register_command(config_file=False, config_file_initialize_app=False, hidden
     (including tg.config), and database access will also be fully initialized.
     """
     cli_command = cli.command(hidden=hidden)
-    if config_file or config_file_initialize_app:
+    if needs_config_file or config_file_initialize_app:
         def annotator(annotated):
             @click.option('--config_file', '-c', help="Path to .ini file with app configuration.",
                 type=click.Path(dir_okay=False, exists=True, readable=True), required=True)
