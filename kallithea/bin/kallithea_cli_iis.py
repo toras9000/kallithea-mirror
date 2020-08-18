@@ -65,7 +65,7 @@ def iis_install(virtualdir, config):
     config_file_abs = config['__file__']
 
     try:
-        import isapi_wsgi
+        import isapi_wsgi  # pytype: disable=import-error
         assert isapi_wsgi
     except ImportError:
         sys.stderr.write('missing requirement: isapi-wsgi not installed\n')

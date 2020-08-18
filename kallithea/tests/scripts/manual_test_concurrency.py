@@ -199,7 +199,7 @@ if __name__ == '__main__':
             backend = 'hg'
 
         if METHOD == 'pull':
-            seq = next(tempfile._RandomNameSequence())
+            seq = next(tempfile._RandomNameSequence())  # pytype: disable=module-attr
             test_clone_with_credentials(repo=sys.argv[1], method='clone',
                                         backend=backend)
         s = time.time()

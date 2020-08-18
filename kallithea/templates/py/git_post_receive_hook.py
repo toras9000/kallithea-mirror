@@ -22,7 +22,7 @@ import kallithea.bin.vcs_hooks
 # instead of the exception output.
 if sys.platform == "win32":
     import msvcrt
-    msvcrt.setmode(sys.stderr.fileno(), os.O_BINARY)
+    msvcrt.setmode(sys.stderr.fileno(), os.O_BINARY)  # pytype: disable=module-attr
 
 KALLITHEA_HOOK_VER = '_TMPL_'
 os.environ['KALLITHEA_HOOK_VER'] = KALLITHEA_HOOK_VER

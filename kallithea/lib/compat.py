@@ -56,7 +56,7 @@ if os.name == 'nt': # Windows
 
     def kill(pid, sig):
         """kill function for Win32"""
-        kernel32 = ctypes.windll.kernel32
+        kernel32 = ctypes.windll.kernel32  # pytype: disable=module-attr
         handle = kernel32.OpenProcess(1, 0, pid)
         return (0 != kernel32.TerminateProcess(handle, 0))
 
