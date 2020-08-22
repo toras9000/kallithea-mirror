@@ -106,10 +106,10 @@ An additional benefit of virtualenv is that it doesn't require root privileges.
    This might require installation of development packages using your
    distribution's package manager.
 
-  Alternatively, download a .tar.gz from http://pypi.python.org/pypi/Kallithea,
-  extract it and install from source by running::
+   Alternatively, download a .tar.gz from http://pypi.python.org/pypi/Kallithea,
+   extract it and install from source by running::
 
-    pip install --upgrade .
+     pip install --upgrade .
 
 - This will install Kallithea together with all other required
   Python libraries into the activated virtualenv.
