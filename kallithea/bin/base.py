@@ -130,7 +130,7 @@ class RcConf(object):
             update = True
         with open(self._conf_name, 'wb') as f:
             ext_json.dump(config, f, indent=4)
-            f.write('\n')
+            f.write(b'\n')
 
         if update:
             sys.stdout.write('Updated config in %s\n' % self._conf_name)

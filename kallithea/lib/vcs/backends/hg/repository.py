@@ -33,13 +33,13 @@ import mercurial.scmutil
 import mercurial.sshpeer
 import mercurial.tags
 import mercurial.ui
-import mercurial.url
 import mercurial.util
 
 from kallithea.lib.vcs.backends.base import BaseRepository, CollectionGenerator
 from kallithea.lib.vcs.exceptions import (BranchDoesNotExistError, ChangesetDoesNotExistError, EmptyRepositoryError, RepositoryError, TagAlreadyExistError,
                                           TagDoesNotExistError, VCSError)
 from kallithea.lib.vcs.utils import ascii_str, author_email, author_name, date_fromtimestamp, makedate, safe_bytes, safe_str
+from kallithea.lib.vcs.utils.helpers import get_urllib_request_handlers
 from kallithea.lib.vcs.utils.lazy import LazyProperty
 from kallithea.lib.vcs.utils.paths import abspath
 
@@ -308,19 +308,11 @@ class MercurialRepository(BaseRepository):
         if b'+' in url[:url.find(b'://')]:
             url_prefix, url = url.split(b'+', 1)
 
-        handlers = []
         url_obj = mercurial.util.url(url)
-        test_uri, authinfo = url_obj.authinfo()
+        test_uri, handlers = get_urllib_request_handlers(url_obj)
+
         url_obj.passwd = b'*****'
         cleaned_uri = str(url_obj)
-
-        if authinfo:
-            # create a password manager
-            passmgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
-            passmgr.add_password(*authinfo)
-
-            handlers.extend((mercurial.url.httpbasicauthhandler(passmgr),
-                             mercurial.url.httpdigestauthhandler(passmgr)))
 
         o = urllib.request.build_opener(*handlers)
         o.addheaders = [('Content-Type', 'application/mercurial-0.1'),
@@ -328,7 +320,7 @@ class MercurialRepository(BaseRepository):
 
         req = urllib.request.Request(
             "%s?%s" % (
-                test_uri,
+                safe_str(test_uri),
                 urllib.parse.urlencode({
                     'cmd': 'between',
                     'pairs': "%s-%s" % ('0' * 40, '0' * 40),

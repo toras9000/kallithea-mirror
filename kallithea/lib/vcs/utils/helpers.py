@@ -6,8 +6,12 @@ import datetime
 import os
 import re
 import time
+import urllib.request
+
+import mercurial.url
 
 from kallithea.lib.vcs.exceptions import RepositoryError, VCSError
+from kallithea.lib.vcs.utils import safe_str
 from kallithea.lib.vcs.utils.paths import abspath
 
 
@@ -217,3 +221,29 @@ def get_dict_for_attrs(obj, attrs):
     for attr in attrs:
         data[attr] = getattr(obj, attr)
     return data
+
+def get_urllib_request_handlers(url_obj):
+    handlers = []
+    test_uri, authinfo = url_obj.authinfo()
+
+    if authinfo:
+        # authinfo is a tuple (realm, uris, user, password) where 'uris' itself
+        # is a tuple of URIs.
+        # If url_obj is obtained via mercurial.util.url, the obtained authinfo
+        # values will be bytes, e.g.
+        #    (None, (b'http://127.0.0.1/repo', b'127.0.0.1'), b'user', b'pass')
+        # However, urllib expects strings, not bytes, so we must convert them.
+
+        # create a password manager
+        passmgr = urllib.request.HTTPPasswordMgrWithDefaultRealm()
+        passmgr.add_password(
+            safe_str(authinfo[0]) if authinfo[0] else None, # realm
+            tuple(safe_str(x) for x in authinfo[1]),        # uris
+            safe_str(authinfo[2]),                          # user
+            safe_str(authinfo[3]),                          # password
+        )
+
+        handlers.extend((mercurial.url.httpbasicauthhandler(passmgr),
+                         mercurial.url.httpdigestauthhandler(passmgr)))
+
+    return test_uri, handlers
