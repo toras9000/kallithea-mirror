@@ -67,18 +67,18 @@ Kallithea can also be scaled horizontally across multiple machines.
 In order to scale horizontally on multiple machines, you need to do the
 following:
 
-    - Each instance's ``data`` storage needs to be configured to be stored on a
-      shared disk storage, preferably together with repositories. This ``data``
-      dir contains template caches, sessions, whoosh index and is used for
-      task locking (so it is safe across multiple instances). Set the
-      ``cache_dir``, ``index_dir``, ``beaker.cache.data_dir``, ``beaker.cache.lock_dir``
-      variables in each .ini file to a shared location across Kallithea instances
-    - If using several Celery instances,
-      the message broker should be common to all of them (e.g.,  one
-      shared RabbitMQ server)
-    - Load balance using round robin or IP hash, recommended is writing LB rules
-      that will separate regular user traffic from automated processes like CI
-      servers or build bots.
+- Each instance's ``data`` storage needs to be configured to be stored on a
+  shared disk storage, preferably together with repositories. This ``data``
+  dir contains template caches, sessions, whoosh index and is used for
+  task locking (so it is safe across multiple instances). Set the
+  ``cache_dir``, ``index_dir``, ``beaker.cache.data_dir``, ``beaker.cache.lock_dir``
+  variables in each .ini file to a shared location across Kallithea instances
+- If using several Celery instances,
+  the message broker should be common to all of them (e.g.,  one
+  shared RabbitMQ server)
+- Load balance using round robin or IP hash, recommended is writing LB rules
+  that will separate regular user traffic from automated processes like CI
+  servers or build bots.
 
 
 Serve static files directly from the web server
