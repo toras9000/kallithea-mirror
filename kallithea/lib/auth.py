@@ -117,24 +117,25 @@ def check_password(password, hashed):
     return False
 
 
+PERM_WEIGHTS = Permission.PERM_WEIGHTS
+
+def bump_permission(permissions, key, new_perm):
+    """Add a new permission for key to permissions.
+    Assuming the permissions are comparable, set the new permission if it
+    has higher weight, else drop it and keep the old permission.
+    """
+    cur_perm = permissions[key]
+    new_perm_val = PERM_WEIGHTS[new_perm]
+    cur_perm_val = PERM_WEIGHTS[cur_perm]
+    if new_perm_val > cur_perm_val:
+        permissions[key] = new_perm
+
 def get_user_permissions(user_id, user_is_admin):
-    PERM_WEIGHTS = Permission.PERM_WEIGHTS
     repository_permissions = {}
     repository_group_permissions = {}
     user_group_permissions = {}
     global_permissions = set()
 
-
-    def bump_permission(permissions, key, new_perm):
-        """Add a new permission for key to permissions.
-        Assuming the permissions are comparable, set the new permission if it
-        has higher weight, else drop it and keep the old permission.
-        """
-        cur_perm = permissions[key]
-        new_perm_val = PERM_WEIGHTS[new_perm]
-        cur_perm_val = PERM_WEIGHTS[cur_perm]
-        if new_perm_val > cur_perm_val:
-            permissions[key] = new_perm
 
     #======================================================================
     # fetch default permissions
