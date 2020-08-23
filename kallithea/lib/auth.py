@@ -131,14 +131,11 @@ def bump_permission(permissions, key, new_perm):
         permissions[key] = new_perm
 
 def get_user_permissions(user_id, user_is_admin):
-    repository_group_permissions = {}
     user_group_permissions = {}
-
 
     #======================================================================
     # fetch default permissions
     #======================================================================
-    default_repo_groups_perms = Permission.get_default_group_perms(kallithea.DEFAULT_USER_ID)
     default_user_group_perms = Permission.get_default_user_group_perms(kallithea.DEFAULT_USER_ID)
 
     if user_is_admin:
@@ -147,29 +144,16 @@ def get_user_permissions(user_id, user_is_admin):
         # based on default permissions, just set everything to admin
         #==================================================================
 
-        # repository groups
-        for perm in default_repo_groups_perms:
-            rg_k = perm.group.group_name
-            p = 'group.admin'
-            repository_group_permissions[rg_k] = p
-
         # user groups
         for perm in default_user_group_perms:
             u_k = perm.user_group.users_group_name
             p = 'usergroup.admin'
             user_group_permissions[u_k] = p
-        return (repository_group_permissions, user_group_permissions)
+        return (user_group_permissions)
 
     #==================================================================
     # SET DEFAULTS GLOBAL, REPOS, REPOSITORY GROUPS
     #==================================================================
-
-    # defaults for repository groups taken from default user permission
-    # on given group
-    for perm in default_repo_groups_perms:
-        rg_k = perm.group.group_name
-        p = perm.permission.permission_name
-        repository_group_permissions[rg_k] = p
 
     # defaults for user groups taken from default user permission
     # on given user group
@@ -177,37 +161,6 @@ def get_user_permissions(user_id, user_is_admin):
         u_k = perm.user_group.users_group_name
         p = perm.permission.permission_name
         user_group_permissions[u_k] = p
-
-    #======================================================================
-    # !! PERMISSIONS FOR REPOSITORY GROUPS !!
-    #======================================================================
-    #======================================================================
-    # check if user is part of user groups for this repository groups and
-    # fill in his permission from it.
-    #======================================================================
-    # user group for repo groups permissions
-    user_repo_group_perms_from_users_groups = \
-     Session().query(UserGroupRepoGroupToPerm) \
-     .join((UserGroup, UserGroupRepoGroupToPerm.users_group_id ==
-            UserGroup.users_group_id)) \
-     .filter(UserGroup.users_group_active == True) \
-     .join((UserGroupMember, UserGroupRepoGroupToPerm.users_group_id
-            == UserGroupMember.users_group_id)) \
-     .filter(UserGroupMember.user_id == user_id) \
-     .options(joinedload(UserGroupRepoGroupToPerm.permission)) \
-     .all()
-
-    for perm in user_repo_group_perms_from_users_groups:
-        bump_permission(repository_group_permissions,
-            perm.group.group_name,
-            perm.permission.permission_name)
-
-    # user explicit permissions for repository groups
-    user_repo_groups_perms = Permission.get_default_group_perms(user_id)
-    for perm in user_repo_groups_perms:
-        bump_permission(repository_group_permissions,
-            perm.group.group_name,
-            perm.permission.permission_name)
 
     #======================================================================
     # !! PERMISSIONS FOR USER GROUPS !!
@@ -238,7 +191,7 @@ def get_user_permissions(user_id, user_is_admin):
             perm.user_group.users_group_name,
             perm.permission.permission_name)
 
-    return (repository_group_permissions, user_group_permissions)
+    return (user_group_permissions)
 
 
 class AuthUser(object):
@@ -327,7 +280,7 @@ class AuthUser(object):
         log.debug('Auth User is now %s', self)
 
         log.debug('Getting PERMISSION tree for %s', self)
-        (self.repository_group_permissions, self.user_group_permissions,
+        (self.user_group_permissions,
         )= get_user_permissions(self.user_id, self.is_admin)
 
     @LazyProperty
@@ -429,6 +382,51 @@ class AuthUser(object):
                     perm.permission.permission_name)
 
         return repository_permissions
+
+    @LazyProperty
+    def repository_group_permissions(self):
+        log.debug('Getting repository group permissions for %s', self)
+        repository_group_permissions = {}
+        default_repo_groups_perms = Permission.get_default_group_perms(kallithea.DEFAULT_USER_ID)
+
+        if self.is_admin:
+            for perm in default_repo_groups_perms:
+                rg_k = perm.group.group_name
+                p = 'group.admin'
+                repository_group_permissions[rg_k] = p
+
+        else:
+            # defaults for repository groups taken from default user permission
+            # on given group
+            for perm in default_repo_groups_perms:
+                rg_k = perm.group.group_name
+                p = perm.permission.permission_name
+                repository_group_permissions[rg_k] = p
+
+            # user group for repo groups permissions
+            user_repo_group_perms_from_users_groups = \
+                Session().query(UserGroupRepoGroupToPerm) \
+                .join((UserGroup, UserGroupRepoGroupToPerm.users_group_id ==
+                       UserGroup.users_group_id)) \
+                .filter(UserGroup.users_group_active == True) \
+                .join((UserGroupMember, UserGroupRepoGroupToPerm.users_group_id
+                       == UserGroupMember.users_group_id)) \
+                .filter(UserGroupMember.user_id == self.user_id) \
+                .options(joinedload(UserGroupRepoGroupToPerm.permission)) \
+                .all()
+            for perm in user_repo_group_perms_from_users_groups:
+                bump_permission(repository_group_permissions,
+                    perm.group.group_name,
+                    perm.permission.permission_name)
+
+            # user explicit permissions for repository groups
+            user_repo_groups_perms = Permission.get_default_group_perms(self.user_id)
+            for perm in user_repo_groups_perms:
+                bump_permission(repository_group_permissions,
+                    perm.group.group_name,
+                    perm.permission.permission_name)
+
+        return repository_group_permissions
 
     @LazyProperty
     def permissions(self):
