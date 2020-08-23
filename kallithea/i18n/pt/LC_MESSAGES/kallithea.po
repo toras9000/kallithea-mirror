@@ -1,0 +1,1594 @@
+# Copyright (C) 2020 Various authors, licensing as GPLv3
+# This file is distributed under the same license as the Kallithea project.
+
+msgid ""
+msgstr ""
+"Report-Msgid-Bugs-To: translations@kallithea-scm.org\n"
+"Language: pt\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+
+msgid "There are no changesets yet"
+msgstr "Não há nenhum changeset ainda"
+
+msgid "None"
+msgstr "Nenhum"
+
+msgid "(closed)"
+msgstr "(fechado)"
+
+msgid "Show whitespace"
+msgstr "Mostrar espaços em branco"
+
+msgid "Ignore whitespace"
+msgstr "Ignorar espaços em branco"
+
+msgid ""
+"The request could not be understood by the server due to malformed syntax."
+msgstr ""
+"A requisição não pôde ser compreendida pelo servidor devido à sintaxe mal "
+"formada."
+
+msgid "Unauthorized access to resource"
+msgstr "Acesso não autorizado ao recurso"
+
+msgid "You don't have permission to view this page"
+msgstr "Não tem permissão para ver esta página"
+
+msgid "The resource could not be found"
+msgstr "O recurso não pôde ser encontrado"
+
+msgid ""
+"The server encountered an unexpected condition which prevented it from "
+"fulfilling the request."
+msgstr ""
+"O servidor encontrou uma condição inesperada que o impediu de satisfazer "
+"a requisição."
+
+msgid "%s committed on %s"
+msgstr "%s commitados em %s"
+
+msgid "Changeset was too big and was cut off..."
+msgstr "Conjunto de mudanças era grande demais e foi cortado..."
+
+msgid "%s %s feed"
+msgstr "%s - feed %s"
+
+msgid "Changes on %s repository"
+msgstr "Modificações no repositório %s"
+
+msgid "Click here to add new file"
+msgstr "Clique aqui para adicionar um novo ficheiro"
+
+msgid "Error occurred during commit"
+msgstr "Ocorreu um erro ao realizar commit"
+
+msgid "Edited file %s via Kallithea"
+msgstr "Ficheiro %s editado via Kallithea"
+
+msgid "No changes"
+msgstr "Sem modificações"
+
+msgid "Successfully committed to %s"
+msgstr "Commit realizado com sucesso para %s"
+
+msgid "Added file via Kallithea"
+msgstr "Ficheiro adicionado via Kallithea"
+
+msgid "No content"
+msgstr "Nenhum conteúdo"
+
+msgid "No filename"
+msgstr "Nenhum nome de ficheiro"
+
+msgid "Location must be relative path and must not contain .. in path"
+msgstr "O caminho deve ser relativo e não pode conter .."
+
+msgid "Downloads disabled"
+msgstr "Downloads desativados"
+
+msgid "Unknown revision %s"
+msgstr "Revisão desconhecida %s"
+
+msgid "Empty repository"
+msgstr "Repositório vazio"
+
+msgid "Unknown archive type"
+msgstr "Tipo de archivo desconhecido"
+
+msgid "Changesets"
+msgstr "Conjuntos de mudanças"
+
+msgid "Branches"
+msgstr "Ramos"
+
+msgid "Tags"
+msgstr "Etiquetas"
+
+msgid "An error occurred during repository forking %s"
+msgstr "Ocorreu um erro ao bifurcar o repositório %s"
+
+msgid "Repositories"
+msgstr "Repositórios"
+
+msgid "Branch"
+msgstr "Ramo"
+
+msgid "Closed Branches"
+msgstr "Ramos Fechados"
+
+msgid "Public Journal"
+msgstr "Diário Público"
+
+msgid "Journal"
+msgstr "Diário"
+
+msgid "You have successfully registered with %s"
+msgstr "Foi registado no %s com sucesso"
+
+msgid "Changeset"
+msgstr "Conjunto de Mudanças"
+
+msgid "Special"
+msgstr "Especial"
+
+msgid "Peer branches"
+msgstr "Ramos pares"
+
+msgid "Bookmarks"
+msgstr "Marcadores"
+
+msgid "Successfully opened new pull request"
+msgstr "Novo pull request criado com sucesso"
+
+msgid "Successfully deleted pull request"
+msgstr "Pull request excluído com sucesso"
+
+msgid "Invalid search query. Try quoting it."
+msgstr "Consulta de busca inválida. Tente usar aspas."
+
+msgid "Statistics are disabled for this repository"
+msgstr "As estatísticas estão desabillitadas para este repositório"
+
+msgid "Default settings updated successfully"
+msgstr "Configurações predefinidas atualizadas com sucesso"
+
+msgid "Error occurred during update of defaults"
+msgstr "Ocorreu um erro durnge a atualização dos padrões"
+
+msgid "5 minutes"
+msgstr "cinco minutos"
+
+msgid "1 hour"
+msgstr "uma hora"
+
+msgid "1 day"
+msgstr "um dia"
+
+msgid "1 month"
+msgstr "um mês"
+
+msgid "Error occurred during gist creation"
+msgstr "Ocorreu um erro durante a criação de um gist"
+
+msgid "Deleted gist %s"
+msgstr "Gist %s excluído"
+
+msgid "You can't edit this user since it's crucial for entire application"
+msgstr ""
+"Não pode editar esse utilizador pois ele é crucial para toda a aplicação"
+
+msgid "Your account was updated successfully"
+msgstr "Sua conta foi atualizada com sucesso"
+
+msgid "Error occurred during update of user %s"
+msgstr "Ocorreu um erro durante a atualização do utilizador %s"
+
+msgid "Added email %s to user"
+msgstr "Email %s adicionado ao utilizador"
+
+msgid "An error occurred during email saving"
+msgstr "Ocorreu um erro durante o salvamento do email"
+
+msgid "Removed email from user"
+msgstr "Email removido do utilizador"
+
+msgid "Read"
+msgstr "Ler"
+
+msgid "Write"
+msgstr "Gravar"
+
+msgid "Admin"
+msgstr "Administrador"
+
+msgid "Disabled"
+msgstr "Desativado"
+
+msgid "Allowed with manual account activation"
+msgstr "Permitido com ativação manual de conta"
+
+msgid "Allowed with automatic account activation"
+msgstr "Permitido com ativação automática de conta"
+
+msgid "Manual activation of external account"
+msgstr "Ativação manual de conta externa"
+
+msgid "Automatic activation of external account"
+msgstr "Ativação automática de conta externa"
+
+msgid "Enabled"
+msgstr "Ativado"
+
+msgid "Error occurred during update of permissions"
+msgstr "Ocorreu um erro durante a atualização das permissões"
+
+msgid "Error occurred during creation of repository group %s"
+msgstr "Ocorreu um erro durante a criação do grupo de repositórios %s"
+
+msgid "Created repository group %s"
+msgstr "Grupo de repositórios %s criado"
+
+msgid "Updated repository group %s"
+msgstr "Grupo de repositórios %s atualizado"
+
+msgid "Error occurred during update of repository group %s"
+msgstr "Ocorreu um erro durante a atualização do grupo de repositórios %s"
+
+msgid "This group contains %s repositories and cannot be deleted"
+msgstr "Esse grupo contém %s repositórios e não pode ser excluído"
+
+msgid "This group contains %s subgroups and cannot be deleted"
+msgstr "Este grupo contém %s subgrupos e não pode ser excluído"
+
+msgid "Removed repository group %s"
+msgstr "Grupo de repositórios %s excluído"
+
+msgid "Error occurred during deletion of repository group %s"
+msgstr "Ocorreu um erro durante a exclusão do grupo de repositórios %s"
+
+msgid "Cannot revoke permission for yourself as admin"
+msgstr "Não pode revocar sua própria permissão de administrador"
+
+msgid "Repository group permissions updated"
+msgstr "Permissões atualizadas do Grupo de Repositórios"
+
+msgid "An error occurred during revoking of permission"
+msgstr "Ocorreu um erro durante a revocação das permissões"
+
+msgid "Error creating repository %s"
+msgstr "Erro ao criar repositório %s"
+
+msgid "Created repository %s from %s"
+msgstr "Repositório %s criado de %s"
+
+msgid "Forked repository %s as %s"
+msgstr "Repositório %s bifurcado como %s"
+
+msgid "Created repository %s"
+msgstr "Repositório %s criado"
+
+msgid "Repository %s updated successfully"
+msgstr "Repositório %s atualizado com sucesso"
+
+msgid "Error occurred during update of repository %s"
+msgstr "Ocorreu um erro durante a atualização do repositório %s"
+
+msgid "Deleted %s forks"
+msgstr "%s bifurcações excluídas"
+
+msgid "Deleted repository %s"
+msgstr "Repositório %s excluído"
+
+msgid "An error occurred during deletion of %s"
+msgstr "Ocorreu um erro durante a exclusão de %s"
+
+msgid "Repository permissions updated"
+msgstr "Permissões do repositório atualizadas"
+
+msgid "An error occurred during removal of field"
+msgstr "Ocorreu um erro durante a remoção do campo"
+
+msgid "Updated repository visibility in public journal"
+msgstr "Atualizada a visibilidade do repositório no diário público"
+
+msgid "An error occurred during setting this repository in public journal"
+msgstr "Ocorreu um erro ao ajustar esse repositório no diário público"
+
+msgid "Nothing"
+msgstr "Nada"
+
+msgid "Marked repository %s as fork of %s"
+msgstr "Marcado repositório %s como bifurcação de %s"
+
+msgid "An error occurred during this operation"
+msgstr "Ocorreu um erro durante essa operação"
+
+msgid "Pulled from remote location"
+msgstr "Realizado pull de localização remota"
+
+msgid "An error occurred during pull from remote location"
+msgstr "Ocorreu um erro ao realizar pull de localização remota"
+
+msgid "An error occurred during deletion of repository stats"
+msgstr "Ocorreu um erro ao apagar as estatísticas de repositório"
+
+msgid "Updated VCS settings"
+msgstr "Configurações de VCS atualizadas"
+
+msgid "Error occurred while updating application settings"
+msgstr ""
+"Ocorreu um erro durante a atualização das configurações da aplicação"
+
+msgid "Updated application settings"
+msgstr "Configurações da aplicação atualizadas"
+
+msgid "Updated visualisation settings"
+msgstr "Configurações de visualização atualizadas"
+
+msgid "Error occurred during updating visualisation settings"
+msgstr ""
+"Ocorreu um erro durante a atualização das configurações de visualização"
+
+msgid "Added new hook"
+msgstr "Adicionado novo gancho"
+
+msgid "Updated hooks"
+msgstr "Atualizados os ganchos"
+
+msgid "Error occurred during hook creation"
+msgstr "Ocorreu um erro durante a criação do hook"
+
+msgid "Whoosh reindex task scheduled"
+msgstr "Tarefa de reindexação do whoosh agendada"
+
+msgid "Created user group %s"
+msgstr "Grupo de utilizadores %s criado"
+
+msgid "Error occurred during creation of user group %s"
+msgstr "Ocorreu um erro durante a criação do grupo de utilizadores %s"
+
+msgid "Updated user group %s"
+msgstr "Grupo de utilizadores %s atualizado"
+
+msgid "Error occurred during update of user group %s"
+msgstr "Ocorreu um erro durante a atualização do grupo de utilizadores %s"
+
+msgid "Successfully deleted user group"
+msgstr "Grupo de utilizadores excluído com sucesso"
+
+msgid "An error occurred during deletion of user group"
+msgstr "Ocorreu um erro durante a exclusão do grupo de utilizadores"
+
+msgid "Target group cannot be the same"
+msgstr "O grupo destino não pode ser o mesmo"
+
+msgid "User group permissions updated"
+msgstr "Permissões do Grupo de Utilizadores atualizadas"
+
+msgid "Updated permissions"
+msgstr "Permissões atualizadas"
+
+msgid "An error occurred during permissions saving"
+msgstr "Ocorreu um erro durante o salvamento das permissões"
+
+msgid "Created user %s"
+msgstr "Utilizador %s criado"
+
+msgid "Error occurred during creation of user %s"
+msgstr "Ocorreu um erro durante a criação do utilizador %s"
+
+msgid "User updated successfully"
+msgstr "Utilizador atualizado com sucesso"
+
+msgid "Successfully deleted user"
+msgstr "Utilizador excluído com sucesso"
+
+msgid "An error occurred during deletion of user"
+msgstr "Ocorreu um erro ao apagar o utilizador"
+
+msgid "An error occurred while adding IP address"
+msgstr "Ocorreu um erro durante o salvamento do IP"
+
+msgid "You need to be a registered user to perform this action"
+msgstr "Precisa ser um utilizador registado para realizar essa ação"
+
+msgid "You need to be signed in to view this page"
+msgstr "Precisa estar logado para ver essa página"
+
+msgid "Binary file"
+msgstr "Ficheiro binário"
+
+msgid ""
+"Changeset was too big and was cut off, use diff menu to display this diff"
+msgstr ""
+"Conjunto de mudanças é grande demais e foi cortado, use o menu de "
+"diferenças para ver as diferenças"
+
+msgid "No changes detected"
+msgstr "Nenhuma alteração detectada"
+
+msgid "Deleted branch: %s"
+msgstr "Excluído ramo: %s"
+
+msgid "Created tag: %s"
+msgstr "Tag criada: %s"
+
+msgid "Show all combined changesets %s->%s"
+msgstr "Ver todos os conjuntos de mudanças combinados %s->%s"
+
+msgid "and"
+msgstr "e"
+
+msgid "%s more"
+msgstr "%s mais"
+
+msgid "revisions"
+msgstr "revisões"
+
+msgid "[deleted] repository"
+msgstr "repositório [excluído]"
+
+msgid "[created] repository"
+msgstr "repositório [criado]"
+
+msgid "[created] repository as fork"
+msgstr "repositório [criado] como uma bifurcação"
+
+msgid "[forked] repository"
+msgstr "repositório [bifurcado]"
+
+msgid "[updated] repository"
+msgstr "repositório [atualizado]"
+
+msgid "[downloaded] archive from repository"
+msgstr "[descarregado] archivo do repositório"
+
+msgid "[delete] repository"
+msgstr "[apagar] repositório"
+
+msgid "[created] user"
+msgstr "utilizador [criado]"
+
+msgid "[updated] user"
+msgstr "utilizador [atualizado]"
+
+msgid "[created] user group"
+msgstr "[criado] grupo de utilizadores"
+
+msgid "[updated] user group"
+msgstr "[atualizado] grupo de utilizadores"
+
+msgid "[commented] on revision in repository"
+msgstr "[comentado] em revisão no repositório"
+
+msgid "[commented] on pull request for"
+msgstr "[comentado] no pull request para"
+
+msgid "[closed] pull request for"
+msgstr "[fechado] pull request para"
+
+msgid "[pushed] into"
+msgstr "[realizado push] para"
+
+msgid "[committed via Kallithea] into repository"
+msgstr "[commitado via Kallithea] no repositório"
+
+msgid "[pulled from remote] into repository"
+msgstr "[pulled do remote] no repositório"
+
+msgid "[pulled] from"
+msgstr "[realizado pull] a partir de"
+
+msgid "[started following] repository"
+msgstr "[passou a seguir] o repositório"
+
+msgid "[stopped following] repository"
+msgstr "[parou de seguir] o repositório"
+
+msgid " and %s more"
+msgstr " e mais %s"
+
+msgid "No files"
+msgstr "Nenhum ficheiro"
+
+msgid "new file"
+msgstr "novo ficheiro"
+
+msgid "mod"
+msgstr "mod"
+
+msgid "del"
+msgstr "apagar"
+
+msgid "rename"
+msgstr "renomear"
+
+msgid "chmod"
+msgstr "chmod"
+
+msgid ""
+"%s repository is not mapped to db perhaps it was created or renamed from "
+"the filesystem please run the application again in order to rescan "
+"repositories"
+msgstr ""
+"O repositório %s não está mapeado ao BD. Talvez ele tenha sido criado ou "
+"renomeado a partir do sistema de ficheiros. Por favor, execute a "
+"aplicação outra vez para varrer novamente por repositórios"
+
+msgid "%d year"
+msgid_plural "%d years"
+msgstr[0] "%d ano"
+msgstr[1] "%d anos"
+
+msgid "%d month"
+msgid_plural "%d months"
+msgstr[0] "%d mês"
+msgstr[1] "%d meses"
+
+msgid "%d day"
+msgid_plural "%d days"
+msgstr[0] "%d dia"
+msgstr[1] "%d dias"
+
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] "%d hora"
+msgstr[1] "%d horas"
+
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d minuto"
+msgstr[1] "%d minutos"
+
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] "%d segundo"
+msgstr[1] "%d segundos"
+
+msgid "in %s"
+msgstr "em %s"
+
+msgid "%s ago"
+msgstr "%s atrás"
+
+msgid "in %s and %s"
+msgstr "em %s e %s"
+
+msgid "%s and %s ago"
+msgstr "%s e %s atrás"
+
+msgid "just now"
+msgstr "agora há pouco"
+
+msgid "on line %s"
+msgstr "na linha %s"
+
+msgid "[Mention]"
+msgstr "[Menção]"
+
+msgid "top level"
+msgstr "nível superior"
+
+msgid "Kallithea Administrator"
+msgstr "Administrador do Kallithea"
+
+msgid "Registration disabled"
+msgstr "Registo desativado"
+
+msgid "Approved"
+msgstr "Aprovado"
+
+msgid "Please enter a login"
+msgstr "Por favor entre um login"
+
+msgid "Enter a value %(min)i characters long or more"
+msgstr "Entre um valor com %(min)i caracteres ou mais"
+
+msgid "Please enter a password"
+msgstr "Por favor entre com uma palavra-passe"
+
+msgid "Enter %(min)i characters or more"
+msgstr "Entre com %(min)i caracteres ou mais"
+
+msgid "latest tip"
+msgstr "tip mais recente"
+
+msgid "New user registration"
+msgstr "Novo registo de utilizador"
+
+msgid "Password reset link"
+msgstr "Ligação para trocar palavra-passe"
+
+msgid "Value cannot be an empty list"
+msgstr "O valor não pode ser uma lista vazia"
+
+msgid "Username \"%(username)s\" already exists"
+msgstr "O username \\\"%(username)s\\\" já existe"
+
+msgid "Username %(username)s is not valid"
+msgstr "O username \"%(username)s\" não é válido"
+
+msgid "Invalid user group name"
+msgstr "Nome inválido de grupo de utilizadores"
+
+msgid "User group \"%(usergroup)s\" already exists"
+msgstr "O grupo de utilizadores \"%(usergroup)s\" já existe"
+
+msgid ""
+"user group name may only contain alphanumeric characters underscores, "
+"periods or dashes and must begin with alphanumeric character"
+msgstr ""
+"O nome de um grupo de utilizadores só pode conter characters alfa-"
+"numéricos, underscores, pontos ou hífens, e deve começar om um caractere "
+"alfa-numérico"
+
+msgid "Cannot assign this group as parent"
+msgstr "Não é possível associar esse grupo como progenitor"
+
+msgid "Group \"%(group_name)s\" already exists"
+msgstr "O grupo \\\"%(group_name)s\\\" já existe"
+
+msgid "Repository with name \"%(group_name)s\" already exists"
+msgstr "Um repositório com o nome \"%(group_name)s\" já existe"
+
+msgid "Invalid characters (non-ascii) in password"
+msgstr "Caracteres inválidos (não-ascii) na palavra-passe"
+
+msgid "Passwords do not match"
+msgstr "Palavras-passe não conferem"
+
+msgid "Repository named %(repo)s already exists"
+msgstr "Um repositório chamado %(repo)s já existe"
+
+msgid "Repository \"%(repo)s\" already exists in group \"%(group)s\""
+msgstr "Um repositório \"%(repo)s\" já existe no grupo \"%(group)s\""
+
+msgid "Repository group with name \"%(repo)s\" already exists"
+msgstr "Um Grupo de Repositórios chamado \"%(repo)s\" já existe"
+
+msgid "Fork has to be the same type as parent"
+msgstr "A bifurcação deve ser do mesmo tipo que o pai"
+
+msgid "You don't have permissions to create repository in this group"
+msgstr "Não tem permissão para criar um repositório neste grupo"
+
+msgid "no permission to create repository in root location"
+msgstr "Não tem permissão para criar um repositório na raiz"
+
+msgid "You don't have permissions to create a group in this location"
+msgstr "Não tem permissão para criar um grupo neste local"
+
+msgid "This username or user group name is not valid"
+msgstr "Este nome de utilizador ou de grupo de utilizadores não é válido"
+
+msgid "This is not a valid path"
+msgstr "Esse não é um caminho válido"
+
+msgid ""
+"The LDAP Login attribute of the CN must be specified - this is the name "
+"of the attribute that is equivalent to \"username\""
+msgstr ""
+"O atributo de login LDAP do CN deve ser especificado - isto é o nome do "
+"atributo que é equivalente ao 'nome de utilizador'"
+
+msgid "Please enter a valid IPv4 or IPv6 address"
+msgstr "Por favor, forneça um endereço válido IPv4 ou IPv6"
+
+msgid ""
+"The network size (bits) must be within the range of 0-32 (not %(bits)r)"
+msgstr ""
+"O tamanho da rede (bits) deve estar no intervalo 0-32 (não %(bits)r)"
+
+msgid "Key name can only consist of letters, underscore, dash or numbers"
+msgstr "O nome da chave só pode conter letras, underscore, hífen ou dígitos"
+
+msgid "Filename cannot be inside a directory"
+msgstr "O nome de ficheiro não pode estar dentro de um diretório"
+
+msgid "You have admin right to this group, and can edit it"
+msgstr "Tem direitos de administrador neste grupo e pode editá-lo"
+
+msgid "Repository"
+msgstr "Repositório"
+
+msgid "Description"
+msgstr "Descrição"
+
+msgid "Last Change"
+msgstr "Última Alteração"
+
+msgid "Tip"
+msgstr "Ponta"
+
+msgid "Owner"
+msgstr "Dono"
+
+msgid "Log In"
+msgstr "Entrar"
+
+msgid "Log In to %s"
+msgstr "Log in em %s"
+
+msgid "Username"
+msgstr "Nome de utilizador"
+
+msgid "Password"
+msgstr "Palavra-passe"
+
+msgid "Forgot your password ?"
+msgstr "Esqueceu sua palavra-passe ?"
+
+msgid "Don't have an account ?"
+msgstr "Não possui uma conta ?"
+
+msgid "Sign In"
+msgstr "Entrar"
+
+msgid "Password Reset"
+msgstr "Palavra-passe Trocada"
+
+msgid "Sign Up"
+msgstr "Inscrever-se"
+
+msgid "Re-enter password"
+msgstr "Repita a palavra-passe"
+
+msgid "First Name"
+msgstr "Primeiro Nome"
+
+msgid "Last Name"
+msgstr "Último Nome"
+
+msgid "Email"
+msgstr "E-mail"
+
+msgid "journal filter..."
+msgstr "filtro de diário..."
+
+msgid "Action"
+msgstr "Ação"
+
+msgid "Date"
+msgstr "Data"
+
+msgid "From IP"
+msgstr "A partir do IP"
+
+msgid "No actions yet"
+msgstr "Ainda não há ações"
+
+msgid "Save"
+msgstr "Gravar"
+
+msgid "Type"
+msgstr "Tipo"
+
+msgid "Private repository"
+msgstr "Repositório privado"
+
+msgid ""
+"Private repositories are only visible to people explicitly added as "
+"collaborators."
+msgstr ""
+"Repositórios privados são visíveis somente por pessoas explicitamente "
+"adicionadas como colaboradores."
+
+msgid "Enable statistics"
+msgstr "Ativar estatísticas"
+
+msgid "Enable statistics window on summary page."
+msgstr "Ativar janela de estatísticas na página de sumário."
+
+msgid "Enable downloads"
+msgstr "Ativar downloads"
+
+msgid "Enable download menu on summary page."
+msgstr "Ativar menu de descarregar na página de sumário."
+
+msgid "Gist description ..."
+msgstr "Descrição do gist ..."
+
+msgid "Gist lifetime"
+msgstr "Tempo de vida do Gist"
+
+msgid "Expires"
+msgstr "Expira"
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Public Gists"
+msgstr "Gists Públicos"
+
+msgid "Created"
+msgstr "Criado"
+
+msgid "There are no gists yet"
+msgstr "Não há nenhum gist ainda"
+
+msgid "Reset"
+msgstr "Limpar"
+
+msgid "Gist"
+msgstr "Gist"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Delete"
+msgstr "Apagar"
+
+msgid "Edit"
+msgstr "Editar"
+
+msgid "created"
+msgstr "criado"
+
+msgid "Show as raw"
+msgstr "Mostrar original"
+
+msgid "My Account"
+msgstr "Minha Conta"
+
+msgid "Add"
+msgstr "Adicionar"
+
+msgid "Confirm to delete this email: %s"
+msgstr "Confirme para apagar este email: %s"
+
+msgid "New email address"
+msgstr "Novo endereço de email"
+
+msgid "New password"
+msgstr "Nova palavra-passe"
+
+msgid "Name"
+msgstr "Nome"
+
+msgid "Anonymous access"
+msgstr "Acesso anônimo"
+
+msgid ""
+"All default permissions on each repository will be reset to chosen "
+"permission, note that all custom default permission on repositories will "
+"be lost"
+msgstr ""
+"Todas as permissões predefinidos em cada repositório serão modificadas "
+"para a permissão escolhida, note que todas as permissões predefinidas "
+"customizadas nos repositórios serão perdidas"
+
+msgid "Repository group"
+msgstr "Grupo de repositórios"
+
+msgid ""
+"All default permissions on each repository group will be reset to chosen "
+"permission, note that all custom default permission on repository groups "
+"will be lost"
+msgstr ""
+"Todas as permissões predefinidas em cada grupo de repositórios serão "
+"modificadas para a permissão escolhida, note que todas as permissões "
+"predefinidas customizadas em grupos de repositórios serão perdidas"
+
+msgid "User group"
+msgstr "Grupo de utilizadores"
+
+msgid "User group creation"
+msgstr "Criação de grupo de utilizadores"
+
+msgid "Repository forking"
+msgstr "Bifurcação de repositório"
+
+msgid "Registration"
+msgstr "Registo"
+
+msgid "External auth account activation"
+msgstr "Ativação de autenticação de conta externa"
+
+msgid "New IP address"
+msgstr "Novo endereço IP"
+
+msgid "Group name"
+msgstr "Nome do grupo"
+
+msgid "Group parent"
+msgstr "Progenitor do grupo"
+
+msgid "Settings"
+msgstr "Configurações"
+
+msgid "Permissions"
+msgstr "Permissões"
+
+msgid "Created on"
+msgstr "Criado em"
+
+msgid "Confirm to delete this group: %s with %s repository"
+msgid_plural "Confirm to delete this group: %s with %s repositories"
+msgstr[0] "Confirme para apagar este grupo: %s com %s repositório"
+msgstr[1] "Confirme para apagar este grupo: %s com %s repositórios"
+
+msgid "Add new"
+msgstr "Adicionar novo"
+
+msgid ""
+"Keep it short and to the point. Use a README file for longer descriptions."
+msgstr ""
+"Seja sucinto e objetivo. Use um ficheiro README para descrições mais "
+"longas."
+
+msgid "Optionally select a group to put this repository into."
+msgstr "Opcionalmente selecione um grupo no qual pôr esse repositório."
+
+msgid "Type of repository to create."
+msgstr "Tipo de repositório a criar."
+
+msgid "Landing revision"
+msgstr "Revisão de pouso"
+
+msgid "Remote"
+msgstr "Remoto"
+
+msgid "Statistics"
+msgstr "Estatísticas"
+
+msgid "Remove from public journal"
+msgstr "Remover do diário público"
+
+msgid "Confirm to delete this repository: %s"
+msgstr "Confirma apagar esse repositório: %s"
+
+msgid "Detach forks"
+msgstr "Desassociar bifurcações"
+
+msgid "Delete forks"
+msgstr "Apagar bifurcações"
+
+msgid "Key"
+msgstr "Chave"
+
+msgid "Confirm to delete this field: %s"
+msgstr "Confirme para apagar este campo: %s"
+
+msgid "New field key"
+msgstr "Próxima chave de campo"
+
+msgid "New field label"
+msgstr "Próximo rótulo de campo"
+
+msgid "Enter short label"
+msgstr "Entre com o rótulo curto"
+
+msgid "New field description"
+msgstr "Nova descrição de campo"
+
+msgid "Enter description of a field"
+msgstr "Entre com a descrição de um campo"
+
+msgid "Default revision for files page, downloads, whoosh and readme"
+msgstr ""
+"Revisão predefinida para página de ficheiros, descarregamentos, whoosh e "
+"readme"
+
+msgid "Change owner of this repository."
+msgstr "Mudar o dono desse repositório."
+
+msgid "Hooks"
+msgstr "Ganchos"
+
+msgid "Send"
+msgstr "Enviar"
+
+msgid "Site branding"
+msgstr "Marca do site"
+
+msgid "HTTP authentication realm"
+msgstr "Realm de autenticação HTTP"
+
+msgid "Failed to remove hook"
+msgstr "Falha ao remover gancho"
+
+msgid "Invalidate cache for all repositories"
+msgstr "Invalidar o cache para todos os repositórios"
+
+msgid "Index build option"
+msgstr "Opção de construção do índice"
+
+msgid "Build from scratch"
+msgstr "Construir do zero"
+
+msgid "Reindex"
+msgstr "Reindexar"
+
+msgid "Show repository size after push"
+msgstr "Mostrar tamanho do repositório após o push"
+
+msgid "Update repository after push (hg update)"
+msgstr "Atualizar repositório após realizar push (hg update)"
+
+msgid "Enable largefiles extension"
+msgstr "Ativar extensão largefiles"
+
+msgid "Enable hgsubversion extension"
+msgstr "Ativar extensão hgsubversion"
+
+msgid ""
+"Click to unlock. You must restart Kallithea in order to make this setting "
+"take effect."
+msgstr ""
+"Clique para destravar. Deve reiniciar o Kallithea para que esta "
+"configuração tenha efeito."
+
+msgid "General"
+msgstr "Geral"
+
+msgid "Use repository extra fields"
+msgstr "Usar campos extras do repositório"
+
+msgid "Allows storing additional customized fields per repository."
+msgstr "Permite armazenar campos customizados adicionais por repositório."
+
+msgid "Show Kallithea version"
+msgstr "Mostrar versão do Kallithea"
+
+msgid "Icons"
+msgstr "Ícones"
+
+msgid "Show public repository icon on repositories"
+msgstr "Mostrar ícone de repositório público nos repositórios"
+
+msgid "Show private repository icon on repositories"
+msgstr "Mostrar ícone de repositório privado nos repositórios"
+
+msgid "Add user group"
+msgstr "Adicionar grupo de utilizadores"
+
+msgid "Active"
+msgstr "Ativo"
+
+msgid "Members"
+msgstr "Membros"
+
+msgid "Confirm to delete this user group: %s"
+msgstr "Confirme para apagar este grupo de utilizador: %s"
+
+msgid "No members yet"
+msgstr "Nenhum membro ainda"
+
+msgid "Chosen group members"
+msgstr "Membros escolhidos do grupo"
+
+msgid "Available members"
+msgstr "Membros disponíveis"
+
+msgid "Add user"
+msgstr "Adicionar utilizador"
+
+msgid "Users"
+msgstr "Utilizadores"
+
+msgid "Password confirmation"
+msgstr "Confirmação de palavra-passe"
+
+msgid "Confirm to delete this user: %s"
+msgstr "Confirma apagar este utilizador: %s"
+
+msgid "New password confirmation"
+msgstr "Confirmação de nova palavra-passe"
+
+msgid "Server instance: %s"
+msgstr "Instância de servidor: %s"
+
+msgid "Mercurial repository"
+msgstr "Repositório Mercurial"
+
+msgid "Git repository"
+msgstr "Repositório Git"
+
+msgid "Summary"
+msgstr "Sumário"
+
+msgid "Changelog"
+msgstr "Registo de alterações"
+
+msgid "Files"
+msgstr "Ficheiros"
+
+msgid "Show Pull Requests for %s"
+msgstr "Mostrar Pull Requests para %s"
+
+msgid "Pull Requests"
+msgstr "Pull Requests"
+
+msgid "Options"
+msgstr "Opções"
+
+msgid "Compare"
+msgstr "Compare"
+
+msgid "Search"
+msgstr "Pesquisar"
+
+msgid "Follow"
+msgstr "Seguir"
+
+msgid "Unfollow"
+msgstr "Parar de seguir"
+
+msgid "Fork"
+msgstr "Bifurcação"
+
+msgid "Create Pull Request"
+msgstr "Criar Pull Request"
+
+msgid "Switch To"
+msgstr "Trocar Para"
+
+msgid "Show recent activity"
+msgstr "Mostrar atividade recente"
+
+msgid "Public journal"
+msgstr "Diário público"
+
+msgid "Show public gists"
+msgstr "Mostrar gists públicos"
+
+msgid "Gists"
+msgstr "Gists"
+
+msgid "Search in repositories"
+msgstr "Buscar nos repositórios"
+
+msgid "Log Out"
+msgstr "Sair"
+
+msgid "Create repositories"
+msgstr "Criar repositórios"
+
+msgid "Select this option to allow repository creation for this user"
+msgstr ""
+"Selecione esta opção para permitir a criação de repositórios para este "
+"utilizador"
+
+msgid "Create user groups"
+msgstr "Criar grupos de utilizadores"
+
+msgid "Select this option to allow user group creation for this user"
+msgstr ""
+"Selecione esta opção para permitir a criação de grupos de utilizadores "
+"para este utilizador"
+
+msgid "Fork repositories"
+msgstr "Bifurcar repositórios"
+
+msgid "Select this option to allow repository forking for this user"
+msgstr ""
+"Selecione esta opção para permitir a bifurcação de repositórios para este "
+"utilizador"
+
+msgid "Show"
+msgstr "Mostrar"
+
+msgid "No permissions defined yet"
+msgstr "Nenhuma permissão definida ainda"
+
+msgid "Permission"
+msgstr "Permissão"
+
+msgid "Edit Permission"
+msgstr "Editar Permissão"
+
+msgid "Stop following this repository"
+msgstr "Parar de seguir este repositório"
+
+msgid "Start following this repository"
+msgstr "Passar a seguir este repositório"
+
+msgid "Group"
+msgstr "Grupo"
+
+msgid "Loading ..."
+msgstr "Carregando..."
+
+msgid "loading ..."
+msgstr "carregando ..."
+
+msgid "Search truncated"
+msgstr "Busca truncada"
+
+msgid "No matching files"
+msgstr "Nenhum ficheiro encontrado"
+
+msgid "Failed to revoke permission"
+msgstr "Falhou ao revocar a permissão"
+
+msgid "Click to sort ascending"
+msgstr "Clique para ordenar em ordem crescente"
+
+msgid "Click to sort descending"
+msgstr "Clique para ordenar em ordem descrescente"
+
+msgid "No records found."
+msgstr "Nenhum registo encontrado."
+
+msgid "Data error."
+msgstr "Erro de dados."
+
+msgid "Loading..."
+msgstr "Carregando..."
+
+msgid "%s Changelog"
+msgstr "%s Changelog"
+
+msgid "showing %d out of %d revision"
+msgid_plural "showing %d out of %d revisions"
+msgstr[0] "mostrando %d de %d revisão"
+msgstr[1] "mostrando %d de %d revisões"
+
+msgid "Clear selection"
+msgstr "Deselecionar seleção"
+
+msgid "Compare fork with %s"
+msgstr "Comparar bifurcação com %s"
+
+msgid "There are no changes yet"
+msgstr "Ainda não há alteações"
+
+msgid "Removed"
+msgstr "Removido"
+
+msgid "Changed"
+msgstr "Modificado"
+
+msgid "Added"
+msgstr "Adicionado"
+
+msgid "Affected %s files"
+msgstr "Afetados %s ficheiros"
+
+msgid "Bookmark %s"
+msgstr "Bookmark %s"
+
+msgid "Tag %s"
+msgstr "Tag %s"
+
+msgid "Branch %s"
+msgstr "Ramo %s"
+
+msgid "%s Changeset"
+msgstr "%s Changeset"
+
+msgid "Changeset status"
+msgstr "Estado do changeset"
+
+msgid "Raw diff"
+msgstr "Diff cru"
+
+msgid "Patch diff"
+msgstr "D"
+
+msgid "Download diff"
+msgstr "Descarregar diff"
+
+msgid "%s file changed"
+msgid_plural "%s files changed"
+msgstr[0] "%s ficheiro modificado"
+msgstr[1] "%s ficheiros modificados"
+
+msgid "%s file changed with %s insertions and %s deletions"
+msgid_plural "%s files changed with %s insertions and %s deletions"
+msgstr[0] "%s ficheiro modificado com %s inserções e %s exclusões"
+msgstr[1] "%s ficheiros modificados com %s inserções e %s exclusões"
+
+msgid "Vote for pull request status"
+msgstr "Vote para estado do pull request"
+
+msgid "Comment"
+msgstr "Comentário"
+
+msgid "You need to be logged in to comment."
+msgstr "Precisa estar logado para comentar."
+
+msgid "Login now"
+msgstr "Entrar agora"
+
+msgid "Hide"
+msgstr "Ocultar"
+
+msgid "%d comment"
+msgid_plural "%d comments"
+msgstr[0] "%d comentário"
+msgstr[1] "%d comentários"
+
+msgid "%s Changesets"
+msgstr "%s Changesets"
+
+msgid "Changeset status: %s"
+msgstr "Estado do changeset: %s"
+
+msgid "Files affected"
+msgstr "Ficheiros afetados"
+
+msgid "Show full diff for this file"
+msgstr "Mostrar diff completo para este ficheiro"
+
+msgid "Show full side-by-side diff for this file"
+msgstr "Mostrar diff completo lado-a-lado para este ficheiro"
+
+msgid "Show inline comments"
+msgstr "Mostrar comentários inline"
+
+msgid "No changesets"
+msgstr "Nenhum changeset"
+
+msgid "%s Compare"
+msgstr "%s Comparar"
+
+msgid "Showing %s commit"
+msgid_plural "Showing %s commits"
+msgstr[0] "Mostrando %s commit"
+msgstr[1] "Mostrando %s commits"
+
+msgid "Show full diff"
+msgstr "Mostrar diff completo"
+
+msgid "Public repository"
+msgstr "Repositório público"
+
+msgid "No changesets yet"
+msgstr "Nenhum conjunto de alterações ainda."
+
+msgid "Subscribe to %s rss feed"
+msgstr "Assinar o feed rss de %s"
+
+msgid "Subscribe to %s atom feed"
+msgstr "Assinar o feed atom de %s"
+
+msgid "Hello %s"
+msgstr "Olá %s"
+
+msgid "%s File side-by-side diff"
+msgstr "Ficheiro %s diff lado-a-lado"
+
+msgid "File diff"
+msgstr "Diff do ficheiro"
+
+msgid "%s File Diff"
+msgstr "%s Diff de Ficheiro"
+
+msgid "%s Files"
+msgstr "%s Ficheiros"
+
+msgid "%s Files Add"
+msgstr "%s Adicionar Ficheiros"
+
+msgid "Location"
+msgstr "Local"
+
+msgid "or"
+msgstr "ou"
+
+msgid "Loading file list..."
+msgstr "Carregando lista de ficheiros..."
+
+msgid "Size"
+msgstr "Tamanho"
+
+msgid "Last Revision"
+msgstr "Última revisão"
+
+msgid "Edit file"
+msgstr "Editar ficheiro"
+
+msgid "Source"
+msgstr "Fonte"
+
+msgid "%s author"
+msgid_plural "%s authors"
+msgstr[0] "%s autor"
+msgstr[1] "%s autores"
+
+msgid "Editing files allowed only when on branch head revision"
+msgstr ""
+"A edição de ficheiros só é permitida quando se está na revisão mais "
+"recente do ramo"
+
+msgid "Binary file (%s)"
+msgstr "Ficheiro binário (%s)"
+
+msgid "annotation"
+msgstr "anotação"
+
+msgid "No files at given path"
+msgstr "Nenhum ficheiro no caminho especificado"
+
+msgid "%s Followers"
+msgstr "%s Seguidores"
+
+msgid "Followers"
+msgstr "Seguidores"
+
+msgid "Started following -"
+msgstr "Começou a seguir -"
+
+msgid "Fork name"
+msgstr "Nome da bifurcação"
+
+msgid "Private"
+msgstr "Privado"
+
+msgid "Copy permissions"
+msgstr "Copiar permissões"
+
+msgid "Copy permissions from forked repository"
+msgstr "Copiar permissões do repositório bifurcado"
+
+msgid "Update after clone"
+msgstr "Atualizar após clonar"
+
+msgid "Checkout source after making a clone"
+msgstr "Checkout fontes depois de criar o clone"
+
+msgid "%s Forks"
+msgstr "%s Bifurcações"
+
+msgid "Forks"
+msgstr "Bifurcações"
+
+msgid "Forked"
+msgstr "Bifurcado"
+
+msgid "There are no forks yet"
+msgstr "Ainda não há bifurcações"
+
+msgid "ATOM journal feed"
+msgstr "ATOM feed do diário"
+
+msgid "RSS journal feed"
+msgstr "RSS feed do diário"
+
+msgid "No entries yet"
+msgstr "Ainda não há entradas"
+
+msgid "ATOM public journal feed"
+msgstr "ATOM feed do diário público"
+
+msgid "RSS public journal feed"
+msgstr "RSS feed do diário público"
+
+msgid "Title"
+msgstr "Título"
+
+msgid "Write a short description on this pull request"
+msgstr "Escreva uma breve descrição para este pull request"
+
+msgid "Changeset flow"
+msgstr "Fluxo de changesets"
+
+msgid "Origin repository"
+msgstr "Repositório origem"
+
+msgid "Revision"
+msgstr "Revisão"
+
+msgid "Destination repository"
+msgstr "Repositório de destino"
+
+msgid "Age"
+msgstr "Idade"
+
+msgid "Closed"
+msgstr "Fechado"
+
+msgid "Confirm to delete this pull request"
+msgstr "Confirme para apagar este pull request"
+
+msgid "Pull request status calculated from votes"
+msgstr "Estado do pull request calculado a partir dos votos"
+
+msgid "Pull changes"
+msgstr "Puxar mudanças"
+
+msgid "%s Pull Requests"
+msgstr "%s Pull Requests"
+
+msgid "Search term"
+msgstr "Termo de pesquisa"
+
+msgid "Search in"
+msgstr "Pesquisando em"
+
+msgid "File contents"
+msgstr "Conteúdo dos ficheiros"
+
+msgid "Commit messages"
+msgstr "Mensagens de commit"
+
+msgid "File names"
+msgstr "Nomes dos ficheiros"
+
+msgid "Permission denied"
+msgstr "Permissão negada"
+
+msgid "%s ATOM feed"
+msgstr "%s ATOM feed"
+
+msgid "%s RSS feed"
+msgstr "%s RSS feed"
+
+msgid "Enable"
+msgstr "Ativar"
+
+msgid "Stats gathered: "
+msgstr "Estatísticas coletadas:"
+
+msgid "files"
+msgstr "ficheiros"
+
+msgid "Show more"
+msgstr "Mostrar mais"
+
+msgid "commits"
+msgstr "commits"
+
+msgid "files added"
+msgstr "ficheiros adicionados"
+
+msgid "files changed"
+msgstr "ficheiros alterados"
+
+msgid "files removed"
+msgstr "ficheiros removidos"
+
+msgid "commit"
+msgstr "commit"
+
+msgid "file added"
+msgstr "ficheiro adicionado"
+
+msgid "file changed"
+msgstr "ficheiro alterado"
+
+msgid "file removed"
+msgstr "ficheiro removido"
+
+msgid "%s Summary"
+msgstr "%s Sumário"
+
+msgid "Fork of"
+msgstr "Bifurcação de"
+
+msgid "Clone from"
+msgstr "Clonar de"
+
+msgid "Trending files"
+msgstr "Tendências em ficheiros"
+
+msgid "Download"
+msgstr "Download"
+
+msgid "There are no downloads yet"
+msgstr "Ainda não há downloads"
+
+msgid "Downloads are disabled for this repository"
+msgstr "Downloads estão desativados para este repositório"
+
+msgid "Download as zip"
+msgstr "Download como zip"
+
+msgid "Check this to download archive with subrepos"
+msgstr "Marque isto para descarregar o arquivo com subrepositórios"
+
+msgid "Feed"
+msgstr "Feed"
+
+msgid "Add or upload files directly via Kallithea"
+msgstr "Adicionar ou enviar ficheiros diretamente pelo Kallithea"
+
+msgid "Existing repository?"
+msgstr "Repositório existente?"
+
+msgid "Download %s as %s"
+msgstr "Descarregar %s como %s"
