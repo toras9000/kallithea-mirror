@@ -419,27 +419,6 @@ get trace_errors.smtp_username = smtp_username
 get trace_errors.smtp_password = smtp_password
 get trace_errors.smtp_use_tls = smtp_use_tls
 
-%if error_aggregation_service == 'sentry':
-<%text>##</%text>##############
-<%text>##</%text>  [sentry]  ##
-<%text>##</%text>##############
-
-<%text>##</%text> sentry is a alternative open source error aggregator
-<%text>##</%text> you must install python packages `sentry` and `raven` to enable
-
-sentry.dsn = YOUR_DNS
-sentry.servers =
-sentry.name =
-sentry.key =
-sentry.public_key =
-sentry.secret_key =
-sentry.project =
-sentry.site =
-sentry.include_paths =
-sentry.exclude_paths =
-
-%endif
-
 <%text>##</%text>################################
 <%text>##</%text>        LOGVIEW CONFIG        ##
 <%text>##</%text>################################
