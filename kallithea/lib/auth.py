@@ -134,7 +134,6 @@ def get_user_permissions(user_id, user_is_admin):
     repository_permissions = {}
     repository_group_permissions = {}
     user_group_permissions = {}
-    global_permissions = set()
 
 
     #======================================================================
@@ -149,7 +148,6 @@ def get_user_permissions(user_id, user_is_admin):
         # admin users have all rights;
         # based on default permissions, just set everything to admin
         #==================================================================
-        global_permissions.add('hg.admin')
 
         # repositories
         for perm in default_repo_perms:
@@ -168,19 +166,11 @@ def get_user_permissions(user_id, user_is_admin):
             u_k = perm.user_group.users_group_name
             p = 'usergroup.admin'
             user_group_permissions[u_k] = p
-        return (repository_permissions, repository_group_permissions, user_group_permissions, global_permissions)
+        return (repository_permissions, repository_group_permissions, user_group_permissions)
 
     #==================================================================
     # SET DEFAULTS GLOBAL, REPOS, REPOSITORY GROUPS
     #==================================================================
-
-    # default global permissions taken from the default user
-    default_global_perms = UserToPerm.query() \
-        .filter(UserToPerm.user_id == kallithea.DEFAULT_USER_ID) \
-        .options(joinedload(UserToPerm.permission))
-
-    for perm in default_global_perms:
-        global_permissions.add(perm.permission.permission_name)
 
     # defaults for repositories, taken from default user
     for perm in default_repo_perms:
@@ -206,47 +196,6 @@ def get_user_permissions(user_id, user_is_admin):
         u_k = perm.user_group.users_group_name
         p = perm.permission.permission_name
         user_group_permissions[u_k] = p
-
-    #======================================================================
-    # !! Augment GLOBALS with user permissions if any found !!
-    #======================================================================
-
-    # USER GROUPS comes first
-    # user group global permissions
-    user_perms_from_users_groups = Session().query(UserGroupToPerm) \
-        .options(joinedload(UserGroupToPerm.permission)) \
-        .join((UserGroupMember, UserGroupToPerm.users_group_id ==
-               UserGroupMember.users_group_id)) \
-        .filter(UserGroupMember.user_id == user_id) \
-        .join((UserGroup, UserGroupMember.users_group_id ==
-               UserGroup.users_group_id)) \
-        .filter(UserGroup.users_group_active == True) \
-        .order_by(UserGroupToPerm.users_group_id) \
-        .all()
-    # need to group here by groups since user can be in more than
-    # one group
-    _grouped = [[x, list(y)] for x, y in
-                itertools.groupby(user_perms_from_users_groups,
-                                  lambda x:x.users_group)]
-    for gr, perms in _grouped:
-        for perm in perms:
-            global_permissions.add(perm.permission.permission_name)
-
-    # user specific global permissions
-    user_perms = Session().query(UserToPerm) \
-            .options(joinedload(UserToPerm.permission)) \
-            .filter(UserToPerm.user_id == user_id).all()
-
-    for perm in user_perms:
-        global_permissions.add(perm.permission.permission_name)
-
-    # for each kind of global permissions, only keep the one with heighest weight
-    kind_max_perm = {}
-    for perm in sorted(global_permissions, key=lambda n: PERM_WEIGHTS.get(n, -1)):
-        kind = perm.rsplit('.', 1)[0]
-        kind_max_perm[kind] = perm
-    global_permissions = set(kind_max_perm.values())
-    ## END GLOBAL PERMISSIONS
 
     #======================================================================
     # !! PERMISSIONS FOR REPOSITORIES !!
@@ -341,7 +290,7 @@ def get_user_permissions(user_id, user_is_admin):
             perm.user_group.users_group_name,
             perm.permission.permission_name)
 
-    return (repository_permissions, repository_group_permissions, user_group_permissions, global_permissions)
+    return (repository_permissions, repository_group_permissions, user_group_permissions)
 
 
 class AuthUser(object):
@@ -430,8 +379,58 @@ class AuthUser(object):
         log.debug('Auth User is now %s', self)
 
         log.debug('Getting PERMISSION tree for %s', self)
-        (self.repository_permissions, self.repository_group_permissions, self.user_group_permissions, self.global_permissions,
+        (self.repository_permissions, self.repository_group_permissions, self.user_group_permissions,
         )= get_user_permissions(self.user_id, self.is_admin)
+
+    @LazyProperty
+    def global_permissions(self):
+        log.debug('Getting global permissions for %s', self)
+
+        if self.is_admin:
+            return set(['hg.admin'])
+
+        global_permissions = set()
+
+        # default global permissions from the default user
+        default_global_perms = UserToPerm.query() \
+            .filter(UserToPerm.user_id == kallithea.DEFAULT_USER_ID) \
+            .options(joinedload(UserToPerm.permission))
+        for perm in default_global_perms:
+            global_permissions.add(perm.permission.permission_name)
+
+        # user group global permissions
+        user_perms_from_users_groups = Session().query(UserGroupToPerm) \
+            .options(joinedload(UserGroupToPerm.permission)) \
+            .join((UserGroupMember, UserGroupToPerm.users_group_id ==
+                   UserGroupMember.users_group_id)) \
+            .filter(UserGroupMember.user_id == self.user_id) \
+            .join((UserGroup, UserGroupMember.users_group_id ==
+                   UserGroup.users_group_id)) \
+            .filter(UserGroup.users_group_active == True) \
+            .order_by(UserGroupToPerm.users_group_id) \
+            .all()
+        # need to group here by groups since user can be in more than
+        # one group
+        _grouped = [[x, list(y)] for x, y in
+                    itertools.groupby(user_perms_from_users_groups,
+                                      lambda x:x.users_group)]
+        for gr, perms in _grouped:
+            for perm in perms:
+                global_permissions.add(perm.permission.permission_name)
+
+        # user specific global permissions
+        user_perms = Session().query(UserToPerm) \
+                .options(joinedload(UserToPerm.permission)) \
+                .filter(UserToPerm.user_id == self.user_id).all()
+        for perm in user_perms:
+            global_permissions.add(perm.permission.permission_name)
+
+        # for each kind of global permissions, only keep the one with heighest weight
+        kind_max_perm = {}
+        for perm in sorted(global_permissions, key=lambda n: PERM_WEIGHTS.get(n, -1)):
+            kind = perm.rsplit('.', 1)[0]
+            kind_max_perm[kind] = perm
+        return set(kind_max_perm.values())
 
     @LazyProperty
     def permissions(self):
