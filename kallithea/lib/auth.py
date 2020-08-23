@@ -130,70 +130,6 @@ def bump_permission(permissions, key, new_perm):
     if new_perm_val > cur_perm_val:
         permissions[key] = new_perm
 
-def get_user_permissions(user_id, user_is_admin):
-    user_group_permissions = {}
-
-    #======================================================================
-    # fetch default permissions
-    #======================================================================
-    default_user_group_perms = Permission.get_default_user_group_perms(kallithea.DEFAULT_USER_ID)
-
-    if user_is_admin:
-        #==================================================================
-        # admin users have all rights;
-        # based on default permissions, just set everything to admin
-        #==================================================================
-
-        # user groups
-        for perm in default_user_group_perms:
-            u_k = perm.user_group.users_group_name
-            p = 'usergroup.admin'
-            user_group_permissions[u_k] = p
-        return (user_group_permissions)
-
-    #==================================================================
-    # SET DEFAULTS GLOBAL, REPOS, REPOSITORY GROUPS
-    #==================================================================
-
-    # defaults for user groups taken from default user permission
-    # on given user group
-    for perm in default_user_group_perms:
-        u_k = perm.user_group.users_group_name
-        p = perm.permission.permission_name
-        user_group_permissions[u_k] = p
-
-    #======================================================================
-    # !! PERMISSIONS FOR USER GROUPS !!
-    #======================================================================
-    # user group for user group permissions
-    user_group_user_groups_perms = \
-     Session().query(UserGroupUserGroupToPerm) \
-     .join((UserGroup, UserGroupUserGroupToPerm.target_user_group_id
-            == UserGroup.users_group_id)) \
-     .join((UserGroupMember, UserGroupUserGroupToPerm.user_group_id
-            == UserGroupMember.users_group_id)) \
-     .filter(UserGroupMember.user_id == user_id) \
-     .join((UserGroup, UserGroupMember.users_group_id ==
-            UserGroup.users_group_id), aliased=True, from_joinpoint=True) \
-     .filter(UserGroup.users_group_active == True) \
-     .options(joinedload(UserGroupUserGroupToPerm.permission)) \
-     .all()
-
-    for perm in user_group_user_groups_perms:
-        bump_permission(user_group_permissions,
-            perm.target_user_group.users_group_name,
-            perm.permission.permission_name)
-
-    # user explicit permission for user groups
-    user_user_groups_perms = Permission.get_default_user_group_perms(user_id)
-    for perm in user_user_groups_perms:
-        bump_permission(user_group_permissions,
-            perm.user_group.users_group_name,
-            perm.permission.permission_name)
-
-    return (user_group_permissions)
-
-
 class AuthUser(object):
     """
     Represents a Kallithea user, including various authentication and
@@ -278,10 +214,6 @@ class AuthUser(object):
                 setattr(self, k, v)
             self.is_default_user = dbuser.is_default_user
         log.debug('Auth User is now %s', self)
-
-        log.debug('Getting PERMISSION tree for %s', self)
-        (self.user_group_permissions,
-        )= get_user_permissions(self.user_id, self.is_admin)
 
     @LazyProperty
     def global_permissions(self):
@@ -427,6 +359,53 @@ class AuthUser(object):
                     perm.permission.permission_name)
 
         return repository_group_permissions
+
+    @LazyProperty
+    def user_group_permissions(self):
+        log.debug('Getting user group permissions for %s', self)
+        user_group_permissions = {}
+        default_user_group_perms = Permission.get_default_user_group_perms(kallithea.DEFAULT_USER_ID)
+
+        if self.is_admin:
+            for perm in default_user_group_perms:
+                u_k = perm.user_group.users_group_name
+                p = 'usergroup.admin'
+                user_group_permissions[u_k] = p
+
+        else:
+            # defaults for user groups taken from default user permission
+            # on given user group
+            for perm in default_user_group_perms:
+                u_k = perm.user_group.users_group_name
+                p = perm.permission.permission_name
+                user_group_permissions[u_k] = p
+
+            # user group for user group permissions
+            user_group_user_groups_perms = \
+                Session().query(UserGroupUserGroupToPerm) \
+                .join((UserGroup, UserGroupUserGroupToPerm.target_user_group_id
+                       == UserGroup.users_group_id)) \
+                .join((UserGroupMember, UserGroupUserGroupToPerm.user_group_id
+                       == UserGroupMember.users_group_id)) \
+                .filter(UserGroupMember.user_id == self.user_id) \
+                .join((UserGroup, UserGroupMember.users_group_id ==
+                       UserGroup.users_group_id), aliased=True, from_joinpoint=True) \
+                .filter(UserGroup.users_group_active == True) \
+                .options(joinedload(UserGroupUserGroupToPerm.permission)) \
+                .all()
+            for perm in user_group_user_groups_perms:
+                bump_permission(user_group_permissions,
+                    perm.target_user_group.users_group_name,
+                    perm.permission.permission_name)
+
+            # user explicit permission for user groups
+            user_user_groups_perms = Permission.get_default_user_group_perms(self.user_id)
+            for perm in user_user_groups_perms:
+                bump_permission(user_group_permissions,
+                    perm.user_group.users_group_name,
+                    perm.permission.permission_name)
+
+        return user_group_permissions
 
     @LazyProperty
     def permissions(self):
