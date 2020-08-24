@@ -77,6 +77,8 @@ def register_command(needs_config_file=False, config_file_initialize_app=False, 
                 logging.config.fileConfig(cp,
                     {'__file__': path_to_ini_file, 'here': os.path.dirname(path_to_ini_file)})
                 if config_file_initialize_app:
+                    if needs_config_file:  # special case for db creation: also call annotated function (with config parameter) *before* app initialization
+                        annotated(*args, config=kallithea.CONFIG, **kwargs)
                     kallithea.config.application.make_app(kallithea.CONFIG.global_conf, **kallithea.CONFIG.local_conf)
                 return annotated(*args, **kwargs)
             return cli_command(runtime_wrapper)
