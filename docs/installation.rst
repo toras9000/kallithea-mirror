@@ -59,6 +59,13 @@ repository, use the following commands in your bash shell::
         pip install --upgrade -e .
         python3 setup.py compile_catalog   # for translation of the UI
 
+.. note::
+   This will install all Python dependencies into the virtualenv. Kallithea
+   itself will however only be installed as a pointer to the source location.
+   The source clone must thus be kept in the same location, and it shouldn't be
+   updated to other revisions unless you want to upgrade. Edits in the source
+   tree will have immediate impact (possibly after a restart of the service).
+
 You can now proceed to :ref:`install-front-end`.
 
 .. _installation-virtualenv:
