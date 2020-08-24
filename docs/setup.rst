@@ -5,8 +5,8 @@ Setup
 =====
 
 
-Setting up Kallithea
---------------------
+Setting up a Kallithea instance
+-------------------------------
 
 Some further details to the steps mentioned in the overview.
 
@@ -18,7 +18,8 @@ configuration file is a ``.ini`` file that contains various low level settings
 for Kallithea, e.g. configuration of how to use database, web server, email,
 and logging.
 
-Run the following command to create the file ``my.ini`` in the current
+Change to the desired directory (such as ``/srv/kallithea``) as the right user
+and run the following command to create the file ``my.ini`` in the current
 directory::
 
     kallithea-cli config-create my.ini http_server=waitress

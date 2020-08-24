@@ -48,6 +48,40 @@ See the subsequent sections, the separate OS-specific instructions, and
 :ref:`setup` for details on these steps.
 
 
+File system location
+--------------------
+
+Kallithea can be installed in many different ways. The main parts are:
+
+- A location for the Kallithea software and its dependencies. This includes
+  the Python code, template files, and front-end code. After installation, this
+  will be read-only (except when upgrading).
+
+- A location for the ``.ini`` configuration file that tells the Kallithea
+  instance which database to use (and thus also the repository location).
+  After installation, this will be read-only (except when upgrading).
+
+- A location for various data files and caches for the Kallithea instance. This
+  is by default in a ``data`` directory next to the ``.ini`` file. This will
+  have to be writable by the running Kallithea service.
+
+- A database. The ``.ini`` file specifies which database to use. The database
+  will be a separate service and live elsewhere in the filesystem if using
+  PostgreSQL or MariaDB/MySQL. If using SQLite, it will by default live next to
+  the ``.ini`` file, as ``kallithea.db``.
+
+- A location for the repositories that are hosted by this Kallithea instance.
+  This will have to be writable by the running Kallithea service. The path to
+  this location will be configured in the database.
+
+For simple setups, it is fine to just use something like a ``kallithea`` user
+with home in ``/home/kallithea`` and place everything there.
+
+For experiments, it might be convenient to run everything as yourself and work
+inside a clone of Kallithea, with the ``.ini`` and SQLite database in the root
+of the clone.
+
+
 Python environment
 ------------------
 

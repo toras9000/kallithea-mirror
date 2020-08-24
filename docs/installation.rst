@@ -80,8 +80,10 @@ main Python installation and other applications and things will be less
 problematic when upgrading the system or Kallithea.
 An additional benefit of virtualenv is that it doesn't require root privileges.
 
-- Assuming you have installed virtualenv, create a new virtual environment
-  for example, in `/srv/kallithea/venv`, using the venv command::
+- Don't install as root - install as a dedicated user like ``kallithea``.
+
+- Create a new virtual environment, for example in ``/srv/kallithea/venv``,
+  specifying the right Python binary::
 
     python3 -m venv /srv/kallithea/venv
 
@@ -92,16 +94,10 @@ An additional benefit of virtualenv is that it doesn't require root privileges.
     . /srv/kallithea/venv/bin/activate
     pip install --upgrade pip setuptools
 
-.. note:: You can't use UNIX ``sudo`` to source the ``virtualenv`` script; it
-   will "activate" a shell that terminates immediately. It is also perfectly
-   acceptable (and desirable) to create a virtualenv as a normal user.
+.. note:: You can't use UNIX ``sudo`` to source the ``activate`` script; it
+   will "activate" a shell that terminates immediately.
 
-- Make a folder for Kallithea data files, and configuration somewhere on the
-  filesystem. For example::
-
-    mkdir /srv/kallithea
-
-- Go into the created directory and run this command to install Kallithea::
+- Install Kallithea in the activated virtualenv::
 
     pip install --upgrade kallithea
 
