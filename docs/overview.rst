@@ -79,7 +79,7 @@ with home in ``/home/kallithea`` and place everything there.
 
 For experiments, it might be convenient to run everything as yourself and work
 inside a clone of Kallithea, with the ``.ini`` and SQLite database in the root
-of the clone.
+of the clone, and a virtualenv in ``venv``.
 
 
 Python environment

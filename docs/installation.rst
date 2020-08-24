@@ -53,8 +53,8 @@ repository, use the following commands in your bash shell::
 
         hg clone https://kallithea-scm.org/repos/kallithea -u stable
         cd kallithea
-        python3 -m venv ../kallithea-venv
-        . ../kallithea-venv/bin/activate
+        python3 -m venv venv
+        . venv/bin/activate
         pip install --upgrade pip setuptools
         pip install --upgrade -e .
         python3 setup.py compile_catalog   # for translation of the UI
@@ -81,6 +81,8 @@ problematic when upgrading the system or Kallithea.
 An additional benefit of virtualenv is that it doesn't require root privileges.
 
 - Don't install as root - install as a dedicated user like ``kallithea``.
+  If necessary, create the top directory for the virtualenv (like
+  ``/srv/kallithea/venv``) as root and assign ownership to the user.
 
 - Create a new virtual environment, for example in ``/srv/kallithea/venv``,
   specifying the right Python binary::

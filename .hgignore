@@ -51,4 +51,5 @@ syntax: regexp
 ^\.idea$
 ^\.cache$
 ^\.pytest_cache$
+^venv$
 /__pycache__$

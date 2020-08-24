@@ -33,8 +33,8 @@ bash shell::
 
         hg clone https://kallithea-scm.org/repos/kallithea
         cd kallithea
-        python3 -m venv ../kallithea-venv
-        . ../kallithea-venv/bin/activate
+        python3 -m venv venv
+        . venv/bin/activate
         pip install --upgrade pip setuptools
         pip install --upgrade -e . -r dev_requirements.txt python-ldap python-pam
         kallithea-cli config-create my.ini
