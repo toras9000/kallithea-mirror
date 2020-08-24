@@ -84,6 +84,10 @@ An additional benefit of virtualenv is that it doesn't require root privileges.
   If necessary, create the top directory for the virtualenv (like
   ``/srv/kallithea/venv``) as root and assign ownership to the user.
 
+  Make a parent folder for the virtualenv (and perhaps also Kallithea
+  configuration and data files) such as ``/srv/kallithea``. Create the
+  directory as root if necessary and grant ownership to the ``kallithea`` user.
+
 - Create a new virtual environment, for example in ``/srv/kallithea/venv``,
   specifying the right Python binary::
 

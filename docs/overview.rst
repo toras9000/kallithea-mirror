@@ -74,6 +74,11 @@ Kallithea can be installed in many different ways. The main parts are:
   This will have to be writable by the running Kallithea service. The path to
   this location will be configured in the database.
 
+For production setups, one recommendation is to use ``/srv/kallithea`` for the
+``.ini`` and ``data``, place the virtualenv in ``venv``, and use a Kallithea
+clone in ``kallithea``. Create a ``kallithea`` user, let it own
+``/srv/kallithea``, and run as that user when installing.
+
 For simple setups, it is fine to just use something like a ``kallithea`` user
 with home in ``/home/kallithea`` and place everything there.
 
