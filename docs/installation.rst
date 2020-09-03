@@ -19,12 +19,12 @@ The following describes three different ways of installing Kallithea:
   installations side by side or remove it entirely by just removing the
   virtualenv directory) and does not require root privileges.
 
-- :ref:`installation-without-virtualenv`: The alternative method of installing
-  a Kallithea release is using standard pip. The package will be installed in
-  the same location as all other Python packages you have ever installed. As a
-  result, removing it is not as straightforward as with a virtualenv, as you'd
-  have to remove its dependencies manually and make sure that they are not
-  needed by other packages.
+- Kallithea can also be installed with plain pip - globally or with ``--user``
+  or similar. The package will be installed in the same location as all other
+  Python packages you have ever installed. As a result, removing it is not as
+  straightforward as with a virtualenv, as you'd have to remove its
+  dependencies manually and make sure that they are not needed by other
+  packages. We recommend using virtualenv.
 
 Regardless of the installation method you may need to make sure you have
 appropriate development packages installed, as installation of some of the
@@ -124,27 +124,6 @@ An additional benefit of virtualenv is that it doesn't require root privileges.
   Python libraries into the activated virtualenv.
 
 You can now proceed to :ref:`install-front-end`.
-
-.. _installation-without-virtualenv:
-
-
-Installing a released version without virtualenv
-------------------------------------------------
-
-For installation without virtualenv, 'just' use::
-
-    pip install kallithea
-
-Note that this method requires root privileges and will install packages
-globally without using the system's package manager.
-
-To install as a regular user in ``~/.local``, you can use::
-
-    pip install --user kallithea
-
-You can now proceed to :ref:`install-front-end`.
-
-.. _install-front-end:
 
 
 Prepare front-end files
