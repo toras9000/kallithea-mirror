@@ -128,9 +128,9 @@ class RcConf(object):
         update = False
         if os.path.exists(self._conf_name):
             update = True
-        with open(self._conf_name, 'wb') as f:
+        with open(self._conf_name, 'w') as f:
             ext_json.dump(config, f, indent=4)
-            f.write(b'\n')
+            f.write('\n')
 
         if update:
             sys.stdout.write('Updated config in %s\n' % self._conf_name)
@@ -159,7 +159,7 @@ class RcConf(object):
         Loads config from file and returns loaded JSON object
         """
         try:
-            with open(self._conf_name, 'rb') as conf:
+            with open(self._conf_name, 'r') as conf:
                 return ext_json.load(conf)
         except IOError as e:
             #sys.stderr.write(str(e) + '\n')
