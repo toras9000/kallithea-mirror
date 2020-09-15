@@ -49,9 +49,6 @@ Source code
 The latest sources can be obtained from
 https://kallithea-scm.org/repos/kallithea.
 
-The issue tracker and a repository mirror can be found at Bitbucket_ on
-https://bitbucket.org/conservancy/kallithea.
-
 
 Kallithea features
 ------------------
