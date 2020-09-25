@@ -174,6 +174,7 @@ class HomeController(BaseController):
                         User.username.ilike("%%" + query + "%%"),
                         User.name.concat(' ').concat(User.lastname).ilike("%%" + query + "%%"),
                         User.lastname.concat(' ').concat(User.name).ilike("%%" + query + "%%"),
+                        User.email.ilike("%%" + query + "%%"),
                     )) \
                     .order_by(User.username) \
                     .limit(500) \
