@@ -172,8 +172,8 @@ class HomeController(BaseController):
                     .filter(User.active == True) \
                     .filter(or_(
                         User.username.ilike("%%" + query + "%%"),
-                        User.name.ilike("%%" + query + "%%"),
-                        User.lastname.ilike("%%" + query + "%%"),
+                        User.name.concat(' ').concat(User.lastname).ilike("%%" + query + "%%"),
+                        User.lastname.concat(' ').concat(User.name).ilike("%%" + query + "%%"),
                     )) \
                     .order_by(User.username) \
                     .limit(500) \
