@@ -161,8 +161,10 @@ class PullrequestsController(BaseRepoController):
                 else:
                     selected = 'tag:null:' + repo.EMPTY_CHANGESET
                     tags.append((selected, 'null'))
-            else:
-                if 'master' in repo.branches:
+            else:  # Git
+                if not repo.branches:
+                    selected = ''  # doesn't make sense, but better than nothing
+                elif 'master' in repo.branches:
                     selected = 'branch:master:%s' % repo.branches['master']
                 else:
                     k, v = list(repo.branches.items())[0]
