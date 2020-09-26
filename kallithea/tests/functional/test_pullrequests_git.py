@@ -31,10 +31,24 @@ class TestPullrequestsController(base.TestController):
                                   '_session_csrf_secret_token': self.session_csrf_secret_token(),
                                  },
                                  status=302)
+        # will redirect to URL like http://localhost/vcs_test_git/pull-request/1/_/master
+        pull_request_id = int(response.location.split('/')[5])
+
         response = response.follow()
         assert response.status == '200 OK'
         response.mustcontain('Successfully opened new pull request')
         response.mustcontain('Git pull requests don&#39;t support iterating yet.')
+
+        response = self.app.post(base.url('pullrequest_delete',
+                                 repo_name=base.GIT_REPO, pull_request_id=pull_request_id),
+                                 {
+                                  '_session_csrf_secret_token': self.session_csrf_secret_token(),
+                                 },
+                                 status=302)
+        response = response.follow()
+        assert response.status == '200 OK'
+        response.mustcontain('Successfully deleted pull request')
+
 
     def test_edit_with_invalid_reviewer(self):
         invalid_user_id = 99999

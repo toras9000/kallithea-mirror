@@ -139,7 +139,7 @@ class PullRequestModel(object):
         if pull_request.org_repo.scm_instance.alias == 'git':
             # remove a ref under refs/pull/ so that commits can be garbage-collected
             try:
-                del pull_request.org_repo.scm_instance._repo["refs/pull/%d/head" % pull_request.pull_request_id]
+                del pull_request.org_repo.scm_instance._repo[b"refs/pull/%d/head" % pull_request.pull_request_id]
             except KeyError:
                 pass
 
