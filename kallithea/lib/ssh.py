@@ -61,13 +61,25 @@ def parse_pub_key(ssh_key):
     Traceback (most recent call last):
     ...
     kallithea.lib.ssh.SshKeyParseError: Invalid SSH key - it is a ssh-rsa key but the base64 part contains 'csh-rsa'
+    >>> parse_pub_key('''ssh-rsa AAAAB2NzaC1yc2EAAAANVGhpcyBpcyE=''')
+    Traceback (most recent call last):
+    ...
+    kallithea.lib.ssh.SshKeyParseError: Invalid SSH key - it is a ssh-rsa key but the base64 part contains 'csh-rsa'
+    >>> parse_pub_key('''ssh-rsa AAAAB2NzaC1yc2EAAAANVGhpcyBpcyBmYWtlIQ==''')
+    Traceback (most recent call last):
+    ...
+    kallithea.lib.ssh.SshKeyParseError: Invalid SSH key - it is a ssh-rsa key but the base64 part contains 'csh-rsa'
+    >>> parse_pub_key('''ssh-rsa AAAAB2NzaC1yc2EAAAANVGhpcyBpcyBmYWtlIQAAAANieWU=''')
+    Traceback (most recent call last):
+    ...
+    kallithea.lib.ssh.SshKeyParseError: Invalid SSH key - it is a ssh-rsa key but the base64 part contains 'csh-rsa'
     >>> parse_pub_key('''ssh-rsa  AAAAB3NzaC1yc2EAAAA'LVGhpcyBpcyBmYWtlIQ''')
     Traceback (most recent call last):
     ...
     kallithea.lib.ssh.SshKeyParseError: Invalid SSH key - unexpected characters in base64 part "AAAAB3NzaC1yc2EAAAA'LVGhpcyBpcyBmYWtlIQ"
-    >>> parse_pub_key(''' ssh-rsa  AAAAB3NzaC1yc2EAAAALVGhpcyBpcyBmYWtlIQ== and a comment
+    >>> parse_pub_key(''' ssh-rsa  AAAAB3NzaC1yc2EAAAANVGhpcyBpcyBmYWtlIQAAAANieWU= and a comment
     ... ''')
-    ('ssh-rsa', b'\x00\x00\x00\x07ssh-rsa\x00\x00\x00\x0bThis is fake!', 'and a comment\n')
+    ('ssh-rsa', b'\x00\x00\x00\x07ssh-rsa\x00\x00\x00\rThis is fake!\x00\x00\x00\x03bye', 'and a comment\n')
     >>> parse_pub_key('''ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP1NA2kBQIKe74afUXmIWD9ByDYQJqUwW44Y4gJOBRuo''')
     ('ssh-ed25519', b'\x00\x00\x00\x0bssh-ed25519\x00\x00\x00 \xfdM\x03i\x01@\x82\x9e\xef\x86\x9fQy\x88X?A\xc86\x10&\xa50[\x8e\x18\xe2\x02N\x05\x1b\xa8', '')
     """
@@ -112,15 +124,16 @@ def _safe_check(s, rec = re.compile('^[a-zA-Z0-9+/]+={0,2}$')):
 
 
 def authorized_keys_line(kallithea_cli_path, config_file, key):
-    """
+    r"""
     Return a line as it would appear in .authorized_keys
 
+    >>> getfixture('doctest_mock_ugettext')
     >>> from kallithea.model.db import UserSshKeys, User
     >>> user = User(user_id=7, username='uu')
     >>> key = UserSshKeys(user_ssh_key_id=17, user=user, description='test key')
-    >>> key.public_key='''ssh-rsa  AAAAB3NzaC1yc2EAAAALVGhpcyBpcyBmYWtlIQ== and a comment'''
+    >>> key.public_key='''ssh-rsa  AAAAB3NzaC1yc2EAAAANVGhpcyBpcyBmYWtlIQAAAANieWU= and a comment'''
     >>> authorized_keys_line('/srv/kallithea/venv/bin/kallithea-cli', '/srv/kallithea/my.ini', key)
-    'no-pty,no-port-forwarding,no-X11-forwarding,no-agent-forwarding,command="/srv/kallithea/venv/bin/kallithea-cli ssh-serve -c /srv/kallithea/my.ini 7 17" ssh-rsa AAAAB3NzaC1yc2EAAAALVGhpcyBpcyBmYWtlIQ==\\n'
+    'no-pty,no-port-forwarding,no-X11-forwarding,no-agent-forwarding,command="/srv/kallithea/venv/bin/kallithea-cli ssh-serve -c /srv/kallithea/my.ini 7 17" ssh-rsa AAAAB3NzaC1yc2EAAAANVGhpcyBpcyBmYWtlIQAAAANieWU=\n'
     """
     try:
         keytype, key_bytes, comment = parse_pub_key(key.public_key)
