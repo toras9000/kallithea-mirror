@@ -44,7 +44,7 @@ from tg.i18n import lazy_ugettext as _
 from webob.exc import HTTPNotFound
 
 import kallithea
-from kallithea.lib import ext_json
+from kallithea.lib import ext_json, ssh
 from kallithea.lib.exceptions import DefaultUserException
 from kallithea.lib.utils2 import (Optional, asbool, ascii_bytes, aslist, get_changeset_safe, get_clone_url, remove_prefix, safe_bytes, safe_int, safe_str,
                                   urlreadable)
@@ -2300,8 +2300,12 @@ class UserSshKeys(Base, BaseDbModel):
 
     @public_key.setter
     def public_key(self, full_key):
-        # the full public key is too long to be suitable as database key - instead,
-        # use fingerprints similar to 'ssh-keygen -E sha256 -lf ~/.ssh/id_rsa.pub'
+        """The full public key is too long to be suitable as database key.
+        Instead, as a side-effect of setting the public key string, compute the
+        fingerprints according to https://tools.ietf.org/html/rfc4716#section-4
+        BUT using sha256 instead of md5, similar to 'ssh-keygen -E sha256 -lf
+        ~/.ssh/id_rsa.pub' .
+        """
+        keytype, key_bytes, comment = ssh.parse_pub_key(full_key)
         self._public_key = full_key
-        enc_key = safe_bytes(full_key.split(" ")[1])
-        self.fingerprint = base64.b64encode(hashlib.sha256(base64.b64decode(enc_key)).digest()).replace(b'\n', b'').rstrip(b'=').decode()
+        self.fingerprint = base64.b64encode(hashlib.sha256(key_bytes).digest()).replace(b'\n', b'').rstrip(b'=').decode()
