@@ -52,7 +52,7 @@ def parse_pub_key(ssh_key):
     >>> parse_pub_key('''abc AAAAB3NzaC1yc2EAAAALVGhpcyBpcyBmYWtlIQ''')
     Traceback (most recent call last):
     ...
-    kallithea.lib.ssh.SshKeyParseError: Invalid SSH key - it must start with key type 'ssh-rsa', 'ssh-dss', or 'ssh-ed25519'
+    kallithea.lib.ssh.SshKeyParseError: Invalid SSH key - it must start with key type 'ssh-rsa', 'ssh-dss', 'ssh-ed448', or 'ssh-ed25519'
     >>> parse_pub_key('''ssh-rsa  AAAAB3NzaC1yc2EAAAALVGhpcyBpcyBmYWtlIQ''')
     Traceback (most recent call last):
     ...
@@ -91,8 +91,8 @@ def parse_pub_key(ssh_key):
         raise SshKeyParseError(_("Invalid SSH key - it must have both a key type and a base64 part, like 'ssh-rsa ASRNeaZu4FA...xlJp='"))
 
     keytype, keyvalue, comment = (parts + [''])[:3]
-    if keytype not in ('ssh-rsa', 'ssh-dss', 'ssh-ed25519'):
-        raise SshKeyParseError(_("Invalid SSH key - it must start with key type 'ssh-rsa', 'ssh-dss', or 'ssh-ed25519'"))
+    if keytype not in ('ssh-rsa', 'ssh-dss', 'ssh-ed448', 'ssh-ed25519'):
+        raise SshKeyParseError(_("Invalid SSH key - it must start with key type 'ssh-rsa', 'ssh-dss', 'ssh-ed448', or 'ssh-ed25519'"))
 
     if re.search(r'[^a-zA-Z0-9+/=]', keyvalue):  # make sure b64decode doesn't stop at the first invalid character and skip the rest
         raise SshKeyParseError(_("Invalid SSH key - unexpected characters in base64 part %r") % keyvalue)
