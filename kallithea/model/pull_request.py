@@ -58,7 +58,18 @@ class PullRequestModel(object):
             mention_recipients = set(mention_recipients) - reviewers
             _assert_valid_reviewers(mention_recipients)
 
-        # members
+        redundant_reviewers = set(User.query() \
+            .join(PullRequestReviewer) \
+            .filter(PullRequestReviewer.pull_request == pr) \
+            .filter(PullRequestReviewer.user_id.in_(r.user_id for r in reviewers))
+            .all())
+
+        if redundant_reviewers:
+            log.debug('Following reviewers were already part of pull request %s: %s', pr.pull_request_id, redundant_reviewers)
+
+            reviewers -= redundant_reviewers
+
+        log.debug('Adding reviewers to pull request %s: %s', pr.pull_request_id, reviewers)
         for reviewer in reviewers:
             prr = PullRequestReviewer(reviewer, pr)
             Session().add(prr)
@@ -115,6 +126,8 @@ class PullRequestModel(object):
                                        recipients=mention_recipients,
                                        type_=NotificationModel.TYPE_PULL_REQUEST,
                                        email_kwargs=email_kwargs)
+
+        return reviewers, redundant_reviewers
 
     def mention_from_description(self, user, pr, old_description=''):
         mention_recipients = (extract_mentioned_users(pr.description) -
