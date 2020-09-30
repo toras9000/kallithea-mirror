@@ -30,7 +30,7 @@ EXTRA_INDEX_EXTENSIONS = []
 # POST CREATE REPOSITORY HOOK
 #==============================================================================
 # this function will be executed after each repository is created
-def _crrepohook(*args, **kwargs):
+def CREATE_REPO_HOOK(*args, **kwargs):
     """
     Post create repository HOOK
     kwargs available:
@@ -50,14 +50,11 @@ def _crrepohook(*args, **kwargs):
     """
 
 
-CREATE_REPO_HOOK = _crrepohook
-
-
 #==============================================================================
 # PRE CREATE USER HOOK
 #==============================================================================
 # this function will be executed before each user is created
-def _pre_cruserhook(*args, **kwargs):
+def PRE_CREATE_USER_HOOK(*args, **kwargs):
     """
     Pre create user HOOK, it returns a tuple of bool, reason.
     If bool is False the user creation will be stopped and reason
@@ -76,13 +73,11 @@ def _pre_cruserhook(*args, **kwargs):
     return True, reason
 
 
-PRE_CREATE_USER_HOOK = _pre_cruserhook
-
 #==============================================================================
 # POST CREATE USER HOOK
 #==============================================================================
 # this function will be executed after each user is created
-def _cruserhook(*args, **kwargs):
+def CREATE_USER_HOOK(*args, **kwargs):
     """
     Post create user HOOK
     kwargs available:
@@ -108,14 +103,11 @@ def _cruserhook(*args, **kwargs):
     """
 
 
-CREATE_USER_HOOK = _cruserhook
-
-
 #==============================================================================
 # POST DELETE REPOSITORY HOOK
 #==============================================================================
 # this function will be executed after each repository deletion
-def _dlrepohook(*args, **kwargs):
+def DELETE_REPO_HOOK(*args, **kwargs):
     """
     Post delete repository HOOK
     kwargs available:
@@ -136,14 +128,11 @@ def _dlrepohook(*args, **kwargs):
     """
 
 
-DELETE_REPO_HOOK = _dlrepohook
-
-
 #==============================================================================
 # POST DELETE USER HOOK
 #==============================================================================
 # this function will be executed after each user is deleted
-def _dluserhook(*args, **kwargs):
+def DELETE_USER_HOOK(*args, **kwargs):
     """
     Post delete user HOOK
     kwargs available:
@@ -169,16 +158,13 @@ def _dluserhook(*args, **kwargs):
     """
 
 
-DELETE_USER_HOOK = _dluserhook
-
-
 #==============================================================================
 # POST PUSH HOOK
 #==============================================================================
 
 # this function will be executed after each push it's executed after the
 # build-in hook that Kallithea uses for logging pushes
-def _pushhook(*args, **kwargs):
+def PUSH_HOOK(*args, **kwargs):
     """
     Post push hook
     kwargs available:
@@ -193,16 +179,13 @@ def _pushhook(*args, **kwargs):
     """
 
 
-PUSH_HOOK = _pushhook
-
-
 #==============================================================================
 # POST PULL HOOK
 #==============================================================================
 
 # this function will be executed after each push it's executed after the
 # build-in hook that Kallithea uses for logging pulls
-def _pullhook(*args, **kwargs):
+def PULL_HOOK(*args, **kwargs):
     """
     Post pull hook
     kwargs available::
@@ -214,6 +197,3 @@ def _pullhook(*args, **kwargs):
       :param action: pull
       :param repository: repository name
     """
-
-
-PULL_HOOK = _pullhook
