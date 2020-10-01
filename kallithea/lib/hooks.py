@@ -101,8 +101,6 @@ def log_pull_action(ui, repo, **kwargs):
         kw.update(ex)
         callback(**kw)
 
-    return 0
-
 
 def log_push_action(ui, repo, node, node_last, **kwargs):
     """
@@ -116,7 +114,6 @@ def log_push_action(ui, repo, node, node_last, **kwargs):
     """
     revs = [ascii_str(repo[r].hex()) for r in mercurial.scmutil.revrange(repo, [b'%s:%s' % (node, node_last)])]
     process_pushed_raw_ids(revs)
-    return 0
 
 
 def process_pushed_raw_ids(revs):
@@ -174,9 +171,7 @@ def log_create_repository(repository_dict, created_by, **kwargs):
         kw.update(repository_dict)
         kw.update({'created_by': created_by})
         kw.update(kwargs)
-        return callback(**kw)
-
-    return 0
+        callback(**kw)
 
 
 def check_allowed_create_user(user_dict, created_by, **kwargs):
@@ -220,9 +215,7 @@ def log_create_user(user_dict, created_by, **kwargs):
     from kallithea import EXTENSIONS
     callback = getattr(EXTENSIONS, 'CREATE_USER_HOOK', None)
     if callable(callback):
-        return callback(created_by=created_by, **user_dict)
-
-    return 0
+        callback(created_by=created_by, **user_dict)
 
 
 def log_delete_repository(repository_dict, deleted_by, **kwargs):
@@ -256,9 +249,7 @@ def log_delete_repository(repository_dict, deleted_by, **kwargs):
         kw.update({'deleted_by': deleted_by,
                    'deleted_on': time.time()})
         kw.update(kwargs)
-        return callback(**kw)
-
-    return 0
+        callback(**kw)
 
 
 def log_delete_user(user_dict, deleted_by, **kwargs):
@@ -292,9 +283,7 @@ def log_delete_user(user_dict, deleted_by, **kwargs):
     from kallithea import EXTENSIONS
     callback = getattr(EXTENSIONS, 'DELETE_USER_HOOK', None)
     if callable(callback):
-        return callback(deleted_by=deleted_by, **user_dict)
-
-    return 0
+        callback(deleted_by=deleted_by, **user_dict)
 
 
 def _hook_environment(repo_path):
@@ -330,13 +319,17 @@ def _hook_environment(repo_path):
 
 
 def handle_git_pre_receive(repo_path, git_stdin_lines):
-    """Called from Git pre-receive hook"""
+    """Called from Git pre-receive hook.
+    The returned value is used as hook exit code and must be 0.
+    """
     # Currently unused. TODO: remove?
     return 0
 
 
 def handle_git_post_receive(repo_path, git_stdin_lines):
-    """Called from Git post-receive hook"""
+    """Called from Git post-receive hook.
+    The returned value is used as hook exit code and must be 0.
+    """
     try:
         baseui, repo = _hook_environment(repo_path)
     except HookEnvironmentError as e:
@@ -399,7 +392,9 @@ def handle_git_post_receive(repo_path, git_stdin_lines):
 
 # Almost exactly like Mercurial contrib/hg-ssh:
 def rejectpush(ui, **kwargs):
-    """Mercurial hook to be installed as pretxnopen and prepushkey for read-only repos"""
+    """Mercurial hook to be installed as pretxnopen and prepushkey for read-only repos.
+    Return value 1 will make the hook fail and reject the push.
+    """
     ex = get_hook_environment()
     ui.warn(safe_bytes("Push access to %r denied\n" % ex.repository))
     return 1
