@@ -183,7 +183,6 @@ class Setting(Base, BaseDbModel):
         'bool': asbool,
         'list': functools.partial(aslist, sep=',')
     }
-    DEFAULT_UPDATE_URL = ''
 
     app_settings_id = Column(Integer(), primary_key=True)
     app_settings_name = Column(String(255), nullable=False, unique=True)
