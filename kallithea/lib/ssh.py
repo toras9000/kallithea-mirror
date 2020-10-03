@@ -48,23 +48,23 @@ def parse_pub_key(ssh_key):
     >>> parse_pub_key('''AAAAB3NzaC1yc2EAAAALVGhpcyBpcyBmYWtlIQ''')
     Traceback (most recent call last):
     ...
-    kallithea.lib.ssh.SshKeyParseError: Incorrect SSH key - it must have both a key type and a base64 part, like 'ssh-rsa ASRNeaZu4FA...xlJp='
+    kallithea.lib.ssh.SshKeyParseError: Invalid SSH key - it must have both a key type and a base64 part, like 'ssh-rsa ASRNeaZu4FA...xlJp='
     >>> parse_pub_key('''abc AAAAB3NzaC1yc2EAAAALVGhpcyBpcyBmYWtlIQ''')
     Traceback (most recent call last):
     ...
-    kallithea.lib.ssh.SshKeyParseError: Incorrect SSH key - it must start with 'ssh-(rsa|dss|ed25519)'
+    kallithea.lib.ssh.SshKeyParseError: Invalid SSH key - it must start with key type 'ssh-rsa', 'ssh-dss', or 'ssh-ed25519'
     >>> parse_pub_key('''ssh-rsa  AAAAB3NzaC1yc2EAAAALVGhpcyBpcyBmYWtlIQ''')
     Traceback (most recent call last):
     ...
-    kallithea.lib.ssh.SshKeyParseError: Incorrect SSH key - failed to decode base64 part 'AAAAB3NzaC1yc2EAAAALVGhpcyBpcyBmYWtlIQ'
+    kallithea.lib.ssh.SshKeyParseError: Invalid SSH key - base64 part 'AAAAB3NzaC1yc2EAAAALVGhpcyBpcyBmYWtlIQ' seems truncated (it can't be decoded)
     >>> parse_pub_key('''ssh-rsa  AAAAB2NzaC1yc2EAAAALVGhpcyBpcyBmYWtlIQ==''')
     Traceback (most recent call last):
     ...
-    kallithea.lib.ssh.SshKeyParseError: Incorrect SSH key - base64 part is not 'ssh-rsa' as claimed but 'csh-rsa'
+    kallithea.lib.ssh.SshKeyParseError: Invalid SSH key - it is a ssh-rsa key but the base64 part contains 'csh-rsa'
     >>> parse_pub_key('''ssh-rsa  AAAAB3NzaC1yc2EAAAA'LVGhpcyBpcyBmYWtlIQ''')
     Traceback (most recent call last):
     ...
-    kallithea.lib.ssh.SshKeyParseError: Incorrect SSH key - unexpected characters in base64 part "AAAAB3NzaC1yc2EAAAA'LVGhpcyBpcyBmYWtlIQ"
+    kallithea.lib.ssh.SshKeyParseError: Invalid SSH key - unexpected characters in base64 part "AAAAB3NzaC1yc2EAAAA'LVGhpcyBpcyBmYWtlIQ"
     >>> parse_pub_key(''' ssh-rsa  AAAAB3NzaC1yc2EAAAALVGhpcyBpcyBmYWtlIQ== and a comment
     ... ''')
     ('ssh-rsa', b'\x00\x00\x00\x07ssh-rsa\x00\x00\x00\x0bThis is fake!', 'and a comment\n')
@@ -76,22 +76,22 @@ def parse_pub_key(ssh_key):
 
     parts = ssh_key.split(None, 2)
     if len(parts) < 2:
-        raise SshKeyParseError(_("Incorrect SSH key - it must have both a key type and a base64 part, like 'ssh-rsa ASRNeaZu4FA...xlJp='"))
+        raise SshKeyParseError(_("Invalid SSH key - it must have both a key type and a base64 part, like 'ssh-rsa ASRNeaZu4FA...xlJp='"))
 
     keytype, keyvalue, comment = (parts + [''])[:3]
     if keytype not in ('ssh-rsa', 'ssh-dss', 'ssh-ed25519'):
-        raise SshKeyParseError(_("Incorrect SSH key - it must start with 'ssh-(rsa|dss|ed25519)'"))
+        raise SshKeyParseError(_("Invalid SSH key - it must start with key type 'ssh-rsa', 'ssh-dss', or 'ssh-ed25519'"))
 
-    if re.search(r'[^a-zA-Z0-9+/=]', keyvalue):
-        raise SshKeyParseError(_("Incorrect SSH key - unexpected characters in base64 part %r") % keyvalue)
+    if re.search(r'[^a-zA-Z0-9+/=]', keyvalue):  # make sure b64decode doesn't stop at the first invalid character and skip the rest
+        raise SshKeyParseError(_("Invalid SSH key - unexpected characters in base64 part %r") % keyvalue)
 
     try:
         key_bytes = base64.b64decode(keyvalue)
-    except base64.binascii.Error:
-        raise SshKeyParseError(_("Incorrect SSH key - failed to decode base64 part %r") % keyvalue)
+    except base64.binascii.Error:  # Must be caused by truncation - either "Invalid padding" or "Invalid base64-encoded string: number of data characters (x) cannot be 1 more than a multiple of 4"
+        raise SshKeyParseError(_("Invalid SSH key - base64 part %r seems truncated (it can't be decoded)") % keyvalue)
 
     if not key_bytes.startswith(b'\x00\x00\x00%c%s\x00' % (len(keytype), ascii_bytes(keytype))):
-        raise SshKeyParseError(_("Incorrect SSH key - base64 part is not %r as claimed but %r") % (keytype, ascii_str(key_bytes[4:].split(b'\0', 1)[0])))
+        raise SshKeyParseError(_("Invalid SSH key - it is a %s key but the base64 part contains %r") % (keytype, ascii_str(key_bytes[4:].split(b'\0', 1)[0])))
 
     return keytype, key_bytes, comment
 
