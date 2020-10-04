@@ -135,9 +135,8 @@ Get in touch with the rest of the community:
 
 - Follow Kallithea on Twitter, **@KallitheaSCM**.
 
-- The `old issue tracker <https://bitbucket.org/conservancy/kallithea/issues>`_
-  is defunct after it was deleted by Bitbucket_. For now, please report issues
-  on the mailing list.
+- Please report issues on the mailing list. An archive of the old issue tracker
+  is available at: https://kallithea-scm.org/bitbucket-archive/issues/index.html
 
    .. note::
 

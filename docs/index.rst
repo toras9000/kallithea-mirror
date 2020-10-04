@@ -81,7 +81,6 @@ Developer guide
 .. _python: http://www.python.org/
 .. _django: http://www.djangoproject.com/
 .. _mercurial: https://www.mercurial-scm.org/
-.. _bitbucket: http://bitbucket.org/
 .. _subversion: http://subversion.tigris.org/
 .. _git: http://git-scm.com/
 .. _celery: http://celeryproject.org/
