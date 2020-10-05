@@ -32,11 +32,24 @@ class TestPullrequestsController(base.TestController):
                                   '_session_csrf_secret_token': self.session_csrf_secret_token(),
                                  },
                                  status=302)
+        # will redirect to URL like http://localhost/vcs_test_hg/pull-request/1/_/stable
+        pull_request_id = int(response.location.split('/')[5])
+
         response = response.follow()
         assert response.status == '200 OK'
         response.mustcontain('Successfully opened new pull request')
         response.mustcontain('No additional changesets found for iterating on this pull request')
         response.mustcontain('href="/vcs_test_hg/changeset/4f7e2131323e0749a740c0a56ab68ae9269c562a"')
+
+        response = self.app.post(base.url('pullrequest_delete',
+                                 repo_name=base.HG_REPO, pull_request_id=pull_request_id),
+                                 {
+                                  '_session_csrf_secret_token': self.session_csrf_secret_token(),
+                                 },
+                                 status=302)
+        response = response.follow()
+        assert response.status == '200 OK'
+        response.mustcontain('Successfully deleted pull request')
 
     def test_available(self):
         self.log_user()

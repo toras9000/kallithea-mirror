@@ -128,38 +128,21 @@ class RcConf(object):
         update = False
         if os.path.exists(self._conf_name):
             update = True
-        with open(self._conf_name, 'wb') as f:
+        with open(self._conf_name, 'w') as f:
             ext_json.dump(config, f, indent=4)
-            f.write(b'\n')
+            f.write('\n')
 
         if update:
             sys.stdout.write('Updated config in %s\n' % self._conf_name)
         else:
             sys.stdout.write('Created new config in %s\n' % self._conf_name)
 
-    def update_config(self, new_config):
-        """
-        Reads the JSON config updates it's values with new_config and
-        saves it back as JSON dump
-
-        :param new_config:
-        """
-        config = {}
-        try:
-            with open(self._conf_name, 'rb') as conf:
-                config = ext_json.load(conf)
-        except IOError as e:
-            sys.stderr.write(str(e) + '\n')
-
-        config.update(new_config)
-        self.make_config(config)
-
     def load_config(self):
         """
         Loads config from file and returns loaded JSON object
         """
         try:
-            with open(self._conf_name, 'rb') as conf:
+            with open(self._conf_name, 'r') as conf:
                 return ext_json.load(conf)
         except IOError as e:
             #sys.stderr.write(str(e) + '\n')

@@ -15,9 +15,7 @@ The main repository is hosted on Our Own Kallithea (aka OOK) at
 https://kallithea-scm.org/repos/kallithea/, our self-hosted instance
 of Kallithea.
 
-For now, we use Bitbucket_ for `pull requests`_ and `issue tracking`_. The
-issue tracker is for tracking bugs, not for support, discussion, or ideas --
-please use the `mailing list`_ or :ref:`IRC <readme>` to reach the community.
+Please use the `mailing list`_ to send patches or report issues.
 
 We use Weblate_ to translate the user interface messages into languages other
 than English. Join our project on `Hosted Weblate`_ to help us.
@@ -42,11 +40,6 @@ bash shell::
         kallithea-cli front-end-build
         gearbox serve -c my.ini --reload &
         firefox http://127.0.0.1:5000/
-
-If you plan to use Bitbucket_ for sending contributions, you can also fork
-Kallithea on Bitbucket_ first (https://bitbucket.org/conservancy/kallithea) and
-then replace the clone step above by a clone of your fork. In this case, please
-see :ref:`contributing-guidelines` below for configuring your fork correctly.
 
 
 Contribution flow
@@ -74,8 +67,7 @@ Before submitting any changes, run the cleanup script::
         ./scripts/run-all-cleanup
 
 When you are completely ready, you can send your changes to the community for
-review and inclusion. Most commonly used methods are sending patches to the
-mailing list (via ``hg email``) or by creating a pull request on Bitbucket_.
+review and inclusion, via the mailing list (via ``hg email``).
 
 .. _contributing-tests:
 
@@ -167,17 +159,8 @@ committer/contributor and under GPLv3 unless explicitly stated. We do care a
 lot about preservation of copyright and license information for existing code
 that is brought into the project.
 
-Contributions will be accepted in most formats -- such as pull requests on
-Bitbucket, something hosted on your own Kallithea instance, or patches sent by
+Contributions will be accepted in most formats -- such as commits hosted on your own Kallithea instance, or patches sent by
 email to the `kallithea-general`_ mailing list.
-
-When contributing via Bitbucket, please make your fork of
-https://bitbucket.org/conservancy/kallithea/ `non-publishing`_ -- it is one of
-the settings on "Repository details" page. This ensures your commits are in
-"draft" phase and makes it easier for you to address feedback and for project
-maintainers to integrate your changes.
-
-.. _non-publishing: https://www.mercurial-scm.org/wiki/Phases#Publishing_Repository
 
 Make sure to test your changes both manually and with the automatic tests
 before posting.
@@ -312,26 +295,14 @@ To enable DebugBar, install ``tgext.debugbar`` and ``kajiki`` (typically via
 ``pip``) and restart Kallithea (in debug mode).
 
 
-"Roadmap"
----------
-
-We do not have a road map but are waiting for your contributions. Refer to the
-wiki_ for some ideas of places we might want to go -- contributions in these
-areas are very welcome.
-
-
 Thank you for your contribution!
 --------------------------------
 
 
 .. _Weblate: http://weblate.org/
-.. _issue tracking: https://bitbucket.org/conservancy/kallithea/issues?status=new&status=open
-.. _pull requests: https://bitbucket.org/conservancy/kallithea/pull-requests
-.. _bitbucket: http://bitbucket.org/
 .. _mailing list: http://lists.sfconservancy.org/mailman/listinfo/kallithea-general
 .. _kallithea-general: http://lists.sfconservancy.org/mailman/listinfo/kallithea-general
 .. _Hosted Weblate: https://hosted.weblate.org/projects/kallithea/kallithea/
-.. _wiki: https://bitbucket.org/conservancy/kallithea/wiki/Home
 .. _DebugBar: https://github.com/TurboGears/tgext.debugbar
 .. _Quick Start: https://www.mercurial-scm.org/wiki/QuickStart
 .. _Beginners Guide: https://www.mercurial-scm.org/wiki/BeginnersGuides

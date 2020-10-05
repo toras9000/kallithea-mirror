@@ -33,6 +33,9 @@ msgstr ""
 msgid "Could not find other repository %s"
 msgstr "Nie można znaleźć innego repozytorium %s"
 
+msgid "Cannot compare repositories of different types"
+msgstr "Nie można porównać repozytoriów o różnych typach"
+
 msgid "No response"
 msgstr "Brak odpowiedzi"
 
