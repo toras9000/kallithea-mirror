@@ -69,7 +69,7 @@ def get_index_filenames():
 
 def get_custom_lexer(extension):
     """
-    returns a custom lexer if it's defined in rcextensions module, or None
+    returns a custom lexer if it's defined in the extensions module, or None
     if there's no custom lexer defined
     """
     import kallithea

@@ -522,11 +522,15 @@ def repo2db_mapper(initial_repo_dict, remove_obsolete=False,
 
 def load_extensions(root_path):
     try:
-        ext = create_module('rc', os.path.join(root_path, 'rcextensions', '__init__.py'))
+        ext = create_module('extensions', os.path.join(root_path, 'extensions.py'))
     except FileNotFoundError:
-        return
+        try:
+            ext = create_module('rc', os.path.join(root_path, 'rcextensions', '__init__.py'))
+            log.warning('The name "rcextensions" is deprecated. Please use a file `extensions.py` instead of a directory `rcextensions`.')
+        except FileNotFoundError:
+            return
 
-    log.info('Loaded rcextensions from %s', ext)
+    log.info('Loaded Kallithea extensions from %s', ext)
     kallithea.EXTENSIONS = ext
 
     # Additional mappings that are not present in the pygments lexers

@@ -39,8 +39,8 @@ Back up your configuration
 
 Make a copy of your Kallithea configuration (``.ini``) file.
 
-If you are using :ref:`rcextensions <customization>`, you should also
-make a copy of the entire ``rcextensions`` directory.
+If you are using custom :ref:`extensions <customization>`, you should also
+make a copy of the ``extensions.py`` file.
 
 Back up your database
 ^^^^^^^^^^^^^^^^^^^^^
