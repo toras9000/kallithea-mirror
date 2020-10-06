@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Based on kallithea/lib/paster_commands/template.ini.mako, generate development.ini
+Generate development.ini based on the ini template.
 """
 
 import re

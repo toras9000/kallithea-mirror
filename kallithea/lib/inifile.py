@@ -32,7 +32,7 @@ log = logging.getLogger(__name__)
 
 template_file = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-    'kallithea/lib/paster_commands/template.ini.mako')
+    'kallithea/templates/ini/template.ini.mako')
 
 default_variables = {
     'database_engine': 'sqlite',
