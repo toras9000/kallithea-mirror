@@ -204,7 +204,7 @@ class EmailNotificationModel(object):
         return generated template for email based on given type
         """
 
-        base = 'email_templates/' + self.email_types.get(type_, self.email_types[self.TYPE_DEFAULT]) + '.' + content_type
+        base = 'email/' + self.email_types.get(type_, self.email_types[self.TYPE_DEFAULT]) + '.' + content_type
         email_template = self._tmpl_lookup.get_template(base)
         # translator and helpers inject
         _kwargs = {'_': _,
