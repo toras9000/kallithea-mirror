@@ -27,9 +27,10 @@ from kallithea.lib import ext_json
 from kallithea.lib.auth import AuthUser
 from kallithea.lib.utils2 import ascii_bytes
 from kallithea.model.changeset_status import ChangesetStatusModel
-from kallithea.model.db import ChangesetStatus, PullRequest, RepoGroup, Repository, Setting, Ui, User
+from kallithea.model.db import ChangesetStatus, PullRequest, PullRequestReviewer, RepoGroup, Repository, Setting, Ui, User
 from kallithea.model.gist import GistModel
 from kallithea.model.meta import Session
+from kallithea.model.pull_request import PullRequestModel
 from kallithea.model.repo import RepoModel
 from kallithea.model.repo_group import RepoGroupModel
 from kallithea.model.scm import ScmModel
@@ -2528,3 +2529,317 @@ class _BaseTestApi(object):
         self._compare_ok(random_id, True, given=response.body)
         pullrequest = PullRequest().get(pull_request_id)
         assert pullrequest.comments[-1].text == 'Looks good to me'
+
+    def test_api_edit_reviewers_add_single(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = PullRequest().get(pull_request_id)
+        pullrequest.owner = self.test_user
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id, "add": base.TEST_USER_REGULAR2_LOGIN},
+        }))
+        response = api_call(self, params)
+        expected = { 'added': [base.TEST_USER_REGULAR2_LOGIN], 'already_present': [], 'removed': [] }
+
+        self._compare_ok(random_id, expected, given=response.body)
+        assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
+
+    def test_api_edit_reviewers_add_nonexistent(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = PullRequest().get(pull_request_id)
+        pullrequest.owner = self.test_user
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id, "add": 999},
+        }))
+        response = api_call(self, params)
+
+        self._compare_error(random_id, "user `999` does not exist", given=response.body)
+
+    def test_api_edit_reviewers_add_multiple(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = PullRequest().get(pull_request_id)
+        pullrequest.owner = self.test_user
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {
+                "pull_request_id": pull_request_id,
+                "add": [ self.TEST_USER_LOGIN, base.TEST_USER_REGULAR2_LOGIN ]
+            },
+        }))
+        response = api_call(self, params)
+        # list order depends on python sorting hash, which is randomized
+        assert set(ext_json.loads(response.body)['result']['added']) == set([base.TEST_USER_REGULAR2_LOGIN, self.TEST_USER_LOGIN])
+        assert set(ext_json.loads(response.body)['result']['already_present']) == set()
+        assert set(ext_json.loads(response.body)['result']['removed']) == set()
+
+        assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
+        assert User.get_by_username(self.TEST_USER_LOGIN) in pullrequest.get_reviewer_users()
+
+    def test_api_edit_reviewers_add_already_present(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = PullRequest().get(pull_request_id)
+        pullrequest.owner = self.test_user
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {
+                "pull_request_id": pull_request_id,
+                "add": [ base.TEST_USER_REGULAR_LOGIN, base.TEST_USER_REGULAR2_LOGIN ]
+            },
+        }))
+        response = api_call(self, params)
+        expected = { 'added': [base.TEST_USER_REGULAR2_LOGIN],
+                     'already_present': [base.TEST_USER_REGULAR_LOGIN],
+                     'removed': [],
+                   }
+
+        self._compare_ok(random_id, expected, given=response.body)
+        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
+
+    def test_api_edit_reviewers_add_closed(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = PullRequest().get(pull_request_id)
+        pullrequest.owner = self.test_user
+        PullRequestModel().close_pull_request(pull_request_id)
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id, "add": base.TEST_USER_REGULAR2_LOGIN},
+        }))
+        response = api_call(self, params)
+        self._compare_error(random_id, "Cannot edit reviewers of a closed pull request.", given=response.body)
+
+    def test_api_edit_reviewers_add_not_owner(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = PullRequest().get(pull_request_id)
+        pullrequest.owner = User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id, "add": base.TEST_USER_REGULAR2_LOGIN},
+        }))
+        response = api_call(self, params)
+        self._compare_error(random_id, "No permission to edit reviewers of this pull request. User needs to be admin or pull request owner.", given=response.body)
+
+
+    def test_api_edit_reviewers_remove_single(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = PullRequest().get(pull_request_id)
+        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+
+        pullrequest.owner = self.test_user
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id, "remove": base.TEST_USER_REGULAR_LOGIN},
+        }))
+        response = api_call(self, params)
+
+        expected = { 'added': [],
+                     'already_present': [],
+                     'removed': [base.TEST_USER_REGULAR_LOGIN],
+                   }
+        self._compare_ok(random_id, expected, given=response.body)
+        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) not in pullrequest.get_reviewer_users()
+
+    def test_api_edit_reviewers_remove_nonexistent(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = PullRequest().get(pull_request_id)
+        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+
+        pullrequest.owner = self.test_user
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id, "remove": 999},
+        }))
+        response = api_call(self, params)
+
+        self._compare_error(random_id, "user `999` does not exist", given=response.body)
+        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+
+    def test_api_edit_reviewers_remove_nonpresent(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = PullRequest().get(pull_request_id)
+        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) not in pullrequest.get_reviewer_users()
+
+        pullrequest.owner = self.test_user
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id, "remove": base.TEST_USER_REGULAR2_LOGIN},
+        }))
+        response = api_call(self, params)
+
+        # NOTE: no explicit indication that removed user was not even a reviewer
+        expected = { 'added': [],
+                     'already_present': [],
+                     'removed': [base.TEST_USER_REGULAR2_LOGIN],
+                   }
+        self._compare_ok(random_id, expected, given=response.body)
+        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) not in pullrequest.get_reviewer_users()
+
+    def test_api_edit_reviewers_remove_multiple(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = PullRequest().get(pull_request_id)
+        prr = PullRequestReviewer(User.get_by_username(base.TEST_USER_REGULAR2_LOGIN), pullrequest)
+        Session().add(prr)
+        Session().commit()
+
+        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
+
+        pullrequest.owner = self.test_user
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id, "remove": [ base.TEST_USER_REGULAR_LOGIN, base.TEST_USER_REGULAR2_LOGIN ] },
+        }))
+        response = api_call(self, params)
+
+        # list order depends on python sorting hash, which is randomized
+        assert set(ext_json.loads(response.body)['result']['added']) == set()
+        assert set(ext_json.loads(response.body)['result']['already_present']) == set()
+        assert set(ext_json.loads(response.body)['result']['removed']) == set([base.TEST_USER_REGULAR_LOGIN, base.TEST_USER_REGULAR2_LOGIN])
+        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) not in pullrequest.get_reviewer_users()
+        assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) not in pullrequest.get_reviewer_users()
+
+    def test_api_edit_reviewers_remove_closed(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = PullRequest().get(pull_request_id)
+        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        PullRequestModel().close_pull_request(pull_request_id)
+
+        pullrequest.owner = self.test_user
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id, "remove": base.TEST_USER_REGULAR_LOGIN},
+        }))
+        response = api_call(self, params)
+
+        self._compare_error(random_id, "Cannot edit reviewers of a closed pull request.", given=response.body)
+        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+
+    def test_api_edit_reviewers_remove_not_owner(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = PullRequest().get(pull_request_id)
+        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+
+        pullrequest.owner = User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id, "remove": base.TEST_USER_REGULAR_LOGIN},
+        }))
+        response = api_call(self, params)
+
+        self._compare_error(random_id, "No permission to edit reviewers of this pull request. User needs to be admin or pull request owner.", given=response.body)
+        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+
+    def test_api_edit_reviewers_add_remove_single(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = PullRequest().get(pull_request_id)
+        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) not in pullrequest.get_reviewer_users()
+
+        pullrequest.owner = self.test_user
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id,
+                     "add": base.TEST_USER_REGULAR2_LOGIN,
+                     "remove": base.TEST_USER_REGULAR_LOGIN
+                    },
+        }))
+        response = api_call(self, params)
+
+        expected = { 'added': [base.TEST_USER_REGULAR2_LOGIN],
+                     'already_present': [],
+                     'removed': [base.TEST_USER_REGULAR_LOGIN],
+                   }
+        self._compare_ok(random_id, expected, given=response.body)
+        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) not in pullrequest.get_reviewer_users()
+        assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
+
+    def test_api_edit_reviewers_add_remove_multiple(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = PullRequest().get(pull_request_id)
+        prr = PullRequestReviewer(User.get_by_username(base.TEST_USER_ADMIN_LOGIN), pullrequest)
+        Session().add(prr)
+        Session().commit()
+        assert User.get_by_username(base.TEST_USER_ADMIN_LOGIN) in pullrequest.get_reviewer_users()
+        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) not in pullrequest.get_reviewer_users()
+
+        pullrequest.owner = self.test_user
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id,
+                     "add": [ base.TEST_USER_REGULAR2_LOGIN ],
+                     "remove": [ base.TEST_USER_REGULAR_LOGIN, base.TEST_USER_ADMIN_LOGIN ],
+                    },
+        }))
+        response = api_call(self, params)
+
+        # list order depends on python sorting hash, which is randomized
+        assert set(ext_json.loads(response.body)['result']['added']) == set([base.TEST_USER_REGULAR2_LOGIN])
+        assert set(ext_json.loads(response.body)['result']['already_present']) == set()
+        assert set(ext_json.loads(response.body)['result']['removed']) == set([base.TEST_USER_REGULAR_LOGIN, base.TEST_USER_ADMIN_LOGIN])
+        assert User.get_by_username(base.TEST_USER_ADMIN_LOGIN) not in pullrequest.get_reviewer_users()
+        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) not in pullrequest.get_reviewer_users()
+        assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
+
+    def test_api_edit_reviewers_invalid_params(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = PullRequest().get(pull_request_id)
+        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+
+        pullrequest.owner = User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id},
+        }))
+        response = api_call(self, params)
+
+        self._compare_error(random_id, "Invalid request. Neither 'add' nor 'remove' is specified.", given=response.body)
+        assert ext_json.loads(response.body)['result'] is None

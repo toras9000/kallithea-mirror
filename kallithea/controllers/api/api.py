@@ -2421,3 +2421,49 @@ class ApiController(JSONRPCController):
                           pull_request.org_repo, request.ip_addr)
         Session().commit()
         return True
+
+    # permission check inside
+    def edit_reviewers(self, pull_request_id, add=None, remove=None):
+        """
+        Add and/or remove one or more reviewers to a pull request, by username
+        or user ID. Reviewers are specified either as a single-user string or
+        as a JSON list of one or more strings.
+        """
+        if add is None and remove is None:
+            raise JSONRPCError('''Invalid request. Neither 'add' nor 'remove' is specified.''')
+
+        pull_request = PullRequest.get(pull_request_id)
+        if pull_request is None:
+            raise JSONRPCError('pull request `%s` does not exist' % (pull_request_id,))
+
+        apiuser = get_user_or_error(request.authuser.user_id)
+        is_owner = apiuser.user_id == pull_request.owner_id
+        is_repo_admin = HasRepoPermissionLevel('admin')(pull_request.other_repo.repo_name)
+        if not (apiuser.admin or is_repo_admin or is_owner):
+            raise JSONRPCError('No permission to edit reviewers of this pull request. User needs to be admin or pull request owner.')
+        if pull_request.is_closed():
+            raise JSONRPCError('Cannot edit reviewers of a closed pull request.')
+
+        if not isinstance(add, list):
+            add = [add]
+        if not isinstance(remove, list):
+            remove = [remove]
+
+        # look up actual user objects from given name or id. Bail out if unknown.
+        add_objs = set(get_user_or_error(user) for user in add if user is not None)
+        remove_objs = set(get_user_or_error(user) for user in remove if user is not None)
+
+        new_reviewers = redundant_reviewers = set()
+        if add_objs:
+            new_reviewers, redundant_reviewers = PullRequestModel().add_reviewers(apiuser, pull_request, add_objs)
+        if remove_objs:
+            PullRequestModel().remove_reviewers(apiuser, pull_request, remove_objs)
+
+        Session().commit()
+
+        return {
+            'added': [x.username for x in new_reviewers],
+            'already_present': [x.username for x in redundant_reviewers],
+            # NOTE: no explicit check that removed reviewers were actually present.
+            'removed': [x.username for x in remove_objs],
+        }
