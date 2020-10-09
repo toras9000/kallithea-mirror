@@ -135,16 +135,6 @@ class _BaseTestApi(object):
         given = ext_json.loads(given)
         assert expected == given, (expected, given)
 
-    def test_Optional_object(self):
-        from kallithea.controllers.api.api import Optional
-
-        option1 = Optional(None)
-        assert '<Optional:%s>' % None == repr(option1)
-        assert option1() is None
-
-        assert 1 == Optional.extract(Optional(1))
-        assert 'trololo' == Optional.extract('trololo')
-
     def test_api_wrong_key(self):
         id_, params = _build_data('trololo', 'get_user')
         response = api_call(self, params)

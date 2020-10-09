@@ -466,48 +466,6 @@ def get_current_authuser():
         return None
 
 
-class Optional(object):
-    """
-    Defines an optional parameter::
-
-        param = param.getval() if isinstance(param, Optional) else param
-        param = param() if isinstance(param, Optional) else param
-
-    is equivalent of::
-
-        param = Optional.extract(param)
-
-    """
-
-    def __init__(self, type_):
-        self.type_ = type_
-
-    def __repr__(self):
-        return '<Optional:%s>' % self.type_.__repr__()
-
-    def __call__(self):
-        return self.getval()
-
-    def getval(self):
-        """
-        returns value from this Optional instance
-        """
-        return self.type_
-
-    @classmethod
-    def extract(cls, val):
-        """
-        Extracts value from Optional() instance
-
-        :param val:
-        :return: original value if it's not Optional instance else
-            value of instance
-        """
-        if isinstance(val, cls):
-            return val.getval()
-        return val
-
-
 def urlreadable(s, _cleanstringsub=re.compile('[^-a-zA-Z0-9./]+').sub):
     return _cleanstringsub('_', s).rstrip('_')
 
