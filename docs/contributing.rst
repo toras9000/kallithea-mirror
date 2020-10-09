@@ -159,8 +159,9 @@ committer/contributor and under GPLv3 unless explicitly stated. We do care a
 lot about preservation of copyright and license information for existing code
 that is brought into the project.
 
-Contributions will be accepted in most formats -- such as commits hosted on your own Kallithea instance, or patches sent by
-email to the `kallithea-general`_ mailing list.
+Contributions will be accepted in most formats -- such as commits hosted on your
+own Kallithea instance, or patches sent by email to the `kallithea-general`_
+mailing list.
 
 Make sure to test your changes both manually and with the automatic tests
 before posting.
