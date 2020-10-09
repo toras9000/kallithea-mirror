@@ -145,19 +145,6 @@ class _BaseTestApi(object):
         assert 1 == Optional.extract(Optional(1))
         assert 'trololo' == Optional.extract('trololo')
 
-    def test_Optional_OAttr(self):
-        from kallithea.controllers.api.api import OAttr, Optional
-
-        option1 = Optional(OAttr('apiuser'))
-        assert 'apiuser' == Optional.extract(option1)
-
-    def test_OAttr_object(self):
-        from kallithea.controllers.api.api import OAttr
-
-        oattr1 = OAttr('apiuser')
-        assert '<OptionalAttr:apiuser>' == repr(oattr1)
-        assert oattr1() == oattr1
-
     def test_api_wrong_key(self):
         id_, params = _build_data('trololo', 'get_user')
         response = api_call(self, params)

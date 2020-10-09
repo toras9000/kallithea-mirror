@@ -466,30 +466,6 @@ def get_current_authuser():
         return None
 
 
-class OptionalAttr(object):
-    """
-    Special Optional Option that defines other attribute. Example::
-
-        def test(apiuser, userid=Optional(OAttr('apiuser')):
-            user = Optional.extract(userid)
-            # calls
-
-    """
-
-    def __init__(self, attr_name):
-        self.attr_name = attr_name
-
-    def __repr__(self):
-        return '<OptionalAttr:%s>' % self.attr_name
-
-    def __call__(self):
-        return self
-
-
-# alias
-OAttr = OptionalAttr
-
-
 class Optional(object):
     """
     Defines an optional parameter::
@@ -516,9 +492,6 @@ class Optional(object):
         """
         returns value from this Optional instance
         """
-        if isinstance(self.type_, OAttr):
-            # use params name
-            return self.type_.attr_name
         return self.type_
 
     @classmethod
