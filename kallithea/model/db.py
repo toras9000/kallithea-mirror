@@ -46,7 +46,7 @@ from webob.exc import HTTPNotFound
 import kallithea
 from kallithea.lib import ext_json, ssh
 from kallithea.lib.exceptions import DefaultUserException
-from kallithea.lib.utils2 import (Optional, asbool, ascii_bytes, aslist, get_changeset_safe, get_clone_url, remove_prefix, safe_bytes, safe_int, safe_str,
+from kallithea.lib.utils2 import (asbool, ascii_bytes, aslist, get_changeset_safe, get_clone_url, remove_prefix, safe_bytes, safe_int, safe_str,
                                   urlreadable)
 from kallithea.lib.vcs import get_backend
 from kallithea.lib.vcs.backends.base import EmptyChangeset
@@ -243,10 +243,10 @@ class Setting(Base, BaseDbModel):
         return res
 
     @classmethod
-    def create_or_update(cls, key, val=Optional(''), type=Optional('unicode')):
+    def create_or_update(cls, key, val=None, type=None):
         """
         Creates or updates Kallithea setting. If updates are triggered, it will only
-        update parameters that are explicitly set. Optional instance will be skipped.
+        update parameters that are explicitly set. 'None' values will be skipped.
 
         :param key:
         :param val:
@@ -255,16 +255,16 @@ class Setting(Base, BaseDbModel):
         """
         res = cls.get_by_name(key)
         if res is None:
-            val = Optional.extract(val)
-            type = Optional.extract(type)
+            # new setting
+            val = val if val is not None else ''
+            type = type if type is not None else 'unicode'
             res = cls(key, val, type)
             Session().add(res)
         else:
-            res.app_settings_name = key
-            if not isinstance(val, Optional):
+            if val is not None:
                 # update if set
                 res.app_settings_value = val
-            if not isinstance(type, Optional):
+            if type is not None:
                 # update if set
                 res.app_settings_type = type
         return res
