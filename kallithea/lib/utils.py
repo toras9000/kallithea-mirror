@@ -520,32 +520,25 @@ def repo2db_mapper(initial_repo_dict, remove_obsolete=False,
     return added, removed
 
 
-def load_rcextensions(root_path):
+def load_extensions(root_path):
     path = os.path.join(root_path, 'rcextensions', '__init__.py')
     if os.path.isfile(path):
-        rcext = create_module('rc', path)
-        EXT = kallithea.EXTENSIONS = rcext
-        log.debug('Found rcextensions now loading %s...', rcext)
+        ext = create_module('rc', path)
+        kallithea.EXTENSIONS = ext
+        log.debug('Found rcextensions now loading %s...', ext)
 
         # Additional mappings that are not present in the pygments lexers
-        kallithea.config.conf.LANGUAGES_EXTENSIONS_MAP.update(getattr(EXT, 'EXTRA_MAPPINGS', {}))
+        kallithea.config.conf.LANGUAGES_EXTENSIONS_MAP.update(getattr(ext, 'EXTRA_MAPPINGS', {}))
 
         # OVERRIDE OUR EXTENSIONS FROM RC-EXTENSIONS (if present)
 
-        if getattr(EXT, 'INDEX_EXTENSIONS', []):
+        if getattr(ext, 'INDEX_EXTENSIONS', []):
             log.debug('settings custom INDEX_EXTENSIONS')
-            kallithea.config.conf.INDEX_EXTENSIONS = getattr(EXT, 'INDEX_EXTENSIONS', [])
+            kallithea.config.conf.INDEX_EXTENSIONS = getattr(ext, 'INDEX_EXTENSIONS', [])
 
         # ADDITIONAL MAPPINGS
         log.debug('adding extra into INDEX_EXTENSIONS')
-        kallithea.config.conf.INDEX_EXTENSIONS.extend(getattr(EXT, 'EXTRA_INDEX_EXTENSIONS', []))
-
-        # auto check if the module is not missing any data, set to default if is
-        # this will help autoupdate new feature of rcext module
-        #from kallithea.config import rcextensions
-        #for k in dir(rcextensions):
-        #    if not k.startswith('_') and not hasattr(EXT, k):
-        #        setattr(EXT, k, getattr(rcextensions, k))
+        kallithea.config.conf.INDEX_EXTENSIONS.extend(getattr(ext, 'EXTRA_INDEX_EXTENSIONS', []))
 
 
 #==============================================================================

@@ -28,7 +28,7 @@ import kallithea
 import kallithea.bin.kallithea_cli_base as cli_base
 from kallithea.lib.indexers.daemon import WhooshIndexingDaemon
 from kallithea.lib.pidlock import DaemonLock, LockHeld
-from kallithea.lib.utils import load_rcextensions
+from kallithea.lib.utils import load_extensions
 from kallithea.model.repo import RepoModel
 
 
@@ -41,7 +41,7 @@ def index_create(repo_location, index_only, update_only, full_index):
     """Create or update full text search index"""
 
     index_location = kallithea.CONFIG['index_dir']
-    load_rcextensions(kallithea.CONFIG['here'])
+    load_extensions(kallithea.CONFIG['here'])
 
     if not repo_location:
         repo_location = RepoModel().repos_path
