@@ -39,7 +39,7 @@ import formencode
 from formencode import All
 from tg.i18n import ugettext as _
 
-from kallithea import BACKENDS
+import kallithea
 from kallithea.model import validators as v
 
 
@@ -238,7 +238,7 @@ def PasswordResetConfirmationForm():
     return _PasswordResetConfirmationForm
 
 
-def RepoForm(edit=False, old_data=None, supported_backends=BACKENDS,
+def RepoForm(edit=False, old_data=None, supported_backends=kallithea.BACKENDS,
              repo_groups=None, landing_revs=None):
     old_data = old_data or {}
     repo_groups = repo_groups or []
@@ -315,7 +315,7 @@ def RepoFieldForm():
     return _RepoFieldForm
 
 
-def RepoForkForm(edit=False, old_data=None, supported_backends=BACKENDS,
+def RepoForkForm(edit=False, old_data=None, supported_backends=kallithea.BACKENDS,
                  repo_groups=None, landing_revs=None):
     old_data = old_data or {}
     repo_groups = repo_groups or []
@@ -431,7 +431,7 @@ def CustomDefaultPermissionsForm():
     return _CustomDefaultPermissionsForm
 
 
-def DefaultsForm(edit=False, old_data=None, supported_backends=BACKENDS):
+def DefaultsForm(edit=False, old_data=None, supported_backends=kallithea.BACKENDS):
     class _DefaultsForm(formencode.Schema):
         allow_extra_fields = True
         filter_extra_fields = True

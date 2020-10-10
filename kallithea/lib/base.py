@@ -43,7 +43,7 @@ from tg import TGController, config, render_template, request, response, session
 from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 
-from kallithea import BACKENDS, __version__
+import kallithea
 from kallithea.config.routing import url
 from kallithea.lib import auth_modules, ext_json
 from kallithea.lib.auth import AuthUser, HasPermissionAnyMiddleware
@@ -368,7 +368,7 @@ class BaseController(TGController):
                 log.error('CSRF check failed')
                 raise webob.exc.HTTPForbidden()
 
-        c.kallithea_version = __version__
+        c.kallithea_version = kallithea.__version__
         rc_config = Setting.get_app_settings()
 
         # Visual options
@@ -413,7 +413,7 @@ class BaseController(TGController):
         # END CONFIG VARS
 
         c.repo_name = get_repo_slug(request)  # can be empty
-        c.backends = list(BACKENDS)
+        c.backends = list(kallithea.BACKENDS)
 
         self.cut_off_limit = safe_int(config.get('cut_off_limit'))
 

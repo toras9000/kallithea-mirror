@@ -36,7 +36,6 @@ import pkg_resources
 from tg.i18n import ugettext as _
 
 import kallithea
-from kallithea import BACKENDS
 from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel, HasRepoPermissionLevel, HasUserGroupPermissionLevel
 from kallithea.lib.exceptions import IMCCommitError, NonRelativePathError
 from kallithea.lib.hooks import process_pushed_raw_ids
@@ -188,10 +187,10 @@ class ScmModel(object):
 
                     klass = get_backend(path[0])
 
-                    if path[0] == 'hg' and path[0] in BACKENDS:
+                    if path[0] == 'hg' and path[0] in kallithea.BACKENDS:
                         repos[name] = klass(path[1], baseui=baseui)
 
-                    if path[0] == 'git' and path[0] in BACKENDS:
+                    if path[0] == 'git' and path[0] in kallithea.BACKENDS:
                         repos[name] = klass(path[1])
             except OSError:
                 continue

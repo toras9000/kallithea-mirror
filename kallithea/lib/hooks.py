@@ -31,6 +31,7 @@ import time
 
 import mercurial.scmutil
 
+import kallithea
 from kallithea.lib import helpers as h
 from kallithea.lib.exceptions import UserCreationError
 from kallithea.lib.utils import action_logger, make_ui
@@ -94,8 +95,7 @@ def log_pull_action(ui, repo, **kwargs):
     action = 'pull'
     action_logger(user, action, ex.repository, ex.ip, commit=True)
     # extension hook call
-    from kallithea import EXTENSIONS
-    callback = getattr(EXTENSIONS, 'PULL_HOOK', None)
+    callback = getattr(kallithea.EXTENSIONS, 'PULL_HOOK', None)
     if callable(callback):
         kw = {}
         kw.update(ex)
@@ -133,8 +133,7 @@ def process_pushed_raw_ids(revs):
     ScmModel().mark_for_invalidation(ex.repository)
 
     # extension hook call
-    from kallithea import EXTENSIONS
-    callback = getattr(EXTENSIONS, 'PUSH_HOOK', None)
+    callback = getattr(kallithea.EXTENSIONS, 'PUSH_HOOK', None)
     if callable(callback):
         kw = {'pushed_revs': revs}
         kw.update(ex)
@@ -164,8 +163,7 @@ def log_create_repository(repository_dict, created_by, **kwargs):
      'repo_name'
 
     """
-    from kallithea import EXTENSIONS
-    callback = getattr(EXTENSIONS, 'CREATE_REPO_HOOK', None)
+    callback = getattr(kallithea.EXTENSIONS, 'CREATE_REPO_HOOK', None)
     if callable(callback):
         kw = {}
         kw.update(repository_dict)
@@ -176,8 +174,7 @@ def log_create_repository(repository_dict, created_by, **kwargs):
 
 def check_allowed_create_user(user_dict, created_by, **kwargs):
     # pre create hooks
-    from kallithea import EXTENSIONS
-    callback = getattr(EXTENSIONS, 'PRE_CREATE_USER_HOOK', None)
+    callback = getattr(kallithea.EXTENSIONS, 'PRE_CREATE_USER_HOOK', None)
     if callable(callback):
         allowed, reason = callback(created_by=created_by, **user_dict)
         if not allowed:
@@ -212,8 +209,7 @@ def log_create_user(user_dict, created_by, **kwargs):
      'emails',
 
     """
-    from kallithea import EXTENSIONS
-    callback = getattr(EXTENSIONS, 'CREATE_USER_HOOK', None)
+    callback = getattr(kallithea.EXTENSIONS, 'CREATE_USER_HOOK', None)
     if callable(callback):
         callback(created_by=created_by, **user_dict)
 
@@ -224,8 +220,7 @@ def log_create_pullrequest(pullrequest_dict, created_by, **kwargs):
 
     :param pullrequest_dict: dict dump of pull request object
     """
-    from kallithea import EXTENSIONS
-    callback = getattr(EXTENSIONS, 'CREATE_PULLREQUEST_HOOK', None)
+    callback = getattr(kallithea.EXTENSIONS, 'CREATE_PULLREQUEST_HOOK', None)
     if callable(callback):
         return callback(created_by=created_by, **pullrequest_dict)
 
@@ -254,8 +249,7 @@ def log_delete_repository(repository_dict, deleted_by, **kwargs):
      'repo_name'
 
     """
-    from kallithea import EXTENSIONS
-    callback = getattr(EXTENSIONS, 'DELETE_REPO_HOOK', None)
+    callback = getattr(kallithea.EXTENSIONS, 'DELETE_REPO_HOOK', None)
     if callable(callback):
         kw = {}
         kw.update(repository_dict)
@@ -293,8 +287,7 @@ def log_delete_user(user_dict, deleted_by, **kwargs):
      'emails',
 
     """
-    from kallithea import EXTENSIONS
-    callback = getattr(EXTENSIONS, 'DELETE_USER_HOOK', None)
+    callback = getattr(kallithea.EXTENSIONS, 'DELETE_USER_HOOK', None)
     if callable(callback):
         callback(deleted_by=deleted_by, **user_dict)
 

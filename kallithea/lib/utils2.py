@@ -41,6 +41,7 @@ from tg.i18n import ungettext
 from tg.support.converters import asbool, aslist
 from webhelpers2.text import collapse, remove_formatting, strip_tags
 
+import kallithea
 from kallithea.lib.vcs.utils import ascii_bytes, ascii_str, safe_bytes, safe_str  # re-export
 from kallithea.lib.vcs.utils.lazy import LazyProperty
 
@@ -442,14 +443,13 @@ def set_hook_environment(username, ip_addr, repo_name, repo_alias, action=None):
 
     Must always be called before anything with hooks are invoked.
     """
-    from kallithea import CONFIG
     extras = {
         'ip': ip_addr, # used in log_push/pull_action action_logger
         'username': username,
         'action': action or 'push_local', # used in log_push_action_raw_ids action_logger
         'repository': repo_name,
         'scm': repo_alias, # used to pick hack in log_push_action_raw_ids
-        'config': CONFIG['__file__'], # used by git hook to read config
+        'config': kallithea.CONFIG['__file__'], # used by git hook to read config
     }
     os.environ['KALLITHEA_EXTRAS'] = json.dumps(extras)
 
