@@ -49,9 +49,8 @@ log = logging.getLogger(__name__)
 
 
 class DbManage(object):
-    def __init__(self, dbconf, root, tests=False, SESSION=None, cli_args=None):
+    def __init__(self, dbconf, root, SESSION=None, cli_args=None):
         self.dbname = dbconf.split('/')[-1]
-        self.tests = tests
         self.root = root
         self.dburi = dbconf
         self.cli_args = cli_args or {}
@@ -87,10 +86,9 @@ class DbManage(object):
         else:
             log.info("The existing database %r will be destroyed and a new one created." % database)
 
-        if not self.tests:
-            if not self._ask_ok('Are you sure to destroy old database? [y/n]'):
-                print('Nothing done.')
-                sys.exit(0)
+        if not self._ask_ok('Are you sure to destroy old database? [y/n]'):
+            print('Nothing done.')
+            sys.exit(0)
 
         if reuse_database:
             Base.metadata.drop_all()
@@ -197,7 +195,7 @@ class DbManage(object):
 
         if _path is not None:
             path = _path
-        elif not self.tests and not test_repo_path:
+        elif not test_repo_path:
             path = input(
                  'Enter a valid absolute path to store repositories. '
                  'All repositories in that path will be added automatically:'

@@ -366,8 +366,8 @@ def create_test_env(repos_test_path, config, reuse_database):
         os.makedirs(repos_test_path)
 
     dbmanage = DbManage(dbconf=dbconf, root=config['here'],
-                        tests=True,
                         cli_args={
+                            'force_ask': True,
                             'username': TEST_USER_ADMIN_LOGIN,
                             'password': TEST_USER_ADMIN_PASS,
                             'email': TEST_USER_ADMIN_EMAIL,
