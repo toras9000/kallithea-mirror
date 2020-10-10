@@ -14,11 +14,11 @@
 """WSGI middleware initialization for the Kallithea application."""
 
 from kallithea.config.app_cfg import base_config
-from kallithea.lib.middleware.https_fixup import HttpsFixup
-from kallithea.lib.middleware.permanent_repo_url import PermanentRepoUrl
-from kallithea.lib.middleware.simplegit import SimpleGit
-from kallithea.lib.middleware.simplehg import SimpleHg
-from kallithea.lib.middleware.wrapper import RequestWrapper
+from kallithea.config.middleware.https_fixup import HttpsFixup
+from kallithea.config.middleware.permanent_repo_url import PermanentRepoUrl
+from kallithea.config.middleware.simplegit import SimpleGit
+from kallithea.config.middleware.simplehg import SimpleHg
+from kallithea.config.middleware.wrapper import RequestWrapper
 from kallithea.lib.utils2 import asbool
 
 

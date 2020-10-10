@@ -31,9 +31,9 @@ Original author and date, and relevant copyright and licensing information is be
 import logging
 import re
 
+from kallithea.config.middleware.pygrack import make_wsgi_app
 from kallithea.lib.base import BaseVCSController, get_path_info
 from kallithea.lib.hooks import log_pull_action
-from kallithea.lib.middleware.pygrack import make_wsgi_app
 from kallithea.lib.utils import make_ui
 from kallithea.model.db import Repository
 
