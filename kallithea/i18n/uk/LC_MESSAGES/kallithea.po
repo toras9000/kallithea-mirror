@@ -515,13 +515,6 @@ msgstr "Під час видалення статистики репозитор
 msgid "Updated VCS settings"
 msgstr "Оновлені налаштування VCS"
 
-msgid ""
-"Unable to activate hgsubversion support. The \"hgsubversion\" library is "
-"missing"
-msgstr ""
-"Не вдається активувати підтримку hgsubversion. Бібліотека \"hgsubversion"
-"\" відсутня"
-
 msgid "Error occurred while updating application settings"
 msgstr "Під час оновлення параметрів застосунку сталася помилка"
 
@@ -1428,16 +1421,6 @@ msgstr "Mercurial  розширення"
 
 msgid "Enable largefiles extension"
 msgstr "Увімкнути розширення largefiles"
-
-msgid "Enable hgsubversion extension"
-msgstr "Увімкнути розширення hgsubversion"
-
-msgid ""
-"Requires hgsubversion library to be installed. Enables cloning of remote "
-"Subversion repositories while converting them to Mercurial."
-msgstr ""
-"Потрібна установка бібліотеки hgsubversion. Дозволяє клонувати віддалені "
-"сховища Subversion під час перетворення їх у Mercurial."
 
 msgid "Location of repositories"
 msgstr "Розташування репозиторіїв"

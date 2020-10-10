@@ -27,7 +27,7 @@ class BaseRepository(object):
     **Attributes**
 
         ``DEFAULT_BRANCH_NAME``
-            name of default branch (i.e. "trunk" for svn, "master" for git etc.
+            name of default branch (i.e. "master" for git etc.
 
         ``scm``
             alias of scm, i.e. *git* or *hg*
@@ -324,8 +324,7 @@ class BaseChangeset(object):
 
         ``short_id``
             shortened (if apply) version of ``raw_id``; it would be simple
-            shortcut for ``raw_id[:12]`` for git/mercurial backends or same
-            as ``raw_id`` for subversion
+            shortcut for ``raw_id[:12]`` for git/mercurial backends
 
         ``revision``
             revision number as integer

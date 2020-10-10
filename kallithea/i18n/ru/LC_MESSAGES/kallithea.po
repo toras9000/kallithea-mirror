@@ -527,13 +527,6 @@ msgstr "Произошла ошибка при удалении статисти
 msgid "Updated VCS settings"
 msgstr "Обновлены настройки VCS"
 
-msgid ""
-"Unable to activate hgsubversion support. The \"hgsubversion\" library is "
-"missing"
-msgstr ""
-"Невозможно включить поддержку hgsubversion. Библиотека «hgsubversion» "
-"отсутствует"
-
 msgid "Error occurred while updating application settings"
 msgstr "Произошла ошибка при обновлении настроек приложения"
 
@@ -1193,13 +1186,6 @@ msgstr "Группа репозиториев \"%(repo)s\" уже существ
 
 msgid "Invalid repository URL"
 msgstr "Недопустимый URL репозитория"
-
-msgid ""
-"Invalid repository URL. It must be a valid http, https, ssh, svn+http or "
-"svn+https URL"
-msgstr ""
-"Недопустимый URL репозитория. Требуется корректный http, https, ssh, svn"
-"+http или svn+https URL"
 
 msgid "Fork has to be the same type as parent"
 msgstr "Форк будет иметь тот же тип, что и родительский"
@@ -2341,16 +2327,6 @@ msgstr "Расширения Mercurial"
 
 msgid "Enable largefiles extension"
 msgstr "Включить поддержку больших файлов"
-
-msgid "Enable hgsubversion extension"
-msgstr "Включить поддержку hgsubversion"
-
-msgid ""
-"Requires hgsubversion library to be installed. Enables cloning of remote "
-"Subversion repositories while converting them to Mercurial."
-msgstr ""
-"Требует наличия библиотеки hgsubversion. Включает клонирование удалённых "
-"репозиториев Subversion с последующим конвертированием в Mercurial."
 
 msgid "Location of repositories"
 msgstr "Местонахождение репозиториев"

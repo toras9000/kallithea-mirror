@@ -462,13 +462,6 @@ msgstr "Адбылася памылка пры выдаленні статыст
 msgid "Updated VCS settings"
 msgstr "Абноўлены налады VCS"
 
-msgid ""
-"Unable to activate hgsubversion support. The \"hgsubversion\" library is "
-"missing"
-msgstr ""
-"Немагчыма ўключыць падтрымку hgsubversion. Бібліятэка hgsubversion "
-"адсутнічае"
-
 msgid "Error occurred while updating application settings"
 msgstr "Памылка пры абнаўленні наладаў праграмы"
 
@@ -943,13 +936,6 @@ msgstr "Група рэпазітароў \"%(repo)s\" ужо існуе"
 
 msgid "Invalid repository URL"
 msgstr "Няслушны URL рэпазітара"
-
-msgid ""
-"Invalid repository URL. It must be a valid http, https, ssh, svn+http or "
-"svn+https URL"
-msgstr ""
-"Няслушны URL рэпазітара. Ён мусіць быць карэктным URL http, https, ssh, "
-"svn+http ці svn+https"
 
 msgid "Fork has to be the same type as parent"
 msgstr "Тып форка будзе супадаць з бацькоўскім"
@@ -1674,9 +1660,6 @@ msgstr "Пашырэнні Mercurial"
 
 msgid "Enable largefiles extension"
 msgstr "Уключыць падтрымку вялікіх файлаў"
-
-msgid "Enable hgsubversion extension"
-msgstr "Уключыць падтрымку hgsubversion"
 
 msgid "Location of repositories"
 msgstr "Месцазнаходжанне рэпазітароў"

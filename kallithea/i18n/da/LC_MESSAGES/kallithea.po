@@ -495,13 +495,6 @@ msgstr "Der opstod en fejl under sletning af repository statistik"
 msgid "Updated VCS settings"
 msgstr "Opdateret VCS-indstillinger"
 
-msgid ""
-"Unable to activate hgsubversion support. The \"hgsubversion\" library is "
-"missing"
-msgstr ""
-"Ude af stand til at aktivere hgsubversion understøttelse. \"hgsubversion"
-"\" biblioteket mangler"
-
 msgid "Error occurred while updating application settings"
 msgstr "Der opstod en fejl ved opdatering af applikationsindstillinger"
 

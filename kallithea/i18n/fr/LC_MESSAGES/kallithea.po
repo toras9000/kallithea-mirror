@@ -549,13 +549,6 @@ msgstr ""
 msgid "Updated VCS settings"
 msgstr "Réglages des gestionnaires de versions mis à jour"
 
-msgid ""
-"Unable to activate hgsubversion support. The \"hgsubversion\" library is "
-"missing"
-msgstr ""
-"Impossible d'activer la prise en charge de hgsubversion. La bibliothèque "
-"« hgsubversion » est manquante"
-
 msgid "Error occurred while updating application settings"
 msgstr ""
 "Une erreur est survenue durant la mise à jour des réglages de "
@@ -1226,13 +1219,6 @@ msgstr "Un groupe de dépôts avec le nom « %(repo)s » existe déjà"
 
 msgid "Invalid repository URL"
 msgstr "URL de dépôt invalide"
-
-msgid ""
-"Invalid repository URL. It must be a valid http, https, ssh, svn+http or "
-"svn+https URL"
-msgstr ""
-"URL de dépôt invalide. Ce doit être une URL valide de type http, https, "
-"ssh, svn+http ou svn+https"
 
 msgid "Fork has to be the same type as parent"
 msgstr "Le fork doit être du même type que le parent"
@@ -2389,16 +2375,6 @@ msgstr "Extensions Mercurial"
 
 msgid "Enable largefiles extension"
 msgstr "Activer l'extension largefiles"
-
-msgid "Enable hgsubversion extension"
-msgstr "Activer l'extension hgsubversion"
-
-msgid ""
-"Requires hgsubversion library to be installed. Enables cloning of remote "
-"Subversion repositories while converting them to Mercurial."
-msgstr ""
-"La bibliothèque hgsubversion doit être installée. Elle permet de cloner "
-"des dépôts SVN distants et de les migrer vers Mercurial."
 
 msgid "Location of repositories"
 msgstr "Emplacement des dépôts"

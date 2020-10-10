@@ -74,8 +74,8 @@ Kallithea features
   web interface using simple editor or upload binary files using simple form.
 - Powerful pull request driven review system with inline commenting, changeset
   statuses, and notification system.
-- Importing and syncing repositories from remote locations for Git_, Mercurial_
-  and Subversion.
+- Importing and syncing repositories from remote locations for Git_ and
+  Mercurial_.
 - Mako templates let you customize the look and feel of the application.
 - Beautiful diffs, annotations and source code browsing all colored by
   pygments. Raw diffs are made in Git-diff format for both VCS systems,
@@ -175,7 +175,6 @@ of Kallithea.
 .. _Mercurial: http://mercurial.selenic.com/
 .. _Bitbucket: http://bitbucket.org/
 .. _GitHub: http://github.com/
-.. _Subversion: http://subversion.tigris.org/
 .. _Git: http://git-scm.com/
 .. _Celery: http://celeryproject.org/
 .. _Software Freedom Conservancy: http://sfconservancy.org/

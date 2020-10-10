@@ -587,7 +587,7 @@ class SubModuleNode(Node):
         self.path = name.rstrip('/')
         self.kind = NodeKind.SUBMODULE
         self.alias = alias
-        # we have to use emptyChangeset here since this can point to svn/git/hg
+        # we have to use emptyChangeset here since this can point to git/hg
         # submodules we cannot get from repository
         self.changeset = EmptyChangeset(changeset, alias=alias)
         self.url = url

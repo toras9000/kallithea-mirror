@@ -335,7 +335,7 @@ class MercurialRepository(BaseRepository):
             # means it cannot be cloned
             raise urllib.error.URLError("[%s] org_exc: %s" % (cleaned_uri, e))
 
-        if not url_prefix: # skip svn+http://... (and git+... too)
+        if not url_prefix: # skip git+http://... etc
             # now check if it's a proper hg repo
             try:
                 mercurial.httppeer.instance(repoui or mercurial.ui.ui(), url, False).lookup(b'tip')

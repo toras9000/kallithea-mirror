@@ -400,7 +400,7 @@ def ValidCloneUri():
         messages = {
             'clone_uri': _('Invalid repository URL'),
             'invalid_clone_uri': _('Invalid repository URL. It must be a '
-                                   'valid http, https, ssh, svn+http or svn+https URL'),
+                                   'valid http, https, or ssh URL'),
         }
 
         def _validate_python(self, value, state):

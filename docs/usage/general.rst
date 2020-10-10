@@ -126,14 +126,6 @@ Cloning remote repositories
 ---------------------------
 
 Kallithea has the ability to clone repositories from given remote locations.
-Currently it supports the following options:
-
-- hg  -> hg clone
-- svn -> hg clone
-- git -> git clone
-
-.. note:: svn -> hg cloning requires the ``hgsubversion`` library to be
-   installed.
 
 If you need to clone repositories that are protected via basic authentication,
 you can pass the credentials in the URL, e.g.

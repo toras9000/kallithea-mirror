@@ -267,7 +267,6 @@ class DbManage(object):
             ('hooks', Ui.HOOK_REPO_SIZE, 'python:kallithea.lib.hooks.repo_size', True),
             ('extensions', 'largefiles', '', True),
             ('largefiles', 'usercache', os.path.join(repo_root_path, '.cache', 'largefiles'), True),
-            ('extensions', 'hgsubversion', '', False),
             ('extensions', 'hggit', '', False),
         ]
         for ui_section, ui_key, ui_value, ui_active in ui_config:

@@ -540,13 +540,6 @@ msgstr ""
 msgid "Updated VCS settings"
 msgstr "Ενημερωμένες ρυθμίσεις VCS"
 
-msgid ""
-"Unable to activate hgsubversion support. The \"hgsubversion\" library is "
-"missing"
-msgstr ""
-"Δεν γίνεται να ενεργοποιηθεί υποστήριξη για το hgsubversion. Λείπει η "
-"βιβλιοθήκη \"hgsubversion\""
-
 msgid "Error occurred while updating application settings"
 msgstr "Παρουσιάστηκε σφάλμα κατά την ενημέρωση των ρυθμίσεων της εφαρμογής"
 
@@ -1130,13 +1123,6 @@ msgstr "Η ομάδα αποθετηρίου με το όνομα \"%(repo)s\" �
 
 msgid "Invalid repository URL"
 msgstr "Μη έγκυρη διεύθυνση URL αποθετηρίου"
-
-msgid ""
-"Invalid repository URL. It must be a valid http, https, ssh, svn+http or "
-"svn+https URL"
-msgstr ""
-"Μη έγκυρη διεύθυνση URL του αποθετηρίου. Πρέπει να είναι μια έγκυρη http, "
-"https, ssh, svn+http ή svn+https διεύθυνση URL"
 
 msgid "You don't have permissions to create repository in this group"
 msgstr "Δεν έχετε δικαιώματα δημιουργίας αποθετηρίου σε αυτήν την ομάδα"
@@ -2259,17 +2245,6 @@ msgstr "Επεκτάσεις Mercurial"
 
 msgid "Enable largefiles extension"
 msgstr "Ενεργοποίηση επέκτασης μεγάλων αρχείων"
-
-msgid "Enable hgsubversion extension"
-msgstr "Ενεργοποίηση επέκτασης hgsubversion"
-
-msgid ""
-"Requires hgsubversion library to be installed. Enables cloning of remote "
-"Subversion repositories while converting them to Mercurial."
-msgstr ""
-"Απαιτεί την εγκατάσταση της βιβλιοθήκης hgsubversion. Ενεργοποιεί την "
-"κλωνοποίηση απομακρυσμένων Subversion αποθετηρίων και τη μετατροπή τους "
-"σε Mercurial."
 
 msgid "Location of repositories"
 msgstr "Τοποθεσία αποθετηρίων"

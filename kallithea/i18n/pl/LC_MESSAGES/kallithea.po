@@ -1355,9 +1355,6 @@ msgstr "Aktualizacja repozytorium po wysłaniu zmian (aktualizacja hg)"
 msgid "Enable largefiles extension"
 msgstr "Rozszerzenia dużych plików"
 
-msgid "Enable hgsubversion extension"
-msgstr "Rozszerzenia hgsubversion"
-
 msgid ""
 "Click to unlock. You must restart Kallithea in order to make this setting "
 "take effect."

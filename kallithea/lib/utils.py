@@ -237,12 +237,6 @@ def is_valid_repo_uri(repo_type, url, ui):
                 raise InvalidCloneUriException('URI %s URLError: %s' % (url, e))
             except mercurial.error.RepoError as e:
                 raise InvalidCloneUriException('Mercurial %s: %s' % (type(e).__name__, safe_str(bytes(e))))
-        elif url.startswith('svn+http'):
-            try:
-                from hgsubversion.svnrepo import svnremoterepo
-            except ImportError:
-                raise InvalidCloneUriException('URI type %s not supported - hgsubversion is not available' % (url,))
-            svnremoterepo(ui, url).svn.uuid
         elif url.startswith('git+http'):
             raise InvalidCloneUriException('URI type %s not implemented' % (url,))
         else:
@@ -256,8 +250,6 @@ def is_valid_repo_uri(repo_type, url, ui):
                 GitRepository._check_url(url)
             except urllib.error.URLError as e:
                 raise InvalidCloneUriException('URI %s URLError: %s' % (url, e))
-        elif url.startswith('svn+http'):
-            raise InvalidCloneUriException('URI type %s not implemented' % (url,))
         elif url.startswith('hg+http'):
             raise InvalidCloneUriException('URI type %s not implemented' % (url,))
         else:

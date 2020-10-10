@@ -40,7 +40,6 @@ from kallithea.lib import helpers as h
 from kallithea.lib.auth import HasPermissionAnyDecorator, LoginRequired
 from kallithea.lib.base import BaseController, render
 from kallithea.lib.celerylib import tasks
-from kallithea.lib.exceptions import HgsubversionImportError
 from kallithea.lib.utils import repo2db_mapper, set_app_settings
 from kallithea.lib.utils2 import safe_str
 from kallithea.lib.vcs import VCSError
@@ -115,27 +114,12 @@ class SettingsController(BaseController):
                 sett = Ui.get_or_create('extensions', 'largefiles')
                 sett.ui_active = form_result['extensions_largefiles']
 
-                sett = Ui.get_or_create('extensions', 'hgsubversion')
-                sett.ui_active = form_result['extensions_hgsubversion']
-                if sett.ui_active:
-                    try:
-                        import hgsubversion  # pragma: no cover
-                        assert hgsubversion
-                    except ImportError:
-                        raise HgsubversionImportError
-
 #                sett = Ui.get_or_create('extensions', 'hggit')
 #                sett.ui_active = form_result['extensions_hggit']
 
                 Session().commit()
 
                 h.flash(_('Updated VCS settings'), category='success')
-
-            except HgsubversionImportError:
-                log.error(traceback.format_exc())
-                h.flash(_('Unable to activate hgsubversion support. '
-                          'The "hgsubversion" library is missing'),
-                        category='error')
 
             except Exception:
                 log.error(traceback.format_exc())

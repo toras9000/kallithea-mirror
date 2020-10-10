@@ -1011,9 +1011,6 @@ msgstr "Atualizar repositório após realizar push (hg update)"
 msgid "Enable largefiles extension"
 msgstr "Ativar extensão largefiles"
 
-msgid "Enable hgsubversion extension"
-msgstr "Ativar extensão hgsubversion"
-
 msgid ""
 "Click to unlock. You must restart Kallithea in order to make this setting "
 "take effect."

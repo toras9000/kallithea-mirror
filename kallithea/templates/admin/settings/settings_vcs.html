@@ -26,13 +26,6 @@ ${h.form(url('admin_settings'), method='post')}
                             ${_('Enable largefiles extension')}
                         </label>
                     </div>
-                    <div class="checkbox">
-                        <label>
-                            ${h.checkbox('extensions_hgsubversion','True')}
-                            ${_('Enable hgsubversion extension')}
-                        </label>
-                    </div>
-                    <span class="help-block">${_('Requires hgsubversion library to be installed. Enables cloning of remote Subversion repositories while converting them to Mercurial.')}</span>
                     ##<div class="checkbox">
                     ##    <label>
                     ##        ${h.checkbox('extensions_hggit','True')}
