@@ -705,11 +705,11 @@ class ScmModel(object):
 
         tmpl_post = b"#!%s\n" % safe_bytes(self._get_git_hook_interpreter())
         tmpl_post += pkg_resources.resource_string(
-            'kallithea', os.path.join('config', 'post_receive_tmpl.py')
+            'kallithea', os.path.join('templates', 'py', 'git_post_receive_hook.py')
         )
         tmpl_pre = b"#!%s\n" % safe_bytes(self._get_git_hook_interpreter())
         tmpl_pre += pkg_resources.resource_string(
-            'kallithea', os.path.join('config', 'pre_receive_tmpl.py')
+            'kallithea', os.path.join('templates', 'py', 'git_pre_receive_hook.py')
         )
 
         for h_type, tmpl in [('pre', tmpl_pre), ('post', tmpl_post)]:

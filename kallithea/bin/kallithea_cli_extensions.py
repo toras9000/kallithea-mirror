@@ -39,7 +39,7 @@ def extensions_create():
     """
     here = kallithea.CONFIG['here']
     content = pkg_resources.resource_string(
-        'kallithea', os.path.join('config', 'extensions', 'extensions.py')
+        'kallithea', os.path.join('templates', 'py', 'extensions.py')
     )
     ext_file = os.path.join(here, 'extensions.py')
     if os.path.exists(ext_file):
