@@ -14,8 +14,8 @@
 from tg import config
 from tgext.routes import RoutedController
 
-from kallithea.config.routing import make_map
 from kallithea.controllers.error import ErrorController
+from kallithea.controllers.routing import make_map
 from kallithea.lib.base import BaseController
 
 
