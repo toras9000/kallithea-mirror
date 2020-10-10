@@ -145,9 +145,8 @@ class ScmModel(object):
             if instance.isdigit():
                 return cls.get(int(instance))
             return cls.get_by_repo_name(instance)
-        elif instance is not None:
-            raise Exception('given object must be int, basestr or Instance'
-                            ' of %s got %s' % (type(cls), type(instance)))
+        raise Exception('given object must be int, basestr or Instance'
+                        ' of %s got %s' % (type(cls), type(instance)))
 
     @LazyProperty
     def repos_path(self):
@@ -651,12 +650,12 @@ class ScmModel(object):
 
         hist_l = []
         choices = []
-        repo = self.__get_repo(repo)
         hist_l.append(('rev:tip', _('latest tip')))
         choices.append('rev:tip')
         if repo is None:
             return choices, hist_l
 
+        repo = self.__get_repo(repo)
         repo = repo.scm_instance
 
         branches_group = ([('branch:%s' % k, k) for k, v in
