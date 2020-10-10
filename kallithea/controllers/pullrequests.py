@@ -35,7 +35,6 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest, HTTPForbidden, HTTPFound, HTTPNotFound
 
-from kallithea.config.routing import url
 from kallithea.controllers.changeset import create_cs_pr_comment, delete_cs_pr_comment
 from kallithea.lib import diffs
 from kallithea.lib import helpers as h
@@ -45,6 +44,7 @@ from kallithea.lib.graphmod import graph_data
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import ascii_bytes, safe_bytes, safe_int
 from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError, EmptyRepositoryError
+from kallithea.lib.webutils import url
 from kallithea.model.changeset_status import ChangesetStatusModel
 from kallithea.model.comment import ChangesetCommentsModel
 from kallithea.model.db import ChangesetStatus, PullRequest, PullRequestReviewer, Repository, User

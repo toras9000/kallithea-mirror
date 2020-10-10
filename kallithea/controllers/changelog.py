@@ -34,13 +34,13 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest, HTTPFound, HTTPNotFound
 
 import kallithea.lib.helpers as h
-from kallithea.config.routing import url
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController, render
 from kallithea.lib.graphmod import graph_data
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import safe_int
 from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError, ChangesetError, EmptyRepositoryError, NodeDoesNotExistError, RepositoryError
+from kallithea.lib.webutils import url
 
 
 log = logging.getLogger(__name__)

@@ -37,13 +37,13 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPFound, HTTPInternalServerError
 
-from kallithea.config.routing import url
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import HasPermissionAnyDecorator, HasUserGroupPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseController, render
 from kallithea.lib.exceptions import RepoGroupAssignmentError, UserGroupsAssignedException
 from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import safe_int, safe_str
+from kallithea.lib.webutils import url
 from kallithea.model.db import User, UserGroup, UserGroupRepoGroupToPerm, UserGroupRepoToPerm, UserGroupToPerm
 from kallithea.model.forms import CustomDefaultPermissionsForm, UserGroupForm, UserGroupPermsForm
 from kallithea.model.meta import Session

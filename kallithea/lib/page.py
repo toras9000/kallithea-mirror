@@ -21,7 +21,7 @@ import paginate_sqlalchemy
 import sqlalchemy.orm
 from webhelpers2.html import literal
 
-from kallithea.config.routing import url
+from kallithea.lib.webutils import url
 
 
 log = logging.getLogger(__name__)

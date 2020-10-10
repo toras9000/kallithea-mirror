@@ -40,7 +40,6 @@ from webhelpers2.number import format_byte_size
 from webhelpers2.text import chop_at, truncate, wrap_paragraphs
 
 import kallithea
-from kallithea.config.routing import url
 from kallithea.lib.annotate import annotate_highlight
 #==============================================================================
 # PERMS
@@ -56,6 +55,7 @@ from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError
 # SCM FILTERS available via h.
 #==============================================================================
 from kallithea.lib.vcs.utils import author_email, author_name
+from kallithea.lib.webutils import url
 from kallithea.model.changeset_status import ChangesetStatusModel
 from kallithea.model.db import ChangesetStatus, Permission, PullRequest, User, UserIpMap
 

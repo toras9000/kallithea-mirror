@@ -35,7 +35,6 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPFound
 
-from kallithea.config.routing import url
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import HasPermissionAnyDecorator, LoginRequired
 from kallithea.lib.base import BaseController, render
@@ -43,6 +42,7 @@ from kallithea.lib.celerylib import tasks
 from kallithea.lib.utils import repo2db_mapper, set_app_settings
 from kallithea.lib.utils2 import safe_str
 from kallithea.lib.vcs import VCSError
+from kallithea.lib.webutils import url
 from kallithea.model.db import Repository, Setting, Ui
 from kallithea.model.forms import ApplicationSettingsForm, ApplicationUiSettingsForm, ApplicationVisualisationForm
 from kallithea.model.meta import Session

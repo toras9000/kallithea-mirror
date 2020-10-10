@@ -37,11 +37,11 @@ from webob.exc import HTTPFound
 
 import kallithea
 import kallithea.lib.helpers as h
-from kallithea.config.routing import url
 from kallithea.lib.auth import HasPermissionAnyDecorator, HasRepoPermissionLevel, HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController, render
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import safe_int
+from kallithea.lib.webutils import url
 from kallithea.model.db import Repository, Ui, UserFollowing
 from kallithea.model.forms import RepoForkForm
 from kallithea.model.repo import RepoModel

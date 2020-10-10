@@ -35,12 +35,12 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPFound
 
-from kallithea.config.routing import url
 from kallithea.lib import auth_modules
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import AuthUser, LoginRequired
 from kallithea.lib.base import BaseController, IfSshEnabled, render
 from kallithea.lib.utils2 import generate_api_key, safe_int
+from kallithea.lib.webutils import url
 from kallithea.model.api_key import ApiKeyModel
 from kallithea.model.db import Repository, User, UserEmailMap, UserFollowing
 from kallithea.model.forms import PasswordChangeForm, UserForm

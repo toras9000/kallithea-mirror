@@ -39,7 +39,6 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPFound, HTTPNotFound
 
 import kallithea
-from kallithea.config.routing import url
 from kallithea.lib import diffs
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
@@ -52,6 +51,7 @@ from kallithea.lib.vcs.conf import settings
 from kallithea.lib.vcs.exceptions import (ChangesetDoesNotExistError, ChangesetError, EmptyRepositoryError, ImproperArchiveTypeError, NodeAlreadyExistsError,
                                           NodeDoesNotExistError, NodeError, RepositoryError, VCSError)
 from kallithea.lib.vcs.nodes import FileNode
+from kallithea.lib.webutils import url
 from kallithea.model.repo import RepoModel
 from kallithea.model.scm import ScmModel
 

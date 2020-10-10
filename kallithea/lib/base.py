@@ -44,13 +44,13 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 
 import kallithea
-from kallithea.config.routing import url
 from kallithea.lib import auth_modules, ext_json
 from kallithea.lib.auth import AuthUser, HasPermissionAnyMiddleware
 from kallithea.lib.exceptions import UserCreationError
 from kallithea.lib.utils import get_repo_slug, is_valid_repo
 from kallithea.lib.utils2 import AttributeDict, asbool, ascii_bytes, safe_int, safe_str, set_hook_environment
 from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError, EmptyRepositoryError, RepositoryError
+from kallithea.lib.webutils import url
 from kallithea.model import meta
 from kallithea.model.db import PullRequest, Repository, Setting, User
 from kallithea.model.scm import ScmModel

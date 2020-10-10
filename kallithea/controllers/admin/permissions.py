@@ -36,10 +36,10 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPFound
 
-from kallithea.config.routing import url
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import AuthUser, HasPermissionAnyDecorator, LoginRequired
 from kallithea.lib.base import BaseController, render
+from kallithea.lib.webutils import url
 from kallithea.model.db import User, UserIpMap
 from kallithea.model.forms import DefaultPermissionsForm
 from kallithea.model.meta import Session

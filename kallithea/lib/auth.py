@@ -40,10 +40,10 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPForbidden, HTTPFound
 
 import kallithea
-from kallithea.config.routing import url
 from kallithea.lib.utils import get_repo_group_slug, get_repo_slug, get_user_group_slug
 from kallithea.lib.utils2 import ascii_bytes, ascii_str, safe_bytes
 from kallithea.lib.vcs.utils.lazy import LazyProperty
+from kallithea.lib.webutils import url
 from kallithea.model.db import (Permission, UserApiKeys, UserGroup, UserGroupMember, UserGroupRepoGroupToPerm, UserGroupRepoToPerm, UserGroupToPerm,
                                 UserGroupUserGroupToPerm, UserIpMap, UserToPerm)
 from kallithea.model.meta import Session

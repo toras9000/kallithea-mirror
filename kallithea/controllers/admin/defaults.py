@@ -34,10 +34,10 @@ from tg import request
 from tg.i18n import ugettext as _
 from webob.exc import HTTPFound
 
-from kallithea.config.routing import url
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import HasPermissionAnyDecorator, LoginRequired
 from kallithea.lib.base import BaseController, render
+from kallithea.lib.webutils import url
 from kallithea.model.db import Setting
 from kallithea.model.forms import DefaultsForm
 from kallithea.model.meta import Session

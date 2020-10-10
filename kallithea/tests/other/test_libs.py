@@ -219,10 +219,10 @@ class TestLibs(base.TestController):
 
             return _c
 
-        with mock.patch('kallithea.config.routing.url.current', lambda *a, **b: 'https://example.com'):
+        with mock.patch('kallithea.lib.webutils.url.current', lambda *a, **b: 'https://example.com'):
             fake = fake_tmpl_context(_url='http://example.com/{email}')
             with mock.patch('tg.tmpl_context', fake):
-                    from kallithea.config.routing import url
+                    from kallithea.lib.webutils import url
                     assert url.current() == 'https://example.com'
                     grav = gravatar_url(email_address='test@example.com', size=24)
                     assert grav == 'http://example.com/test@example.com'
@@ -318,7 +318,7 @@ class TestLibs(base.TestController):
     def test_urlify_text(self, sample, expected):
         expected = self._quick_url(expected)
 
-        with mock.patch('kallithea.config.routing.UrlGenerator.__call__',
+        with mock.patch('kallithea.lib.webutils.UrlGenerator.__call__',
             lambda self, name, **kwargs: dict(changeset_home='/%(repo_name)s/changeset/%(revision)s')[name] % kwargs,
         ):
             from kallithea.lib.helpers import urlify_text
@@ -374,7 +374,7 @@ class TestLibs(base.TestController):
     def test_urlify_test(self, sample, expected, url_):
         expected = self._quick_url(expected,
                                    tmpl="""<a href="%s">%s</a>""", url_=url_)
-        with mock.patch('kallithea.config.routing.UrlGenerator.__call__',
+        with mock.patch('kallithea.lib.webutils.UrlGenerator.__call__',
             lambda self, name, **kwargs: dict(changeset_home='/%(repo_name)s/changeset/%(revision)s')[name] % kwargs,
         ):
             from kallithea.lib.helpers import urlify_text
@@ -388,7 +388,7 @@ class TestLibs(base.TestController):
        """<a class="message-link" href="#the-link"> yo</a>"""),
     ])
     def test_urlify_link(self, sample, expected):
-        with mock.patch('kallithea.config.routing.UrlGenerator.__call__',
+        with mock.patch('kallithea.lib.webutils.UrlGenerator.__call__',
             lambda self, name, **kwargs: dict(changeset_home='/%(repo_name)s/changeset/%(revision)s')[name] % kwargs,
         ):
             from kallithea.lib.helpers import urlify_text

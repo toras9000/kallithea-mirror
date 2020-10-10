@@ -37,7 +37,6 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPFound, HTTPNotFound
 
 import kallithea
-from kallithea.config.routing import url
 from kallithea.lib import auth_modules
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import AuthUser, HasPermissionAnyDecorator, LoginRequired
@@ -45,6 +44,7 @@ from kallithea.lib.base import BaseController, IfSshEnabled, render
 from kallithea.lib.exceptions import DefaultUserException, UserCreationError, UserOwnsReposException
 from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import datetime_to_time, generate_api_key, safe_int
+from kallithea.lib.webutils import url
 from kallithea.model.api_key import ApiKeyModel
 from kallithea.model.db import User, UserEmailMap, UserIpMap, UserToPerm
 from kallithea.model.forms import CustomDefaultPermissionsForm, UserForm

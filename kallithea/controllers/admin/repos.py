@@ -37,7 +37,6 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPForbidden, HTTPFound, HTTPInternalServerError, HTTPNotFound
 
 import kallithea
-from kallithea.config.routing import url
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired, NotAnonymous
 from kallithea.lib.base import BaseRepoController, jsonify, render
@@ -45,6 +44,7 @@ from kallithea.lib.exceptions import AttachedForksError
 from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import safe_int
 from kallithea.lib.vcs import RepositoryError
+from kallithea.lib.webutils import url
 from kallithea.model.db import RepoGroup, Repository, RepositoryField, Setting, UserFollowing
 from kallithea.model.forms import RepoFieldForm, RepoForm, RepoPermsForm
 from kallithea.model.meta import Session

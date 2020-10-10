@@ -35,13 +35,13 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPForbidden, HTTPFound, HTTPNotFound
 
-from kallithea.config.routing import url
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import LoginRequired
 from kallithea.lib.base import BaseController, jsonify, render
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import safe_int, safe_str, time_to_datetime
 from kallithea.lib.vcs.exceptions import NodeNotChangedError, VCSError
+from kallithea.lib.webutils import url
 from kallithea.model.db import Gist
 from kallithea.model.forms import GistForm
 from kallithea.model.gist import GistModel
