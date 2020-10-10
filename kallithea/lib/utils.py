@@ -40,7 +40,7 @@ import mercurial.ui
 
 import kallithea.config.conf
 from kallithea.lib.exceptions import InvalidCloneUriException
-from kallithea.lib.utils2 import ascii_bytes, aslist, get_current_authuser, safe_bytes, safe_str
+from kallithea.lib.utils2 import ascii_bytes, aslist, extract_mentioned_usernames, get_current_authuser, safe_bytes, safe_str
 from kallithea.lib.vcs.backends.git.repository import GitRepository
 from kallithea.lib.vcs.backends.hg.repository import MercurialRepository
 from kallithea.lib.vcs.conf import settings
@@ -591,3 +591,13 @@ def check_git_version():
                     settings.GIT_EXECUTABLE_PATH, output)
 
     return ver
+
+
+def extract_mentioned_users(text):
+    """ Returns set of actual database Users @mentioned in given text. """
+    result = set()
+    for name in extract_mentioned_usernames(text):
+        user = User.get_by_username(name, case_insensitive=True)
+        if user is not None and not user.is_default_user:
+            result.add(user)
+    return result

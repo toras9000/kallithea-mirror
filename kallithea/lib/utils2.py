@@ -378,17 +378,6 @@ def extract_mentioned_usernames(text):
     return MENTIONS_REGEX.findall(text)
 
 
-def extract_mentioned_users(text):
-    """ Returns set of actual database Users @mentioned in given text. """
-    from kallithea.model.db import User
-    result = set()
-    for name in extract_mentioned_usernames(text):
-        user = User.get_by_username(name, case_insensitive=True)
-        if user is not None and not user.is_default_user:
-            result.add(user)
-    return result
-
-
 class AttributeDict(dict):
     def __getattr__(self, attr):
         return self.get(attr, None)

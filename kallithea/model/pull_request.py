@@ -34,7 +34,8 @@ from tg.i18n import ugettext as _
 
 from kallithea.lib import helpers as h
 from kallithea.lib.hooks import log_create_pullrequest
-from kallithea.lib.utils2 import ascii_bytes, extract_mentioned_users
+from kallithea.lib.utils import extract_mentioned_users
+from kallithea.lib.utils2 import ascii_bytes
 from kallithea.model.db import ChangesetStatus, PullRequest, PullRequestReviewer, User
 from kallithea.model.meta import Session
 from kallithea.model.notification import NotificationModel
