@@ -118,8 +118,9 @@ Trending source files
 
 Trending source files are calculated based on a predefined dictionary of known
 types and extensions. If an extension is missing or you would like to scan
-custom files, it is possible to extend the ``LANGUAGES_EXTENSIONS_MAP``
-dictionary located in ``kallithea/config/conf.py`` with new types.
+custom files, it is possible to add additional file extensions with
+``EXTRA_MAPPINGS`` in your custom Kallithea extensions.py file. See
+:ref:`customization`.
 
 
 Cloning remote repositories
