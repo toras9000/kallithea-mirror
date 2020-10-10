@@ -22,6 +22,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import base64
+import binascii
 import logging
 import re
 import struct
@@ -109,7 +110,7 @@ def parse_pub_key(ssh_key):
 
     try:
         key_bytes = base64.b64decode(keyvalue)
-    except base64.binascii.Error:  # Must be caused by truncation - either "Invalid padding" or "Invalid base64-encoded string: number of data characters (x) cannot be 1 more than a multiple of 4"
+    except binascii.Error:  # Must be caused by truncation - either "Invalid padding" or "Invalid base64-encoded string: number of data characters (x) cannot be 1 more than a multiple of 4"
         raise SshKeyParseError(_("Invalid SSH key - base64 part %r seems truncated (it can't be decoded)") % keyvalue)
 
     # Check key internals to make sure the key wasn't truncated in a way that base64 can decode:
