@@ -21,11 +21,8 @@ refer to the routes manual at http://routes.groovie.org/docs/
 
 import routes
 
+import kallithea
 from kallithea.lib.utils2 import safe_str
-
-
-# prefix for non repository related links needs to be prefixed with `/`
-ADMIN_PREFIX = '/_admin'
 
 
 class Mapper(routes.Mapper):
@@ -120,6 +117,7 @@ def make_map(config):
     rmap.connect('issues_url', 'https://bitbucket.org/conservancy/kallithea/issues', _static=True)
 
     # ADMIN REPOSITORY ROUTES
+    ADMIN_PREFIX = kallithea.ADMIN_PREFIX
     with rmap.submapper(path_prefix=ADMIN_PREFIX,
                         controller='admin/repos') as m:
         m.connect("repos", "/repos",

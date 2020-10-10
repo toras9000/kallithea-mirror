@@ -45,6 +45,8 @@ CELERY_EAGER = False
 
 CONFIG = {}
 
+# URL prefix for non repository related links - must start with `/`
+ADMIN_PREFIX = '/_admin'
 URL_SEP = '/'
 
 # Linked module for extensions

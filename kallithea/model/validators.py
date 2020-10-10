@@ -28,7 +28,6 @@ from sqlalchemy import func
 from tg.i18n import ugettext as _
 
 import kallithea
-from kallithea.config.routing import ADMIN_PREFIX
 from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel
 from kallithea.lib.compat import OrderedSet
 from kallithea.lib.exceptions import InvalidCloneUriException, LdapImportError
@@ -343,7 +342,7 @@ def ValidRepoName(edit=False, old_data=None):
             group_path = value.get('group_path')
             group_name = value.get('group_name')
 
-            if repo_name in [ADMIN_PREFIX, '']:
+            if repo_name in [kallithea.ADMIN_PREFIX, '']:
                 msg = self.message('invalid_repo_name', state, repo=repo_name)
                 raise formencode.Invalid(msg, value, state,
                     error_dict=dict(repo_name=msg)
