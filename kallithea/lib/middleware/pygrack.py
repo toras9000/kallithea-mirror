@@ -30,6 +30,8 @@ import os
 import socket
 import traceback
 
+from dulwich.server import update_server_info
+from dulwich.web import GunzipFilter, LimitedInputFilter
 from webob import Request, Response, exc
 
 import kallithea
@@ -168,7 +170,6 @@ class GitRepository(object):
         if git_command in ['git-receive-pack']:
             # updating refs manually after each push.
             # Needed for pre-1.7.0.4 git clients using regular HTTP mode.
-            from dulwich.server import update_server_info
 
             from kallithea.lib.vcs import get_repo
             repo = get_repo(self.content_path)
@@ -224,6 +225,5 @@ class GitDirectory(object):
 
 
 def make_wsgi_app(repo_name, repo_root):
-    from dulwich.web import GunzipFilter, LimitedInputFilter
     app = GitDirectory(repo_root, repo_name)
     return GunzipFilter(LimitedInputFilter(app))

@@ -23,6 +23,7 @@ import mercurial.util  # import url as hg_url
 from dulwich.config import ConfigFile
 from dulwich.objects import Tag
 from dulwich.repo import NotGitRepository, Repo
+from dulwich.server import update_server_info
 
 from kallithea.lib.vcs import subprocessio
 from kallithea.lib.vcs.backends.base import BaseRepository, CollectionGenerator
@@ -661,7 +662,6 @@ class GitRepository(BaseRepository):
         """
         runs gits update-server-info command in this repo instance
         """
-        from dulwich.server import update_server_info
         try:
             update_server_info(self._repo)
         except OSError as e:

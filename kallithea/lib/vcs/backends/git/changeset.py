@@ -5,6 +5,7 @@ from subprocess import PIPE, Popen
 
 from dulwich import objects
 from dulwich.config import ConfigFile
+from dulwich.walk import Walker
 
 from kallithea.lib.vcs.backends.base import BaseChangeset, EmptyChangeset
 from kallithea.lib.vcs.conf import settings
@@ -294,7 +295,6 @@ class GitChangeset(BaseChangeset):
 
         """
         self._get_filectx(path)
-        from dulwich.walk import Walker
         include = [self.raw_id]
         walker = Walker(self.repository._repo.object_store, include,
                         paths=[path], max_entries=1)
