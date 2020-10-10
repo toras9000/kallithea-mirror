@@ -49,9 +49,7 @@ from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel, Ha
 from kallithea.lib.diffs import BIN_FILENODE, CHMOD_FILENODE, DEL_FILENODE, MOD_FILENODE, NEW_FILENODE, RENAMED_FILENODE
 from kallithea.lib.markup_renderer import url_re
 from kallithea.lib.pygmentsutils import get_custom_lexer
-from kallithea.lib.utils2 import MENTIONS_REGEX, AttributeDict
-from kallithea.lib.utils2 import age as _age
-from kallithea.lib.utils2 import asbool, credentials_filter, safe_bytes, safe_int, safe_str, time_to_datetime
+from kallithea.lib.utils2 import MENTIONS_REGEX, AttributeDict, age, asbool, credentials_filter, safe_bytes, safe_int, safe_str, time_to_datetime
 from kallithea.lib.vcs.backends.base import BaseChangeset, EmptyChangeset
 from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError
 #==============================================================================
@@ -77,6 +75,7 @@ assert wrap_paragraphs
 assert HasPermissionAny
 assert HasRepoGroupPermissionLevel
 assert HasRepoPermissionLevel
+assert age
 assert time_to_datetime
 assert EmptyChangeset
 
@@ -539,9 +538,6 @@ def pop_flash_messages():
     """
     return [_Message(category, message) for category, message in _session_flash_messages(clear=True)]
 
-
-def age(x, y=False):
-    return _age(x, y)
 
 def capitalize(x):
     return x.capitalize()
