@@ -26,6 +26,7 @@ Original author and date, and relevant copyright and licensing information is be
 :license: GPLv3, see LICENSE.md for more details.
 """
 
+import getpass
 import logging
 import os
 import sys
@@ -128,53 +129,36 @@ class DbManage(object):
 
         log.info('Created tables for %s', self.dbname)
 
-    def admin_prompt(self, second=False):
-        if not self.tests:
-            import getpass
+    def create_admin_user(self):
+        username = self.cli_args.get('username')
+        password = self.cli_args.get('password')
+        email = self.cli_args.get('email')
 
-            username = self.cli_args.get('username')
-            password = self.cli_args.get('password')
-            email = self.cli_args.get('email')
+        def get_password():
+            password = getpass.getpass('Specify admin password '
+                                       '(min 6 chars):')
+            confirm = getpass.getpass('Confirm password:')
 
-            def get_password():
-                password = getpass.getpass('Specify admin password '
-                                           '(min 6 chars):')
-                confirm = getpass.getpass('Confirm password:')
+            if password != confirm:
+                log.error('passwords mismatch')
+                return False
+            if len(password) < 6:
+                log.error('password is to short use at least 6 characters')
+                return False
 
-                if password != confirm:
-                    log.error('passwords mismatch')
-                    return False
-                if len(password) < 6:
-                    log.error('password is to short use at least 6 characters')
-                    return False
-
-                return password
-            if username is None:
-                username = input('Specify admin username:')
-            if password is None:
+            return password
+        if username is None:
+            username = input('Specify admin username:')
+        if password is None:
+            password = get_password()
+            if not password:
+                # second try
                 password = get_password()
                 if not password:
-                    # second try
-                    password = get_password()
-                    if not password:
-                        sys.exit()
-            if email is None:
-                email = input('Specify admin email:')
-            self.create_user(username, password, email, True)
-        else:
-            log.info('creating admin and regular test users')
-            from kallithea.tests.base import (TEST_USER_ADMIN_EMAIL, TEST_USER_ADMIN_LOGIN, TEST_USER_ADMIN_PASS, TEST_USER_REGULAR2_EMAIL,
-                                              TEST_USER_REGULAR2_LOGIN, TEST_USER_REGULAR2_PASS, TEST_USER_REGULAR_EMAIL, TEST_USER_REGULAR_LOGIN,
-                                              TEST_USER_REGULAR_PASS)
-
-            self.create_user(TEST_USER_ADMIN_LOGIN, TEST_USER_ADMIN_PASS,
-                             TEST_USER_ADMIN_EMAIL, True)
-
-            self.create_user(TEST_USER_REGULAR_LOGIN, TEST_USER_REGULAR_PASS,
-                             TEST_USER_REGULAR_EMAIL, False)
-
-            self.create_user(TEST_USER_REGULAR2_LOGIN, TEST_USER_REGULAR2_PASS,
-                             TEST_USER_REGULAR2_EMAIL, False)
+                    sys.exit()
+        if email is None:
+            email = input('Specify admin email:')
+        self.create_user(username, password, email, True)
 
     def create_auth_plugin_options(self, skip_existing=False):
         """

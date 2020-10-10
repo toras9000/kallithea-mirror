@@ -64,7 +64,7 @@ def db_create(user, password, email, repos, force_yes, force_no, public_access, 
         repo_root_path = dbmanage.prompt_repo_root_path(None)
         dbmanage.create_settings(repo_root_path)
         dbmanage.create_default_user()
-        dbmanage.admin_prompt()
+        dbmanage.create_admin_user()
         dbmanage.create_permissions()
         dbmanage.populate_default_permissions()
         Session().commit()

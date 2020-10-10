@@ -41,8 +41,9 @@ from kallithea.model.repo_group import RepoGroupModel
 from kallithea.model.scm import ScmModel
 from kallithea.model.user import UserModel
 from kallithea.model.user_group import UserGroupModel
-from kallithea.tests.base import (GIT_REPO, HG_REPO, IP_ADDR, TEST_USER_ADMIN_EMAIL, TEST_USER_ADMIN_LOGIN, TEST_USER_REGULAR_LOGIN, TESTS_TMP_PATH,
-                                  invalidate_all_caches)
+from kallithea.tests.base import (GIT_REPO, HG_REPO, IP_ADDR, TEST_USER_ADMIN_EMAIL, TEST_USER_ADMIN_LOGIN, TEST_USER_ADMIN_PASS, TEST_USER_REGULAR2_EMAIL,
+                                  TEST_USER_REGULAR2_LOGIN, TEST_USER_REGULAR2_PASS, TEST_USER_REGULAR_EMAIL, TEST_USER_REGULAR_LOGIN, TEST_USER_REGULAR_PASS,
+                                  TESTS_TMP_PATH, invalidate_all_caches)
 
 
 log = logging.getLogger(__name__)
@@ -365,12 +366,19 @@ def create_test_env(repos_test_path, config, reuse_database):
         os.makedirs(repos_test_path)
 
     dbmanage = DbManage(dbconf=dbconf, root=config['here'],
-                        tests=True)
+                        tests=True,
+                        cli_args={
+                            'username': TEST_USER_ADMIN_LOGIN,
+                            'password': TEST_USER_ADMIN_PASS,
+                            'email': TEST_USER_ADMIN_EMAIL,
+                        })
     dbmanage.create_tables(reuse_database=reuse_database)
     # for tests dynamically set new root paths based on generated content
     dbmanage.create_settings(dbmanage.prompt_repo_root_path(repos_test_path))
     dbmanage.create_default_user()
-    dbmanage.admin_prompt()
+    dbmanage.create_admin_user()
+    dbmanage.create_user(TEST_USER_REGULAR_LOGIN, TEST_USER_REGULAR_PASS, TEST_USER_REGULAR_EMAIL, False)
+    dbmanage.create_user(TEST_USER_REGULAR2_LOGIN, TEST_USER_REGULAR2_PASS, TEST_USER_REGULAR2_EMAIL, False)
     dbmanage.create_permissions()
     dbmanage.populate_default_permissions()
     Session().commit()
