@@ -38,6 +38,7 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPFound, HTTPNotFound
 
+import kallithea
 from kallithea.config.routing import url
 from kallithea.lib import diffs
 from kallithea.lib import helpers as h
@@ -504,13 +505,12 @@ class FilesController(BaseRepoController):
         except (ImproperArchiveTypeError, KeyError):
             return _('Unknown archive type')
 
-        from kallithea import CONFIG
         rev_name = cs.raw_id[:12]
         archive_name = '%s-%s%s' % (repo_name.replace('/', '_'), rev_name, ext)
 
         archive_path = None
         cached_archive_path = None
-        archive_cache_dir = CONFIG.get('archive_cache_dir')
+        archive_cache_dir = kallithea.CONFIG.get('archive_cache_dir')
         if archive_cache_dir and not subrepos: # TODO: subrepo caching?
             if not os.path.isdir(archive_cache_dir):
                 os.makedirs(archive_cache_dir)

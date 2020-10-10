@@ -33,7 +33,7 @@ from tg import response
 from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 
-from kallithea import CONFIG
+import kallithea
 from kallithea.lib import feeds
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
@@ -67,7 +67,7 @@ class FeedController(BaseRepoController):
             desc_msg.append('tag: %s<br/>' % tag)
 
         changes = []
-        diff_limit = safe_int(CONFIG.get('rss_cut_off_limit', 32 * 1024))
+        diff_limit = safe_int(kallithea.CONFIG.get('rss_cut_off_limit', 32 * 1024))
         raw_diff = cs.diff()
         diff_processor = DiffProcessor(raw_diff,
                                        diff_limit=diff_limit,
@@ -92,7 +92,7 @@ class FeedController(BaseRepoController):
         desc_msg.append(h.urlify_text(cs.message))
         desc_msg.append('\n')
         desc_msg.extend(changes)
-        if asbool(CONFIG.get('rss_include_diff', False)):
+        if asbool(kallithea.CONFIG.get('rss_include_diff', False)):
             desc_msg.append('\n\n')
             desc_msg.append(safe_str(raw_diff))
         desc_msg.append('</pre>')
@@ -109,7 +109,7 @@ class FeedController(BaseRepoController):
                 description=_('Changes on %s repository') % repo_name,
             )
 
-            rss_items_per_page = safe_int(CONFIG.get('rss_items_per_page', 20))
+            rss_items_per_page = safe_int(kallithea.CONFIG.get('rss_items_per_page', 20))
             entries=[]
             for cs in reversed(list(c.db_repo_scm_instance[-rss_items_per_page:])):
                 entries.append(dict(

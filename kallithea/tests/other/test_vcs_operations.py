@@ -36,7 +36,7 @@ from tempfile import _RandomNameSequence
 
 import pytest
 
-from kallithea import CONFIG
+import kallithea
 from kallithea.lib.utils2 import ascii_bytes, safe_str
 from kallithea.model.db import Repository, Ui, User, UserIpMap, UserLog
 from kallithea.model.meta import Session
@@ -101,7 +101,7 @@ class HgSshVcsTest(HgVcsTest, SshVcsTest):
         # Specify a custom ssh command on the command line
         return r"""--config ui.ssh="bash -c 'SSH_ORIGINAL_COMMAND=\"\$2\" SSH_CONNECTION=\"%s 1024 127.0.0.1 22\" kallithea-cli ssh-serve -c %s %s %s' --" ssh://someuser@somehost/%s""" % (
             client_ip,
-            CONFIG['__file__'],
+            kallithea.CONFIG['__file__'],
             user.user_id,
             ssh_key.user_ssh_key_id,
             repo_name)
@@ -112,7 +112,7 @@ class GitSshVcsTest(GitVcsTest, SshVcsTest):
         # Set a custom ssh command in the global environment
         os.environ['GIT_SSH_COMMAND'] = r"""bash -c 'SSH_ORIGINAL_COMMAND="$2" SSH_CONNECTION="%s 1024 127.0.0.1 22" kallithea-cli ssh-serve -c %s %s %s' --""" % (
             client_ip,
-            CONFIG['__file__'],
+            kallithea.CONFIG['__file__'],
             user.user_id,
             ssh_key.user_ssh_key_id)
         return "ssh://someuser@somehost/%s""" % repo_name

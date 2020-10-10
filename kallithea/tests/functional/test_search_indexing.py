@@ -1,6 +1,6 @@
 import mock
 
-from kallithea import CONFIG
+import kallithea
 from kallithea.config.conf import INDEX_FILENAMES
 from kallithea.model.meta import Session
 from kallithea.model.repo import RepoModel
@@ -66,7 +66,7 @@ def rebuild_index(full_index):
         # (FYI, ENOMEM occurs at forking "git" with python 2.7.3,
         # Linux 3.2.78-1 x86_64, 3GB memory, and no ulimit
         # configuration for memory)
-        create_test_index(base.TESTS_TMP_PATH, CONFIG, full_index=full_index)
+        create_test_index(base.TESTS_TMP_PATH, kallithea.CONFIG, full_index=full_index)
 
 
 class TestSearchControllerIndexing(base.TestController):

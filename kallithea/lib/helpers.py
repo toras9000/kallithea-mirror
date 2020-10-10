@@ -38,6 +38,7 @@ from webhelpers2.html.tags import submit, text, textarea
 from webhelpers2.number import format_byte_size
 from webhelpers2.text import chop_at, truncate, wrap_paragraphs
 
+import kallithea
 from kallithea.config.routing import url
 from kallithea.lib.annotate import annotate_highlight
 #==============================================================================
@@ -82,9 +83,8 @@ log = logging.getLogger(__name__)
 def canonical_url(*args, **kargs):
     '''Like url(x, qualified=True), but returns url that not only is qualified
     but also canonical, as configured in canonical_url'''
-    from kallithea import CONFIG
     try:
-        parts = CONFIG.get('canonical_url', '').split('://', 1)
+        parts = kallithea.CONFIG.get('canonical_url', '').split('://', 1)
         kargs['host'] = parts[1]
         kargs['protocol'] = parts[0]
     except IndexError:
@@ -94,9 +94,8 @@ def canonical_url(*args, **kargs):
 
 def canonical_hostname():
     '''Return canonical hostname of system'''
-    from kallithea import CONFIG
     try:
-        parts = CONFIG.get('canonical_url', '').split('://', 1)
+        parts = kallithea.CONFIG.get('canonical_url', '').split('://', 1)
         return parts[1].split('/', 1)[0]
     except IndexError:
         parts = url('home', qualified=True).split('://', 1)
@@ -560,9 +559,8 @@ def show_id(cs):
 
     :param cs: changeset instance
     """
-    from kallithea import CONFIG
-    def_len = safe_int(CONFIG.get('show_sha_length', 12))
-    show_rev = asbool(CONFIG.get('show_revision_number', False))
+    def_len = safe_int(kallithea.CONFIG.get('show_sha_length', 12))
+    show_rev = asbool(kallithea.CONFIG.get('show_revision_number', False))
 
     raw_id = cs.raw_id[:def_len]
     if show_rev:
@@ -1212,25 +1210,24 @@ def urlify_issues(newtext, repo_name):
     """Urlify issue references according to .ini configuration"""
     global _urlify_issues_f
     if _urlify_issues_f is None:
-        from kallithea import CONFIG
         from kallithea.model.db import URL_SEP
-        assert CONFIG['sqlalchemy.url'] # make sure config has been loaded
+        assert kallithea.CONFIG['sqlalchemy.url'] # make sure config has been loaded
 
         # Build chain of urlify functions, starting with not doing any transformation
         def tmp_urlify_issues_f(s):
             return s
 
         issue_pat_re = re.compile(r'issue_pat(.*)')
-        for k in CONFIG:
+        for k in kallithea.CONFIG:
             # Find all issue_pat* settings that also have corresponding server_link and prefix configuration
             m = issue_pat_re.match(k)
             if m is None:
                 continue
             suffix = m.group(1)
-            issue_pat = CONFIG.get(k)
-            issue_server_link = CONFIG.get('issue_server_link%s' % suffix)
-            issue_sub = CONFIG.get('issue_sub%s' % suffix)
-            issue_prefix = CONFIG.get('issue_prefix%s' % suffix)
+            issue_pat = kallithea.CONFIG.get(k)
+            issue_server_link = kallithea.CONFIG.get('issue_server_link%s' % suffix)
+            issue_sub = kallithea.CONFIG.get('issue_sub%s' % suffix)
+            issue_prefix = kallithea.CONFIG.get('issue_prefix%s' % suffix)
             if issue_prefix:
                 log.error('found unsupported issue_prefix%s = %r - use issue_sub%s instead', suffix, issue_prefix, suffix)
             if not issue_pat:
