@@ -192,7 +192,6 @@ class CreatePullRequestAction(object):
         return False
 
     def __init__(self, org_repo, other_repo, org_ref, other_ref, title, description, owner, reviewers):
-        from kallithea.controllers.compare import CompareController
         reviewers = set(reviewers)
         _assert_valid_reviewers(reviewers)
 
@@ -214,10 +213,7 @@ class CreatePullRequestAction(object):
         other_display = h.short_ref(other_ref_type, other_ref_name)
 
         cs_ranges, _cs_ranges_not, ancestor_revs = \
-            CompareController._get_changesets(org_repo.scm_instance.alias,
-                                              other_repo.scm_instance, other_rev, # org and other "swapped"
-                                              org_repo.scm_instance, org_rev,
-                                              )
+            org_repo.scm_instance.get_diff_changesets(other_rev, org_repo.scm_instance, org_rev) # org and other "swapped"
         if not cs_ranges:
             raise self.Empty(_('Cannot create empty pull request'))
 

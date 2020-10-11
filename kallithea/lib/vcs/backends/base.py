@@ -170,6 +170,20 @@ class BaseRepository(object):
         """
         raise NotImplementedError
 
+    def get_diff_changesets(self, org_rev, other_repo, other_rev):
+        """
+        Returns lists of changesets that can be merged from this repo @org_rev
+        to other_repo @other_rev
+        ... and the other way
+        ... and the ancestors that would be used for merge
+
+        :param org_rev: the revision we want our compare to be made
+        :param other_repo: repo object, most likely the fork of org_repo. It has
+            all changesets that we need to obtain
+        :param other_rev: revision we want out compare to be made on other_repo
+        """
+        raise NotImplementedError
+
     def __getitem__(self, key):
         if isinstance(key, slice):
             return (self.get_changeset(rev) for rev in self.revisions[key])

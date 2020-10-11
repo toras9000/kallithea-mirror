@@ -33,12 +33,13 @@ import mercurial.scmutil
 import mercurial.sshpeer
 import mercurial.tags
 import mercurial.ui
+import mercurial.unionrepo
 import mercurial.util
 
 from kallithea.lib.vcs.backends.base import BaseRepository, CollectionGenerator
 from kallithea.lib.vcs.exceptions import (BranchDoesNotExistError, ChangesetDoesNotExistError, EmptyRepositoryError, RepositoryError, TagAlreadyExistError,
                                           TagDoesNotExistError, VCSError)
-from kallithea.lib.vcs.utils import ascii_str, author_email, author_name, date_fromtimestamp, makedate, safe_bytes, safe_str
+from kallithea.lib.vcs.utils import ascii_bytes, ascii_str, author_email, author_name, date_fromtimestamp, makedate, safe_bytes, safe_str
 from kallithea.lib.vcs.utils.helpers import get_urllib_request_handlers
 from kallithea.lib.vcs.utils.lazy import LazyProperty
 from kallithea.lib.vcs.utils.paths import abspath
@@ -544,6 +545,60 @@ class MercurialRepository(BaseRepository):
             revs.reverse()
 
         return CollectionGenerator(self, revs)
+
+    def get_diff_changesets(self, org_rev, other_repo, other_rev):
+        """
+        Returns lists of changesets that can be merged from this repo @org_rev
+        to other_repo @other_rev
+        ... and the other way
+        ... and the ancestors that would be used for merge
+
+        :param org_rev: the revision we want our compare to be made
+        :param other_repo: repo object, most likely the fork of org_repo. It has
+            all changesets that we need to obtain
+        :param other_rev: revision we want out compare to be made on other_repo
+        """
+        ancestors = None
+        if org_rev == other_rev:
+            org_changesets = []
+            other_changesets = []
+
+        else:
+            # case two independent repos
+            if self != other_repo:
+                hgrepo = mercurial.unionrepo.makeunionrepository(other_repo.baseui,
+                                                       safe_bytes(other_repo.path),
+                                                       safe_bytes(self.path))
+                # all ancestors of other_rev will be in other_repo and
+                # rev numbers from hgrepo can be used in other_repo - org_rev ancestors cannot
+
+            # no remote compare do it on the same repository
+            else:
+                hgrepo = other_repo._repo
+
+            ancestors = [ascii_str(hgrepo[ancestor].hex()) for ancestor in
+                         hgrepo.revs(b"id(%s) & ::id(%s)", ascii_bytes(other_rev), ascii_bytes(org_rev))]
+            if ancestors:
+                log.debug("shortcut found: %s is already an ancestor of %s", other_rev, org_rev)
+            else:
+                log.debug("no shortcut found: %s is not an ancestor of %s", other_rev, org_rev)
+                ancestors = [ascii_str(hgrepo[ancestor].hex()) for ancestor in
+                             hgrepo.revs(b"heads(::id(%s) & ::id(%s))", ascii_bytes(org_rev), ascii_bytes(other_rev))] # FIXME: expensive!
+
+            other_changesets = [
+                other_repo.get_changeset(rev)
+                for rev in hgrepo.revs(
+                    b"ancestors(id(%s)) and not ancestors(id(%s)) and not id(%s)",
+                    ascii_bytes(other_rev), ascii_bytes(org_rev), ascii_bytes(org_rev))
+            ]
+            org_changesets = [
+                self.get_changeset(ascii_str(hgrepo[rev].hex()))
+                for rev in hgrepo.revs(
+                    b"ancestors(id(%s)) and not ancestors(id(%s)) and not id(%s)",
+                    ascii_bytes(org_rev), ascii_bytes(other_rev), ascii_bytes(other_rev))
+            ]
+
+        return other_changesets, org_changesets, ancestors
 
     def pull(self, url):
         """

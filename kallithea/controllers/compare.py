@@ -28,9 +28,7 @@ Original author and date, and relevant copyright and licensing information is be
 
 
 import logging
-import re
 
-import mercurial.unionrepo
 from tg import request
 from tg import tmpl_context as c
 from tg.i18n import ugettext as _
@@ -42,7 +40,6 @@ from kallithea.lib import helpers as h
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController, render
 from kallithea.lib.graphmod import graph_data
-from kallithea.lib.utils2 import ascii_bytes, ascii_str, safe_bytes
 from kallithea.model.db import Repository
 
 
@@ -73,104 +70,6 @@ class CompareController(BaseRepoController):
             msg = _('Cannot compare repositories of different types')
             h.flash(msg, category='error')
             raise HTTPFound(location=url('compare_home', repo_name=c.a_repo.repo_name))
-
-    @staticmethod
-    def _get_changesets(alias, org_repo, org_rev, other_repo, other_rev):
-        """
-        Returns lists of changesets that can be merged from org_repo@org_rev
-        to other_repo@other_rev
-        ... and the other way
-        ... and the ancestors that would be used for merge
-
-        :param org_repo: repo object, that is most likely the original repo we forked from
-        :param org_rev: the revision we want our compare to be made
-        :param other_repo: repo object, most likely the fork of org_repo. It has
-            all changesets that we need to obtain
-        :param other_rev: revision we want out compare to be made on other_repo
-        """
-        ancestors = None
-        if org_rev == other_rev:
-            org_changesets = []
-            other_changesets = []
-
-        elif alias == 'hg':
-            # case two independent repos
-            if org_repo != other_repo:
-                hgrepo = mercurial.unionrepo.makeunionrepository(other_repo.baseui,
-                                                       safe_bytes(other_repo.path),
-                                                       safe_bytes(org_repo.path))
-                # all ancestors of other_rev will be in other_repo and
-                # rev numbers from hgrepo can be used in other_repo - org_rev ancestors cannot
-
-            # no remote compare do it on the same repository
-            else:
-                hgrepo = other_repo._repo
-
-            ancestors = [ascii_str(hgrepo[ancestor].hex()) for ancestor in
-                         hgrepo.revs(b"id(%s) & ::id(%s)", ascii_bytes(other_rev), ascii_bytes(org_rev))]
-            if ancestors:
-                log.debug("shortcut found: %s is already an ancestor of %s", other_rev, org_rev)
-            else:
-                log.debug("no shortcut found: %s is not an ancestor of %s", other_rev, org_rev)
-                ancestors = [ascii_str(hgrepo[ancestor].hex()) for ancestor in
-                             hgrepo.revs(b"heads(::id(%s) & ::id(%s))", ascii_bytes(org_rev), ascii_bytes(other_rev))] # FIXME: expensive!
-
-            other_changesets = [
-                other_repo.get_changeset(rev)
-                for rev in hgrepo.revs(
-                    b"ancestors(id(%s)) and not ancestors(id(%s)) and not id(%s)",
-                    ascii_bytes(other_rev), ascii_bytes(org_rev), ascii_bytes(org_rev))
-            ]
-            org_changesets = [
-                org_repo.get_changeset(ascii_str(hgrepo[rev].hex()))
-                for rev in hgrepo.revs(
-                    b"ancestors(id(%s)) and not ancestors(id(%s)) and not id(%s)",
-                    ascii_bytes(org_rev), ascii_bytes(other_rev), ascii_bytes(other_rev))
-            ]
-
-        elif alias == 'git':
-            if org_repo != other_repo:
-                from dulwich.client import SubprocessGitClient
-                from dulwich.repo import Repo
-
-                gitrepo = Repo(org_repo.path)
-                SubprocessGitClient(thin_packs=False).fetch(other_repo.path, gitrepo)
-
-                gitrepo_remote = Repo(other_repo.path)
-                SubprocessGitClient(thin_packs=False).fetch(org_repo.path, gitrepo_remote)
-
-                revs = [
-                    ascii_str(x.commit.id)
-                    for x in gitrepo_remote.get_walker(include=[ascii_bytes(other_rev)],
-                                                       exclude=[ascii_bytes(org_rev)])
-                ]
-                other_changesets = [other_repo.get_changeset(rev) for rev in reversed(revs)]
-                if other_changesets:
-                    ancestors = [other_changesets[0].parents[0].raw_id]
-                else:
-                    # no changesets from other repo, ancestor is the other_rev
-                    ancestors = [other_rev]
-
-                gitrepo.close()
-                gitrepo_remote.close()
-
-            else:
-                so = org_repo.run_git_command(
-                    ['log', '--reverse', '--pretty=format:%H',
-                     '-s', '%s..%s' % (org_rev, other_rev)]
-                )
-                other_changesets = [org_repo.get_changeset(cs)
-                              for cs in re.findall(r'[0-9a-fA-F]{40}', so)]
-                so = org_repo.run_git_command(
-                    ['merge-base', org_rev, other_rev]
-                )
-                ancestors = [re.findall(r'[0-9a-fA-F]{40}', so)[0]]
-            org_changesets = []
-
-        else:
-            raise Exception('Bad alias only git and hg is allowed')
-
-        return other_changesets, org_changesets, ancestors
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
@@ -220,9 +119,8 @@ class CompareController(BaseRepoController):
         c.cs_ref_name = other_ref_name
         c.cs_ref_type = other_ref_type
 
-        c.cs_ranges, c.cs_ranges_org, c.ancestors = self._get_changesets(
-            c.a_repo.scm_instance.alias, c.a_repo.scm_instance, c.a_rev,
-            c.cs_repo.scm_instance, c.cs_rev)
+        c.cs_ranges, c.cs_ranges_org, c.ancestors = c.a_repo.scm_instance.get_diff_changesets(
+            c.a_rev, c.cs_repo.scm_instance, c.cs_rev)
         raw_ids = [x.raw_id for x in c.cs_ranges]
         c.cs_comments = c.cs_repo.get_comments(raw_ids)
         c.cs_statuses = c.cs_repo.statuses(raw_ids)

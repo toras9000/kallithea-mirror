@@ -20,6 +20,7 @@ import urllib.request
 from collections import OrderedDict
 
 import mercurial.util  # import url as hg_url
+from dulwich.client import SubprocessGitClient
 from dulwich.config import ConfigFile
 from dulwich.objects import Tag
 from dulwich.repo import NotGitRepository, Repo
@@ -30,7 +31,7 @@ from kallithea.lib.vcs.backends.base import BaseRepository, CollectionGenerator
 from kallithea.lib.vcs.conf import settings
 from kallithea.lib.vcs.exceptions import (BranchDoesNotExistError, ChangesetDoesNotExistError, EmptyRepositoryError, RepositoryError, TagAlreadyExistError,
                                           TagDoesNotExistError)
-from kallithea.lib.vcs.utils import ascii_str, date_fromtimestamp, makedate, safe_bytes, safe_str
+from kallithea.lib.vcs.utils import ascii_bytes, ascii_str, date_fromtimestamp, makedate, safe_bytes, safe_str
 from kallithea.lib.vcs.utils.helpers import get_urllib_request_handlers
 from kallithea.lib.vcs.utils.lazy import LazyProperty
 from kallithea.lib.vcs.utils.paths import abspath, get_user_home
@@ -543,6 +544,58 @@ class GitRepository(BaseRepository):
             revs.reverse()
 
         return CollectionGenerator(self, revs)
+
+    def get_diff_changesets(self, org_rev, other_repo, other_rev):
+        """
+        Returns lists of changesets that can be merged from this repo @org_rev
+        to other_repo @other_rev
+        ... and the other way
+        ... and the ancestors that would be used for merge
+
+        :param org_rev: the revision we want our compare to be made
+        :param other_repo: repo object, most likely the fork of org_repo. It has
+            all changesets that we need to obtain
+        :param other_rev: revision we want out compare to be made on other_repo
+        """
+        org_changesets = []
+        ancestors = None
+        if org_rev == other_rev:
+            other_changesets = []
+        elif self != other_repo:
+            gitrepo = Repo(self.path)
+            SubprocessGitClient(thin_packs=False).fetch(other_repo.path, gitrepo)
+
+            gitrepo_remote = Repo(other_repo.path)
+            SubprocessGitClient(thin_packs=False).fetch(self.path, gitrepo_remote)
+
+            revs = [
+                ascii_str(x.commit.id)
+                for x in gitrepo_remote.get_walker(include=[ascii_bytes(other_rev)],
+                                                   exclude=[ascii_bytes(org_rev)])
+            ]
+            other_changesets = [other_repo.get_changeset(rev) for rev in reversed(revs)]
+            if other_changesets:
+                ancestors = [other_changesets[0].parents[0].raw_id]
+            else:
+                # no changesets from other repo, ancestor is the other_rev
+                ancestors = [other_rev]
+
+            gitrepo.close()
+            gitrepo_remote.close()
+
+        else:
+            so = self.run_git_command(
+                ['log', '--reverse', '--pretty=format:%H',
+                 '-s', '%s..%s' % (org_rev, other_rev)]
+            )
+            other_changesets = [self.get_changeset(cs)
+                          for cs in re.findall(r'[0-9a-fA-F]{40}', so)]
+            so = self.run_git_command(
+                ['merge-base', org_rev, other_rev]
+            )
+            ancestors = [re.findall(r'[0-9a-fA-F]{40}', so)[0]]
+
+        return other_changesets, org_changesets, ancestors
 
     def get_diff(self, rev1, rev2, path=None, ignore_whitespace=False,
                  context=3):
