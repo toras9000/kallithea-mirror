@@ -56,11 +56,6 @@ log = logging.getLogger(__name__)
 
 
 class ReposController(BaseRepoController):
-    """
-    REST Controller styled on the Atom Publishing Protocol"""
-    # To properly map this controller, ensure your config/routing.py
-    # file has a resource setup:
-    #     map.resource('repo', 'repos')
 
     @LoginRequired(allow_default_user=True)
     def _before(self, *args, **kwargs):

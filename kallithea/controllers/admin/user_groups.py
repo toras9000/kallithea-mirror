@@ -55,7 +55,6 @@ log = logging.getLogger(__name__)
 
 
 class UserGroupsController(BaseController):
-    """REST Controller styled on the Atom Publishing Protocol"""
 
     @LoginRequired(allow_default_user=True)
     def _before(self, *args, **kwargs):

@@ -52,7 +52,6 @@ log = logging.getLogger(__name__)
 
 
 class GistsController(BaseController):
-    """REST Controller styled on the Atom Publishing Protocol"""
 
     def __load_defaults(self, extra_values=None):
         c.lifetime_values = [

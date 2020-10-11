@@ -50,10 +50,6 @@ log = logging.getLogger(__name__)
 
 
 class PermissionsController(BaseController):
-    """REST Controller styled on the Atom Publishing Protocol"""
-    # To properly map this controller, ensure your config/routing.py
-    # file has a resource setup:
-    #     map.resource('permission', 'permissions')
 
     @LoginRequired()
     @HasPermissionAnyDecorator('hg.admin')

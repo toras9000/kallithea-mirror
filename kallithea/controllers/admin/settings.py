@@ -54,11 +54,6 @@ log = logging.getLogger(__name__)
 
 
 class SettingsController(BaseController):
-    """REST Controller styled on the Atom Publishing Protocol"""
-    # To properly map this controller, ensure your config/routing.py
-    # file has a resource setup:
-    #     map.resource('setting', 'settings', controller='admin/settings',
-    #         path_prefix='/admin', name_prefix='admin_')
 
     @LoginRequired(allow_default_user=True)
     def _before(self, *args, **kwargs):

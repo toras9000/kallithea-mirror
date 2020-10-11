@@ -57,7 +57,6 @@ log = logging.getLogger(__name__)
 
 
 class UsersController(BaseController):
-    """REST Controller styled on the Atom Publishing Protocol"""
 
     @LoginRequired()
     @HasPermissionAnyDecorator('hg.admin')
