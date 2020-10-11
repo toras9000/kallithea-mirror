@@ -34,7 +34,8 @@ import traceback
 
 from kallithea.lib import ext_json
 from kallithea.lib.utils2 import AttributeDict, ascii_bytes, safe_int, time_to_datetime
-from kallithea.model.db import Gist, Session, User
+from kallithea.model import meta
+from kallithea.model.db import Gist, User
 from kallithea.model.repo import RepoModel
 from kallithea.model.scm import ScmModel
 
@@ -121,8 +122,8 @@ class GistModel(object):
         gist.owner_id = owner.user_id
         gist.gist_expires = gist_expires
         gist.gist_type = gist_type
-        Session().add(gist)
-        Session().flush() # make database assign gist.gist_id
+        meta.Session().add(gist)
+        meta.Session().flush() # make database assign gist.gist_id
         if gist_type == Gist.GIST_PUBLIC:
             # use DB ID for easy to use GIST ID
             gist.gist_access_id = str(gist.gist_id)
@@ -172,7 +173,7 @@ class GistModel(object):
     def delete(self, gist, fs_remove=True):
         gist = Gist.guess_instance(gist)
         try:
-            Session().delete(gist)
+            meta.Session().delete(gist)
             if fs_remove:
                 self.__delete_gist(gist)
             else:

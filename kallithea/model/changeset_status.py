@@ -29,7 +29,8 @@ import logging
 
 from sqlalchemy.orm import joinedload
 
-from kallithea.model.db import ChangesetStatus, PullRequest, Repository, Session, User
+from kallithea.model import meta
+from kallithea.model.db import ChangesetStatus, PullRequest, Repository, User
 
 
 log = logging.getLogger(__name__)
@@ -178,5 +179,5 @@ class ChangesetStatusModel(object):
             new_status.revision = rev
             new_status.pull_request = pull_request
             new_statuses.append(new_status)
-            Session().add(new_status)
+            meta.Session().add(new_status)
         return new_statuses

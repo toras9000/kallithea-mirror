@@ -34,7 +34,8 @@ import traceback
 
 import kallithea.lib.utils2
 from kallithea.lib.utils2 import LazyProperty
-from kallithea.model.db import Permission, RepoGroup, Repository, Session, Ui, User, UserGroup, UserGroupRepoGroupToPerm, UserRepoGroupToPerm
+from kallithea.model import meta
+from kallithea.model.db import Permission, RepoGroup, Repository, Ui, User, UserGroup, UserGroupRepoGroupToPerm, UserRepoGroupToPerm
 
 
 log = logging.getLogger(__name__)
@@ -65,7 +66,7 @@ class RepoGroupModel(object):
 
         repo_group_to_perm.group = new_group
         repo_group_to_perm.user_id = def_user.user_id
-        Session().add(repo_group_to_perm)
+        meta.Session().add(repo_group_to_perm)
         return repo_group_to_perm
 
     def _create_group(self, group_name):
@@ -146,7 +147,7 @@ class RepoGroupModel(object):
             new_repo_group.parent_group = parent_group
             new_repo_group.group_name = new_repo_group.get_new_name(group_name)
 
-            Session().add(new_repo_group)
+            meta.Session().add(new_repo_group)
 
             # create an ADMIN permission for owner except if we're super admin,
             # later owner should go into the owner field of groups
@@ -177,7 +178,7 @@ class RepoGroupModel(object):
             if not just_db:
                 # we need to flush here, in order to check if database won't
                 # throw any exceptions, create filesystem dirs at the very end
-                Session().flush()
+                meta.Session().flush()
                 self._create_group(new_repo_group.group_name)
 
             return new_repo_group
@@ -296,7 +297,7 @@ class RepoGroupModel(object):
                     raise Exception('invalid repo group name %s' % group_name)
                 repo_group.group_name = repo_group.get_new_name(group_name)
             new_path = repo_group.full_path
-            Session().add(repo_group)
+            meta.Session().add(repo_group)
 
             # iterate over all members of this groups and do fixes
             # if obj is a repoGroup also fix the name of the group according
@@ -328,7 +329,7 @@ class RepoGroupModel(object):
     def delete(self, repo_group, force_delete=False):
         repo_group = RepoGroup.guess_instance(repo_group)
         try:
-            Session().delete(repo_group)
+            meta.Session().delete(repo_group)
             self._delete_group(repo_group, force_delete)
         except Exception:
             log.error('Error removing repo_group %s', repo_group)
@@ -457,7 +458,7 @@ class RepoGroupModel(object):
         if obj is None:
             # create new !
             obj = UserRepoGroupToPerm()
-            Session().add(obj)
+            meta.Session().add(obj)
         obj.group = repo_group
         obj.user = user
         obj.permission = permission
@@ -481,7 +482,7 @@ class RepoGroupModel(object):
             .filter(UserRepoGroupToPerm.group == repo_group) \
             .scalar()
         if obj is not None:
-            Session().delete(obj)
+            meta.Session().delete(obj)
             log.debug('Revoked perm on %s on %s', repo_group, user)
 
     def grant_user_group_permission(self, repo_group, group_name, perm):
@@ -508,7 +509,7 @@ class RepoGroupModel(object):
         if obj is None:
             # create new
             obj = UserGroupRepoGroupToPerm()
-            Session().add(obj)
+            meta.Session().add(obj)
 
         obj.group = repo_group
         obj.users_group = group_name
@@ -533,5 +534,5 @@ class RepoGroupModel(object):
             .filter(UserGroupRepoGroupToPerm.users_group == group_name) \
             .scalar()
         if obj is not None:
-            Session().delete(obj)
+            meta.Session().delete(obj)
             log.debug('Revoked perm to %s on %s', repo_group, group_name)

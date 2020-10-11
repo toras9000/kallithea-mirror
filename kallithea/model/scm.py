@@ -46,7 +46,8 @@ from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.exceptions import RepositoryError
 from kallithea.lib.vcs.nodes import FileNode
 from kallithea.lib.vcs.utils.lazy import LazyProperty
-from kallithea.model.db import PullRequest, RepoGroup, Repository, Session, Ui, User, UserFollowing, UserLog
+from kallithea.model import meta
+from kallithea.model.db import PullRequest, RepoGroup, Repository, Ui, User, UserFollowing, UserLog
 
 
 log = logging.getLogger(__name__)
@@ -230,7 +231,7 @@ class ScmModel(object):
 
         if f is not None:
             try:
-                Session().delete(f)
+                meta.Session().delete(f)
                 action_logger(UserTemp(user_id),
                               'stopped_following_repo',
                               RepoTemp(follow_repo_id))
@@ -243,7 +244,7 @@ class ScmModel(object):
             f = UserFollowing()
             f.user_id = user_id
             f.follows_repository_id = follow_repo_id
-            Session().add(f)
+            meta.Session().add(f)
 
             action_logger(UserTemp(user_id),
                           'started_following_repo',
@@ -259,7 +260,7 @@ class ScmModel(object):
 
         if f is not None:
             try:
-                Session().delete(f)
+                meta.Session().delete(f)
                 return
             except Exception:
                 log.error(traceback.format_exc())
@@ -269,7 +270,7 @@ class ScmModel(object):
             f = UserFollowing()
             f.user_id = user_id
             f.follows_user_id = follow_user_id
-            Session().add(f)
+            meta.Session().add(f)
         except Exception:
             log.error(traceback.format_exc())
             raise

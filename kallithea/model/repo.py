@@ -40,7 +40,8 @@ from kallithea.lib.hooks import log_delete_repository
 from kallithea.lib.utils import is_valid_repo_uri, make_ui
 from kallithea.lib.utils2 import LazyProperty, get_current_authuser, obfuscate_url_pw, remove_prefix
 from kallithea.lib.vcs.backends import get_backend
-from kallithea.model.db import (Permission, RepoGroup, Repository, RepositoryField, Session, Statistics, Ui, User, UserGroup, UserGroupRepoGroupToPerm,
+from kallithea.model import meta
+from kallithea.model.db import (Permission, RepoGroup, Repository, RepositoryField, Statistics, Ui, User, UserGroup, UserGroupRepoGroupToPerm,
                                 UserGroupRepoToPerm, UserRepoGroupToPerm, UserRepoToPerm)
 
 
@@ -65,7 +66,7 @@ class RepoModel(object):
 
         repo_to_perm.repository = repository
         repo_to_perm.user_id = def_user.user_id
-        Session().add(repo_to_perm)
+        meta.Session().add(repo_to_perm)
 
         return repo_to_perm
 
@@ -368,7 +369,7 @@ class RepoModel(object):
                 parent_repo = fork_of
                 new_repo.fork = parent_repo
 
-            Session().add(new_repo)
+            meta.Session().add(new_repo)
 
             if fork_of and copy_fork_permissions:
                 repo = fork_of
@@ -409,7 +410,7 @@ class RepoModel(object):
             ScmModel().toggle_following_repo(new_repo.repo_id, owner.user_id)
             # we need to flush here, in order to check if database won't
             # throw any exceptions, create filesystem dirs at the very end
-            Session().flush()
+            meta.Session().flush()
             return new_repo
         except Exception:
             log.error(traceback.format_exc())
@@ -493,7 +494,7 @@ class RepoModel(object):
 
             old_repo_dict = repo.get_dict()
             try:
-                Session().delete(repo)
+                meta.Session().delete(repo)
                 if fs_remove:
                     self._delete_filesystem_repo(repo)
                 else:
@@ -525,7 +526,7 @@ class RepoModel(object):
         if obj is None:
             # create new !
             obj = UserRepoToPerm()
-            Session().add(obj)
+            meta.Session().add(obj)
         obj.repository = repo
         obj.user = user
         obj.permission = permission
@@ -548,7 +549,7 @@ class RepoModel(object):
             .filter(UserRepoToPerm.user == user) \
             .scalar()
         if obj is not None:
-            Session().delete(obj)
+            meta.Session().delete(obj)
             log.debug('Revoked perm on %s on %s', repo, user)
 
     def grant_user_group_permission(self, repo, group_name, perm):
@@ -574,7 +575,7 @@ class RepoModel(object):
         if obj is None:
             # create new
             obj = UserGroupRepoToPerm()
-            Session().add(obj)
+            meta.Session().add(obj)
 
         obj.repository = repo
         obj.users_group = group_name
@@ -598,7 +599,7 @@ class RepoModel(object):
             .filter(UserGroupRepoToPerm.users_group == group_name) \
             .scalar()
         if obj is not None:
-            Session().delete(obj)
+            meta.Session().delete(obj)
             log.debug('Revoked perm to %s on %s', repo, group_name)
 
     def delete_stats(self, repo_name):
@@ -612,7 +613,7 @@ class RepoModel(object):
             obj = Statistics.query() \
                 .filter(Statistics.repository == repo).scalar()
             if obj is not None:
-                Session().delete(obj)
+                meta.Session().delete(obj)
         except Exception:
             log.error(traceback.format_exc())
             raise

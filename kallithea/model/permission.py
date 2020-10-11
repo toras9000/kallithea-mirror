@@ -32,7 +32,8 @@ import traceback
 from sqlalchemy.exc import DatabaseError
 
 from kallithea.lib.utils2 import asbool
-from kallithea.model.db import Permission, Session, User, UserRepoGroupToPerm, UserRepoToPerm, UserToPerm, UserUserGroupToPerm
+from kallithea.model import meta
+from kallithea.model.db import Permission, User, UserRepoGroupToPerm, UserRepoToPerm, UserToPerm, UserUserGroupToPerm
 
 
 log = logging.getLogger(__name__)
@@ -51,7 +52,7 @@ class PermissionModel(object):
             if not Permission.get_by_key(p[0]):
                 new_perm = Permission()
                 new_perm.permission_name = p[0]
-                Session().add(new_perm)
+                meta.Session().add(new_perm)
 
     def create_default_permissions(self, user, force=False):
         """
@@ -78,8 +79,8 @@ class PermissionModel(object):
 
         if force:
             for perm in perms:
-                Session().delete(perm)
-            Session().commit()
+                meta.Session().delete(perm)
+            meta.Session().commit()
             defined_perms_groups = []
         # For every default permission that needs to be created, we check if
         # its group is already defined. If it's not, we create default permission.
@@ -89,7 +90,7 @@ class PermissionModel(object):
                 log.debug('GR:%s not found, creating permission %s',
                           gr, perm_name)
                 new_perm = _make_perm(perm_name)
-                Session().add(new_perm)
+                meta.Session().add(new_perm)
 
     def update(self, form_result):
         perm_user = User.get_by_username(username=form_result['perm_user_name'])
@@ -113,7 +114,7 @@ class PermissionModel(object):
                 .filter(UserToPerm.user == perm_user) \
                 .all()
             for p in u2p:
-                Session().delete(p)
+                meta.Session().delete(p)
             # create fresh set of permissions
             for def_perm_key in ['default_repo_perm',
                                  'default_group_perm',
@@ -124,7 +125,7 @@ class PermissionModel(object):
                                  'default_register',
                                  'default_extern_activate']:
                 p = _make_new(perm_user, form_result[def_perm_key])
-                Session().add(p)
+                meta.Session().add(p)
 
             # stage 3 update all default permissions for repos if checked
             if form_result['overwrite_default_repo']:
@@ -157,8 +158,8 @@ class PermissionModel(object):
                                .all():
                     g2p.permission = _def
 
-            Session().commit()
+            meta.Session().commit()
         except (DatabaseError,):
             log.error(traceback.format_exc())
-            Session().rollback()
+            meta.Session().rollback()
             raise
