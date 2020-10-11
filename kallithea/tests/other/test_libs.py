@@ -71,26 +71,6 @@ TEST_URLS += [
 ]
 
 
-class FakeUrlGenerator(object):
-
-    def __init__(self, current_url=None, default_route=None, **routes):
-        """Initialize using specified 'current' URL template,
-        default route template, and all other aguments describing known
-        routes (format: route=template)"""
-        self.current_url = current_url
-        self.default_route = default_route
-        self.routes = routes
-
-    def __call__(self, route_name, *args, **kwargs):
-        if route_name in self.routes:
-            return self.routes[route_name] % kwargs
-
-        return self.default_route % kwargs
-
-    def current(self, *args, **kwargs):
-        return self.current_url % kwargs
-
-
 class TestLibs(base.TestController):
 
     @base.parametrize('test_url,expected,expected_creds', TEST_URLS)
@@ -239,8 +219,7 @@ class TestLibs(base.TestController):
 
             return _c
 
-        fake_url = FakeUrlGenerator(current_url='https://example.com')
-        with mock.patch('kallithea.config.routing.url', fake_url):
+        with mock.patch('kallithea.config.routing.url.current', lambda *a, **b: 'https://example.com'):
             fake = fake_tmpl_context(_url='http://example.com/{email}')
             with mock.patch('tg.tmpl_context', fake):
                     from kallithea.config.routing import url
@@ -338,8 +317,10 @@ class TestLibs(base.TestController):
     ])
     def test_urlify_text(self, sample, expected):
         expected = self._quick_url(expected)
-        fake_url = FakeUrlGenerator(changeset_home='/%(repo_name)s/changeset/%(revision)s')
-        with mock.patch('kallithea.config.routing.url', fake_url):
+
+        with mock.patch('kallithea.config.routing.UrlGenerator.__call__',
+            lambda self, name, **kwargs: dict(changeset_home='/%(repo_name)s/changeset/%(revision)s')[name] % kwargs,
+        ):
             from kallithea.lib.helpers import urlify_text
             assert urlify_text(sample, 'repo_name') == expected
 
@@ -393,8 +374,9 @@ class TestLibs(base.TestController):
     def test_urlify_test(self, sample, expected, url_):
         expected = self._quick_url(expected,
                                    tmpl="""<a href="%s">%s</a>""", url_=url_)
-        fake_url = FakeUrlGenerator(changeset_home='/%(repo_name)s/changeset/%(revision)s')
-        with mock.patch('kallithea.config.routing.url', fake_url):
+        with mock.patch('kallithea.config.routing.UrlGenerator.__call__',
+            lambda self, name, **kwargs: dict(changeset_home='/%(repo_name)s/changeset/%(revision)s')[name] % kwargs,
+        ):
             from kallithea.lib.helpers import urlify_text
             assert urlify_text(sample, 'repo_name', stylize=True) == expected
 
@@ -406,8 +388,9 @@ class TestLibs(base.TestController):
        """<a class="message-link" href="#the-link"> yo</a>"""),
     ])
     def test_urlify_link(self, sample, expected):
-        fake_url = FakeUrlGenerator(changeset_home='/%(repo_name)s/changeset/%(revision)s')
-        with mock.patch('kallithea.config.routing.url', fake_url):
+        with mock.patch('kallithea.config.routing.UrlGenerator.__call__',
+            lambda self, name, **kwargs: dict(changeset_home='/%(repo_name)s/changeset/%(revision)s')[name] % kwargs,
+        ):
             from kallithea.lib.helpers import urlify_text
             assert urlify_text(sample, 'repo_name', link_='#the-link') == expected
 

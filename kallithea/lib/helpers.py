@@ -985,18 +985,15 @@ def gravatar_url(email_address, size=30, default=''):
     if email_address == _def:
         return default
 
-    # re-import url so tests can mock it
-    from kallithea.config.routing import url
     from kallithea.model.db import User
 
     parsed_url = urllib.parse.urlparse(url.current(qualified=True))
-    url = (c.visual.gravatar_url or User.DEFAULT_GRAVATAR_URL) \
+    return (c.visual.gravatar_url or User.DEFAULT_GRAVATAR_URL) \
                .replace('{email}', email_address) \
                .replace('{md5email}', hashlib.md5(safe_bytes(email_address).lower()).hexdigest()) \
                .replace('{netloc}', parsed_url.netloc) \
                .replace('{scheme}', parsed_url.scheme) \
                .replace('{size}', str(size))
-    return url
 
 
 def changed_tooltip(nodes):
@@ -1125,15 +1122,14 @@ def urlify_text(s, repo_name=None, link_=None, truncate=None, stylize=False, tru
     """
 
     def _replace(match_obj):
-        url = match_obj.group('url')
-        if url is not None:
-            return '<a href="%(url)s">%(url)s</a>' % {'url': url}
+        match_url = match_obj.group('url')
+        if match_url is not None:
+            return '<a href="%(url)s">%(url)s</a>' % {'url': match_url}
         mention = match_obj.group('mention')
         if mention is not None:
             return '<b>%s</b>' % mention
         hash_ = match_obj.group('hash')
         if hash_ is not None and repo_name is not None:
-            from kallithea.config.routing import url  # doh, we need to re-import url to mock it later
             return '<a class="changeset_hash" href="%(url)s">%(hash)s</a>' % {
                  'url': url('changeset_home', repo_name=repo_name, revision=hash_),
                  'hash': hash_,
