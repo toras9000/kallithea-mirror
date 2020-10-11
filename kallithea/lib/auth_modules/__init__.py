@@ -18,10 +18,12 @@ Authentication modules
 import importlib
 import logging
 import traceback
+from inspect import isfunction
 
 from kallithea.lib.auth import AuthUser, PasswordGenerator
 from kallithea.lib.compat import hybrid_property
 from kallithea.lib.utils2 import asbool
+from kallithea.model import validators
 from kallithea.model.db import Setting, User
 from kallithea.model.meta import Session
 from kallithea.model.user import UserModel
@@ -38,7 +40,6 @@ class LazyFormencode(object):
         self.kwargs = kwargs
 
     def __call__(self, *args, **kwargs):
-        from inspect import isfunction
         formencode_obj = self.formencode_obj
         if isfunction(formencode_obj):
             # case we wrap validators into functions
@@ -69,8 +70,7 @@ class KallitheaAuthPluginBase(object):
                 self.validator_name = name
 
             def __call__(self, *args, **kwargs):
-                from kallithea.model import validators as v
-                obj = getattr(v, self.validator_name)
+                obj = getattr(validators, self.validator_name)
                 #log.debug('Initializing lazy formencode object: %s', obj)
                 return LazyFormencode(obj, *args, **kwargs)
 

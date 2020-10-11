@@ -26,12 +26,15 @@ Original author and date, and relevant copyright and licensing information is be
 """
 
 
+import hashlib
 import logging
 import re
 import traceback
 
 import bleach
 import markdown as markdown_mod
+from docutils.core import publish_parts
+from docutils.parsers.rst import directives
 
 from kallithea.lib.utils2 import MENTIONS_REGEX, safe_str
 
@@ -74,13 +77,12 @@ class MarkupRenderer(object):
 
         :param text:
         """
-        from hashlib import sha1
 
         # Extract pre blocks.
         extractions = {}
 
         def pre_extraction_callback(matchobj):
-            digest = sha1(matchobj.group(0)).hexdigest()
+            digest = hashlib.sha1(matchobj.group(0)).hexdigest()
             extractions[digest] = matchobj.group(0)
             return "{gfm-extraction-%s}" % digest
         pattern = re.compile(r'<pre>.*?</pre>', re.MULTILINE | re.DOTALL)
@@ -215,8 +217,6 @@ class MarkupRenderer(object):
     def rst(cls, source, safe=True):
         source = safe_str(source)
         try:
-            from docutils.core import publish_parts
-            from docutils.parsers.rst import directives
             docutils_settings = dict([(alias, None) for alias in
                                 cls.RESTRUCTUREDTEXT_DISALLOWED_DIRECTIVES])
 
@@ -231,9 +231,6 @@ class MarkupRenderer(object):
                                   settings_overrides=docutils_settings)
 
             return parts['html_title'] + parts["fragment"]
-        except ImportError:
-            log.warning('Install docutils to use this function')
-            return cls.plain(source)
         except Exception:
             log.error(traceback.format_exc())
             if safe:

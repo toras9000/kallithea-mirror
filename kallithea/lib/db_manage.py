@@ -36,6 +36,7 @@ import alembic.config
 import sqlalchemy
 from sqlalchemy.engine import create_engine
 
+from kallithea.lib.utils2 import ask_ok
 from kallithea.model.base import init_model
 from kallithea.model.db import Repository, Setting, Ui, User
 from kallithea.model.meta import Base, Session
@@ -60,7 +61,6 @@ class DbManage(object):
         force_ask = self.cli_args.get('force_ask')
         if force_ask is not None:
             return force_ask
-        from kallithea.lib.utils2 import ask_ok
         return ask_ok(msg)
 
     def init_db(self, SESSION=None):

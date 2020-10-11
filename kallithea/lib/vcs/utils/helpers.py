@@ -3,12 +3,16 @@ Utilities aimed to help achieve mostly basic tasks.
 """
 
 import datetime
+import logging
 import os
 import re
 import time
 import urllib.request
 
 import mercurial.url
+from pygments import highlight
+from pygments.formatters import TerminalFormatter
+from pygments.lexers import ClassNotFound, guess_lexer_for_filename
 
 from kallithea.lib.vcs.exceptions import RepositoryError, VCSError
 from kallithea.lib.vcs.utils import safe_str
@@ -105,16 +109,6 @@ def get_highlighted_code(name, code, type='terminal'):
     then returned output is colored. Otherwise
     unchanged content is returned.
     """
-    import logging
-    try:
-        import pygments
-        pygments
-    except ImportError:
-        return code
-    from pygments import highlight
-    from pygments.formatters import TerminalFormatter
-    from pygments.lexers import ClassNotFound, guess_lexer_for_filename
-
     try:
         lexer = guess_lexer_for_filename(name, code)
         formatter = TerminalFormatter()

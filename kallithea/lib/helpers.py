@@ -28,6 +28,7 @@ import urllib.parse
 from beaker.cache import cache_region
 from pygments import highlight as code_highlight
 from pygments.formatters.html import HtmlFormatter
+from tg import session
 from tg.i18n import ugettext as _
 from webhelpers2.html import HTML, escape, literal
 from webhelpers2.html.tags import NotGiven, Option, Options, _input, _make_safe_id_component, checkbox, end_form
@@ -45,6 +46,7 @@ from kallithea.lib.annotate import annotate_highlight
 # PERMS
 #==============================================================================
 from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel, HasRepoPermissionLevel
+from kallithea.lib.diffs import BIN_FILENODE, CHMOD_FILENODE, DEL_FILENODE, MOD_FILENODE, NEW_FILENODE, RENAMED_FILENODE
 from kallithea.lib.markup_renderer import url_re
 from kallithea.lib.pygmentsutils import get_custom_lexer
 from kallithea.lib.utils2 import MENTIONS_REGEX, AttributeDict
@@ -56,6 +58,8 @@ from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError
 # SCM FILTERS available via h.
 #==============================================================================
 from kallithea.lib.vcs.utils import author_email, author_name
+from kallithea.model.changeset_status import ChangesetStatusModel
+from kallithea.model.db import URL_SEP, ChangesetStatus, Permission, PullRequest, User, UserIpMap
 
 
 # mute pyflakes "imported but unused"
@@ -485,7 +489,6 @@ def _session_flash_messages(append=None, clear=False):
     """Manage a message queue in tg.session: return the current message queue
     after appending the given message, and possibly clearing the queue."""
     key = 'flash'
-    from tg import session
     if key in session:
         flash_messages = session[key]
     else:
@@ -601,7 +604,6 @@ def user_attr_or_none(author, show_attr):
     - or return None if user not found"""
     email = author_email(author)
     if email:
-        from kallithea.model.db import User
         user = User.get_by_email(email)
         if user is not None:
             return getattr(user, show_attr)
@@ -629,8 +631,6 @@ def email_or_none(author):
 def person(author, show_attr="username"):
     """Find the user identified by 'author', return one of the users attributes,
     default to the username attribute, None if there is no user"""
-    from kallithea.model.db import User
-
     # if author is already an instance use it for extraction
     if isinstance(author, User):
         return getattr(author, show_attr)
@@ -644,8 +644,6 @@ def person(author, show_attr="username"):
 
 
 def person_by_id(id_, show_attr="username"):
-    from kallithea.model.db import User
-
     # maybe it's an ID ?
     if str(id_).isdigit() or isinstance(id_, int):
         id_ = int(id_)
@@ -827,7 +825,6 @@ def action_parser(user_log, feed=False, parse_cs=False):
         return group_name
 
     def get_pull_request():
-        from kallithea.model.db import PullRequest
         pull_request_id = action_params
         nice_id = PullRequest.make_nice_id(pull_request_id)
 
@@ -985,8 +982,6 @@ def gravatar_url(email_address, size=30, default=''):
     if email_address == _def:
         return default
 
-    from kallithea.model.db import User
-
     parsed_url = urllib.parse.urlparse(url.current(qualified=True))
     return (c.visual.gravatar_url or User.DEFAULT_GRAVATAR_URL) \
                .replace('{email}', email_address) \
@@ -1021,7 +1016,6 @@ def fancy_file_stats(stats):
 
     :param stats: two element list of added/deleted lines of code
     """
-    from kallithea.lib.diffs import BIN_FILENODE, CHMOD_FILENODE, DEL_FILENODE, MOD_FILENODE, NEW_FILENODE, RENAMED_FILENODE
 
     a, d = stats['added'], stats['deleted']
     width = 100
@@ -1206,7 +1200,6 @@ def urlify_issues(newtext, repo_name):
     """Urlify issue references according to .ini configuration"""
     global _urlify_issues_f
     if _urlify_issues_f is None:
-        from kallithea.model.db import URL_SEP
         assert kallithea.CONFIG['sqlalchemy.url'] # make sure config has been loaded
 
         # Build chain of urlify functions, starting with not doing any transformation
@@ -1317,17 +1310,14 @@ def link_to_ref(repo_name, ref_type, ref_name, rev=None):
 
 
 def changeset_status(repo, revision):
-    from kallithea.model.changeset_status import ChangesetStatusModel
     return ChangesetStatusModel().get_status(repo, revision)
 
 
 def changeset_status_lbl(changeset_status):
-    from kallithea.model.db import ChangesetStatus
     return ChangesetStatus.get_status_lbl(changeset_status)
 
 
 def get_permission_name(key):
-    from kallithea.model.db import Permission
     return dict(Permission.PERMS).get(key)
 
 
@@ -1359,7 +1349,6 @@ def not_mapped_error(repo_name):
 
 
 def ip_range(ip_addr):
-    from kallithea.model.db import UserIpMap
     s, e = UserIpMap._get_ip_range(ip_addr)
     return '%s - %s' % (s, e)
 
@@ -1368,7 +1357,6 @@ session_csrf_secret_name = "_session_csrf_secret_token"
 
 def session_csrf_secret_token():
     """Return (and create) the current session's CSRF protection token."""
-    from tg import session
     if not session_csrf_secret_name in session:
         session[session_csrf_secret_name] = str(random.getrandbits(128))
         session.save()

@@ -37,14 +37,17 @@ import celery.utils.log
 from tg import config
 
 import kallithea
+from kallithea.config import conf
 from kallithea.lib import celerylib, ext_json
 from kallithea.lib.helpers import person
 from kallithea.lib.hooks import log_create_repository
+from kallithea.lib.indexers.daemon import WhooshIndexingDaemon
 from kallithea.lib.rcmail.smtp_mailer import SmtpMailer
 from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import asbool, ascii_bytes
 from kallithea.lib.vcs.utils import author_email
-from kallithea.model.db import RepoGroup, Repository, Statistics, User
+from kallithea.model.db import RepoGroup, Repository, Setting, Statistics, User
+from kallithea.model.repo import RepoModel
 
 
 __all__ = ['whoosh_index', 'get_commits_stats', 'send_email']
@@ -57,7 +60,6 @@ log = celery.utils.log.get_task_logger(__name__)
 @celerylib.locked_task
 @celerylib.dbsession
 def whoosh_index(repo_location, full_index):
-    from kallithea.lib.indexers.daemon import WhooshIndexingDaemon
     celerylib.get_session() # initialize database connection
 
     index_location = config['index_dir']
@@ -323,9 +325,6 @@ def send_email(recipients, subject, body='', html_body='', headers=None, from_na
 @celerylib.task
 @celerylib.dbsession
 def create_repo(form_data, cur_user):
-    from kallithea.model.db import Setting
-    from kallithea.model.repo import RepoModel
-
     DBS = celerylib.get_session()
 
     cur_user = User.guess_instance(cur_user)
@@ -410,8 +409,6 @@ def create_repo_fork(form_data, cur_user):
     :param form_data:
     :param cur_user:
     """
-    from kallithea.model.repo import RepoModel
-
     DBS = celerylib.get_session()
 
     base_path = kallithea.CONFIG['base_path']
@@ -480,7 +477,6 @@ def create_repo_fork(form_data, cur_user):
 
 
 def __get_codes_stats(repo_name):
-    from kallithea.config.conf import LANGUAGES_EXTENSIONS_MAP
     repo = Repository.get_by_repo_name(repo_name).scm_instance
 
     tip = repo.get_changeset()
@@ -489,7 +485,7 @@ def __get_codes_stats(repo_name):
     for _topnode, _dirnodes, filenodes in tip.walk('/'):
         for filenode in filenodes:
             ext = filenode.extension.lower()
-            if ext in LANGUAGES_EXTENSIONS_MAP and not filenode.is_binary:
+            if ext in conf.LANGUAGES_EXTENSIONS_MAP and not filenode.is_binary:
                 if ext in code_stats:
                     code_stats[ext] += 1
                 else:

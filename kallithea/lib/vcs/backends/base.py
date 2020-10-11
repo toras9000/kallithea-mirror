@@ -12,6 +12,7 @@
 import datetime
 import itertools
 
+from kallithea.lib.vcs.backends import get_backend
 from kallithea.lib.vcs.conf import settings
 from kallithea.lib.vcs.exceptions import (ChangesetError, EmptyRepositoryError, NodeAlreadyAddedError, NodeAlreadyChangedError, NodeAlreadyExistsError,
                                           NodeAlreadyRemovedError, NodeDoesNotExistError, NodeNotChangedError, RepositoryError)
@@ -1007,12 +1008,10 @@ class EmptyChangeset(BaseChangeset):
 
     @LazyProperty
     def branch(self):
-        from kallithea.lib.vcs.backends import get_backend
         return get_backend(self.alias).DEFAULT_BRANCH_NAME
 
     @LazyProperty
     def branches(self):
-        from kallithea.lib.vcs.backends import get_backend
         return [get_backend(self.alias).DEFAULT_BRANCH_NAME]
 
     @LazyProperty

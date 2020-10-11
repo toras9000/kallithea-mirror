@@ -36,12 +36,17 @@ import time
 import urllib.parse
 
 import urlobject
+from dateutil import relativedelta
+from sqlalchemy.engine import url as sa_url
+from sqlalchemy.exc import ArgumentError
 from tg.i18n import ugettext as _
 from tg.i18n import ungettext
 from tg.support.converters import asbool, aslist
 from webhelpers2.text import collapse, remove_formatting, strip_tags
 
 import kallithea
+from kallithea.lib.vcs.backends.base import BaseRepository, EmptyChangeset
+from kallithea.lib.vcs.exceptions import RepositoryError
 from kallithea.lib.vcs.utils import ascii_bytes, ascii_str, safe_bytes, safe_str  # re-export
 from kallithea.lib.vcs.utils.lazy import LazyProperty
 
@@ -170,7 +175,6 @@ def age(prevdate, show_short_version=False, now=None):
     if future:
         prevdate = prevdate.replace(microsecond=0)
     # Get date parts deltas
-    from dateutil import relativedelta
     for part in order:
         d = relativedelta.relativedelta(now, prevdate)
         deltas[part] = getattr(d, part + 's')
@@ -332,8 +336,6 @@ def get_changeset_safe(repo, rev):
     :param repo:
     :param rev:
     """
-    from kallithea.lib.vcs.backends.base import BaseRepository, EmptyChangeset
-    from kallithea.lib.vcs.exceptions import RepositoryError
     if not isinstance(repo, BaseRepository):
         raise Exception('You must pass an Repository '
                         'object as first argument got %s' % type(repo))
@@ -395,8 +397,6 @@ class AttributeDict(dict):
 
 
 def obfuscate_url_pw(engine):
-    from sqlalchemy.engine import url as sa_url
-    from sqlalchemy.exc import ArgumentError
     try:
         _url = sa_url.make_url(engine or '')
     except ArgumentError:
