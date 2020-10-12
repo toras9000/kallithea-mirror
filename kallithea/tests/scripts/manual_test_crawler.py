@@ -70,7 +70,7 @@ PROJECTS = [
 ]
 
 
-cj = http.cookiejar.FileCookieJar(os.path.join(tempfile.gettempdir(), 'rc_test_cookie.txt'))
+cj = http.cookiejar.FileCookieJar(os.path.join(tempfile.gettempdir(), 'test_cookie.txt'))
 o = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
 o.addheaders = [
     ('User-agent', 'kallithea-crawler'),
