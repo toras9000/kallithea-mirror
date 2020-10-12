@@ -352,8 +352,8 @@ def set_app_settings(config):
 
     :param config:
     """
-    hgsettings = db.Setting.get_app_settings()
-    for k, v in hgsettings.items():
+    settings = db.Setting.get_app_settings()
+    for k, v in settings.items():
         config[k] = v
     config['base_path'] = db.Ui.get_repos_location()
 

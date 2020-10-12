@@ -1158,8 +1158,8 @@ class Repository(meta.Base, BaseDbModel):
             ))
         if with_pullrequests:
             data['pull_requests'] = repo.pull_requests_other
-        rc_config = Setting.get_app_settings()
-        repository_fields = asbool(rc_config.get('repository_fields'))
+        settings = Setting.get_app_settings()
+        repository_fields = asbool(settings.get('repository_fields'))
         if repository_fields:
             for f in self.extra_fields:
                 data[f.field_key_prefixed] = f.field_value

@@ -180,8 +180,8 @@ class KallitheaAuthPluginBase(object):
         OVERRIDING THIS METHOD WILL CAUSE YOUR PLUGIN TO FAIL.
         """
 
-        rcsettings = self.settings()
-        rcsettings.insert(0, {
+        settings = self.settings()
+        settings.insert(0, {
             "name": "enabled",
             "validator": self.validators.StringBoolean(if_missing=False),
             "type": "bool",
@@ -189,7 +189,7 @@ class KallitheaAuthPluginBase(object):
             "formname": "Enabled"
             }
         )
-        return rcsettings
+        return settings
 
     def auth(self, userobj, username, passwd, settings, **kwargs):
         """

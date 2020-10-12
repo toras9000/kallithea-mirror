@@ -368,23 +368,23 @@ class BaseController(TGController):
                 raise webob.exc.HTTPForbidden()
 
         c.kallithea_version = kallithea.__version__
-        rc_config = db.Setting.get_app_settings()
+        settings = db.Setting.get_app_settings()
 
         # Visual options
         c.visual = AttributeDict({})
 
         ## DB stored
-        c.visual.show_public_icon = asbool(rc_config.get('show_public_icon'))
-        c.visual.show_private_icon = asbool(rc_config.get('show_private_icon'))
-        c.visual.stylify_metalabels = asbool(rc_config.get('stylify_metalabels'))
-        c.visual.page_size = safe_int(rc_config.get('dashboard_items', 100))
-        c.visual.admin_grid_items = safe_int(rc_config.get('admin_grid_items', 100))
-        c.visual.repository_fields = asbool(rc_config.get('repository_fields'))
-        c.visual.show_version = asbool(rc_config.get('show_version'))
-        c.visual.use_gravatar = asbool(rc_config.get('use_gravatar'))
-        c.visual.gravatar_url = rc_config.get('gravatar_url')
+        c.visual.show_public_icon = asbool(settings.get('show_public_icon'))
+        c.visual.show_private_icon = asbool(settings.get('show_private_icon'))
+        c.visual.stylify_metalabels = asbool(settings.get('stylify_metalabels'))
+        c.visual.page_size = safe_int(settings.get('dashboard_items', 100))
+        c.visual.admin_grid_items = safe_int(settings.get('admin_grid_items', 100))
+        c.visual.repository_fields = asbool(settings.get('repository_fields'))
+        c.visual.show_version = asbool(settings.get('show_version'))
+        c.visual.use_gravatar = asbool(settings.get('use_gravatar'))
+        c.visual.gravatar_url = settings.get('gravatar_url')
 
-        c.ga_code = rc_config.get('ga_code')
+        c.ga_code = settings.get('ga_code')
         # TODO: replace undocumented backwards compatibility hack with db upgrade and rename ga_code
         if c.ga_code and '<' not in c.ga_code:
             c.ga_code = '''<script type="text/javascript">
@@ -398,9 +398,9 @@ class BaseController(TGController):
                     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
                     })();
             </script>''' % c.ga_code
-        c.site_name = rc_config.get('title')
-        c.clone_uri_tmpl = rc_config.get('clone_uri_tmpl') or db.Repository.DEFAULT_CLONE_URI
-        c.clone_ssh_tmpl = rc_config.get('clone_ssh_tmpl') or db.Repository.DEFAULT_CLONE_SSH
+        c.site_name = settings.get('title')
+        c.clone_uri_tmpl = settings.get('clone_uri_tmpl') or db.Repository.DEFAULT_CLONE_URI
+        c.clone_ssh_tmpl = settings.get('clone_ssh_tmpl') or db.Repository.DEFAULT_CLONE_SSH
 
         ## INI stored
         c.visual.allow_repo_location_change = asbool(config.get('allow_repo_location_change', True))
