@@ -30,10 +30,9 @@ from kallithea.lib import helpers
 from kallithea.lib.auth import AuthUser
 from kallithea.lib.db_manage import DbManage
 from kallithea.lib.vcs.backends.base import EmptyChangeset
-from kallithea.model import meta
+from kallithea.model import db, meta
 from kallithea.model.changeset_status import ChangesetStatusModel
 from kallithea.model.comment import ChangesetCommentsModel
-from kallithea.model.db import ChangesetStatus, Gist, RepoGroup, Repository, User, UserGroup
 from kallithea.model.gist import GistModel
 from kallithea.model.pull_request import CreatePullRequestAction  # , CreatePullRequestIterationAction, PullRequestModel
 from kallithea.model.repo import RepoModel
@@ -74,14 +73,14 @@ class Fixture(object):
 
         class context(object):
             def __enter__(self):
-                anon = User.get_default_user()
+                anon = db.User.get_default_user()
                 self._before = anon.active
                 anon.active = status
                 meta.Session().commit()
                 invalidate_all_caches()
 
             def __exit__(self, exc_type, exc_val, exc_tb):
-                anon = User.get_default_user()
+                anon = db.User.get_default_user()
                 anon.active = self._before
                 meta.Session().commit()
 
@@ -98,7 +97,7 @@ class Fixture(object):
             repo_private=False,
             repo_landing_rev='rev:tip',
             repo_copy_permissions=False,
-            repo_state=Repository.STATE_CREATED,
+            repo_state=db.Repository.STATE_CREATED,
         )
         defs.update(custom)
         if 'repo_name_full' not in custom:
@@ -154,11 +153,11 @@ class Fixture(object):
     def create_repo(self, name, repo_group=None, **kwargs):
         if 'skip_if_exists' in kwargs:
             del kwargs['skip_if_exists']
-            r = Repository.get_by_repo_name(name)
+            r = db.Repository.get_by_repo_name(name)
             if r:
                 return r
 
-        if isinstance(repo_group, RepoGroup):
+        if isinstance(repo_group, db.RepoGroup):
             repo_group = repo_group.group_id
 
         form_data = self._get_repo_create_params(repo_name=name, **kwargs)
@@ -167,10 +166,10 @@ class Fixture(object):
         RepoModel().create(form_data, cur_user)
         meta.Session().commit()
         ScmModel().mark_for_invalidation(name)
-        return Repository.get_by_repo_name(name)
+        return db.Repository.get_by_repo_name(name)
 
     def create_fork(self, repo_to_fork, fork_name, **kwargs):
-        repo_to_fork = Repository.get_by_repo_name(repo_to_fork)
+        repo_to_fork = db.Repository.get_by_repo_name(repo_to_fork)
 
         form_data = self._get_repo_create_params(repo_name=fork_name,
                                             fork_parent_id=repo_to_fork,
@@ -185,7 +184,7 @@ class Fixture(object):
         RepoModel().create_fork(form_data, cur_user=owner)
         meta.Session().commit()
         ScmModel().mark_for_invalidation(fork_name)
-        r = Repository.get_by_repo_name(fork_name)
+        r = db.Repository.get_by_repo_name(fork_name)
         assert r
         return r
 
@@ -197,7 +196,7 @@ class Fixture(object):
         assert '/' not in name, (name, kwargs) # use group_parent_id to make nested groups
         if 'skip_if_exists' in kwargs:
             del kwargs['skip_if_exists']
-            gr = RepoGroup.get_by_group_name(group_name=name)
+            gr = db.RepoGroup.get_by_group_name(group_name=name)
             if gr:
                 return gr
         form_data = self._get_repo_group_create_params(group_name=name, **kwargs)
@@ -208,7 +207,7 @@ class Fixture(object):
             owner=kwargs.get('cur_user', TEST_USER_ADMIN_LOGIN),
             )
         meta.Session().commit()
-        gr = RepoGroup.get_by_group_name(gr.group_name)
+        gr = db.RepoGroup.get_by_group_name(gr.group_name)
         return gr
 
     def destroy_repo_group(self, repogroupid):
@@ -218,13 +217,13 @@ class Fixture(object):
     def create_user(self, name, **kwargs):
         if 'skip_if_exists' in kwargs:
             del kwargs['skip_if_exists']
-            user = User.get_by_username(name)
+            user = db.User.get_by_username(name)
             if user:
                 return user
         form_data = self._get_user_create_params(name, **kwargs)
         user = UserModel().create(form_data)
         meta.Session().commit()
-        user = User.get_by_username(user.username)
+        user = db.User.get_by_username(user.username)
         return user
 
     def destroy_user(self, userid):
@@ -234,7 +233,7 @@ class Fixture(object):
     def create_user_group(self, name, **kwargs):
         if 'skip_if_exists' in kwargs:
             del kwargs['skip_if_exists']
-            gr = UserGroup.get_by_group_name(group_name=name)
+            gr = db.UserGroup.get_by_group_name(group_name=name)
             if gr:
                 return gr
         form_data = self._get_user_group_create_params(name, **kwargs)
@@ -245,7 +244,7 @@ class Fixture(object):
             owner=owner, active=form_data['users_group_active'],
             group_data=form_data['user_group_data'])
         meta.Session().commit()
-        user_group = UserGroup.get_by_group_name(user_group.users_group_name)
+        user_group = db.UserGroup.get_by_group_name(user_group.users_group_name)
         return user_group
 
     def destroy_user_group(self, usergroupid):
@@ -256,7 +255,7 @@ class Fixture(object):
         form_data = {
             'description': 'new-gist',
             'owner': TEST_USER_ADMIN_LOGIN,
-            'gist_type': Gist.GIST_PUBLIC,
+            'gist_type': db.Gist.GIST_PUBLIC,
             'lifetime': -1,
             'gist_mapping': {'filename1.txt': {'content': 'hello world'}}
         }
@@ -271,7 +270,7 @@ class Fixture(object):
         return gist
 
     def destroy_gists(self, gistid=None):
-        for g in Gist.query():
+        for g in db.Gist.query():
             if gistid:
                 if gistid == g.gist_access_id:
                     GistModel().delete(g)
@@ -289,7 +288,7 @@ class Fixture(object):
 
     def commit_change(self, repo, filename, content, message, vcs_type,
                       parent=None, newfile=False, author=None):
-        repo = Repository.get_by_repo_name(repo)
+        repo = db.Repository.get_by_repo_name(repo)
         _cs = parent
         if parent is None:
             _cs = EmptyChangeset(alias=vcs_type)
@@ -326,7 +325,7 @@ class Fixture(object):
 
     def review_changeset(self, repo, revision, status, author=TEST_USER_ADMIN_LOGIN):
         comment = ChangesetCommentsModel().create("review comment", repo, author, revision=revision, send_email=False)
-        csm = ChangesetStatusModel().set_status(repo, ChangesetStatus.STATUS_APPROVED, author, comment, revision=revision)
+        csm = ChangesetStatusModel().set_status(repo, db.ChangesetStatus.STATUS_APPROVED, author, comment, revision=revision)
         meta.Session().commit()
         return csm
 
@@ -334,9 +333,9 @@ class Fixture(object):
         org_ref = 'branch:stable:%s' % pr_src_rev
         other_ref = 'branch:default:%s' % pr_dst_rev
         with test_context(testcontroller.app): # needed to be able to mock request user
-            org_repo = other_repo = Repository.get_by_repo_name(repo_name)
-            owner_user = User.get_by_username(TEST_USER_ADMIN_LOGIN)
-            reviewers = [User.get_by_username(TEST_USER_REGULAR_LOGIN)]
+            org_repo = other_repo = db.Repository.get_by_repo_name(repo_name)
+            owner_user = db.User.get_by_username(TEST_USER_ADMIN_LOGIN)
+            reviewers = [db.User.get_by_username(TEST_USER_REGULAR_LOGIN)]
             request.authuser = AuthUser(dbuser=owner_user)
             # creating a PR sends a message with an absolute URL - without routing that requires mocking
             with mock.patch.object(helpers, 'url', (lambda arg, qualified=False, **kwargs: ('https://localhost' if qualified else '') + '/fake/' + arg)):

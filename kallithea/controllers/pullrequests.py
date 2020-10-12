@@ -45,10 +45,9 @@ from kallithea.lib.page import Page
 from kallithea.lib.utils2 import ascii_bytes, safe_bytes, safe_int
 from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError, EmptyRepositoryError
 from kallithea.lib.webutils import url
-from kallithea.model import meta
+from kallithea.model import db, meta
 from kallithea.model.changeset_status import ChangesetStatusModel
 from kallithea.model.comment import ChangesetCommentsModel
-from kallithea.model.db import ChangesetStatus, PullRequest, PullRequestReviewer, Repository, User
 from kallithea.model.forms import PullRequestForm, PullRequestPostForm
 from kallithea.model.pull_request import CreatePullRequestAction, CreatePullRequestIterationAction, PullRequestModel
 
@@ -59,7 +58,7 @@ log = logging.getLogger(__name__)
 def _get_reviewer(user_id):
     """Look up user by ID and validate it as a potential reviewer."""
     try:
-        user = User.get(int(user_id))
+        user = db.User.get(int(user_id))
     except ValueError:
         user = None
 
@@ -183,9 +182,9 @@ class PullrequestsController(BaseRepoController):
             return False
 
         owner = request.authuser.user_id == pull_request.owner_id
-        reviewer = PullRequestReviewer.query() \
-            .filter(PullRequestReviewer.pull_request == pull_request) \
-            .filter(PullRequestReviewer.user_id == request.authuser.user_id) \
+        reviewer = db.PullRequestReviewer.query() \
+            .filter(db.PullRequestReviewer.pull_request == pull_request) \
+            .filter(db.PullRequestReviewer.user_id == request.authuser.user_id) \
             .count() != 0
 
         return request.authuser.admin or owner or reviewer
@@ -202,7 +201,7 @@ class PullrequestsController(BaseRepoController):
             url_params['closed'] = 1
         p = safe_int(request.GET.get('page'), 1)
 
-        q = PullRequest.query(include_closed=c.closed, sorted=True)
+        q = db.PullRequest.query(include_closed=c.closed, sorted=True)
         if c.from_:
             q = q.filter_by(org_repo=c.db_repo)
         else:
@@ -217,15 +216,15 @@ class PullrequestsController(BaseRepoController):
     def show_my(self):
         c.closed = request.GET.get('closed') or ''
 
-        c.my_pull_requests = PullRequest.query(
+        c.my_pull_requests = db.PullRequest.query(
             include_closed=c.closed,
             sorted=True,
         ).filter_by(owner_id=request.authuser.user_id).all()
 
         c.participate_in_pull_requests = []
         c.participate_in_pull_requests_todo = []
-        done_status = set([ChangesetStatus.STATUS_APPROVED, ChangesetStatus.STATUS_REJECTED])
-        for pr in PullRequest.query(
+        done_status = set([db.ChangesetStatus.STATUS_APPROVED, db.ChangesetStatus.STATUS_REJECTED])
+        for pr in db.PullRequest.query(
             include_closed=c.closed,
             reviewer_id=request.authuser.user_id,
             sorted=True,
@@ -320,16 +319,16 @@ class PullrequestsController(BaseRepoController):
 
         # heads up: org and other might seem backward here ...
         org_ref = _form['org_ref'] # will have merge_rev as rev but symbolic name
-        org_repo = Repository.guess_instance(_form['org_repo'])
+        org_repo = db.Repository.guess_instance(_form['org_repo'])
 
         other_ref = _form['other_ref'] # will have symbolic name and head revision
-        other_repo = Repository.guess_instance(_form['other_repo'])
+        other_repo = db.Repository.guess_instance(_form['other_repo'])
 
         reviewers = []
 
         title = _form['pullrequest_title']
         description = _form['pullrequest_desc'].strip()
-        owner = User.get(request.authuser.user_id)
+        owner = db.User.get(request.authuser.user_id)
 
         try:
             cmd = CreatePullRequestAction(org_repo, other_repo, org_ref, other_ref, title, description, owner, reviewers)
@@ -351,7 +350,7 @@ class PullrequestsController(BaseRepoController):
         raise HTTPFound(location=pull_request.url())
 
     def create_new_iteration(self, old_pull_request, new_rev, title, description, reviewers):
-        owner = User.get(request.authuser.user_id)
+        owner = db.User.get(request.authuser.user_id)
         new_org_rev = self._get_ref_rev(old_pull_request.org_repo, 'rev', new_rev)
         new_other_rev = self._get_ref_rev(old_pull_request.other_repo, old_pull_request.other_ref_parts[0], old_pull_request.other_ref_parts[1])
         try:
@@ -377,7 +376,7 @@ class PullrequestsController(BaseRepoController):
     @LoginRequired()
     @HasRepoPermissionLevelDecorator('read')
     def post(self, repo_name, pull_request_id):
-        pull_request = PullRequest.get_or_404(pull_request_id)
+        pull_request = db.PullRequest.get_or_404(pull_request_id)
         if pull_request.is_closed():
             raise HTTPForbidden()
         assert pull_request.other_repo.repo_name == repo_name
@@ -418,8 +417,8 @@ class PullrequestsController(BaseRepoController):
         old_description = pull_request.description
         pull_request.title = _form['pullrequest_title']
         pull_request.description = _form['pullrequest_desc'].strip() or _('No description')
-        pull_request.owner = User.get_by_username(_form['owner'])
-        user = User.get(request.authuser.user_id)
+        pull_request.owner = db.User.get_by_username(_form['owner'])
+        user = db.User.get(request.authuser.user_id)
 
         PullRequestModel().mention_from_description(user, pull_request, old_description)
         PullRequestModel().add_reviewers(user, pull_request, added_reviewers)
@@ -434,7 +433,7 @@ class PullrequestsController(BaseRepoController):
     @HasRepoPermissionLevelDecorator('read')
     @jsonify
     def delete(self, repo_name, pull_request_id):
-        pull_request = PullRequest.get_or_404(pull_request_id)
+        pull_request = db.PullRequest.get_or_404(pull_request_id)
         # only owner can delete it !
         if pull_request.owner_id == request.authuser.user_id:
             PullRequestModel().delete(pull_request)
@@ -447,7 +446,7 @@ class PullrequestsController(BaseRepoController):
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
     def show(self, repo_name, pull_request_id, extra=None):
-        c.pull_request = PullRequest.get_or_404(pull_request_id)
+        c.pull_request = db.PullRequest.get_or_404(pull_request_id)
         c.allowed_to_change_status = self._is_allowed_to_change_status(c.pull_request)
         cc_model = ChangesetCommentsModel()
         cs_model = ChangesetStatusModel()
@@ -616,7 +615,7 @@ class PullrequestsController(BaseRepoController):
          c.pull_request_pending_reviewers,
          c.current_voting_result,
          ) = cs_model.calculate_pull_request_result(c.pull_request)
-        c.changeset_statuses = ChangesetStatus.STATUSES
+        c.changeset_statuses = db.ChangesetStatus.STATUSES
 
         c.is_ajax_preview = False
         c.ancestors = None # [c.a_rev] ... but that is shown in an other way
@@ -626,7 +625,7 @@ class PullrequestsController(BaseRepoController):
     @HasRepoPermissionLevelDecorator('read')
     @jsonify
     def comment(self, repo_name, pull_request_id):
-        pull_request = PullRequest.get_or_404(pull_request_id)
+        pull_request = db.PullRequest.get_or_404(pull_request_id)
         allowed_to_change_status = self._is_allowed_to_change_status(pull_request)
         return create_cs_pr_comment(repo_name, pull_request=pull_request,
                 allowed_to_change_status=allowed_to_change_status)

@@ -44,10 +44,9 @@ from kallithea.lib.base import BaseController, IfSshEnabled, render
 from kallithea.lib.exceptions import DefaultUserException, UserCreationError, UserOwnsReposException
 from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import datetime_to_time, generate_api_key, safe_int
-from kallithea.lib.webutils import url
-from kallithea.model import meta
+from kallithea.lib.utils3 import url
+from kallithea.model import db, meta
 from kallithea.model.api_key import ApiKeyModel
-from kallithea.model.db import User, UserEmailMap, UserIpMap, UserToPerm
 from kallithea.model.forms import CustomDefaultPermissionsForm, UserForm
 from kallithea.model.ssh_key import SshKeyModel, SshKeyModelException
 from kallithea.model.user import UserModel
@@ -64,9 +63,9 @@ class UsersController(BaseController):
         super(UsersController, self)._before(*args, **kwargs)
 
     def index(self, format='html'):
-        c.users_list = User.query().order_by(User.username) \
+        c.users_list = db.User.query().order_by(db.User.username) \
                         .filter_by(is_default_user=False) \
-                        .order_by(func.lower(User.username)) \
+                        .order_by(func.lower(db.User.username)) \
                         .all()
 
         users_data = []
@@ -108,7 +107,7 @@ class UsersController(BaseController):
         return render('admin/users/users.html')
 
     def create(self):
-        c.default_extern_type = User.DEFAULT_AUTH_TYPE
+        c.default_extern_type = db.User.DEFAULT_AUTH_TYPE
         c.default_extern_name = ''
         user_model = UserModel()
         user_form = UserForm()()
@@ -137,7 +136,7 @@ class UsersController(BaseController):
         raise HTTPFound(location=url('edit_user', id=user.user_id))
 
     def new(self, format='html'):
-        c.default_extern_type = User.DEFAULT_AUTH_TYPE
+        c.default_extern_type = db.User.DEFAULT_AUTH_TYPE
         c.default_extern_name = ''
         return render('admin/users/user_add.html')
 
@@ -180,7 +179,7 @@ class UsersController(BaseController):
         raise HTTPFound(location=url('edit_user', id=id))
 
     def delete(self, id):
-        usr = User.get_or_404(id)
+        usr = db.User.get_or_404(id)
         has_ssh_keys = bool(usr.ssh_keys)
         try:
             UserModel().delete(usr)
@@ -199,7 +198,7 @@ class UsersController(BaseController):
 
     def _get_user_or_raise_if_default(self, id):
         try:
-            return User.get_or_404(id, allow_default=False)
+            return db.User.get_or_404(id, allow_default=False)
         except DefaultUserException:
             h.flash(_("The default user cannot be edited"), category='warning')
             raise HTTPNotFound
@@ -318,8 +317,8 @@ class UsersController(BaseController):
 
             user_model = UserModel()
 
-            defs = UserToPerm.query() \
-                .filter(UserToPerm.user == user) \
+            defs = db.UserToPerm.query() \
+                .filter(db.UserToPerm.user == user) \
                 .all()
             for ug in defs:
                 meta.Session().delete(ug)
@@ -347,8 +346,8 @@ class UsersController(BaseController):
     def edit_emails(self, id):
         c.user = self._get_user_or_raise_if_default(id)
         c.active = 'emails'
-        c.user_email_map = UserEmailMap.query() \
-            .filter(UserEmailMap.user == c.user).all()
+        c.user_email_map = db.UserEmailMap.query() \
+            .filter(db.UserEmailMap.user == c.user).all()
 
         defaults = c.user.get_dict()
         return htmlfill.render(
@@ -387,11 +386,11 @@ class UsersController(BaseController):
     def edit_ips(self, id):
         c.user = self._get_user_or_raise_if_default(id)
         c.active = 'ips'
-        c.user_ip_map = UserIpMap.query() \
-            .filter(UserIpMap.user == c.user).all()
+        c.user_ip_map = db.UserIpMap.query() \
+            .filter(db.UserIpMap.user == c.user).all()
 
-        c.default_user_ip_map = UserIpMap.query() \
-            .filter(UserIpMap.user_id == kallithea.DEFAULT_USER_ID).all()
+        c.default_user_ip_map = db.UserIpMap.query() \
+            .filter(db.UserIpMap.user_id == kallithea.DEFAULT_USER_ID).all()
 
         defaults = c.user.get_dict()
         return htmlfill.render(

@@ -44,10 +44,9 @@ from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import ascii_str, safe_str
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError, EmptyRepositoryError, RepositoryError
-from kallithea.model import meta
+from kallithea.model import db, meta
 from kallithea.model.changeset_status import ChangesetStatusModel
 from kallithea.model.comment import ChangesetCommentsModel
-from kallithea.model.db import ChangesetComment, ChangesetStatus
 from kallithea.model.pull_request import PullRequestModel
 
 
@@ -115,7 +114,7 @@ def create_cs_pr_comment(repo_name, revision=None, pull_request=None, allowed_to
         pull_request=pull_request_id,
         f_path=f_path or None,
         line_no=line_no or None,
-        status_change=ChangesetStatus.get_status_lbl(status) if status else None,
+        status_change=db.ChangesetStatus.get_status_lbl(status) if status else None,
         closing_pr=close_pr,
     )
 
@@ -156,7 +155,7 @@ def create_cs_pr_comment(repo_name, revision=None, pull_request=None, allowed_to
 
 def delete_cs_pr_comment(repo_name, comment_id):
     """Delete a comment from a changeset or pull request"""
-    co = ChangesetComment.get_or_404(comment_id)
+    co = db.ChangesetComment.get_or_404(comment_id)
     if co.repo.repo_name != repo_name:
         raise HTTPNotFound()
     if co.pull_request and co.pull_request.is_closed():
@@ -210,7 +209,7 @@ class ChangesetController(BaseRepoController):
         c.lines_added = 0  # count of lines added
         c.lines_deleted = 0  # count of lines removes
 
-        c.changeset_statuses = ChangesetStatus.STATUSES
+        c.changeset_statuses = db.ChangesetStatus.STATUSES
         comments = dict()
         c.statuses = []
         c.inline_comments = []

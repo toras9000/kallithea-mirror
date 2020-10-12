@@ -40,7 +40,7 @@ from kallithea.lib.auth import AuthUser
 from kallithea.lib.base import _get_ip_addr as _get_ip
 from kallithea.lib.base import get_path_info
 from kallithea.lib.utils2 import ascii_bytes
-from kallithea.model.db import User
+from kallithea.model import db
 
 
 log = logging.getLogger('JSONRPC')
@@ -145,7 +145,7 @@ class JSONRPCController(TGController):
 
         # check if we can find this session using api_key
         try:
-            u = User.get_by_api_key(self._req_api_key)
+            u = db.User.get_by_api_key(self._req_api_key)
             auth_user = AuthUser.make(dbuser=u, ip_addr=ip_addr)
             if auth_user is None:
                 raise JSONRPCErrorResponse(retid=self._req_id,

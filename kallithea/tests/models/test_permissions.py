@@ -1,7 +1,6 @@
 import kallithea
 from kallithea.lib.auth import AuthUser
-from kallithea.model import meta
-from kallithea.model.db import Permission, User, UserGroupRepoGroupToPerm, UserToPerm
+from kallithea.model import db, meta
 from kallithea.model.permission import PermissionModel
 from kallithea.model.repo import RepoModel
 from kallithea.model.repo_group import RepoGroupModel
@@ -19,7 +18,7 @@ class TestPermissions(base.TestController):
     @classmethod
     def setup_class(cls):
         # recreate default user to get a clean start
-        PermissionModel().create_default_permissions(user=User.DEFAULT_USER_NAME,
+        PermissionModel().create_default_permissions(user=db.User.DEFAULT_USER_NAME,
                                                      force=True)
         meta.Session().commit()
 
@@ -36,7 +35,7 @@ class TestPermissions(base.TestController):
             username='u3', password='qweqwe',
             email='u3@example.com', firstname='u3', lastname='u3'
         )
-        self.anon = User.get_default_user()
+        self.anon = db.User.get_default_user()
         self.a1 = UserModel().create_or_update(
             username='a1', password='qweqwe',
             email='a1@example.com', firstname='a1', lastname='a1', admin=True
@@ -96,7 +95,7 @@ class TestPermissions(base.TestController):
         assert u1_auth.repository_permissions[base.HG_REPO] == 'repository.read'
         assert u1_auth.repository_group_permissions.get('test1') == 'group.read'
         assert u1_auth.repository_group_permissions.get('test2') == 'group.read'
-        assert u1_auth.global_permissions == set(Permission.DEFAULT_USER_PERMISSIONS)
+        assert u1_auth.global_permissions == set(db.Permission.DEFAULT_USER_PERMISSIONS)
 
     def test_default_admin_group_perms(self):
         self.g1 = fixture.create_repo_group('test1', skip_if_exists=True)
@@ -262,9 +261,9 @@ class TestPermissions(base.TestController):
                                                       perm='group.read')
         meta.Session().commit()
         # check if the
-        obj = meta.Session().query(UserGroupRepoGroupToPerm) \
-            .filter(UserGroupRepoGroupToPerm.group == self.g1) \
-            .filter(UserGroupRepoGroupToPerm.users_group == self.ug1) \
+        obj = meta.Session().query(db.UserGroupRepoGroupToPerm) \
+            .filter(db.UserGroupRepoGroupToPerm.group == self.g1) \
+            .filter(db.UserGroupRepoGroupToPerm.users_group == self.ug1) \
             .scalar()
         assert obj.permission.permission_name == 'group.read'
 
@@ -592,10 +591,10 @@ class TestPermissions(base.TestController):
         assert u1_auth.repository_permissions['myownrepo'] == 'repository.admin'
 
     def _test_def_perm_equal(self, user, change_factor=0):
-        perms = UserToPerm.query() \
-                .filter(UserToPerm.user == user) \
+        perms = db.UserToPerm.query() \
+                .filter(db.UserToPerm.user == user) \
                 .all()
-        assert len(perms) == len(Permission.DEFAULT_USER_PERMISSIONS,)+change_factor, perms
+        assert len(perms) == len(db.Permission.DEFAULT_USER_PERMISSIONS,)+change_factor, perms
 
     def test_set_default_permissions(self):
         PermissionModel().create_default_permissions(user=self.u1)
@@ -605,8 +604,8 @@ class TestPermissions(base.TestController):
         PermissionModel().create_default_permissions(user=self.u1)
         self._test_def_perm_equal(user=self.u1)
         # now we delete one, it should be re-created after another call
-        perms = UserToPerm.query() \
-                .filter(UserToPerm.user == self.u1) \
+        perms = db.UserToPerm.query() \
+                .filter(db.UserToPerm.user == self.u1) \
                 .all()
         meta.Session().delete(perms[0])
         meta.Session().commit()
@@ -629,15 +628,15 @@ class TestPermissions(base.TestController):
         PermissionModel().create_default_permissions(user=self.u1)
         self._test_def_perm_equal(user=self.u1)
 
-        old = Permission.get_by_key(perm)
-        new = Permission.get_by_key(modify_to)
+        old = db.Permission.get_by_key(perm)
+        new = db.Permission.get_by_key(modify_to)
         assert old is not None
         assert new is not None
 
         # now modify permissions
-        p = UserToPerm.query() \
-                .filter(UserToPerm.user == self.u1) \
-                .filter(UserToPerm.permission == old) \
+        p = db.UserToPerm.query() \
+                .filter(db.UserToPerm.user == self.u1) \
+                .filter(db.UserToPerm.permission == old) \
                 .one()
         p.permission = new
         meta.Session().commit()

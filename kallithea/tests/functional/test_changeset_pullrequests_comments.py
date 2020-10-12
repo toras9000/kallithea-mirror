@@ -1,15 +1,14 @@
 import re
 
-from kallithea.model import meta
+from kallithea.model import db, meta
 from kallithea.model.changeset_status import ChangesetStatusModel
-from kallithea.model.db import ChangesetComment, PullRequest
 from kallithea.tests import base
 
 
 class TestChangeSetCommentsController(base.TestController):
 
     def setup_method(self, method):
-        for x in ChangesetComment.query().all():
+        for x in db.ChangesetComment.query().all():
             meta.Session().delete(x)
         meta.Session().commit()
 
@@ -34,7 +33,7 @@ class TestChangeSetCommentsController(base.TestController):
         response.mustcontain(text)
 
         # test DB
-        assert ChangesetComment.query().count() == 1
+        assert db.ChangesetComment.query().count() == 1
 
     def test_create_inline(self):
         self.log_user()
@@ -64,7 +63,7 @@ class TestChangeSetCommentsController(base.TestController):
         response.mustcontain(text)
 
         # test DB
-        assert ChangesetComment.query().count() == 1
+        assert db.ChangesetComment.query().count() == 1
 
     def test_create_with_mention(self):
         self.log_user()
@@ -88,7 +87,7 @@ class TestChangeSetCommentsController(base.TestController):
         response.mustcontain('<b>@%s</b> check CommentOnRevision' % base.TEST_USER_REGULAR_LOGIN)
 
         # test DB
-        assert ChangesetComment.query().count() == 1
+        assert db.ChangesetComment.query().count() == 1
 
     def test_create_status_change(self):
         self.log_user()
@@ -112,7 +111,7 @@ class TestChangeSetCommentsController(base.TestController):
         response.mustcontain(text)
 
         # test DB
-        assert ChangesetComment.query().count() == 1
+        assert db.ChangesetComment.query().count() == 1
 
         # check status
         status = ChangesetStatusModel().get_status(repo=base.HG_REPO, revision=rev)
@@ -128,7 +127,7 @@ class TestChangeSetCommentsController(base.TestController):
                                      repo_name=base.HG_REPO, revision=rev),
                                      params=params, extra_environ={'HTTP_X_PARTIAL_XHR': '1'})
 
-        comments = ChangesetComment.query().all()
+        comments = db.ChangesetComment.query().all()
         assert len(comments) == 1
         comment_id = comments[0].comment_id
 
@@ -137,7 +136,7 @@ class TestChangeSetCommentsController(base.TestController):
                                     comment_id=comment_id),
             params={'_session_csrf_secret_token': self.session_csrf_secret_token()})
 
-        comments = ChangesetComment.query().all()
+        comments = db.ChangesetComment.query().all()
         assert len(comments) == 0
 
         response = self.app.get(base.url(controller='changeset', action='index',
@@ -152,7 +151,7 @@ class TestChangeSetCommentsController(base.TestController):
 class TestPullrequestsCommentsController(base.TestController):
 
     def setup_method(self, method):
-        for x in ChangesetComment.query().all():
+        for x in db.ChangesetComment.query().all():
             meta.Session().delete(x)
         meta.Session().commit()
 
@@ -195,7 +194,7 @@ class TestPullrequestsCommentsController(base.TestController):
         response.mustcontain(text)
 
         # test DB
-        assert ChangesetComment.query().count() == 2
+        assert db.ChangesetComment.query().count() == 2
 
     def test_create_inline(self):
         self.log_user()
@@ -225,7 +224,7 @@ class TestPullrequestsCommentsController(base.TestController):
         response.mustcontain(text)
 
         # test DB
-        assert ChangesetComment.query().count() == 2
+        assert db.ChangesetComment.query().count() == 2
 
     def test_create_with_mention(self):
         self.log_user()
@@ -248,7 +247,7 @@ class TestPullrequestsCommentsController(base.TestController):
         response.mustcontain('<b>@%s</b> check CommentOnRevision' % base.TEST_USER_REGULAR_LOGIN)
 
         # test DB
-        assert ChangesetComment.query().count() == 2
+        assert db.ChangesetComment.query().count() == 2
 
     def test_create_status_change(self):
         self.log_user()
@@ -275,7 +274,7 @@ class TestPullrequestsCommentsController(base.TestController):
         response.mustcontain(text)
 
         # test DB
-        assert ChangesetComment.query().count() == 2
+        assert db.ChangesetComment.query().count() == 2
 
         # check status
         status = ChangesetStatusModel().get_status(repo=base.HG_REPO, pull_request=pr_id)
@@ -291,7 +290,7 @@ class TestPullrequestsCommentsController(base.TestController):
                                      repo_name=base.HG_REPO, pull_request_id=pr_id),
                                      params=params, extra_environ={'HTTP_X_PARTIAL_XHR': '1'})
 
-        comments = ChangesetComment.query().all()
+        comments = db.ChangesetComment.query().all()
         assert len(comments) == 2
         comment_id = comments[-1].comment_id
 
@@ -300,7 +299,7 @@ class TestPullrequestsCommentsController(base.TestController):
                                     comment_id=comment_id),
             params={'_session_csrf_secret_token': self.session_csrf_secret_token()})
 
-        comments = ChangesetComment.query().all()
+        comments = db.ChangesetComment.query().all()
         assert len(comments) == 1
 
         response = self.app.get(base.url(controller='pullrequests', action='show',
@@ -332,7 +331,7 @@ class TestPullrequestsCommentsController(base.TestController):
         response.mustcontain(text)
 
         # test DB
-        assert PullRequest.get(pr_id).status == PullRequest.STATUS_CLOSED
+        assert db.PullRequest.get(pr_id).status == db.PullRequest.STATUS_CLOSED
 
     def test_delete_pr(self):
         self.log_user()
@@ -351,7 +350,7 @@ class TestPullrequestsCommentsController(base.TestController):
                                 repo_name=base.HG_REPO, pull_request_id=pr_id, extra=''), status=404)
 
         # test DB
-        assert PullRequest.get(pr_id) is None
+        assert db.PullRequest.get(pr_id) is None
 
     def test_delete_closed_pr(self):
         self.log_user()
@@ -374,4 +373,4 @@ class TestPullrequestsCommentsController(base.TestController):
                                      params=params, extra_environ={'HTTP_X_PARTIAL_XHR': '1'}, status=403)
 
         # verify that PR still exists, in closed state
-        assert PullRequest.get(pr_id).status == PullRequest.STATUS_CLOSED
+        assert db.PullRequest.get(pr_id).status == db.PullRequest.STATUS_CLOSED

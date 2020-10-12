@@ -38,9 +38,8 @@ import sqlalchemy
 from sqlalchemy.engine import create_engine
 
 from kallithea.lib.utils2 import ask_ok
-from kallithea.model import meta
+from kallithea.model import db, meta
 from kallithea.model.base import init_model
-from kallithea.model.db import Repository, Setting, Ui, User
 from kallithea.model.permission import PermissionModel
 from kallithea.model.user import UserModel
 
@@ -167,10 +166,10 @@ class DbManage(object):
 
         for k, v, t in [('auth_plugins', 'kallithea.lib.auth_modules.auth_internal', 'list'),
                         ('auth_internal_enabled', 'True', 'bool')]:
-            if skip_existing and Setting.get_by_name(k) is not None:
+            if skip_existing and db.Setting.get_by_name(k) is not None:
                 log.debug('Skipping option %s', k)
                 continue
-            setting = Setting(k, v, t)
+            setting = db.Setting(k, v, t)
             self.sa.add(setting)
 
     def create_default_options(self, skip_existing=False):
@@ -182,10 +181,10 @@ class DbManage(object):
             ('default_repo_private', False, 'bool'),
             ('default_repo_type', 'hg', 'unicode')
         ]:
-            if skip_existing and Setting.get_by_name(k) is not None:
+            if skip_existing and db.Setting.get_by_name(k) is not None:
                 log.debug('Skipping option %s', k)
                 continue
-            setting = Setting(k, v, t)
+            setting = db.Setting(k, v, t)
             self.sa.add(setting)
 
     def prompt_repo_root_path(self, test_repo_path='', retries=3):
@@ -245,14 +244,14 @@ class DbManage(object):
         ui_config = [
             ('paths', '/', repo_root_path, True),
             #('phases', 'publish', 'false', False)
-            ('hooks', Ui.HOOK_UPDATE, 'hg update >&2', False),
-            ('hooks', Ui.HOOK_REPO_SIZE, 'python:kallithea.lib.hooks.repo_size', True),
+            ('hooks', db.Ui.HOOK_UPDATE, 'hg update >&2', False),
+            ('hooks', db.Ui.HOOK_REPO_SIZE, 'python:kallithea.lib.hooks.repo_size', True),
             ('extensions', 'largefiles', '', True),
             ('largefiles', 'usercache', os.path.join(repo_root_path, '.cache', 'largefiles'), True),
             ('extensions', 'hggit', '', False),
         ]
         for ui_section, ui_key, ui_value, ui_active in ui_config:
-            ui_conf = Ui(
+            ui_conf = db.Ui(
                 ui_section=ui_section,
                 ui_key=ui_key,
                 ui_value=ui_value,
@@ -270,12 +269,12 @@ class DbManage(object):
             ('admin_grid_items', 25, 'int'),
             ('show_version', True, 'bool'),
             ('use_gravatar', True, 'bool'),
-            ('gravatar_url', User.DEFAULT_GRAVATAR_URL, 'unicode'),
-            ('clone_uri_tmpl', Repository.DEFAULT_CLONE_URI, 'unicode'),
-            ('clone_ssh_tmpl', Repository.DEFAULT_CLONE_SSH, 'unicode'),
+            ('gravatar_url', db.User.DEFAULT_GRAVATAR_URL, 'unicode'),
+            ('clone_uri_tmpl', db.Repository.DEFAULT_CLONE_URI, 'unicode'),
+            ('clone_ssh_tmpl', db.Repository.DEFAULT_CLONE_SSH, 'unicode'),
         ]
         for key, val, type_ in settings:
-            sett = Setting(key, val, type_)
+            sett = db.Setting(key, val, type_)
             self.sa.add(sett)
 
         self.create_auth_plugin_options()
@@ -288,12 +287,12 @@ class DbManage(object):
         UserModel().create_or_update(username, password, email,
                                      firstname='Kallithea', lastname='Admin',
                                      active=True, admin=admin,
-                                     extern_type=User.DEFAULT_AUTH_TYPE)
+                                     extern_type=db.User.DEFAULT_AUTH_TYPE)
 
     def create_default_user(self):
         log.info('creating default user')
         # create default user for handling default permissions.
-        user = UserModel().create_or_update(username=User.DEFAULT_USER_NAME,
+        user = UserModel().create_or_update(username=db.User.DEFAULT_USER_NAME,
                                             password=str(uuid.uuid1())[:20],
                                             email='anonymous@kallithea-scm.org',
                                             firstname='Anonymous',
@@ -320,4 +319,4 @@ class DbManage(object):
         permissions that are missing, and not alter already defined ones
         """
         log.info('creating default user permissions')
-        PermissionModel().create_default_permissions(user=User.DEFAULT_USER_NAME)
+        PermissionModel().create_default_permissions(user=db.User.DEFAULT_USER_NAME)

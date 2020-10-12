@@ -23,8 +23,7 @@ from inspect import isfunction
 from kallithea.lib.auth import AuthUser, PasswordGenerator
 from kallithea.lib.compat import hybrid_property
 from kallithea.lib.utils2 import asbool
-from kallithea.model import meta, validators
-from kallithea.model.db import Setting, User
+from kallithea.model import db, meta, validators
 from kallithea.model.user import UserModel
 from kallithea.model.user_group import UserGroupModel
 
@@ -134,7 +133,7 @@ class KallitheaAuthPluginBase(object):
         log.debug('Trying to fetch user `%s` from Kallithea database',
                   username)
         if username:
-            user = User.get_by_username_or_email(username)
+            user = db.User.get_by_username_or_email(username)
         else:
             log.debug('provided username:`%s` is empty skipping...', username)
         return user
@@ -239,7 +238,7 @@ class KallitheaExternalAuthPlugin(KallitheaAuthPluginBase):
             userobj, username, passwd, settings, **kwargs)
         if user_data is not None:
             if userobj is None: # external authentication of unknown user that will be created soon
-                def_user_perms = AuthUser(dbuser=User.get_default_user()).global_permissions
+                def_user_perms = AuthUser(dbuser=db.User.get_default_user()).global_permissions
                 active = 'hg.extern_activate.auto' in def_user_perms
             else:
                 active = userobj.active
@@ -315,7 +314,7 @@ def loadplugin(plugin):
 def get_auth_plugins():
     """Return a list of instances of plugins that are available and enabled"""
     auth_plugins = []
-    for plugin_name in Setting.get_by_name("auth_plugins").app_settings_value:
+    for plugin_name in db.Setting.get_by_name("auth_plugins").app_settings_value:
         try:
             plugin = loadplugin(plugin_name)
         except Exception:
@@ -345,7 +344,7 @@ def authenticate(username, password, environ=None):
         plugin_settings = {}
         for v in plugin.plugin_settings():
             conf_key = "auth_%s_%s" % (plugin_name, v["name"])
-            setting = Setting.get_by_name(conf_key)
+            setting = db.Setting.get_by_name(conf_key)
             plugin_settings[v["name"]] = setting.app_settings_value if setting else None
         log.debug('Settings for auth plugin %s: %s', plugin_name, plugin_settings)
 

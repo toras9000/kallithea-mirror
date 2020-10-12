@@ -42,8 +42,7 @@ from kallithea.lib.page import Page
 from kallithea.lib.utils2 import safe_int, safe_str, time_to_datetime
 from kallithea.lib.vcs.exceptions import NodeNotChangedError, VCSError
 from kallithea.lib.webutils import url
-from kallithea.model import meta
-from kallithea.model.db import Gist
+from kallithea.model import db, meta
 from kallithea.model.forms import GistForm
 from kallithea.model.gist import GistModel
 
@@ -76,28 +75,28 @@ class GistsController(BaseController):
         elif c.show_private:
             url_params['private'] = 1
 
-        gists = Gist().query() \
+        gists = db.Gist().query() \
             .filter_by(is_expired=False) \
-            .order_by(Gist.created_on.desc())
+            .order_by(db.Gist.created_on.desc())
 
         # MY private
         if c.show_private and not c.show_public:
-            gists = gists.filter(Gist.gist_type == Gist.GIST_PRIVATE) \
-                             .filter(Gist.owner_id == request.authuser.user_id)
+            gists = gists.filter(db.Gist.gist_type == db.Gist.GIST_PRIVATE) \
+                             .filter(db.Gist.owner_id == request.authuser.user_id)
         # MY public
         elif c.show_public and not c.show_private:
-            gists = gists.filter(Gist.gist_type == Gist.GIST_PUBLIC) \
-                             .filter(Gist.owner_id == request.authuser.user_id)
+            gists = gists.filter(db.Gist.gist_type == db.Gist.GIST_PUBLIC) \
+                             .filter(db.Gist.owner_id == request.authuser.user_id)
 
         # MY public+private
         elif c.show_private and c.show_public:
-            gists = gists.filter(or_(Gist.gist_type == Gist.GIST_PUBLIC,
-                                     Gist.gist_type == Gist.GIST_PRIVATE)) \
-                             .filter(Gist.owner_id == request.authuser.user_id)
+            gists = gists.filter(or_(db.Gist.gist_type == db.Gist.GIST_PUBLIC,
+                                     db.Gist.gist_type == db.Gist.GIST_PRIVATE)) \
+                             .filter(db.Gist.owner_id == request.authuser.user_id)
 
         # default show ALL public gists
         if not c.show_public and not c.show_private:
-            gists = gists.filter(Gist.gist_type == Gist.GIST_PUBLIC)
+            gists = gists.filter(db.Gist.gist_type == db.Gist.GIST_PUBLIC)
 
         c.gists = gists
         p = safe_int(request.GET.get('page'), 1)
@@ -112,7 +111,7 @@ class GistsController(BaseController):
         try:
             form_result = gist_form.to_python(dict(request.POST))
             # TODO: multiple files support, from the form
-            filename = form_result['filename'] or Gist.DEFAULT_FILENAME
+            filename = form_result['filename'] or db.Gist.DEFAULT_FILENAME
             nodes = {
                 filename: {
                     'content': form_result['content'],
@@ -120,7 +119,7 @@ class GistsController(BaseController):
                 }
             }
             _public = form_result['public']
-            gist_type = Gist.GIST_PUBLIC if _public else Gist.GIST_PRIVATE
+            gist_type = db.Gist.GIST_PUBLIC if _public else db.Gist.GIST_PRIVATE
             gist = GistModel().create(
                 description=form_result['description'],
                 owner=request.authuser.user_id,
@@ -168,7 +167,7 @@ class GistsController(BaseController):
 
     @LoginRequired(allow_default_user=True)
     def show(self, gist_id, revision='tip', format='html', f_path=None):
-        c.gist = Gist.get_or_404(gist_id)
+        c.gist = db.Gist.get_or_404(gist_id)
 
         if c.gist.is_expired:
             log.error('Gist expired at %s',
@@ -191,7 +190,7 @@ class GistsController(BaseController):
 
     @LoginRequired()
     def edit(self, gist_id, format='html'):
-        c.gist = Gist.get_or_404(gist_id)
+        c.gist = db.Gist.get_or_404(gist_id)
 
         if c.gist.is_expired:
             log.error('Gist expired at %s',
@@ -251,7 +250,7 @@ class GistsController(BaseController):
     @LoginRequired()
     @jsonify
     def check_revision(self, gist_id):
-        c.gist = Gist.get_or_404(gist_id)
+        c.gist = db.Gist.get_or_404(gist_id)
         last_rev = c.gist.scm_instance.get_changeset()
         success = True
         revision = request.POST.get('revision')

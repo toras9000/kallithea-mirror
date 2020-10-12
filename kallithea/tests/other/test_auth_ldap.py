@@ -3,7 +3,7 @@ import uuid
 import pytest
 
 from kallithea.lib.auth_modules import auth_ldap, authenticate
-from kallithea.model.db import User
+from kallithea.model import db
 
 
 @pytest.fixture
@@ -35,7 +35,7 @@ def test_update_user_attributes_from_ldap(monkeypatch, create_test_user,
     # Arrange test user.
     uniqifier = uuid.uuid4()
     username = 'test-user-{0}'.format(uniqifier)
-    assert User.get_by_username(username) is None
+    assert db.User.get_by_username(username) is None
     user_input = dict(username='test-user-{0}'.format(uniqifier),
                       password='spam password',
                       email='spam-email-{0}'.format(uniqifier),
@@ -72,7 +72,7 @@ def test_init_user_attributes_from_ldap(monkeypatch, arrange_ldap_auth):
     # Arrange test user.
     uniqifier = uuid.uuid4()
     username = 'test-user-{0}'.format(uniqifier)
-    assert User.get_by_username(username) is None
+    assert db.User.get_by_username(username) is None
 
     # Arrange LDAP auth.
     monkeypatch.setattr(auth_ldap, 'AuthLdap', _AuthLdapMock)
@@ -89,7 +89,7 @@ def test_init_user_attributes_from_ldap(monkeypatch, arrange_ldap_auth):
 
     # Verify that authentication created new user with attributes
     # retrieved from LDAP.
-    new_user = User.get_by_username(username)
+    new_user = db.User.get_by_username(username)
     assert new_user is not None
     assert new_user.firstname == 'spam ldap first name'
     assert new_user.lastname == 'spam ldap last name'
@@ -115,7 +115,7 @@ def test_init_user_attributes_from_ldap_with_missing_email(monkeypatch,
     # Arrange test user.
     uniqifier = uuid.uuid4()
     username = 'test-user-{0}'.format(uniqifier)
-    assert User.get_by_username(username) is None
+    assert db.User.get_by_username(username) is None
 
     # Arrange LDAP auth.
     monkeypatch.setattr(auth_ldap, 'AuthLdap', _AuthLdapNoEmailMock)
@@ -132,7 +132,7 @@ def test_init_user_attributes_from_ldap_with_missing_email(monkeypatch,
 
     # Verify that authentication created new user with attributes
     # retrieved from LDAP, with email == None.
-    new_user = User.get_by_username(username)
+    new_user = db.User.get_by_username(username)
     assert new_user is not None
     assert new_user.firstname == 'spam ldap first name'
     assert new_user.lastname == 'spam ldap last name'

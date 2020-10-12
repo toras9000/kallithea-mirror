@@ -10,9 +10,8 @@ import kallithea.lib.celerylib.tasks
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import check_password
 from kallithea.lib.utils2 import generate_api_key
-from kallithea.model import meta, validators
+from kallithea.model import db, meta, validators
 from kallithea.model.api_key import ApiKeyModel
-from kallithea.model.db import User
 from kallithea.model.user import UserModel
 from kallithea.tests import base
 from kallithea.tests.fixture import Fixture
@@ -361,7 +360,7 @@ class TestLoginController(base.TestController):
         assert response.status == '302 Found'
         self.checkSessionFlash(response, 'You have successfully registered with Kallithea')
 
-        ret = meta.Session().query(User).filter(User.username == 'test_regular4').one()
+        ret = meta.Session().query(db.User).filter(db.User.username == 'test_regular4').one()
         assert ret.username == username
         assert check_password(password, ret.password) == True
         assert ret.email == email
@@ -395,7 +394,7 @@ class TestLoginController(base.TestController):
         lastname = 'reset'
         timestamp = int(time.time())
 
-        new = User()
+        new = db.User()
         new.username = username
         new.password = password
         new.email = email
@@ -406,7 +405,7 @@ class TestLoginController(base.TestController):
         meta.Session().commit()
 
         token = UserModel().get_reset_password_token(
-            User.get_by_username(username), timestamp, self.session_csrf_secret_token())
+            db.User.get_by_username(username), timestamp, self.session_csrf_secret_token())
 
         collected = []
         def mock_send_email(recipients, subject, body='', html_body='', headers=None, from_name=None):
@@ -495,7 +494,7 @@ class TestLoginController(base.TestController):
                 headers = {}
             else:
                 if api_key is True:
-                    api_key = User.get_first_admin().api_key
+                    api_key = db.User.get_first_admin().api_key
                 params = {'api_key': api_key}
                 headers = {'Authorization': 'Bearer ' + str(api_key)}
 

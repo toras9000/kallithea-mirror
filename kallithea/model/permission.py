@@ -32,8 +32,7 @@ import traceback
 from sqlalchemy.exc import DatabaseError
 
 from kallithea.lib.utils2 import asbool
-from kallithea.model import meta
-from kallithea.model.db import Permission, User, UserRepoGroupToPerm, UserRepoToPerm, UserToPerm, UserUserGroupToPerm
+from kallithea.model import db, meta
 
 
 log = logging.getLogger(__name__)
@@ -48,9 +47,9 @@ class PermissionModel(object):
         """
         Create permissions for whole system
         """
-        for p in Permission.PERMS:
-            if not Permission.get_by_key(p[0]):
-                new_perm = Permission()
+        for p in db.Permission.PERMS:
+            if not db.Permission.get_by_key(p[0]):
+                new_perm = db.Permission()
                 new_perm.permission_name = p[0]
                 meta.Session().add(new_perm)
 
@@ -62,18 +61,18 @@ class PermissionModel(object):
 
         :param user:
         """
-        user = User.guess_instance(user)
+        user = db.User.guess_instance(user)
 
         def _make_perm(perm):
-            new_perm = UserToPerm()
+            new_perm = db.UserToPerm()
             new_perm.user = user
-            new_perm.permission = Permission.get_by_key(perm)
+            new_perm.permission = db.Permission.get_by_key(perm)
             return new_perm
 
         def _get_group(perm_name):
             return '.'.join(perm_name.split('.')[:1])
 
-        perms = UserToPerm.query().filter(UserToPerm.user == user).all()
+        perms = db.UserToPerm.query().filter(db.UserToPerm.user == user).all()
         defined_perms_groups = set(_get_group(x.permission.permission_name) for x in perms)
         log.debug('GOT ALREADY DEFINED:%s', perms)
 
@@ -84,7 +83,7 @@ class PermissionModel(object):
             defined_perms_groups = []
         # For every default permission that needs to be created, we check if
         # its group is already defined. If it's not, we create default permission.
-        for perm_name in Permission.DEFAULT_USER_PERMISSIONS:
+        for perm_name in db.Permission.DEFAULT_USER_PERMISSIONS:
             gr = _get_group(perm_name)
             if gr not in defined_perms_groups:
                 log.debug('GR:%s not found, creating permission %s',
@@ -93,7 +92,7 @@ class PermissionModel(object):
                 meta.Session().add(new_perm)
 
     def update(self, form_result):
-        perm_user = User.get_by_username(username=form_result['perm_user_name'])
+        perm_user = db.User.get_by_username(username=form_result['perm_user_name'])
 
         try:
             # stage 1 set anonymous access
@@ -103,15 +102,15 @@ class PermissionModel(object):
             # stage 2 reset defaults and set them from form data
             def _make_new(usr, perm_name):
                 log.debug('Creating new permission:%s', perm_name)
-                new = UserToPerm()
+                new = db.UserToPerm()
                 new.user = usr
-                new.permission = Permission.get_by_key(perm_name)
+                new.permission = db.Permission.get_by_key(perm_name)
                 return new
             # clear current entries, to make this function idempotent
             # it will fix even if we define more permissions or permissions
             # are somehow missing
-            u2p = UserToPerm.query() \
-                .filter(UserToPerm.user == perm_user) \
+            u2p = db.UserToPerm.query() \
+                .filter(db.UserToPerm.user == perm_user) \
                 .all()
             for p in u2p:
                 meta.Session().delete(p)
@@ -130,10 +129,10 @@ class PermissionModel(object):
             # stage 3 update all default permissions for repos if checked
             if form_result['overwrite_default_repo']:
                 _def_name = form_result['default_repo_perm'].split('repository.')[-1]
-                _def = Permission.get_by_key('repository.' + _def_name)
+                _def = db.Permission.get_by_key('repository.' + _def_name)
                 # repos
-                for r2p in UserRepoToPerm.query() \
-                               .filter(UserRepoToPerm.user == perm_user) \
+                for r2p in db.UserRepoToPerm.query() \
+                               .filter(db.UserRepoToPerm.user == perm_user) \
                                .all():
 
                     # don't reset PRIVATE repositories
@@ -143,18 +142,18 @@ class PermissionModel(object):
             if form_result['overwrite_default_group']:
                 _def_name = form_result['default_group_perm'].split('group.')[-1]
                 # groups
-                _def = Permission.get_by_key('group.' + _def_name)
-                for g2p in UserRepoGroupToPerm.query() \
-                               .filter(UserRepoGroupToPerm.user == perm_user) \
+                _def = db.Permission.get_by_key('group.' + _def_name)
+                for g2p in db.UserRepoGroupToPerm.query() \
+                               .filter(db.UserRepoGroupToPerm.user == perm_user) \
                                .all():
                     g2p.permission = _def
 
             if form_result['overwrite_default_user_group']:
                 _def_name = form_result['default_user_group_perm'].split('usergroup.')[-1]
                 # groups
-                _def = Permission.get_by_key('usergroup.' + _def_name)
-                for g2p in UserUserGroupToPerm.query() \
-                               .filter(UserUserGroupToPerm.user == perm_user) \
+                _def = db.Permission.get_by_key('usergroup.' + _def_name)
+                for g2p in db.UserUserGroupToPerm.query() \
+                               .filter(db.UserUserGroupToPerm.user == perm_user) \
                                .all():
                     g2p.permission = _def
 

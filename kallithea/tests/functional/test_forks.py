@@ -2,8 +2,7 @@
 
 import urllib.parse
 
-from kallithea.model import meta
-from kallithea.model.db import Repository, User
+from kallithea.model import db, meta
 from kallithea.model.repo import RepoModel
 from kallithea.model.user import UserModel
 from kallithea.tests import base
@@ -45,7 +44,7 @@ class _BaseTestCase(base.TestController):
         self.log_user(base.TEST_USER_REGULAR_LOGIN, base.TEST_USER_REGULAR_PASS)['user_id']
         try:
             user_model = UserModel()
-            usr = User.get_default_user()
+            usr = db.User.get_default_user()
             user_model.revoke_perm(usr, 'hg.fork.repository')
             user_model.grant_perm(usr, 'hg.fork.none')
             meta.Session().commit()
@@ -54,7 +53,7 @@ class _BaseTestCase(base.TestController):
             self.app.post(base.url(controller='forks', action='fork_create',
                               repo_name=repo_name), {'_session_csrf_secret_token': self.session_csrf_secret_token()}, status=403)
         finally:
-            usr = User.get_default_user()
+            usr = db.User.get_default_user()
             user_model.revoke_perm(usr, 'hg.fork.none')
             user_model.grant_perm(usr, 'hg.fork.repository')
             meta.Session().commit()
@@ -66,7 +65,7 @@ class _BaseTestCase(base.TestController):
         fork_name = self.REPO_FORK
         description = 'fork of vcs test'
         repo_name = self.REPO
-        org_repo = Repository.get_by_repo_name(repo_name)
+        org_repo = db.Repository.get_by_repo_name(repo_name)
         creation_args = {
             'repo_name': fork_name,
             'repo_group': '-1',
@@ -99,7 +98,7 @@ class _BaseTestCase(base.TestController):
         fork_name_full = 'vc/%s' % fork_name
         description = 'fork of vcs test'
         repo_name = self.REPO
-        org_repo = Repository.get_by_repo_name(repo_name)
+        org_repo = db.Repository.get_by_repo_name(repo_name)
         creation_args = {
             'repo_name': fork_name,
             'repo_group': group_id,
@@ -111,7 +110,7 @@ class _BaseTestCase(base.TestController):
             '_session_csrf_secret_token': self.session_csrf_secret_token()}
         self.app.post(base.url(controller='forks', action='fork_create',
                           repo_name=repo_name), creation_args)
-        repo = Repository.get_by_repo_name(fork_name_full)
+        repo = db.Repository.get_by_repo_name(fork_name_full)
         assert repo.fork.repo_name == self.REPO
 
         ## run the check page that triggers the flash message
@@ -122,8 +121,8 @@ class _BaseTestCase(base.TestController):
                 % (repo_name, fork_name_full, fork_name_full))
 
         # test if the fork was created in the database
-        fork_repo = meta.Session().query(Repository) \
-            .filter(Repository.repo_name == fork_name_full).one()
+        fork_repo = meta.Session().query(db.Repository) \
+            .filter(db.Repository.repo_name == fork_name_full).one()
 
         assert fork_repo.repo_name == fork_name_full
         assert fork_repo.fork.repo_name == repo_name
@@ -142,7 +141,7 @@ class _BaseTestCase(base.TestController):
 
         # create a fork
         repo_name = self.REPO
-        org_repo = Repository.get_by_repo_name(repo_name)
+        org_repo = db.Repository.get_by_repo_name(repo_name)
         fork_name = self.REPO_FORK + '-rødgrød'
         creation_args = {
             'repo_name': fork_name,
@@ -160,7 +159,7 @@ class _BaseTestCase(base.TestController):
         response.mustcontain(
             """<a href="/%s">%s</a>""" % (urllib.parse.quote(fork_name), fork_name)
         )
-        fork_repo = Repository.get_by_repo_name(fork_name)
+        fork_repo = db.Repository.get_by_repo_name(fork_name)
         assert fork_repo
 
         # fork the fork
@@ -193,7 +192,7 @@ class _BaseTestCase(base.TestController):
         fork_name = self.REPO_FORK
         description = 'fork of vcs test'
         repo_name = self.REPO
-        org_repo = Repository.get_by_repo_name(repo_name)
+        org_repo = db.Repository.get_by_repo_name(repo_name)
         creation_args = {
             'repo_name': fork_name,
             'repo_group': '-1',
@@ -205,7 +204,7 @@ class _BaseTestCase(base.TestController):
             '_session_csrf_secret_token': self.session_csrf_secret_token()}
         self.app.post(base.url(controller='forks', action='fork_create',
                           repo_name=repo_name), creation_args)
-        repo = Repository.get_by_repo_name(self.REPO_FORK)
+        repo = db.Repository.get_by_repo_name(self.REPO_FORK)
         assert repo.fork.repo_name == self.REPO
 
         ## run the check page that triggers the flash message
@@ -216,8 +215,8 @@ class _BaseTestCase(base.TestController):
                 % (repo_name, fork_name, fork_name))
 
         # test if the fork was created in the database
-        fork_repo = meta.Session().query(Repository) \
-            .filter(Repository.repo_name == fork_name).one()
+        fork_repo = meta.Session().query(db.Repository) \
+            .filter(db.Repository.repo_name == fork_name).one()
 
         assert fork_repo.repo_name == fork_name
         assert fork_repo.fork.repo_name == repo_name
@@ -230,9 +229,9 @@ class _BaseTestCase(base.TestController):
 
         usr = self.log_user(self.username, self.password)['user_id']
 
-        forks = Repository.query() \
-            .filter(Repository.repo_type == self.REPO_TYPE) \
-            .filter(Repository.fork_id != None).all()
+        forks = db.Repository.query() \
+            .filter(db.Repository.repo_type == self.REPO_TYPE) \
+            .filter(db.Repository.fork_id != None).all()
         assert 1 == len(forks)
 
         # set read permissions for this
@@ -247,7 +246,7 @@ class _BaseTestCase(base.TestController):
         response.mustcontain('<div>fork of vcs test</div>')
 
         # remove permissions
-        default_user = User.get_default_user()
+        default_user = db.User.get_default_user()
         try:
             RepoModel().grant_user_permission(repo=forks[0],
                                               user=usr, perm='repository.none')

@@ -28,8 +28,7 @@ import logging
 import traceback
 
 from kallithea.lib.exceptions import RepoGroupAssignmentError, UserGroupsAssignedException
-from kallithea.model import meta
-from kallithea.model.db import Permission, User, UserGroup, UserGroupMember, UserGroupRepoToPerm, UserGroupToPerm, UserGroupUserGroupToPerm, UserUserGroupToPerm
+from kallithea.model import db, meta
 
 
 log = logging.getLogger(__name__)
@@ -40,14 +39,14 @@ class UserGroupModel(object):
     def _create_default_perms(self, user_group):
         # create default permission
         default_perm = 'usergroup.read'
-        def_user = User.get_default_user()
+        def_user = db.User.get_default_user()
         for p in def_user.user_perms:
             if p.permission.permission_name.startswith('usergroup.'):
                 default_perm = p.permission.permission_name
                 break
 
-        user_group_to_perm = UserUserGroupToPerm()
-        user_group_to_perm.permission = Permission.get_by_key(default_perm)
+        user_group_to_perm = db.UserUserGroupToPerm()
+        user_group_to_perm.permission = db.Permission.get_by_key(default_perm)
 
         user_group_to_perm.user_group = user_group
         user_group_to_perm.user_id = def_user.user_id
@@ -89,18 +88,18 @@ class UserGroupModel(object):
                     )
 
     def get(self, user_group_id):
-        return UserGroup.get(user_group_id)
+        return db.UserGroup.get(user_group_id)
 
     def get_group(self, user_group):
-        return UserGroup.guess_instance(user_group)
+        return db.UserGroup.guess_instance(user_group)
 
     def get_by_name(self, name, case_insensitive=False):
-        return UserGroup.get_by_group_name(name, case_insensitive=case_insensitive)
+        return db.UserGroup.get_by_group_name(name, case_insensitive=case_insensitive)
 
     def create(self, name, description, owner, active=True, group_data=None):
         try:
-            new_user_group = UserGroup()
-            new_user_group.owner = User.guess_instance(owner)
+            new_user_group = db.UserGroup()
+            new_user_group.owner = db.User.guess_instance(owner)
             new_user_group.users_group_name = name
             new_user_group.user_group_description = description
             new_user_group.users_group_active = active
@@ -120,7 +119,7 @@ class UserGroupModel(object):
     def update(self, user_group, form_data):
 
         try:
-            user_group = UserGroup.guess_instance(user_group)
+            user_group = db.UserGroup.guess_instance(user_group)
 
             for k, v in form_data.items():
                 if k == 'users_group_members':
@@ -128,7 +127,7 @@ class UserGroupModel(object):
                     if v:
                         v = [v] if isinstance(v, str) else v
                         for u_id in set(v):
-                            member = UserGroupMember(user_group.users_group_id, u_id)
+                            member = db.UserGroupMember(user_group.users_group_id, u_id)
                             members_list.append(member)
                             meta.Session().add(member)
                     user_group.members = members_list
@@ -150,11 +149,11 @@ class UserGroupModel(object):
         :param user_group:
         :param force:
         """
-        user_group = UserGroup.guess_instance(user_group)
+        user_group = db.UserGroup.guess_instance(user_group)
         try:
             # check if this group is not assigned to repo
-            assigned_groups = UserGroupRepoToPerm.query() \
-                .filter(UserGroupRepoToPerm.users_group == user_group).all()
+            assigned_groups = db.UserGroupRepoToPerm.query() \
+                .filter(db.UserGroupRepoToPerm.users_group == user_group).all()
             assigned_groups = [x.repository.repo_name for x in assigned_groups]
 
             if assigned_groups and not force:
@@ -167,8 +166,8 @@ class UserGroupModel(object):
 
     def add_user_to_group(self, user_group, user):
         """Return True if user already is in the group - else return the new UserGroupMember"""
-        user_group = UserGroup.guess_instance(user_group)
-        user = User.guess_instance(user)
+        user_group = db.UserGroup.guess_instance(user_group)
+        user = db.User.guess_instance(user)
 
         for m in user_group.members:
             u = m.user
@@ -177,7 +176,7 @@ class UserGroupModel(object):
                 return True
 
         try:
-            user_group_member = UserGroupMember()
+            user_group_member = db.UserGroupMember()
             user_group_member.user = user
             user_group_member.users_group = user_group
 
@@ -191,8 +190,8 @@ class UserGroupModel(object):
             raise
 
     def remove_user_from_group(self, user_group, user):
-        user_group = UserGroup.guess_instance(user_group)
-        user = User.guess_instance(user)
+        user_group = db.UserGroup.guess_instance(user_group)
+        user = db.User.guess_instance(user)
 
         user_group_member = None
         for m in user_group.members:
@@ -213,38 +212,38 @@ class UserGroupModel(object):
             return False
 
     def has_perm(self, user_group, perm):
-        user_group = UserGroup.guess_instance(user_group)
-        perm = Permission.guess_instance(perm)
+        user_group = db.UserGroup.guess_instance(user_group)
+        perm = db.Permission.guess_instance(perm)
 
-        return UserGroupToPerm.query() \
-            .filter(UserGroupToPerm.users_group == user_group) \
-            .filter(UserGroupToPerm.permission == perm).scalar() is not None
+        return db.UserGroupToPerm.query() \
+            .filter(db.UserGroupToPerm.users_group == user_group) \
+            .filter(db.UserGroupToPerm.permission == perm).scalar() is not None
 
     def grant_perm(self, user_group, perm):
-        user_group = UserGroup.guess_instance(user_group)
-        perm = Permission.guess_instance(perm)
+        user_group = db.UserGroup.guess_instance(user_group)
+        perm = db.Permission.guess_instance(perm)
 
         # if this permission is already granted skip it
-        _perm = UserGroupToPerm.query() \
-            .filter(UserGroupToPerm.users_group == user_group) \
-            .filter(UserGroupToPerm.permission == perm) \
+        _perm = db.UserGroupToPerm.query() \
+            .filter(db.UserGroupToPerm.users_group == user_group) \
+            .filter(db.UserGroupToPerm.permission == perm) \
             .scalar()
         if _perm:
             return
 
-        new = UserGroupToPerm()
+        new = db.UserGroupToPerm()
         new.users_group = user_group
         new.permission = perm
         meta.Session().add(new)
         return new
 
     def revoke_perm(self, user_group, perm):
-        user_group = UserGroup.guess_instance(user_group)
-        perm = Permission.guess_instance(perm)
+        user_group = db.UserGroup.guess_instance(user_group)
+        perm = db.Permission.guess_instance(perm)
 
-        obj = UserGroupToPerm.query() \
-            .filter(UserGroupToPerm.users_group == user_group) \
-            .filter(UserGroupToPerm.permission == perm).scalar()
+        obj = db.UserGroupToPerm.query() \
+            .filter(db.UserGroupToPerm.users_group == user_group) \
+            .filter(db.UserGroupToPerm.permission == perm).scalar()
         if obj is not None:
             meta.Session().delete(obj)
 
@@ -259,18 +258,18 @@ class UserGroupModel(object):
         :param perm: Instance of Permission, or permission_name
         """
 
-        user_group = UserGroup.guess_instance(user_group)
-        user = User.guess_instance(user)
-        permission = Permission.guess_instance(perm)
+        user_group = db.UserGroup.guess_instance(user_group)
+        user = db.User.guess_instance(user)
+        permission = db.Permission.guess_instance(perm)
 
         # check if we have that permission already
-        obj = UserUserGroupToPerm.query() \
-            .filter(UserUserGroupToPerm.user == user) \
-            .filter(UserUserGroupToPerm.user_group == user_group) \
+        obj = db.UserUserGroupToPerm.query() \
+            .filter(db.UserUserGroupToPerm.user == user) \
+            .filter(db.UserUserGroupToPerm.user_group == user_group) \
             .scalar()
         if obj is None:
             # create new !
-            obj = UserUserGroupToPerm()
+            obj = db.UserUserGroupToPerm()
             meta.Session().add(obj)
         obj.user_group = user_group
         obj.user = user
@@ -287,12 +286,12 @@ class UserGroupModel(object):
         :param user: Instance of User, user_id or username
         """
 
-        user_group = UserGroup.guess_instance(user_group)
-        user = User.guess_instance(user)
+        user_group = db.UserGroup.guess_instance(user_group)
+        user = db.User.guess_instance(user)
 
-        obj = UserUserGroupToPerm.query() \
-            .filter(UserUserGroupToPerm.user == user) \
-            .filter(UserUserGroupToPerm.user_group == user_group) \
+        obj = db.UserUserGroupToPerm.query() \
+            .filter(db.UserUserGroupToPerm.user == user) \
+            .filter(db.UserUserGroupToPerm.user_group == user_group) \
             .scalar()
         if obj is not None:
             meta.Session().delete(obj)
@@ -306,22 +305,22 @@ class UserGroupModel(object):
         :param user_group:
         :param perm:
         """
-        target_user_group = UserGroup.guess_instance(target_user_group)
-        user_group = UserGroup.guess_instance(user_group)
-        permission = Permission.guess_instance(perm)
+        target_user_group = db.UserGroup.guess_instance(target_user_group)
+        user_group = db.UserGroup.guess_instance(user_group)
+        permission = db.Permission.guess_instance(perm)
         # forbid assigning same user group to itself
         if target_user_group == user_group:
             raise RepoGroupAssignmentError('target repo:%s cannot be '
                                            'assigned to itself' % target_user_group)
 
         # check if we have that permission already
-        obj = UserGroupUserGroupToPerm.query() \
-            .filter(UserGroupUserGroupToPerm.target_user_group == target_user_group) \
-            .filter(UserGroupUserGroupToPerm.user_group == user_group) \
+        obj = db.UserGroupUserGroupToPerm.query() \
+            .filter(db.UserGroupUserGroupToPerm.target_user_group == target_user_group) \
+            .filter(db.UserGroupUserGroupToPerm.user_group == user_group) \
             .scalar()
         if obj is None:
             # create new !
-            obj = UserGroupUserGroupToPerm()
+            obj = db.UserGroupUserGroupToPerm()
             meta.Session().add(obj)
         obj.user_group = user_group
         obj.target_user_group = target_user_group
@@ -336,19 +335,19 @@ class UserGroupModel(object):
         :param target_user_group:
         :param user_group:
         """
-        target_user_group = UserGroup.guess_instance(target_user_group)
-        user_group = UserGroup.guess_instance(user_group)
+        target_user_group = db.UserGroup.guess_instance(target_user_group)
+        user_group = db.UserGroup.guess_instance(user_group)
 
-        obj = UserGroupUserGroupToPerm.query() \
-            .filter(UserGroupUserGroupToPerm.target_user_group == target_user_group) \
-            .filter(UserGroupUserGroupToPerm.user_group == user_group) \
+        obj = db.UserGroupUserGroupToPerm.query() \
+            .filter(db.UserGroupUserGroupToPerm.target_user_group == target_user_group) \
+            .filter(db.UserGroupUserGroupToPerm.user_group == user_group) \
             .scalar()
         if obj is not None:
             meta.Session().delete(obj)
             log.debug('Revoked perm on %s on %s', target_user_group, user_group)
 
     def enforce_groups(self, user, groups, extern_type=None):
-        user = User.guess_instance(user)
+        user = db.User.guess_instance(user)
         log.debug('Enforcing groups %s on user %s', user, groups)
         current_groups = user.group_member
         # find the external created groups
@@ -363,9 +362,9 @@ class UserGroupModel(object):
                 self.remove_user_from_group(gr, user)
 
         # now we calculate in which groups user should be == groups params
-        owner = User.get_first_admin().username
+        owner = db.User.get_first_admin().username
         for gr in set(groups):
-            existing_group = UserGroup.get_by_group_name(gr)
+            existing_group = db.UserGroup.get_by_group_name(gr)
             if not existing_group:
                 desc = 'Automatically created from plugin:%s' % extern_type
                 # we use first admin account to set the owner of the group

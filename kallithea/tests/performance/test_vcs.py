@@ -14,7 +14,7 @@
 
 import pytest
 
-from kallithea.model.db import Repository
+from kallithea.model import db
 from kallithea.tests import base
 
 
@@ -24,7 +24,7 @@ class TestVCSPerformance(base.TestController):
     def graphmod(self, repo):
         """ Simple test for running the graph_data function for profiling/testing performance. """
         from kallithea.lib.graphmod import graph_data
-        dbr = Repository.get_by_repo_name(repo)
+        dbr = db.Repository.get_by_repo_name(repo)
         scm_inst = dbr.scm_instance
         collection = scm_inst.get_changesets(start=0, end=None, branch_name=None)
         revs = [x.revision for x in collection]

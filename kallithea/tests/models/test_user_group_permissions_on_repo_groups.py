@@ -1,7 +1,6 @@
 import functools
 
-from kallithea.model import meta
-from kallithea.model.db import RepoGroup
+from kallithea.model import db, meta
 from kallithea.model.repo_group import RepoGroupModel
 from kallithea.model.user_group import UserGroupModel
 from kallithea.tests.fixture import Fixture
@@ -20,7 +19,7 @@ def permissions_setup_func(group_name='g0', perm='group.read', recursive='all'):
     """
     Resets all permissions to perm attribute
     """
-    repo_group = RepoGroup.get_by_group_name(group_name=group_name)
+    repo_group = db.RepoGroup.get_by_group_name(group_name=group_name)
     if not repo_group:
         raise Exception('Cannot get group %s' % group_name)
 

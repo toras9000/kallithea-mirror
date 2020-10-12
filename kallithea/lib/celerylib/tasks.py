@@ -45,7 +45,7 @@ from kallithea.lib.rcmail.smtp_mailer import SmtpMailer
 from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import asbool, ascii_bytes
 from kallithea.lib.vcs.utils import author_email
-from kallithea.model.db import RepoGroup, Repository, Setting, Statistics, User
+from kallithea.model import db
 from kallithea.model.repo import RepoModel
 
 
@@ -87,7 +87,7 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
 
         co_day_auth_aggr = {}
         commits_by_day_aggregate = {}
-        repo = Repository.get_by_repo_name(repo_name)
+        repo = db.Repository.get_by_repo_name(repo_name)
         if repo is None:
             return True
 
@@ -104,10 +104,10 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
         last_cs = None
         timegetter = itemgetter('time')
 
-        dbrepo = DBS.query(Repository) \
-            .filter(Repository.repo_name == repo_name).scalar()
-        cur_stats = DBS.query(Statistics) \
-            .filter(Statistics.repository == dbrepo).scalar()
+        dbrepo = DBS.query(db.Repository) \
+            .filter(db.Repository.repo_name == repo_name).scalar()
+        cur_stats = DBS.query(db.Statistics) \
+            .filter(db.Statistics.repository == dbrepo).scalar()
 
         if cur_stats is not None:
             last_rev = cur_stats.stat_on_revision
@@ -194,7 +194,7 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
                 "schema": ["commits"],
             }
 
-        stats = cur_stats if cur_stats else Statistics()
+        stats = cur_stats if cur_stats else db.Statistics()
         stats.commit_activity = ascii_bytes(ext_json.dumps(co_day_auth_aggr))
         stats.commit_activity_combined = ascii_bytes(ext_json.dumps(overview_data))
 
@@ -261,8 +261,8 @@ def send_email(recipients, subject, body='', html_body='', headers=None, from_na
 
     if not recipients:
         # if recipients are not defined we send to email_config + all admins
-        recipients = [u.email for u in User.query()
-                      .filter(User.admin == True).all()]
+        recipients = [u.email for u in db.User.query()
+                      .filter(db.User.admin == True).all()]
         if email_config.get('email_to') is not None:
             recipients += email_config.get('email_to').split(',')
 
@@ -326,7 +326,7 @@ def send_email(recipients, subject, body='', html_body='', headers=None, from_na
 def create_repo(form_data, cur_user):
     DBS = celerylib.get_session()
 
-    cur_user = User.guess_instance(cur_user)
+    cur_user = db.User.guess_instance(cur_user)
 
     owner = cur_user
     repo_name = form_data['repo_name']
@@ -340,10 +340,10 @@ def create_repo(form_data, cur_user):
     copy_fork_permissions = form_data.get('copy_permissions')
     copy_group_permissions = form_data.get('repo_copy_permissions')
     fork_of = form_data.get('fork_parent_id')
-    state = form_data.get('repo_state', Repository.STATE_PENDING)
+    state = form_data.get('repo_state', db.Repository.STATE_PENDING)
 
     # repo creation defaults, private and repo_type are filled in form
-    defs = Setting.get_default_repo_settings(strip_prefix=True)
+    defs = db.Setting.get_default_repo_settings(strip_prefix=True)
     enable_statistics = defs.get('repo_enable_statistics')
     enable_downloads = defs.get('repo_enable_downloads')
 
@@ -373,25 +373,25 @@ def create_repo(form_data, cur_user):
         RepoModel()._create_filesystem_repo(
             repo_name=repo_name,
             repo_type=repo_type,
-            repo_group=RepoGroup.guess_instance(repo_group),
+            repo_group=db.RepoGroup.guess_instance(repo_group),
             clone_uri=clone_uri,
         )
-        repo = Repository.get_by_repo_name(repo_name_full)
+        repo = db.Repository.get_by_repo_name(repo_name_full)
         log_create_repository(repo.get_dict(), created_by=owner.username)
 
         # update repo changeset caches initially
         repo.update_changeset_cache()
 
         # set new created state
-        repo.set_state(Repository.STATE_CREATED)
+        repo.set_state(db.Repository.STATE_CREATED)
         DBS.commit()
     except Exception as e:
         log.warning('Exception %s occurred when forking repository, '
                     'doing cleanup...' % e)
         # rollback things manually !
-        repo = Repository.get_by_repo_name(repo_name_full)
+        repo = db.Repository.get_by_repo_name(repo_name_full)
         if repo:
-            Repository.delete(repo.repo_id)
+            db.Repository.delete(repo.repo_id)
             DBS.commit()
             RepoModel()._delete_filesystem_repo(repo)
         raise
@@ -411,7 +411,7 @@ def create_repo_fork(form_data, cur_user):
     DBS = celerylib.get_session()
 
     base_path = kallithea.CONFIG['base_path']
-    cur_user = User.guess_instance(cur_user)
+    cur_user = db.User.guess_instance(cur_user)
 
     repo_name = form_data['repo_name']  # fork in this case
     repo_name_full = form_data['repo_name_full']
@@ -425,7 +425,7 @@ def create_repo_fork(form_data, cur_user):
     copy_fork_permissions = form_data.get('copy_permissions')
 
     try:
-        fork_of = Repository.guess_instance(form_data.get('fork_parent_id'))
+        fork_of = db.Repository.guess_instance(form_data.get('fork_parent_id'))
 
         RepoModel()._create_repo(
             repo_name=repo_name_full,
@@ -449,25 +449,25 @@ def create_repo_fork(form_data, cur_user):
         RepoModel()._create_filesystem_repo(
             repo_name=repo_name,
             repo_type=repo_type,
-            repo_group=RepoGroup.guess_instance(repo_group),
+            repo_group=db.RepoGroup.guess_instance(repo_group),
             clone_uri=source_repo_path,
         )
-        repo = Repository.get_by_repo_name(repo_name_full)
+        repo = db.Repository.get_by_repo_name(repo_name_full)
         log_create_repository(repo.get_dict(), created_by=owner.username)
 
         # update repo changeset caches initially
         repo.update_changeset_cache()
 
         # set new created state
-        repo.set_state(Repository.STATE_CREATED)
+        repo.set_state(db.Repository.STATE_CREATED)
         DBS.commit()
     except Exception as e:
         log.warning('Exception %s occurred when forking repository, '
                     'doing cleanup...' % e)
         # rollback things manually !
-        repo = Repository.get_by_repo_name(repo_name_full)
+        repo = db.Repository.get_by_repo_name(repo_name_full)
         if repo:
-            Repository.delete(repo.repo_id)
+            db.Repository.delete(repo.repo_id)
             DBS.commit()
             RepoModel()._delete_filesystem_repo(repo)
         raise
@@ -476,7 +476,7 @@ def create_repo_fork(form_data, cur_user):
 
 
 def __get_codes_stats(repo_name):
-    repo = Repository.get_by_repo_name(repo_name).scm_instance
+    repo = db.Repository.get_by_repo_name(repo_name).scm_instance
 
     tip = repo.get_changeset()
     code_stats = {}

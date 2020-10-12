@@ -1,5 +1,5 @@
 import kallithea
-from kallithea.model.db import User, UserIpMap
+from kallithea.model import db
 from kallithea.tests import base
 
 
@@ -46,7 +46,7 @@ class TestAdminPermissionsController(base.TestController):
 
         # Delete latest IP and verify same IP is rejected again
 
-        x = UserIpMap.query().filter_by(ip_addr='0.0.1.0/24').first()
+        x = db.UserIpMap.query().filter_by(ip_addr='0.0.1.0/24').first()
         response = self.app.post(base.url('edit_user_ips_delete', id=default_user_id),
                                  params=dict(del_ip_id=x.ip_id,
                                              _session_csrf_secret_token=self.session_csrf_secret_token()))
@@ -57,7 +57,7 @@ class TestAdminPermissionsController(base.TestController):
 
         # Delete first IP and verify unlimited access again
 
-        x = UserIpMap.query().filter_by(ip_addr='0.0.0.0/24').first()
+        x = db.UserIpMap.query().filter_by(ip_addr='0.0.0.0/24').first()
         response = self.app.post(base.url('edit_user_ips_delete', id=default_user_id),
                                  params=dict(del_ip_id=x.ip_id,
                                              _session_csrf_secret_token=self.session_csrf_secret_token()))
@@ -72,7 +72,7 @@ class TestAdminPermissionsController(base.TestController):
         # Test response...
 
     def test_edit_permissions_permissions(self):
-        user = User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
+        user = db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
 
         # Test unauthenticated access - it will redirect to login page
         response = self.app.post(

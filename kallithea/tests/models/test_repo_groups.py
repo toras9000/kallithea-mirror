@@ -4,8 +4,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 
 import kallithea
-from kallithea.model import meta
-from kallithea.model.db import RepoGroup
+from kallithea.model import db, meta
 from kallithea.model.repo import RepoModel
 from kallithea.model.repo_group import RepoGroupModel
 from kallithea.tests import base
@@ -83,13 +82,13 @@ class TestRepoGroups(base.TestController):
         sg1 = fixture.create_repo_group('deleteme')
         self.__delete_group(sg1.group_id)
 
-        assert RepoGroup.get(sg1.group_id) is None
+        assert db.RepoGroup.get(sg1.group_id) is None
         assert not self.__check_path('deteteme')
 
         sg1 = fixture.create_repo_group('deleteme', parent_group_id=self.g1.group_id)
         self.__delete_group(sg1.group_id)
 
-        assert RepoGroup.get(sg1.group_id) is None
+        assert db.RepoGroup.get(sg1.group_id) is None
         assert not self.__check_path('test1', 'deteteme')
 
     def test_rename_single_group(self):
@@ -97,7 +96,7 @@ class TestRepoGroups(base.TestController):
 
         new_sg1 = _update_repo_group(sg1.group_id, 'after')
         assert self.__check_path('after')
-        assert RepoGroup.get_by_group_name('initial') is None
+        assert db.RepoGroup.get_by_group_name('initial') is None
 
     def test_update_group_parent(self):
 
@@ -105,16 +104,16 @@ class TestRepoGroups(base.TestController):
 
         new_sg1 = _update_repo_group(sg1.group_id, 'after', parent_id=self.g1.group_id)
         assert self.__check_path('test1', 'after')
-        assert RepoGroup.get_by_group_name('test1/initial') is None
+        assert db.RepoGroup.get_by_group_name('test1/initial') is None
 
         new_sg1 = _update_repo_group(sg1.group_id, 'after', parent_id=self.g3.group_id)
         assert self.__check_path('test3', 'after')
-        assert RepoGroup.get_by_group_name('test3/initial') == None
+        assert db.RepoGroup.get_by_group_name('test3/initial') == None
 
         new_sg1 = _update_repo_group(sg1.group_id, 'hello')
         assert self.__check_path('hello')
 
-        assert RepoGroup.get_by_group_name('hello') == new_sg1
+        assert db.RepoGroup.get_by_group_name('hello') == new_sg1
 
     def test_subgrouping_with_repo(self):
 

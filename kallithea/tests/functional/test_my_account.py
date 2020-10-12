@@ -3,8 +3,7 @@
 from tg.util.webtest import test_context
 
 from kallithea.lib import helpers as h
-from kallithea.model import meta
-from kallithea.model.db import Repository, User, UserApiKeys, UserFollowing, UserSshKeys
+from kallithea.model import db, meta
 from kallithea.model.user import UserModel
 from kallithea.tests import base
 from kallithea.tests.fixture import Fixture
@@ -18,7 +17,7 @@ class TestMyAccountController(base.TestController):
 
     @classmethod
     def teardown_class(cls):
-        if User.get_by_username(cls.test_user_1):
+        if db.User.get_by_username(cls.test_user_1):
             UserModel().delete(cls.test_user_1)
             meta.Session().commit()
 
@@ -31,8 +30,8 @@ class TestMyAccountController(base.TestController):
     def test_my_account_my_repos(self):
         self.log_user()
         response = self.app.get(base.url('my_account_repos'))
-        cnt = Repository.query().filter(Repository.owner ==
-                           User.get_by_username(base.TEST_USER_ADMIN_LOGIN)).count()
+        cnt = db.Repository.query().filter(db.Repository.owner ==
+                           db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN)).count()
         response.mustcontain('"raw_name": "%s"' % base.HG_REPO)
         response.mustcontain('"just_name": "%s"' % base.GIT_REPO)
 
@@ -40,8 +39,8 @@ class TestMyAccountController(base.TestController):
         self.log_user()
         response = self.app.get(base.url('my_account_watched'))
 
-        cnt = UserFollowing.query().filter(UserFollowing.user ==
-                            User.get_by_username(base.TEST_USER_ADMIN_LOGIN)).count()
+        cnt = db.UserFollowing.query().filter(db.UserFollowing.user ==
+                            db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN)).count()
         response.mustcontain('"raw_name": "%s"' % base.HG_REPO)
         response.mustcontain('"just_name": "%s"' % base.GIT_REPO)
 
@@ -76,10 +75,9 @@ class TestMyAccountController(base.TestController):
 
         response = self.app.get(base.url('my_account_emails'))
 
-        from kallithea.model.db import UserEmailMap
-        email_id = UserEmailMap.query() \
-            .filter(UserEmailMap.user == User.get_by_username(base.TEST_USER_ADMIN_LOGIN)) \
-            .filter(UserEmailMap.email == 'barz@example.com').one().email_id
+        email_id = db.UserEmailMap.query() \
+            .filter(db.UserEmailMap.user == db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN)) \
+            .filter(db.UserEmailMap.email == 'barz@example.com').one().email_id
 
         response.mustcontain('barz@example.com')
         response.mustcontain('<input id="del_email_id" name="del_email_id" type="hidden" value="%s" />' % email_id)
@@ -128,7 +126,7 @@ class TestMyAccountController(base.TestController):
         self.checkSessionFlash(response,
                                'Your account was updated successfully')
 
-        updated_user = User.get_by_username(self.test_user_1)
+        updated_user = db.User.get_by_username(self.test_user_1)
         updated_params = updated_user.get_api_data(True)
         updated_params.update({'password_confirmation': ''})
         updated_params.update({'new_password': ''})
@@ -193,7 +191,7 @@ class TestMyAccountController(base.TestController):
 
     def test_my_account_api_keys(self):
         usr = self.log_user(base.TEST_USER_REGULAR2_LOGIN, base.TEST_USER_REGULAR2_PASS)
-        user = User.get(usr['user_id'])
+        user = db.User.get(usr['user_id'])
         response = self.app.get(base.url('my_account_api_keys'))
         response.mustcontain(user.api_key)
         response.mustcontain('Expires: Never')
@@ -205,41 +203,41 @@ class TestMyAccountController(base.TestController):
     ])
     def test_my_account_add_api_keys(self, desc, lifetime):
         usr = self.log_user(base.TEST_USER_REGULAR2_LOGIN, base.TEST_USER_REGULAR2_PASS)
-        user = User.get(usr['user_id'])
+        user = db.User.get(usr['user_id'])
         response = self.app.post(base.url('my_account_api_keys'),
                                  {'description': desc, 'lifetime': lifetime, '_session_csrf_secret_token': self.session_csrf_secret_token()})
         self.checkSessionFlash(response, 'API key successfully created')
         try:
             response = response.follow()
-            user = User.get(usr['user_id'])
+            user = db.User.get(usr['user_id'])
             for api_key in user.api_keys:
                 response.mustcontain(api_key)
         finally:
-            for api_key in UserApiKeys.query().all():
+            for api_key in db.UserApiKeys.query().all():
                 meta.Session().delete(api_key)
                 meta.Session().commit()
 
     def test_my_account_remove_api_key(self):
         usr = self.log_user(base.TEST_USER_REGULAR2_LOGIN, base.TEST_USER_REGULAR2_PASS)
-        user = User.get(usr['user_id'])
+        user = db.User.get(usr['user_id'])
         response = self.app.post(base.url('my_account_api_keys'),
                                  {'description': 'desc', 'lifetime': -1, '_session_csrf_secret_token': self.session_csrf_secret_token()})
         self.checkSessionFlash(response, 'API key successfully created')
         response = response.follow()
 
         # now delete our key
-        keys = UserApiKeys.query().all()
+        keys = db.UserApiKeys.query().all()
         assert 1 == len(keys)
 
         response = self.app.post(base.url('my_account_api_keys_delete'),
                  {'del_api_key': keys[0].api_key, '_session_csrf_secret_token': self.session_csrf_secret_token()})
         self.checkSessionFlash(response, 'API key successfully deleted')
-        keys = UserApiKeys.query().all()
+        keys = db.UserApiKeys.query().all()
         assert 0 == len(keys)
 
     def test_my_account_reset_main_api_key(self):
         usr = self.log_user(base.TEST_USER_REGULAR2_LOGIN, base.TEST_USER_REGULAR2_PASS)
-        user = User.get(usr['user_id'])
+        user = db.User.get(usr['user_id'])
         api_key = user.api_key
         response = self.app.get(base.url('my_account_api_keys'))
         response.mustcontain(api_key)
@@ -266,7 +264,7 @@ class TestMyAccountController(base.TestController):
         response = response.follow()
         response.mustcontain(fingerprint)
         user_id = response.session['authuser']['user_id']
-        ssh_key = UserSshKeys.query().filter(UserSshKeys.user_id == user_id).one()
+        ssh_key = db.UserSshKeys.query().filter(db.UserSshKeys.user_id == user_id).one()
         assert ssh_key.fingerprint == fingerprint
         assert ssh_key.description == description
         meta.Session().delete(ssh_key)
@@ -285,12 +283,12 @@ class TestMyAccountController(base.TestController):
         self.checkSessionFlash(response, 'SSH key %s successfully added' % fingerprint)
         response.follow()
         user_id = response.session['authuser']['user_id']
-        ssh_key = UserSshKeys.query().filter(UserSshKeys.user_id == user_id).one()
+        ssh_key = db.UserSshKeys.query().filter(db.UserSshKeys.user_id == user_id).one()
         assert ssh_key.description == 'me@localhost'
 
         response = self.app.post(base.url('my_account_ssh_keys_delete'),
                                  {'del_public_key_fingerprint': ssh_key.fingerprint,
                                   '_session_csrf_secret_token': self.session_csrf_secret_token()})
         self.checkSessionFlash(response, 'SSH key successfully deleted')
-        keys = UserSshKeys.query().all()
+        keys = db.UserSshKeys.query().all()
         assert 0 == len(keys)

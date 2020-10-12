@@ -3,8 +3,7 @@ import datetime
 import os
 from os.path import dirname
 
-from kallithea.model import meta
-from kallithea.model.db import UserLog
+from kallithea.model import db, meta
 from kallithea.tests import base
 
 
@@ -15,7 +14,7 @@ class TestAdminController(base.TestController):
 
     @classmethod
     def setup_class(cls):
-        UserLog.query().delete()
+        db.UserLog.query().delete()
         meta.Session().commit()
 
         def strptime(val):
@@ -32,7 +31,7 @@ class TestAdminController(base.TestController):
 
         with open(os.path.join(FIXTURES, 'journal_dump.csv')) as f:
             for row in csv.DictReader(f):
-                ul = UserLog()
+                ul = db.UserLog()
                 for k, v in row.items():
                     if k == 'action_date':
                         v = strptime(v)
@@ -45,7 +44,7 @@ class TestAdminController(base.TestController):
 
     @classmethod
     def teardown_class(cls):
-        UserLog.query().delete()
+        db.UserLog.query().delete()
         meta.Session().commit()
 
     def test_index(self):

@@ -56,8 +56,8 @@ from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError
 #==============================================================================
 from kallithea.lib.vcs.utils import author_email, author_name
 from kallithea.lib.webutils import url
+from kallithea.model import db
 from kallithea.model.changeset_status import ChangesetStatusModel
-from kallithea.model.db import ChangesetStatus, Permission, PullRequest, User, UserIpMap
 
 
 # mute pyflakes "imported but unused"
@@ -600,7 +600,7 @@ def user_attr_or_none(author, show_attr):
     - or return None if user not found"""
     email = author_email(author)
     if email:
-        user = User.get_by_email(email)
+        user = db.User.get_by_email(email)
         if user is not None:
             return getattr(user, show_attr)
     return None
@@ -628,7 +628,7 @@ def person(author, show_attr="username"):
     """Find the user identified by 'author', return one of the users attributes,
     default to the username attribute, None if there is no user"""
     # if author is already an instance use it for extraction
-    if isinstance(author, User):
+    if isinstance(author, db.User):
         return getattr(author, show_attr)
 
     value = user_attr_or_none(author, show_attr)
@@ -643,7 +643,7 @@ def person_by_id(id_, show_attr="username"):
     # maybe it's an ID ?
     if str(id_).isdigit() or isinstance(id_, int):
         id_ = int(id_)
-        user = User.get(id_)
+        user = db.User.get(id_)
         if user is not None:
             return getattr(user, show_attr)
     return id_
@@ -822,7 +822,7 @@ def action_parser(user_log, feed=False, parse_cs=False):
 
     def get_pull_request():
         pull_request_id = action_params
-        nice_id = PullRequest.make_nice_id(pull_request_id)
+        nice_id = db.PullRequest.make_nice_id(pull_request_id)
 
         deleted = user_log.repository is None
         if deleted:
@@ -979,7 +979,7 @@ def gravatar_url(email_address, size=30, default=''):
         return default
 
     parsed_url = urllib.parse.urlparse(url.current(qualified=True))
-    return (c.visual.gravatar_url or User.DEFAULT_GRAVATAR_URL) \
+    return (c.visual.gravatar_url or db.User.DEFAULT_GRAVATAR_URL) \
                .replace('{email}', email_address) \
                .replace('{md5email}', hashlib.md5(safe_bytes(email_address).lower()).hexdigest()) \
                .replace('{netloc}', parsed_url.netloc) \
@@ -1310,11 +1310,11 @@ def changeset_status(repo, revision):
 
 
 def changeset_status_lbl(changeset_status):
-    return ChangesetStatus.get_status_lbl(changeset_status)
+    return db.ChangesetStatus.get_status_lbl(changeset_status)
 
 
 def get_permission_name(key):
-    return dict(Permission.PERMS).get(key)
+    return dict(db.Permission.PERMS).get(key)
 
 
 def journal_filter_help():
@@ -1345,7 +1345,7 @@ def not_mapped_error(repo_name):
 
 
 def ip_range(ip_addr):
-    s, e = UserIpMap._get_ip_range(ip_addr)
+    s, e = db.UserIpMap._get_ip_range(ip_addr)
     return '%s - %s' % (s, e)
 
 

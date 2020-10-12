@@ -51,8 +51,7 @@ from kallithea.lib.utils import get_repo_slug, is_valid_repo
 from kallithea.lib.utils2 import AttributeDict, asbool, ascii_bytes, safe_int, safe_str, set_hook_environment
 from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError, EmptyRepositoryError, RepositoryError
 from kallithea.lib.webutils import url
-from kallithea.model import meta
-from kallithea.model.db import PullRequest, Repository, Setting, User
+from kallithea.model import db, meta
 from kallithea.model.scm import ScmModel
 
 
@@ -223,7 +222,7 @@ class BaseVCSController(object):
         Returns (None, wsgi_app) to send the wsgi_app response to the client.
         """
         # Use anonymous access if allowed for action on repo.
-        default_user = User.get_default_user()
+        default_user = db.User.get_default_user()
         default_authuser = AuthUser.make(dbuser=default_user, ip_addr=ip_addr)
         if default_authuser is None:
             log.debug('No anonymous access at all') # move on to proper user auth
@@ -260,7 +259,7 @@ class BaseVCSController(object):
         # CHECK PERMISSIONS FOR THIS REQUEST USING GIVEN USERNAME
         #==============================================================
         try:
-            user = User.get_by_username_or_email(username)
+            user = db.User.get_by_username_or_email(username)
         except Exception:
             log.error(traceback.format_exc())
             return None, webob.exc.HTTPInternalServerError()
@@ -369,7 +368,7 @@ class BaseController(TGController):
                 raise webob.exc.HTTPForbidden()
 
         c.kallithea_version = kallithea.__version__
-        rc_config = Setting.get_app_settings()
+        rc_config = db.Setting.get_app_settings()
 
         # Visual options
         c.visual = AttributeDict({})
@@ -400,8 +399,8 @@ class BaseController(TGController):
                     })();
             </script>''' % c.ga_code
         c.site_name = rc_config.get('title')
-        c.clone_uri_tmpl = rc_config.get('clone_uri_tmpl') or Repository.DEFAULT_CLONE_URI
-        c.clone_ssh_tmpl = rc_config.get('clone_ssh_tmpl') or Repository.DEFAULT_CLONE_SSH
+        c.clone_uri_tmpl = rc_config.get('clone_uri_tmpl') or db.Repository.DEFAULT_CLONE_URI
+        c.clone_ssh_tmpl = rc_config.get('clone_ssh_tmpl') or db.Repository.DEFAULT_CLONE_SSH
 
         ## INI stored
         c.visual.allow_repo_location_change = asbool(config.get('allow_repo_location_change', True))
@@ -417,7 +416,7 @@ class BaseController(TGController):
 
         self.cut_off_limit = safe_int(config.get('cut_off_limit'))
 
-        c.my_pr_count = PullRequest.query(reviewer_id=request.authuser.user_id, include_closed=False).count()
+        c.my_pr_count = db.PullRequest.query(reviewer_id=request.authuser.user_id, include_closed=False).count()
 
         self.scm_model = ScmModel()
 
@@ -450,11 +449,11 @@ class BaseController(TGController):
             else:
                 if user_info is not None:
                     username = user_info['username']
-                    user = User.get_by_username(username, case_insensitive=True)
+                    user = db.User.get_by_username(username, case_insensitive=True)
                     return log_in_user(user, remember=False, is_external_auth=True, ip_addr=ip_addr)
 
         # User is default user (if active) or anonymous
-        default_user = User.get_default_user()
+        default_user = db.User.get_default_user()
         authuser = AuthUser.make(dbuser=default_user, ip_addr=ip_addr)
         if authuser is None: # fall back to anonymous
             authuser = AuthUser(dbuser=default_user) # TODO: somehow use .make?
@@ -513,7 +512,7 @@ class BaseController(TGController):
                 needs_csrf_check = request.method not in ['GET', 'HEAD']
 
             else:
-                dbuser = User.get_by_api_key(api_key)
+                dbuser = db.User.get_by_api_key(api_key)
                 if dbuser is None:
                     log.info('No db user found for authentication with API key ****%s from %s',
                              api_key[-4:], ip_addr)
@@ -553,7 +552,7 @@ class BaseRepoController(BaseController):
     def _before(self, *args, **kwargs):
         super(BaseRepoController, self)._before(*args, **kwargs)
         if c.repo_name:  # extracted from request by base-base BaseController._before
-            _dbr = Repository.get_by_repo_name(c.repo_name)
+            _dbr = db.Repository.get_by_repo_name(c.repo_name)
             if not _dbr:
                 return
 
@@ -565,7 +564,7 @@ class BaseRepoController(BaseController):
             if route in ['delete_repo']:
                 return
 
-            if _dbr.repo_state in [Repository.STATE_PENDING]:
+            if _dbr.repo_state in [db.Repository.STATE_PENDING]:
                 if route in ['repo_creating_home']:
                     return
                 check_url = url('repo_creating_home', repo_name=c.repo_name)

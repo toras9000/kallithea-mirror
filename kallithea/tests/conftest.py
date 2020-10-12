@@ -15,8 +15,7 @@ import kallithea.tests.base  # FIXME: needed for setting testapp instance!!!
 from kallithea.controllers.root import RootController
 from kallithea.lib import inifile
 from kallithea.lib.utils import repo2db_mapper
-from kallithea.model import meta
-from kallithea.model.db import Setting, User, UserIpMap
+from kallithea.model import db, meta
 from kallithea.model.scm import ScmModel
 from kallithea.model.user import UserModel
 from kallithea.tests.base import TEST_USER_ADMIN_LOGIN, TEST_USER_ADMIN_PASS, TEST_USER_REGULAR_LOGIN, TESTS_TMP_PATH, invalidate_all_caches
@@ -114,7 +113,7 @@ def _set_settings(*kvtseq):
         k = kvt[0]
         v = kvt[1]
         t = kvt[2] if len(kvt) == 3 else 'unicode'
-        Setting.create_or_update(k, v, t)
+        db.Setting.create_or_update(k, v, t)
     session.commit()
 
 
@@ -124,18 +123,18 @@ def set_test_settings():
     # Save settings.
     settings_snapshot = [
         (s.app_settings_name, s.app_settings_value, s.app_settings_type)
-        for s in Setting.query().all()]
+        for s in db.Setting.query().all()]
     yield _set_settings
     # Restore settings.
     session = meta.Session()
     keys = frozenset(k for (k, v, t) in settings_snapshot)
-    for s in Setting.query().all():
+    for s in db.Setting.query().all():
         if s.app_settings_name not in keys:
             session.delete(s)
     for k, v, t in settings_snapshot:
         if t == 'list' and hasattr(v, '__iter__'):
             v = ','.join(v) # Quirk: must format list value manually.
-        Setting.create_or_update(k, v, t)
+        db.Setting.create_or_update(k, v, t)
     session.commit()
 
 
@@ -150,10 +149,10 @@ def auto_clear_ip_permissions():
 
     user_ids = []
     user_ids.append(kallithea.DEFAULT_USER_ID)
-    user_ids.append(User.get_by_username(TEST_USER_REGULAR_LOGIN).user_id)
+    user_ids.append(db.User.get_by_username(TEST_USER_REGULAR_LOGIN).user_id)
 
     for user_id in user_ids:
-        for ip in UserIpMap.query().filter(UserIpMap.user_id == user_id):
+        for ip in db.UserIpMap.query().filter(db.UserIpMap.user_id == user_id):
             user_model.delete_extra_ip(user_id, ip.ip_id)
 
     # IP permissions are cached, need to invalidate this cache explicitly

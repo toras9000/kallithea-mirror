@@ -40,10 +40,9 @@ from kallithea.lib import helpers as h
 from kallithea.lib.auth import AuthUser, LoginRequired
 from kallithea.lib.base import BaseController, IfSshEnabled, render
 from kallithea.lib.utils2 import generate_api_key, safe_int
-from kallithea.lib.webutils import url
-from kallithea.model import meta
+from kallithea.lib.utils3 import url
+from kallithea.model import db, meta
 from kallithea.model.api_key import ApiKeyModel
-from kallithea.model.db import Repository, User, UserEmailMap, UserFollowing
 from kallithea.model.forms import PasswordChangeForm, UserForm
 from kallithea.model.repo import RepoModel
 from kallithea.model.ssh_key import SshKeyModel, SshKeyModelException
@@ -60,7 +59,7 @@ class MyAccountController(BaseController):
         super(MyAccountController, self)._before(*args, **kwargs)
 
     def __load_data(self):
-        c.user = User.get(request.authuser.user_id)
+        c.user = db.User.get(request.authuser.user_id)
         if c.user.is_default_user:
             h.flash(_("You can't edit this user since it's"
                       " crucial for entire application"), category='warning')
@@ -69,14 +68,14 @@ class MyAccountController(BaseController):
     def _load_my_repos_data(self, watched=False):
         if watched:
             admin = False
-            repos_list = meta.Session().query(Repository) \
-                         .join(UserFollowing) \
-                         .filter(UserFollowing.user_id ==
+            repos_list = meta.Session().query(db.Repository) \
+                         .join(db.UserFollowing) \
+                         .filter(db.UserFollowing.user_id ==
                                  request.authuser.user_id).all()
         else:
             admin = True
-            repos_list = meta.Session().query(Repository) \
-                         .filter(Repository.owner_id ==
+            repos_list = meta.Session().query(db.Repository) \
+                         .filter(db.Repository.owner_id ==
                                  request.authuser.user_id).all()
 
         return RepoModel().get_repos_as_dict(repos_list, admin=admin)
@@ -86,7 +85,7 @@ class MyAccountController(BaseController):
         self.__load_data()
         c.perm_user = AuthUser(user_id=request.authuser.user_id)
         managed_fields = auth_modules.get_managed_fields(c.user)
-        def_user_perms = AuthUser(dbuser=User.get_default_user()).global_permissions
+        def_user_perms = AuthUser(dbuser=db.User.get_default_user()).global_permissions
         if 'hg.register.none' in def_user_perms:
             managed_fields.extend(['username', 'firstname', 'lastname', 'email'])
 
@@ -191,8 +190,8 @@ class MyAccountController(BaseController):
         c.active = 'emails'
         self.__load_data()
 
-        c.user_email_map = UserEmailMap.query() \
-            .filter(UserEmailMap.user == c.user).all()
+        c.user_email_map = db.UserEmailMap.query() \
+            .filter(db.UserEmailMap.user == c.user).all()
         return render('admin/my_account/my_account.html')
 
     def my_account_emails_add(self):
@@ -246,7 +245,7 @@ class MyAccountController(BaseController):
     def my_account_api_keys_delete(self):
         api_key = request.POST.get('del_api_key')
         if request.POST.get('del_api_key_builtin'):
-            user = User.get(request.authuser.user_id)
+            user = db.User.get(request.authuser.user_id)
             user.api_key = generate_api_key()
             meta.Session().commit()
             h.flash(_("API key successfully reset"), category='success')

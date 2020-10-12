@@ -36,9 +36,8 @@ from kallithea.lib import auth_modules
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import HasPermissionAnyDecorator, LoginRequired
 from kallithea.lib.base import BaseController, render
-from kallithea.lib.webutils import url
-from kallithea.model import meta
-from kallithea.model.db import Setting
+from kallithea.lib.utils3 import url
+from kallithea.model import db, meta
 from kallithea.model.forms import AuthSettingsForm
 
 
@@ -77,7 +76,7 @@ class AuthSettingsController(BaseController):
                 if "default" in v:
                     c.defaults[fullname] = v["default"]
                 # Current values will be the default on the form, if there are any
-                setting = Setting.get_by_name(fullname)
+                setting = db.Setting.get_by_name(fullname)
                 if setting is not None:
                     c.defaults[fullname] = setting.app_settings_value
         if defaults:
@@ -131,7 +130,7 @@ class AuthSettingsController(BaseController):
                     # we want to store it comma separated inside our settings
                     v = ','.join(v)
                 log.debug("%s = %s", k, str(v))
-                setting = Setting.create_or_update(k, v)
+                setting = db.Setting.create_or_update(k, v)
             meta.Session().commit()
             h.flash(_('Auth settings updated successfully'),
                        category='success')

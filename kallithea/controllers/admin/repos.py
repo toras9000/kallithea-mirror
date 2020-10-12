@@ -45,8 +45,7 @@ from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import safe_int
 from kallithea.lib.vcs import RepositoryError
 from kallithea.lib.webutils import url
-from kallithea.model import meta
-from kallithea.model.db import RepoGroup, Repository, RepositoryField, Setting, UserFollowing
+from kallithea.model import db, meta
 from kallithea.model.forms import RepoFieldForm, RepoForm, RepoPermsForm
 from kallithea.model.repo import RepoModel
 from kallithea.model.scm import AvailableRepoGroupChoices, RepoList, ScmModel
@@ -91,7 +90,7 @@ class ReposController(BaseRepoController):
         return defaults
 
     def index(self, format='html'):
-        repos_list = RepoList(Repository.query(sorted=True).all(), perm_level='admin')
+        repos_list = RepoList(db.Repository.query(sorted=True).all(), perm_level='admin')
         # the repo list will be filtered to only show repos where the user has read permissions
         repos_data = RepoModel().get_repos_as_dict(repos_list, admin=True)
         # data used to render the grid
@@ -141,9 +140,9 @@ class ReposController(BaseRepoController):
         parent_group = request.GET.get('parent_group')
 
         ## apply the defaults from defaults page
-        defaults = Setting.get_default_repo_settings(strip_prefix=True)
+        defaults = db.Setting.get_default_repo_settings(strip_prefix=True)
         if parent_group:
-            prg = RepoGroup.get(parent_group)
+            prg = db.RepoGroup.get(parent_group)
             if prg is None or not any(rgc[0] == prg.group_id
                                       for rgc in c.repo_groups):
                 raise HTTPForbidden
@@ -177,8 +176,8 @@ class ReposController(BaseRepoController):
                 if task_result.failed():
                     raise HTTPInternalServerError(task_result.traceback)
 
-        repo = Repository.get_by_repo_name(repo_name)
-        if repo and repo.repo_state == Repository.STATE_CREATED:
+        repo = db.Repository.get_by_repo_name(repo_name)
+        if repo and repo.repo_state == db.Repository.STATE_CREATED:
             if repo.clone_uri:
                 h.flash(_('Created repository %s from %s')
                         % (repo.repo_name, repo.clone_uri_hidden), category='success')
@@ -202,12 +201,12 @@ class ReposController(BaseRepoController):
         c.repo_info = self._load_repo()
         self.__load_defaults(c.repo_info)
         c.active = 'settings'
-        c.repo_fields = RepositoryField.query() \
-            .filter(RepositoryField.repository == c.repo_info).all()
+        c.repo_fields = db.RepositoryField.query() \
+            .filter(db.RepositoryField.repository == c.repo_info).all()
 
         repo_model = RepoModel()
         changed_name = repo_name
-        repo = Repository.get_by_repo_name(repo_name)
+        repo = db.Repository.get_by_repo_name(repo_name)
         old_data = {
             'repo_name': repo_name,
             'repo_group': repo.group.get_dict() if repo.group else {},
@@ -285,8 +284,8 @@ class ReposController(BaseRepoController):
     @HasRepoPermissionLevelDecorator('admin')
     def edit(self, repo_name):
         defaults = self.__load_data()
-        c.repo_fields = RepositoryField.query() \
-            .filter(RepositoryField.repository == c.repo_info).all()
+        c.repo_fields = db.RepositoryField.query() \
+            .filter(db.RepositoryField.repository == c.repo_info).all()
         c.active = 'settings'
         return htmlfill.render(
             render('admin/repos/repo_edit.html'),
@@ -352,8 +351,8 @@ class ReposController(BaseRepoController):
     @HasRepoPermissionLevelDecorator('admin')
     def edit_fields(self, repo_name):
         c.repo_info = self._load_repo()
-        c.repo_fields = RepositoryField.query() \
-            .filter(RepositoryField.repository == c.repo_info).all()
+        c.repo_fields = db.RepositoryField.query() \
+            .filter(db.RepositoryField.repository == c.repo_info).all()
         c.active = 'fields'
         if request.POST:
 
@@ -364,8 +363,8 @@ class ReposController(BaseRepoController):
     def create_repo_field(self, repo_name):
         try:
             form_result = RepoFieldForm()().to_python(dict(request.POST))
-            new_field = RepositoryField()
-            new_field.repository = Repository.get_by_repo_name(repo_name)
+            new_field = db.RepositoryField()
+            new_field.repository = db.Repository.get_by_repo_name(repo_name)
             new_field.field_key = form_result['new_field_key']
             new_field.field_type = form_result['new_field_type']  # python type
             new_field.field_value = form_result['new_field_value']  # set initial blank value
@@ -382,7 +381,7 @@ class ReposController(BaseRepoController):
 
     @HasRepoPermissionLevelDecorator('admin')
     def delete_repo_field(self, repo_name, field_id):
-        field = RepositoryField.get_or_404(field_id)
+        field = db.RepositoryField.get_or_404(field_id)
         try:
             meta.Session().delete(field)
             meta.Session().commit()
@@ -396,11 +395,11 @@ class ReposController(BaseRepoController):
     def edit_advanced(self, repo_name):
         c.repo_info = self._load_repo()
         c.default_user_id = kallithea.DEFAULT_USER_ID
-        c.in_public_journal = UserFollowing.query() \
-            .filter(UserFollowing.user_id == c.default_user_id) \
-            .filter(UserFollowing.follows_repository == c.repo_info).scalar()
+        c.in_public_journal = db.UserFollowing.query() \
+            .filter(db.UserFollowing.user_id == c.default_user_id) \
+            .filter(db.UserFollowing.follows_repository == c.repo_info).scalar()
 
-        _repos = Repository.query(sorted=True).all()
+        _repos = db.Repository.query(sorted=True).all()
         read_access_repos = RepoList(_repos, perm_level='read')
         c.repos_list = [(None, _('-- Not a fork --'))]
         c.repos_list += [(x.repo_id, x.repo_name)
@@ -431,7 +430,7 @@ class ReposController(BaseRepoController):
         """
 
         try:
-            repo_id = Repository.get_by_repo_name(repo_name).repo_id
+            repo_id = db.Repository.get_by_repo_name(repo_name).repo_id
             user_id = kallithea.DEFAULT_USER_ID
             self.scm_model.toggle_following_repo(repo_id, user_id)
             h.flash(_('Updated repository visibility in public journal'),

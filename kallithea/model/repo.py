@@ -40,9 +40,7 @@ from kallithea.lib.hooks import log_delete_repository
 from kallithea.lib.utils import is_valid_repo_uri, make_ui
 from kallithea.lib.utils2 import LazyProperty, get_current_authuser, obfuscate_url_pw, remove_prefix
 from kallithea.lib.vcs.backends import get_backend
-from kallithea.model import meta
-from kallithea.model.db import (Permission, RepoGroup, Repository, RepositoryField, Statistics, Ui, User, UserGroup, UserGroupRepoGroupToPerm,
-                                UserGroupRepoToPerm, UserRepoGroupToPerm, UserRepoToPerm)
+from kallithea.model import db, meta
 
 
 log = logging.getLogger(__name__)
@@ -53,7 +51,7 @@ class RepoModel(object):
     def _create_default_perms(self, repository, private):
         # create default permission
         default = 'repository.read'
-        def_user = User.get_default_user()
+        def_user = db.User.get_default_user()
         for p in def_user.user_perms:
             if p.permission.permission_name.startswith('repository.'):
                 default = p.permission.permission_name
@@ -61,8 +59,8 @@ class RepoModel(object):
 
         default_perm = 'repository.none' if private else default
 
-        repo_to_perm = UserRepoToPerm()
-        repo_to_perm.permission = Permission.get_by_key(default_perm)
+        repo_to_perm = db.UserRepoToPerm()
+        repo_to_perm.permission = db.Permission.get_by_key(default_perm)
 
         repo_to_perm.repository = repository
         repo_to_perm.user_id = def_user.user_id
@@ -76,20 +74,20 @@ class RepoModel(object):
         Gets the repositories root path from database
         """
 
-        q = Ui.query().filter(Ui.ui_key == '/').one()
+        q = db.Ui.query().filter(db.Ui.ui_key == '/').one()
         return q.ui_value
 
     def get(self, repo_id):
-        repo = Repository.query() \
-            .filter(Repository.repo_id == repo_id)
+        repo = db.Repository.query() \
+            .filter(db.Repository.repo_id == repo_id)
         return repo.scalar()
 
     def get_repo(self, repository):
-        return Repository.guess_instance(repository)
+        return db.Repository.guess_instance(repository)
 
     def get_by_repo_name(self, repo_name):
-        repo = Repository.query() \
-            .filter(Repository.repo_name == repo_name)
+        repo = db.Repository.query() \
+            .filter(db.Repository.repo_name == repo_name)
         return repo.scalar()
 
     def get_all_user_repos(self, user):
@@ -99,12 +97,12 @@ class RepoModel(object):
         :param user:
         """
         from kallithea.lib.auth import AuthUser
-        auth_user = AuthUser(dbuser=User.guess_instance(user))
+        auth_user = AuthUser(dbuser=db.User.guess_instance(user))
         repos = [repo_name
             for repo_name, perm in auth_user.repository_permissions.items()
             if perm in ['repository.read', 'repository.write', 'repository.admin']
             ]
-        return Repository.query().filter(Repository.repo_name.in_(repos))
+        return db.Repository.query().filter(db.Repository.repo_name.in_(repos))
 
     @classmethod
     def _render_datatable(cls, tmpl, *args, **kwargs):
@@ -220,7 +218,7 @@ class RepoModel(object):
         :param repo_name:
         """
 
-        repo_info = Repository.get_by_repo_name(repo_name)
+        repo_info = db.Repository.get_by_repo_name(repo_name)
 
         if repo_info is None:
             return None
@@ -248,7 +246,7 @@ class RepoModel(object):
         if repo_info.owner:
             defaults.update({'owner': repo_info.owner.username})
         else:
-            replacement_user = User.query().filter(User.admin ==
+            replacement_user = db.User.query().filter(db.User.admin ==
                                                    True).first().username
             defaults.update({'owner': replacement_user})
 
@@ -266,14 +264,14 @@ class RepoModel(object):
 
     def update(self, repo, **kwargs):
         try:
-            cur_repo = Repository.guess_instance(repo)
+            cur_repo = db.Repository.guess_instance(repo)
             org_repo_name = cur_repo.repo_name
             if 'owner' in kwargs:
-                cur_repo.owner = User.get_by_username(kwargs['owner'])
+                cur_repo.owner = db.User.get_by_username(kwargs['owner'])
 
             if 'repo_group' in kwargs:
                 assert kwargs['repo_group'] != '-1', kwargs # RepoForm should have converted to None
-                cur_repo.group = RepoGroup.get(kwargs['repo_group'])
+                cur_repo.group = db.RepoGroup.get(kwargs['repo_group'])
                 cur_repo.repo_name = cur_repo.get_new_name(cur_repo.just_name)
             log.debug('Updating repo %s with params:%s', cur_repo, kwargs)
             for k in ['repo_enable_downloads',
@@ -305,9 +303,9 @@ class RepoModel(object):
                     repo=cur_repo, user='default', perm=EMPTY_PERM
                 )
                 # handle extra fields
-            for field in [k for k in kwargs if k.startswith(RepositoryField.PREFIX)]:
-                k = RepositoryField.un_prefix_key(field)
-                ex_field = RepositoryField.get_by_key_name(key=k, repo=cur_repo)
+            for field in [k for k in kwargs if k.startswith(db.RepositoryField.PREFIX)]:
+                k = db.RepositoryField.un_prefix_key(field)
+                ex_field = db.RepositoryField.get_by_key_name(key=k, repo=cur_repo)
                 if ex_field:
                     ex_field.field_value = kwargs[field]
 
@@ -325,7 +323,7 @@ class RepoModel(object):
                      landing_rev='rev:tip', fork_of=None,
                      copy_fork_permissions=False, enable_statistics=False,
                      enable_downloads=False,
-                     copy_group_permissions=False, state=Repository.STATE_PENDING):
+                     copy_group_permissions=False, state=db.Repository.STATE_PENDING):
         """
         Create repository inside database with PENDING state. This should only be
         executed by create() repo, with exception of importing existing repos.
@@ -333,9 +331,9 @@ class RepoModel(object):
         """
         from kallithea.model.scm import ScmModel
 
-        owner = User.guess_instance(owner)
-        fork_of = Repository.guess_instance(fork_of)
-        repo_group = RepoGroup.guess_instance(repo_group)
+        owner = db.User.guess_instance(owner)
+        fork_of = db.Repository.guess_instance(fork_of)
+        repo_group = db.RepoGroup.guess_instance(repo_group)
         try:
             repo_name = repo_name
             description = description
@@ -347,7 +345,7 @@ class RepoModel(object):
             if kallithea.lib.utils2.repo_name_slug(repo_name) != repo_name:
                 raise Exception('invalid repo name %s' % repo_name)
 
-            new_repo = Repository()
+            new_repo = db.Repository()
             new_repo.repo_state = state
             new_repo.enable_statistics = False
             new_repo.repo_name = repo_name_full
@@ -373,35 +371,35 @@ class RepoModel(object):
 
             if fork_of and copy_fork_permissions:
                 repo = fork_of
-                user_perms = UserRepoToPerm.query() \
-                    .filter(UserRepoToPerm.repository == repo).all()
-                group_perms = UserGroupRepoToPerm.query() \
-                    .filter(UserGroupRepoToPerm.repository == repo).all()
+                user_perms = db.UserRepoToPerm.query() \
+                    .filter(db.UserRepoToPerm.repository == repo).all()
+                group_perms = db.UserGroupRepoToPerm.query() \
+                    .filter(db.UserGroupRepoToPerm.repository == repo).all()
 
                 for perm in user_perms:
-                    UserRepoToPerm.create(perm.user, new_repo, perm.permission)
+                    db.UserRepoToPerm.create(perm.user, new_repo, perm.permission)
 
                 for perm in group_perms:
-                    UserGroupRepoToPerm.create(perm.users_group, new_repo,
+                    db.UserGroupRepoToPerm.create(perm.users_group, new_repo,
                                                perm.permission)
 
             elif repo_group and copy_group_permissions:
 
-                user_perms = UserRepoGroupToPerm.query() \
-                    .filter(UserRepoGroupToPerm.group == repo_group).all()
+                user_perms = db.UserRepoGroupToPerm.query() \
+                    .filter(db.UserRepoGroupToPerm.group == repo_group).all()
 
-                group_perms = UserGroupRepoGroupToPerm.query() \
-                    .filter(UserGroupRepoGroupToPerm.group == repo_group).all()
+                group_perms = db.UserGroupRepoGroupToPerm.query() \
+                    .filter(db.UserGroupRepoGroupToPerm.group == repo_group).all()
 
                 for perm in user_perms:
                     perm_name = perm.permission.permission_name.replace('group.', 'repository.')
-                    perm_obj = Permission.get_by_key(perm_name)
-                    UserRepoToPerm.create(perm.user, new_repo, perm_obj)
+                    perm_obj = db.Permission.get_by_key(perm_name)
+                    db.UserRepoToPerm.create(perm.user, new_repo, perm_obj)
 
                 for perm in group_perms:
                     perm_name = perm.permission.permission_name.replace('group.', 'repository.')
-                    perm_obj = Permission.get_by_key(perm_name)
-                    UserGroupRepoToPerm.create(perm.users_group, new_repo, perm_obj)
+                    perm_obj = db.Permission.get_by_key(perm_name)
+                    db.UserGroupRepoToPerm.create(perm.users_group, new_repo, perm_obj)
 
             else:
                 self._create_default_perms(new_repo, private)
@@ -481,7 +479,7 @@ class RepoModel(object):
         """
         if not cur_user:
             cur_user = getattr(get_current_authuser(), 'username', None)
-        repo = Repository.guess_instance(repo)
+        repo = db.Repository.guess_instance(repo)
         if repo is not None:
             if forks == 'detach':
                 for r in repo.forks:
@@ -514,18 +512,18 @@ class RepoModel(object):
         :param user: Instance of User, user_id or username
         :param perm: Instance of Permission, or permission_name
         """
-        user = User.guess_instance(user)
-        repo = Repository.guess_instance(repo)
-        permission = Permission.guess_instance(perm)
+        user = db.User.guess_instance(user)
+        repo = db.Repository.guess_instance(repo)
+        permission = db.Permission.guess_instance(perm)
 
         # check if we have that permission already
-        obj = UserRepoToPerm.query() \
-            .filter(UserRepoToPerm.user == user) \
-            .filter(UserRepoToPerm.repository == repo) \
+        obj = db.UserRepoToPerm.query() \
+            .filter(db.UserRepoToPerm.user == user) \
+            .filter(db.UserRepoToPerm.repository == repo) \
             .scalar()
         if obj is None:
             # create new !
-            obj = UserRepoToPerm()
+            obj = db.UserRepoToPerm()
             meta.Session().add(obj)
         obj.repository = repo
         obj.user = user
@@ -541,12 +539,12 @@ class RepoModel(object):
         :param user: Instance of User, user_id or username
         """
 
-        user = User.guess_instance(user)
-        repo = Repository.guess_instance(repo)
+        user = db.User.guess_instance(user)
+        repo = db.Repository.guess_instance(repo)
 
-        obj = UserRepoToPerm.query() \
-            .filter(UserRepoToPerm.repository == repo) \
-            .filter(UserRepoToPerm.user == user) \
+        obj = db.UserRepoToPerm.query() \
+            .filter(db.UserRepoToPerm.repository == repo) \
+            .filter(db.UserRepoToPerm.user == user) \
             .scalar()
         if obj is not None:
             meta.Session().delete(obj)
@@ -562,19 +560,19 @@ class RepoModel(object):
             or user group name
         :param perm: Instance of Permission, or permission_name
         """
-        repo = Repository.guess_instance(repo)
-        group_name = UserGroup.guess_instance(group_name)
-        permission = Permission.guess_instance(perm)
+        repo = db.Repository.guess_instance(repo)
+        group_name = db.UserGroup.guess_instance(group_name)
+        permission = db.Permission.guess_instance(perm)
 
         # check if we have that permission already
-        obj = UserGroupRepoToPerm.query() \
-            .filter(UserGroupRepoToPerm.users_group == group_name) \
-            .filter(UserGroupRepoToPerm.repository == repo) \
+        obj = db.UserGroupRepoToPerm.query() \
+            .filter(db.UserGroupRepoToPerm.users_group == group_name) \
+            .filter(db.UserGroupRepoToPerm.repository == repo) \
             .scalar()
 
         if obj is None:
             # create new
-            obj = UserGroupRepoToPerm()
+            obj = db.UserGroupRepoToPerm()
             meta.Session().add(obj)
 
         obj.repository = repo
@@ -591,12 +589,12 @@ class RepoModel(object):
         :param group_name: Instance of UserGroup, users_group_id,
             or user group name
         """
-        repo = Repository.guess_instance(repo)
-        group_name = UserGroup.guess_instance(group_name)
+        repo = db.Repository.guess_instance(repo)
+        group_name = db.UserGroup.guess_instance(group_name)
 
-        obj = UserGroupRepoToPerm.query() \
-            .filter(UserGroupRepoToPerm.repository == repo) \
-            .filter(UserGroupRepoToPerm.users_group == group_name) \
+        obj = db.UserGroupRepoToPerm.query() \
+            .filter(db.UserGroupRepoToPerm.repository == repo) \
+            .filter(db.UserGroupRepoToPerm.users_group == group_name) \
             .scalar()
         if obj is not None:
             meta.Session().delete(obj)
@@ -608,10 +606,10 @@ class RepoModel(object):
 
         :param repo_name:
         """
-        repo = Repository.guess_instance(repo_name)
+        repo = db.Repository.guess_instance(repo_name)
         try:
-            obj = Statistics.query() \
-                .filter(Statistics.repository == repo).scalar()
+            obj = db.Statistics.query() \
+                .filter(db.Statistics.repository == repo).scalar()
             if obj is not None:
                 meta.Session().delete(obj)
         except Exception:
@@ -632,7 +630,7 @@ class RepoModel(object):
         if '/' in repo_name:
             raise ValueError('repo_name must not contain groups got `%s`' % repo_name)
 
-        if isinstance(repo_group, RepoGroup):
+        if isinstance(repo_group, db.RepoGroup):
             new_parent_path = os.sep.join(repo_group.full_path_splitted)
         else:
             new_parent_path = repo_group or ''

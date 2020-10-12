@@ -39,9 +39,8 @@ from webob.exc import HTTPFound
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import AuthUser, HasPermissionAnyDecorator, LoginRequired
 from kallithea.lib.base import BaseController, render
-from kallithea.lib.webutils import url
-from kallithea.model import meta
-from kallithea.model.db import User, UserIpMap
+from kallithea.lib.utils3 import url
+from kallithea.model import db, meta
 from kallithea.model.forms import DefaultPermissionsForm
 from kallithea.model.permission import PermissionModel
 
@@ -134,7 +133,7 @@ class PermissionsController(BaseController):
 
             raise HTTPFound(location=url('admin_permissions'))
 
-        c.user = User.get_default_user()
+        c.user = db.User.get_default_user()
         defaults = {'anonymous': c.user.active}
 
         for p in c.user.user_perms:
@@ -170,14 +169,14 @@ class PermissionsController(BaseController):
 
     def permission_ips(self):
         c.active = 'ips'
-        c.user = User.get_default_user()
-        c.user_ip_map = UserIpMap.query() \
-                        .filter(UserIpMap.user == c.user).all()
+        c.user = db.User.get_default_user()
+        c.user_ip_map = db.UserIpMap.query() \
+                        .filter(db.UserIpMap.user == c.user).all()
 
         return render('admin/permissions/permissions.html')
 
     def permission_perms(self):
         c.active = 'perms'
-        c.user = User.get_default_user()
+        c.user = db.User.get_default_user()
         c.perm_user = AuthUser(dbuser=c.user)
         return render('admin/permissions/permissions.html')

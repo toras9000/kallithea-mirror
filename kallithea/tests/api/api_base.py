@@ -26,9 +26,8 @@ import pytest
 from kallithea.lib import ext_json
 from kallithea.lib.auth import AuthUser
 from kallithea.lib.utils2 import ascii_bytes
-from kallithea.model import meta
+from kallithea.model import db, meta
 from kallithea.model.changeset_status import ChangesetStatusModel
-from kallithea.model.db import ChangesetStatus, PullRequest, PullRequestReviewer, RepoGroup, Repository, Setting, Ui, User
 from kallithea.model.gist import GistModel
 from kallithea.model.pull_request import PullRequestModel
 from kallithea.model.repo import RepoModel
@@ -91,7 +90,7 @@ class _BaseTestApi(object):
 
     @classmethod
     def setup_class(cls):
-        cls.usr = User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
+        cls.usr = db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
         cls.apikey = cls.usr.api_key
         cls.test_user = UserModel().create_or_update(
             username='test-api',
@@ -193,8 +192,8 @@ class _BaseTestApi(object):
         id_, params = _build_data(self.apikey, 'get_users', )
         response = api_call(self, params)
         ret_all = []
-        _users = User.query().filter_by(is_default_user=False) \
-            .order_by(User.username).all()
+        _users = db.User.query().filter_by(is_default_user=False) \
+            .order_by(db.User.username).all()
         for usr in _users:
             ret = usr.get_api_data()
             ret_all.append(jsonify(ret))
@@ -206,7 +205,7 @@ class _BaseTestApi(object):
                                   userid=base.TEST_USER_ADMIN_LOGIN)
         response = api_call(self, params)
 
-        usr = User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
+        usr = db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
         ret = usr.get_api_data()
         ret['permissions'] = AuthUser(dbuser=usr).permissions
 
@@ -225,7 +224,7 @@ class _BaseTestApi(object):
         id_, params = _build_data(self.apikey, 'get_user')
         response = api_call(self, params)
 
-        usr = User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
+        usr = db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
         ret = usr.get_api_data()
         ret['permissions'] = AuthUser(dbuser=usr).permissions
 
@@ -236,7 +235,7 @@ class _BaseTestApi(object):
         id_, params = _build_data(self.apikey_regular, 'get_user')
         response = api_call(self, params)
 
-        usr = User.get_by_username(self.TEST_USER_LOGIN)
+        usr = db.User.get_by_username(self.TEST_USER_LOGIN)
         ret = usr.get_api_data()
         ret['permissions'] = AuthUser(dbuser=usr).permissions
 
@@ -258,10 +257,10 @@ class _BaseTestApi(object):
         r = fixture.create_repo(repo_name, repo_type=self.REPO_TYPE)
         # hack around that clone_uri can't be set to to a local path
         # (as shown by test_api_create_repo_clone_uri_local)
-        r.clone_uri = os.path.join(Ui.get_by_key('paths', '/').ui_value, self.REPO)
+        r.clone_uri = os.path.join(db.Ui.get_by_key('paths', '/').ui_value, self.REPO)
         meta.Session().commit()
 
-        pre_cached_tip = [repo.get_api_data()['last_changeset']['short_id'] for repo in Repository.query().filter(Repository.repo_name == repo_name)]
+        pre_cached_tip = [repo.get_api_data()['last_changeset']['short_id'] for repo in db.Repository.query().filter(db.Repository.repo_name == repo_name)]
 
         id_, params = _build_data(self.apikey, 'pull',
                                   repoid=repo_name,)
@@ -271,7 +270,7 @@ class _BaseTestApi(object):
                     'repository': repo_name}
         self._compare_ok(id_, expected, given=response.body)
 
-        post_cached_tip = [repo.get_api_data()['last_changeset']['short_id'] for repo in Repository.query().filter(Repository.repo_name == repo_name)]
+        post_cached_tip = [repo.get_api_data()['last_changeset']['short_id'] for repo in db.Repository.query().filter(db.Repository.repo_name == repo_name)]
 
         fixture.destroy_repo(repo_name)
 
@@ -303,7 +302,7 @@ class _BaseTestApi(object):
         repo_name = 'test_pull_custom_remote'
         fixture.create_repo(repo_name, repo_type=self.REPO_TYPE)
 
-        custom_remote_path = os.path.join(Ui.get_by_key('paths', '/').ui_value, self.REPO)
+        custom_remote_path = os.path.join(db.Ui.get_by_key('paths', '/').ui_value, self.REPO)
 
         id_, params = _build_data(self.apikey, 'pull',
                                   repoid=repo_name,
@@ -361,7 +360,7 @@ class _BaseTestApi(object):
                                   password='trololo')
         response = api_call(self, params)
 
-        usr = User.get_by_username(username)
+        usr = db.User.get_by_username(username)
         ret = dict(
             msg='created new user `%s`' % username,
             user=jsonify(usr.get_api_data())
@@ -382,7 +381,7 @@ class _BaseTestApi(object):
                                   email=email)
         response = api_call(self, params)
 
-        usr = User.get_by_username(username)
+        usr = db.User.get_by_username(username)
         ret = dict(
             msg='created new user `%s`' % username,
             user=jsonify(usr.get_api_data())
@@ -402,7 +401,7 @@ class _BaseTestApi(object):
                                   email=email, extern_name='internal')
         response = api_call(self, params)
 
-        usr = User.get_by_username(username)
+        usr = db.User.get_by_username(username)
         ret = dict(
             msg='created new user `%s`' % username,
             user=jsonify(usr.get_api_data())
@@ -479,7 +478,7 @@ class _BaseTestApi(object):
         ('password', 'newpass'),
     ])
     def test_api_update_user(self, name, expected):
-        usr = User.get_by_username(self.TEST_USER_LOGIN)
+        usr = db.User.get_by_username(self.TEST_USER_LOGIN)
         kw = {name: expected,
               'userid': usr.user_id}
         id_, params = _build_data(self.apikey, 'update_user', **kw)
@@ -488,7 +487,7 @@ class _BaseTestApi(object):
         ret = {
             'msg': 'updated user ID:%s %s' % (
                 usr.user_id, self.TEST_USER_LOGIN),
-            'user': jsonify(User \
+            'user': jsonify(db.User \
                 .get_by_username(self.TEST_USER_LOGIN) \
                 .get_api_data())
         }
@@ -497,7 +496,7 @@ class _BaseTestApi(object):
         self._compare_ok(id_, expected, given=response.body)
 
     def test_api_update_user_no_changed_params(self):
-        usr = User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
+        usr = db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
         ret = jsonify(usr.get_api_data())
         id_, params = _build_data(self.apikey, 'update_user',
                                   userid=base.TEST_USER_ADMIN_LOGIN)
@@ -512,7 +511,7 @@ class _BaseTestApi(object):
         self._compare_ok(id_, expected, given=response.body)
 
     def test_api_update_user_by_user_id(self):
-        usr = User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
+        usr = db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
         ret = jsonify(usr.get_api_data())
         id_, params = _build_data(self.apikey, 'update_user',
                                   userid=usr.user_id)
@@ -527,7 +526,7 @@ class _BaseTestApi(object):
         self._compare_ok(id_, expected, given=response.body)
 
     def test_api_update_user_default_user(self):
-        usr = User.get_default_user()
+        usr = db.User.get_default_user()
         id_, params = _build_data(self.apikey, 'update_user',
                                   userid=usr.user_id)
 
@@ -537,7 +536,7 @@ class _BaseTestApi(object):
 
     @mock.patch.object(UserModel, 'update_user', raise_exception)
     def test_api_update_user_when_exception_happens(self):
-        usr = User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
+        usr = db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
         ret = jsonify(usr.get_api_data())
         id_, params = _build_data(self.apikey, 'update_user',
                                   userid=usr.user_id)
@@ -645,7 +644,7 @@ class _BaseTestApi(object):
 
     def test_api_get_repo_by_non_admin_no_permission_to_repo(self):
         RepoModel().grant_user_permission(repo=self.REPO,
-                                          user=User.DEFAULT_USER_NAME,
+                                          user=db.User.DEFAULT_USER_NAME,
                                           perm='repository.none')
         try:
             RepoModel().grant_user_permission(repo=self.REPO,
@@ -660,7 +659,7 @@ class _BaseTestApi(object):
             self._compare_error(id_, expected, given=response.body)
         finally:
             RepoModel().grant_user_permission(repo=self.REPO,
-                                              user=User.DEFAULT_USER_NAME,
+                                              user=db.User.DEFAULT_USER_NAME,
                                               perm='repository.read')
 
     def test_api_get_repo_that_doesn_not_exist(self):
@@ -678,7 +677,7 @@ class _BaseTestApi(object):
 
         expected = jsonify([
             repo.get_api_data()
-            for repo in Repository.query()
+            for repo in db.Repository.query()
         ])
 
         self._compare_ok(id_, expected, given=response.body)
@@ -875,7 +874,7 @@ class _BaseTestApi(object):
         repo_group_name = '%s/%s' % (TEST_REPO_GROUP, repo_group_basename)
         repo_name = '%s/api-repo' % repo_group_name
 
-        top_group = RepoGroup.get_by_group_name(TEST_REPO_GROUP)
+        top_group = db.RepoGroup.get_by_group_name(TEST_REPO_GROUP)
         assert top_group
         rg = fixture.create_repo_group(repo_group_basename, parent_group_id=top_group)
         meta.Session().commit()
@@ -1302,7 +1301,7 @@ class _BaseTestApi(object):
 
     def test_api_fork_repo_non_admin_no_permission_to_fork(self):
         RepoModel().grant_user_permission(repo=self.REPO,
-                                          user=User.DEFAULT_USER_NAME,
+                                          user=db.User.DEFAULT_USER_NAME,
                                           perm='repository.none')
         try:
             fork_name = 'api-repo-fork'
@@ -1315,7 +1314,7 @@ class _BaseTestApi(object):
             self._compare_error(id_, expected, given=response.body)
         finally:
             RepoModel().grant_user_permission(repo=self.REPO,
-                                              user=User.DEFAULT_USER_NAME,
+                                              user=db.User.DEFAULT_USER_NAME,
                                               perm='repository.read')
             fixture.destroy_repo(fork_name)
 
@@ -2328,7 +2327,7 @@ class _BaseTestApi(object):
     def test_api_get_server_info(self):
         id_, params = _build_data(self.apikey, 'get_server_info')
         response = api_call(self, params)
-        expected = Setting.get_server_info()
+        expected = db.Setting.get_server_info()
         self._compare_ok(id_, expected, given=response.body)
 
     def test_api_get_changesets(self):
@@ -2429,7 +2428,7 @@ class _BaseTestApi(object):
             "args": {"pullrequest_id": pull_request_id},
         }))
         response = api_call(self, params)
-        pullrequest = PullRequest().get(pull_request_id)
+        pullrequest = db.PullRequest().get(pull_request_id)
         expected = {
             "status": "new",
             "pull_request_id": pull_request_id,
@@ -2463,9 +2462,9 @@ class _BaseTestApi(object):
         }))
         response = api_call(self, params)
         self._compare_ok(random_id, True, given=response.body)
-        pullrequest = PullRequest().get(pull_request_id)
+        pullrequest = db.PullRequest().get(pull_request_id)
         assert pullrequest.comments[-1].text == ''
-        assert pullrequest.status == PullRequest.STATUS_CLOSED
+        assert pullrequest.status == db.PullRequest.STATUS_CLOSED
         assert pullrequest.is_closed() == True
 
     def test_api_status_pullrequest(self):
@@ -2474,24 +2473,24 @@ class _BaseTestApi(object):
         random_id = random.randrange(1, 9999)
         params = ascii_bytes(ext_json.dumps({
             "id": random_id,
-            "api_key": User.get_by_username(base.TEST_USER_REGULAR2_LOGIN).api_key,
+            "api_key": db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN).api_key,
             "method": "comment_pullrequest",
-            "args": {"pull_request_id": pull_request_id, "status": ChangesetStatus.STATUS_APPROVED},
+            "args": {"pull_request_id": pull_request_id, "status": db.ChangesetStatus.STATUS_APPROVED},
         }))
         response = api_call(self, params)
-        pullrequest = PullRequest().get(pull_request_id)
+        pullrequest = db.PullRequest().get(pull_request_id)
         self._compare_error(random_id, "No permission to change pull request status. User needs to be admin, owner or reviewer.", given=response.body)
-        assert ChangesetStatus.STATUS_UNDER_REVIEW == ChangesetStatusModel().calculate_pull_request_result(pullrequest)[2]
+        assert db.ChangesetStatus.STATUS_UNDER_REVIEW == ChangesetStatusModel().calculate_pull_request_result(pullrequest)[2]
         params = ascii_bytes(ext_json.dumps({
             "id": random_id,
-            "api_key": User.get_by_username(base.TEST_USER_REGULAR_LOGIN).api_key,
+            "api_key": db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN).api_key,
             "method": "comment_pullrequest",
-            "args": {"pull_request_id": pull_request_id, "status": ChangesetStatus.STATUS_APPROVED},
+            "args": {"pull_request_id": pull_request_id, "status": db.ChangesetStatus.STATUS_APPROVED},
         }))
         response = api_call(self, params)
         self._compare_ok(random_id, True, given=response.body)
-        pullrequest = PullRequest().get(pull_request_id)
-        assert ChangesetStatus.STATUS_APPROVED == ChangesetStatusModel().calculate_pull_request_result(pullrequest)[2]
+        pullrequest = db.PullRequest().get(pull_request_id)
+        assert db.ChangesetStatus.STATUS_APPROVED == ChangesetStatusModel().calculate_pull_request_result(pullrequest)[2]
 
     def test_api_comment_pullrequest(self):
         pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, "comment test")
@@ -2504,12 +2503,12 @@ class _BaseTestApi(object):
         }))
         response = api_call(self, params)
         self._compare_ok(random_id, True, given=response.body)
-        pullrequest = PullRequest().get(pull_request_id)
+        pullrequest = db.PullRequest().get(pull_request_id)
         assert pullrequest.comments[-1].text == 'Looks good to me'
 
     def test_api_edit_reviewers_add_single(self):
         pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
-        pullrequest = PullRequest().get(pull_request_id)
+        pullrequest = db.PullRequest().get(pull_request_id)
         pullrequest.owner = self.test_user
         random_id = random.randrange(1, 9999)
         params = ascii_bytes(ext_json.dumps({
@@ -2522,11 +2521,11 @@ class _BaseTestApi(object):
         expected = { 'added': [base.TEST_USER_REGULAR2_LOGIN], 'already_present': [], 'removed': [] }
 
         self._compare_ok(random_id, expected, given=response.body)
-        assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
 
     def test_api_edit_reviewers_add_nonexistent(self):
         pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
-        pullrequest = PullRequest().get(pull_request_id)
+        pullrequest = db.PullRequest().get(pull_request_id)
         pullrequest.owner = self.test_user
         random_id = random.randrange(1, 9999)
         params = ascii_bytes(ext_json.dumps({
@@ -2541,7 +2540,7 @@ class _BaseTestApi(object):
 
     def test_api_edit_reviewers_add_multiple(self):
         pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
-        pullrequest = PullRequest().get(pull_request_id)
+        pullrequest = db.PullRequest().get(pull_request_id)
         pullrequest.owner = self.test_user
         random_id = random.randrange(1, 9999)
         params = ascii_bytes(ext_json.dumps({
@@ -2559,12 +2558,12 @@ class _BaseTestApi(object):
         assert set(ext_json.loads(response.body)['result']['already_present']) == set()
         assert set(ext_json.loads(response.body)['result']['removed']) == set()
 
-        assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
-        assert User.get_by_username(self.TEST_USER_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(self.TEST_USER_LOGIN) in pullrequest.get_reviewer_users()
 
     def test_api_edit_reviewers_add_already_present(self):
         pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
-        pullrequest = PullRequest().get(pull_request_id)
+        pullrequest = db.PullRequest().get(pull_request_id)
         pullrequest.owner = self.test_user
         random_id = random.randrange(1, 9999)
         params = ascii_bytes(ext_json.dumps({
@@ -2583,12 +2582,12 @@ class _BaseTestApi(object):
                    }
 
         self._compare_ok(random_id, expected, given=response.body)
-        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
-        assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
 
     def test_api_edit_reviewers_add_closed(self):
         pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
-        pullrequest = PullRequest().get(pull_request_id)
+        pullrequest = db.PullRequest().get(pull_request_id)
         pullrequest.owner = self.test_user
         PullRequestModel().close_pull_request(pull_request_id)
         random_id = random.randrange(1, 9999)
@@ -2603,8 +2602,8 @@ class _BaseTestApi(object):
 
     def test_api_edit_reviewers_add_not_owner(self):
         pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
-        pullrequest = PullRequest().get(pull_request_id)
-        pullrequest.owner = User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
+        pullrequest = db.PullRequest().get(pull_request_id)
+        pullrequest.owner = db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
         random_id = random.randrange(1, 9999)
         params = ascii_bytes(ext_json.dumps({
             "id": random_id,
@@ -2618,8 +2617,8 @@ class _BaseTestApi(object):
 
     def test_api_edit_reviewers_remove_single(self):
         pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
-        pullrequest = PullRequest().get(pull_request_id)
-        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        pullrequest = db.PullRequest().get(pull_request_id)
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
 
         pullrequest.owner = self.test_user
         random_id = random.randrange(1, 9999)
@@ -2636,12 +2635,12 @@ class _BaseTestApi(object):
                      'removed': [base.TEST_USER_REGULAR_LOGIN],
                    }
         self._compare_ok(random_id, expected, given=response.body)
-        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) not in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) not in pullrequest.get_reviewer_users()
 
     def test_api_edit_reviewers_remove_nonexistent(self):
         pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
-        pullrequest = PullRequest().get(pull_request_id)
-        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        pullrequest = db.PullRequest().get(pull_request_id)
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
 
         pullrequest.owner = self.test_user
         random_id = random.randrange(1, 9999)
@@ -2654,13 +2653,13 @@ class _BaseTestApi(object):
         response = api_call(self, params)
 
         self._compare_error(random_id, "user `999` does not exist", given=response.body)
-        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
 
     def test_api_edit_reviewers_remove_nonpresent(self):
         pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
-        pullrequest = PullRequest().get(pull_request_id)
-        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
-        assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) not in pullrequest.get_reviewer_users()
+        pullrequest = db.PullRequest().get(pull_request_id)
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) not in pullrequest.get_reviewer_users()
 
         pullrequest.owner = self.test_user
         random_id = random.randrange(1, 9999)
@@ -2678,18 +2677,18 @@ class _BaseTestApi(object):
                      'removed': [base.TEST_USER_REGULAR2_LOGIN],
                    }
         self._compare_ok(random_id, expected, given=response.body)
-        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
-        assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) not in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) not in pullrequest.get_reviewer_users()
 
     def test_api_edit_reviewers_remove_multiple(self):
         pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
-        pullrequest = PullRequest().get(pull_request_id)
-        prr = PullRequestReviewer(User.get_by_username(base.TEST_USER_REGULAR2_LOGIN), pullrequest)
+        pullrequest = db.PullRequest().get(pull_request_id)
+        prr = db.PullRequestReviewer(db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN), pullrequest)
         meta.Session().add(prr)
         meta.Session().commit()
 
-        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
-        assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
 
         pullrequest.owner = self.test_user
         random_id = random.randrange(1, 9999)
@@ -2705,13 +2704,13 @@ class _BaseTestApi(object):
         assert set(ext_json.loads(response.body)['result']['added']) == set()
         assert set(ext_json.loads(response.body)['result']['already_present']) == set()
         assert set(ext_json.loads(response.body)['result']['removed']) == set([base.TEST_USER_REGULAR_LOGIN, base.TEST_USER_REGULAR2_LOGIN])
-        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) not in pullrequest.get_reviewer_users()
-        assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) not in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) not in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) not in pullrequest.get_reviewer_users()
 
     def test_api_edit_reviewers_remove_closed(self):
         pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
-        pullrequest = PullRequest().get(pull_request_id)
-        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        pullrequest = db.PullRequest().get(pull_request_id)
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
         PullRequestModel().close_pull_request(pull_request_id)
 
         pullrequest.owner = self.test_user
@@ -2725,14 +2724,14 @@ class _BaseTestApi(object):
         response = api_call(self, params)
 
         self._compare_error(random_id, "Cannot edit reviewers of a closed pull request.", given=response.body)
-        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
 
     def test_api_edit_reviewers_remove_not_owner(self):
         pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
-        pullrequest = PullRequest().get(pull_request_id)
-        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        pullrequest = db.PullRequest().get(pull_request_id)
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
 
-        pullrequest.owner = User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
+        pullrequest.owner = db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
         random_id = random.randrange(1, 9999)
         params = ascii_bytes(ext_json.dumps({
             "id": random_id,
@@ -2743,13 +2742,13 @@ class _BaseTestApi(object):
         response = api_call(self, params)
 
         self._compare_error(random_id, "No permission to edit reviewers of this pull request. User needs to be admin or pull request owner.", given=response.body)
-        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
 
     def test_api_edit_reviewers_add_remove_single(self):
         pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
-        pullrequest = PullRequest().get(pull_request_id)
-        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
-        assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) not in pullrequest.get_reviewer_users()
+        pullrequest = db.PullRequest().get(pull_request_id)
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) not in pullrequest.get_reviewer_users()
 
         pullrequest.owner = self.test_user
         random_id = random.randrange(1, 9999)
@@ -2769,18 +2768,18 @@ class _BaseTestApi(object):
                      'removed': [base.TEST_USER_REGULAR_LOGIN],
                    }
         self._compare_ok(random_id, expected, given=response.body)
-        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) not in pullrequest.get_reviewer_users()
-        assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) not in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
 
     def test_api_edit_reviewers_add_remove_multiple(self):
         pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
-        pullrequest = PullRequest().get(pull_request_id)
-        prr = PullRequestReviewer(User.get_by_username(base.TEST_USER_ADMIN_LOGIN), pullrequest)
+        pullrequest = db.PullRequest().get(pull_request_id)
+        prr = db.PullRequestReviewer(db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN), pullrequest)
         meta.Session().add(prr)
         meta.Session().commit()
-        assert User.get_by_username(base.TEST_USER_ADMIN_LOGIN) in pullrequest.get_reviewer_users()
-        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
-        assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) not in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) not in pullrequest.get_reviewer_users()
 
         pullrequest.owner = self.test_user
         random_id = random.randrange(1, 9999)
@@ -2799,16 +2798,16 @@ class _BaseTestApi(object):
         assert set(ext_json.loads(response.body)['result']['added']) == set([base.TEST_USER_REGULAR2_LOGIN])
         assert set(ext_json.loads(response.body)['result']['already_present']) == set()
         assert set(ext_json.loads(response.body)['result']['removed']) == set([base.TEST_USER_REGULAR_LOGIN, base.TEST_USER_ADMIN_LOGIN])
-        assert User.get_by_username(base.TEST_USER_ADMIN_LOGIN) not in pullrequest.get_reviewer_users()
-        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) not in pullrequest.get_reviewer_users()
-        assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN) not in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) not in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
 
     def test_api_edit_reviewers_invalid_params(self):
         pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
-        pullrequest = PullRequest().get(pull_request_id)
-        assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        pullrequest = db.PullRequest().get(pull_request_id)
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
 
-        pullrequest.owner = User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
+        pullrequest.owner = db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
         random_id = random.randrange(1, 9999)
         params = ascii_bytes(ext_json.dumps({
             "id": random_id,

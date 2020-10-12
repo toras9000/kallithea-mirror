@@ -47,8 +47,7 @@ from kallithea.lib.vcs.conf import settings
 from kallithea.lib.vcs.exceptions import RepositoryError, VCSError
 from kallithea.lib.vcs.utils.fakemod import create_module
 from kallithea.lib.vcs.utils.helpers import get_scm
-from kallithea.model import meta
-from kallithea.model.db import RepoGroup, Repository, Setting, Ui, User, UserGroup, UserLog
+from kallithea.model import db, meta
 
 
 log = logging.getLogger(__name__)
@@ -75,7 +74,7 @@ def get_repo_group_slug(request):
 
 def get_user_group_slug(request):
     _group = request.environ['pylons.routes_dict'].get('id')
-    _group = UserGroup.get(_group)
+    _group = db.UserGroup.get(_group)
     if _group:
         return _group.users_group_name
     return None
@@ -105,7 +104,7 @@ def fix_repo_id_name(path):
         rest = '/' + rest_
     repo_id = _get_permanent_id(first)
     if repo_id is not None:
-        repo = Repository.get(repo_id)
+        repo = db.Repository.get(repo_id)
         if repo is not None:
             return repo.repo_name + rest
     return path
@@ -131,23 +130,23 @@ def action_logger(user, action, repo, ipaddr='', commit=False):
         ipaddr = getattr(get_current_authuser(), 'ip_addr', '')
 
     if getattr(user, 'user_id', None):
-        user_obj = User.get(user.user_id)
+        user_obj = db.User.get(user.user_id)
     elif isinstance(user, str):
-        user_obj = User.get_by_username(user)
+        user_obj = db.User.get_by_username(user)
     else:
         raise Exception('You have to provide a user object or a username')
 
     if getattr(repo, 'repo_id', None):
-        repo_obj = Repository.get(repo.repo_id)
+        repo_obj = db.Repository.get(repo.repo_id)
         repo_name = repo_obj.repo_name
     elif isinstance(repo, str):
         repo_name = repo.lstrip('/')
-        repo_obj = Repository.get_by_repo_name(repo_name)
+        repo_obj = db.Repository.get_by_repo_name(repo_name)
     else:
         repo_obj = None
         repo_name = ''
 
-    user_log = UserLog()
+    user_log = db.UserLog()
     user_log.user_id = user_obj.user_id
     user_log.username = user_obj.username
     user_log.action = action
@@ -322,7 +321,7 @@ def make_ui(repo_path=None):
     baseui._tcfg = mercurial.config.config()
 
     sa = meta.Session()
-    for ui_ in sa.query(Ui).order_by(Ui.ui_section, Ui.ui_key):
+    for ui_ in sa.query(db.Ui).order_by(db.Ui.ui_section, db.Ui.ui_key):
         if ui_.ui_active:
             log.debug('config from db: [%s] %s=%r', ui_.ui_section,
                       ui_.ui_key, ui_.ui_value)
@@ -353,10 +352,10 @@ def set_app_settings(config):
 
     :param config:
     """
-    hgsettings = Setting.get_app_settings()
+    hgsettings = db.Setting.get_app_settings()
     for k, v in hgsettings.items():
         config[k] = v
-    config['base_path'] = Ui.get_repos_location()
+    config['base_path'] = db.Ui.get_repos_location()
 
 
 def set_vcs_config(config):
@@ -406,10 +405,10 @@ def map_groups(path):
     # last element is repo in nested groups structure
     groups = groups[:-1]
     rgm = RepoGroupModel()
-    owner = User.get_first_admin()
+    owner = db.User.get_first_admin()
     for lvl, group_name in enumerate(groups):
         group_name = '/'.join(groups[:lvl] + [group_name])
-        group = RepoGroup.get_by_group_name(group_name)
+        group = db.RepoGroup.get_by_group_name(group_name)
         desc = '%s group' % group_name
 
         # skip folders that are now removed repos
@@ -419,7 +418,7 @@ def map_groups(path):
         if group is None:
             log.debug('creating group level: %s group_name: %s',
                       lvl, group_name)
-            group = RepoGroup(group_name, parent)
+            group = db.RepoGroup(group_name, parent)
             group.group_description = desc
             group.owner = owner
             sa.add(group)
@@ -449,11 +448,11 @@ def repo2db_mapper(initial_repo_dict, remove_obsolete=False,
     sa = meta.Session()
     repo_model = RepoModel()
     if user is None:
-        user = User.get_first_admin()
+        user = db.User.get_first_admin()
     added = []
 
     # creation defaults
-    defs = Setting.get_default_repo_settings(strip_prefix=True)
+    defs = db.Setting.get_default_repo_settings(strip_prefix=True)
     enable_statistics = defs.get('repo_enable_statistics')
     enable_downloads = defs.get('repo_enable_downloads')
     private = defs.get('repo_private')
@@ -478,7 +477,7 @@ def repo2db_mapper(initial_repo_dict, remove_obsolete=False,
                 enable_downloads=enable_downloads,
                 enable_statistics=enable_statistics,
                 private=private,
-                state=Repository.STATE_CREATED
+                state=db.Repository.STATE_CREATED
             )
             sa.commit()
             # we added that repo just now, and make sure it has githook
@@ -496,7 +495,7 @@ def repo2db_mapper(initial_repo_dict, remove_obsolete=False,
 
     removed = []
     # remove from database those repositories that are not in the filesystem
-    for repo in sa.query(Repository).all():
+    for repo in sa.query(db.Repository).all():
         if repo.repo_name not in initial_repo_dict:
             if remove_obsolete:
                 log.debug("Removing non-existing repository found in db `%s`",
@@ -597,7 +596,7 @@ def extract_mentioned_users(text):
     """ Returns set of actual database Users @mentioned in given text. """
     result = set()
     for name in extract_mentioned_usernames(text):
-        user = User.get_by_username(name, case_insensitive=True)
+        user = db.User.get_by_username(name, case_insensitive=True)
         if user is not None and not user.is_default_user:
             result.add(user)
     return result

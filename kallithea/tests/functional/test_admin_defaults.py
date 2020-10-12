@@ -1,4 +1,4 @@
-from kallithea.model.db import Setting
+from kallithea.model import db
 from kallithea.tests import base
 
 
@@ -24,7 +24,7 @@ class TestDefaultsController(base.TestController):
         self.checkSessionFlash(response, 'Default settings updated successfully')
 
         params.pop('_session_csrf_secret_token')
-        defs = Setting.get_default_repo_settings()
+        defs = db.Setting.get_default_repo_settings()
         assert params == defs
 
     def test_update_params_false_git(self):
@@ -40,5 +40,5 @@ class TestDefaultsController(base.TestController):
         self.checkSessionFlash(response, 'Default settings updated successfully')
 
         params.pop('_session_csrf_secret_token')
-        defs = Setting.get_default_repo_settings()
+        defs = db.Setting.get_default_repo_settings()
         assert params == defs

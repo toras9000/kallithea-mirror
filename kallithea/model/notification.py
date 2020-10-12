@@ -34,7 +34,7 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 
 from kallithea.lib import helpers as h
-from kallithea.model.db import User
+from kallithea.model import db
 
 
 log = logging.getLogger(__name__)
@@ -71,12 +71,12 @@ class NotificationModel(object):
         if recipients and not getattr(recipients, '__iter__', False):
             raise Exception('recipients must be a list or iterable')
 
-        created_by_obj = User.guess_instance(created_by)
+        created_by_obj = db.User.guess_instance(created_by)
 
         recipients_objs = set()
         if recipients:
             for u in recipients:
-                obj = User.guess_instance(u)
+                obj = db.User.guess_instance(u)
                 if obj is not None:
                     recipients_objs.add(obj)
                 else:
@@ -87,7 +87,7 @@ class NotificationModel(object):
             )
         elif recipients is None:
             # empty recipients means to all admins
-            recipients_objs = User.query().filter(User.admin == True).all()
+            recipients_objs = db.User.query().filter(db.User.admin == True).all()
             log.debug('sending notifications %s to admins: %s',
                 type_, recipients_objs
             )

@@ -3,7 +3,7 @@
 import mock
 
 import kallithea
-from kallithea.model.db import User
+from kallithea.model import db
 from kallithea.tests import base
 
 
@@ -127,7 +127,7 @@ class TestMail(base.TestController):
         subject = 'subject'
         body = 'body'
         html_body = 'html_body'
-        author = User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
+        author = db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
 
         config_mock = {
             'smtp_server': mailserver,
@@ -151,7 +151,7 @@ class TestMail(base.TestController):
         subject = 'subject'
         body = 'body'
         html_body = 'html_body'
-        author = User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
+        author = db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
 
         config_mock = {
             'smtp_server': mailserver,
@@ -174,7 +174,7 @@ class TestMail(base.TestController):
         subject = 'subject'
         body = 'body'
         html_body = 'html_body'
-        author = User(name='foo', lastname='(fubar) "baz"')
+        author = db.User(name='foo', lastname='(fubar) "baz"')
         headers = {'extra': 'yes'}
 
         config_mock = {

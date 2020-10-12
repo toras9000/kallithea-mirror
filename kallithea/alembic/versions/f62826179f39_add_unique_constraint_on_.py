@@ -29,7 +29,7 @@ depends_on = None
 import sqlalchemy as sa
 from alembic import op
 
-from kallithea.model.db import PullRequestReviewer
+from kallithea.model import db
 
 
 def upgrade():
@@ -41,9 +41,9 @@ def upgrade():
     # duplicate_values contains one copy of each duplicated pair
     duplicate_values = (
         session
-        .query(PullRequestReviewer.pull_request_id, PullRequestReviewer.user_id)
-        .group_by(PullRequestReviewer.pull_request_id, PullRequestReviewer.user_id)
-        .having(sa.func.count(PullRequestReviewer.pull_request_reviewers_id) > 1)
+        .query(db.PullRequestReviewer.pull_request_id, db.PullRequestReviewer.user_id)
+        .group_by(db.PullRequestReviewer.pull_request_id, db.PullRequestReviewer.user_id)
+        .having(sa.func.count(db.PullRequestReviewer.pull_request_reviewers_id) > 1)
     )
 
     for pull_request_id, user_id in duplicate_values:
@@ -51,9 +51,9 @@ def upgrade():
         # currently being processed
         duplicate_occurrences = (
             session
-            .query(PullRequestReviewer)
-            .filter(PullRequestReviewer.pull_request_id == pull_request_id)
-            .filter(PullRequestReviewer.user_id == user_id)
+            .query(db.PullRequestReviewer)
+            .filter(db.PullRequestReviewer.pull_request_id == pull_request_id)
+            .filter(db.PullRequestReviewer.user_id == user_id)
         )
         for prr in duplicate_occurrences:
             if (pull_request_id, user_id) in seen:

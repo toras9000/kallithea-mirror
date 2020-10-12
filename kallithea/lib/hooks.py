@@ -37,7 +37,7 @@ from kallithea.lib.exceptions import UserCreationError
 from kallithea.lib.utils import action_logger, make_ui
 from kallithea.lib.utils2 import HookEnvironmentError, ascii_str, get_hook_environment, safe_bytes, safe_str
 from kallithea.lib.vcs.backends.base import EmptyChangeset
-from kallithea.model.db import Repository, User
+from kallithea.model import db
 
 
 def _get_scm_size(alias, root_path):
@@ -91,7 +91,7 @@ def log_pull_action(ui, repo, **kwargs):
     """
     ex = get_hook_environment()
 
-    user = User.get_by_username(ex.username)
+    user = db.User.get_by_username(ex.username)
     action = 'pull'
     action_logger(user, action, ex.repository, ex.ip, commit=True)
     # extension hook call
@@ -316,7 +316,7 @@ def _hook_environment(repo_path):
     if repo_path.endswith(os.sep + '.git'):
         repo_path = repo_path[:-5]
 
-    repo = Repository.get_by_full_path(repo_path)
+    repo = db.Repository.get_by_full_path(repo_path)
     if not repo:
         raise OSError('Repository %s not found in database' % repo_path)
 

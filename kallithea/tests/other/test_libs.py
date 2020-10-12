@@ -32,7 +32,7 @@ import mock
 from tg.util.webtest import test_context
 
 from kallithea.lib.utils2 import AttributeDict, safe_bytes
-from kallithea.model.db import Repository
+from kallithea.model import db
 from kallithea.tests import base
 
 
@@ -251,13 +251,13 @@ class TestLibs(base.TestController):
                 assert grav == 'https://example.com/%s/%s' % (_md5(em), 24)
 
     @base.parametrize('clone_uri_tmpl,repo_name,username,prefix,expected', [
-        (Repository.DEFAULT_CLONE_URI, 'group/repo1', None, '', 'http://vps1:8000/group/repo1'),
-        (Repository.DEFAULT_CLONE_URI, 'group/repo1', 'username', '', 'http://username@vps1:8000/group/repo1'),
-        (Repository.DEFAULT_CLONE_URI, 'group/repo1', None, '/prefix', 'http://vps1:8000/prefix/group/repo1'),
-        (Repository.DEFAULT_CLONE_URI, 'group/repo1', 'user', '/prefix', 'http://user@vps1:8000/prefix/group/repo1'),
-        (Repository.DEFAULT_CLONE_URI, 'group/repo1', 'username', '/prefix', 'http://username@vps1:8000/prefix/group/repo1'),
-        (Repository.DEFAULT_CLONE_URI, 'group/repo1', 'user', '/prefix/', 'http://user@vps1:8000/prefix/group/repo1'),
-        (Repository.DEFAULT_CLONE_URI, 'group/repo1', 'username', '/prefix/', 'http://username@vps1:8000/prefix/group/repo1'),
+        (db.Repository.DEFAULT_CLONE_URI, 'group/repo1', None, '', 'http://vps1:8000/group/repo1'),
+        (db.Repository.DEFAULT_CLONE_URI, 'group/repo1', 'username', '', 'http://username@vps1:8000/group/repo1'),
+        (db.Repository.DEFAULT_CLONE_URI, 'group/repo1', None, '/prefix', 'http://vps1:8000/prefix/group/repo1'),
+        (db.Repository.DEFAULT_CLONE_URI, 'group/repo1', 'user', '/prefix', 'http://user@vps1:8000/prefix/group/repo1'),
+        (db.Repository.DEFAULT_CLONE_URI, 'group/repo1', 'username', '/prefix', 'http://username@vps1:8000/prefix/group/repo1'),
+        (db.Repository.DEFAULT_CLONE_URI, 'group/repo1', 'user', '/prefix/', 'http://user@vps1:8000/prefix/group/repo1'),
+        (db.Repository.DEFAULT_CLONE_URI, 'group/repo1', 'username', '/prefix/', 'http://username@vps1:8000/prefix/group/repo1'),
         ('{scheme}://{user}@{netloc}/_{repoid}', 'group/repo1', None, '', 'http://vps1:8000/_23'),
         ('{scheme}://{user}@{netloc}/_{repoid}', 'group/repo1', 'username', '', 'http://username@vps1:8000/_23'),
         ('http://{user}@{netloc}/_{repoid}', 'group/repo1', 'username', '', 'http://username@vps1:8000/_23'),
@@ -540,7 +540,7 @@ class TestLibs(base.TestController):
       ("_IDa", '_IDa'),
     ])
     def test_fix_repo_id_name(self, test, expected):
-        repo = Repository.get_by_repo_name(base.HG_REPO)
+        repo = db.Repository.get_by_repo_name(base.HG_REPO)
         test = test.replace('ID', str(repo.repo_id))
         expected = expected.replace('NAME', repo.repo_name).replace('ID', str(repo.repo_id))
         from kallithea.lib.utils import fix_repo_id_name

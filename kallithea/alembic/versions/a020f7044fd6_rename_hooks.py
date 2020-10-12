@@ -29,7 +29,7 @@ depends_on = None
 from alembic import op
 from sqlalchemy import MetaData, Table
 
-from kallithea.model.db import Ui
+from kallithea.model import db
 
 
 meta = MetaData()
@@ -37,7 +37,7 @@ meta = MetaData()
 
 def upgrade():
     meta.bind = op.get_bind()
-    ui = Table(Ui.__tablename__, meta, autoload=True)
+    ui = Table(db.Ui.__tablename__, meta, autoload=True)
 
     ui.update(values={
         'ui_key': 'prechangegroup.push_lock_handling',
@@ -51,7 +51,7 @@ def upgrade():
 
 def downgrade():
     meta.bind = op.get_bind()
-    ui = Table(Ui.__tablename__, meta, autoload=True)
+    ui = Table(db.Ui.__tablename__, meta, autoload=True)
 
     ui.update(values={
         'ui_key': 'prechangegroup.pre_push',

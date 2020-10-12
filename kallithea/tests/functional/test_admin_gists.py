@@ -1,5 +1,4 @@
-from kallithea.model import meta
-from kallithea.model.db import Gist, User
+from kallithea.model import db, meta
 from kallithea.model.gist import GistModel
 from kallithea.tests import base
 
@@ -10,7 +9,7 @@ def _create_gist(f_name, content='some gist', lifetime=-1,
     gist_mapping = {
         f_name: {'content': content}
     }
-    owner = User.get_by_username(owner)
+    owner = db.User.get_by_username(owner)
     gist = GistModel().create(description, owner=owner, ip_addr=base.IP_ADDR,
                        gist_mapping=gist_mapping, gist_type=gist_type,
                        lifetime=lifetime)
@@ -21,7 +20,7 @@ def _create_gist(f_name, content='some gist', lifetime=-1,
 class TestGistsController(base.TestController):
 
     def teardown_method(self, method):
-        for g in Gist.query():
+        for g in db.Gist.query():
             GistModel().delete(g)
         meta.Session().commit()
 

@@ -43,8 +43,7 @@ from kallithea.lib.auth import LoginRequired
 from kallithea.lib.base import BaseController, render
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import AttributeDict, safe_int
-from kallithea.model import meta
-from kallithea.model.db import Repository, User, UserFollowing, UserLog
+from kallithea.model import db, meta
 from kallithea.model.repo import RepoModel
 
 
@@ -84,20 +83,20 @@ class JournalController(BaseController):
         filtering_criterion = None
 
         if repo_ids and user_ids:
-            filtering_criterion = or_(UserLog.repository_id.in_(repo_ids),
-                        UserLog.user_id.in_(user_ids))
+            filtering_criterion = or_(db.UserLog.repository_id.in_(repo_ids),
+                        db.UserLog.user_id.in_(user_ids))
         if repo_ids and not user_ids:
-            filtering_criterion = UserLog.repository_id.in_(repo_ids)
+            filtering_criterion = db.UserLog.repository_id.in_(repo_ids)
         if not repo_ids and user_ids:
-            filtering_criterion = UserLog.user_id.in_(user_ids)
+            filtering_criterion = db.UserLog.user_id.in_(user_ids)
         if filtering_criterion is not None:
-            journal = UserLog.query() \
-                .options(joinedload(UserLog.user)) \
-                .options(joinedload(UserLog.repository))
+            journal = db.UserLog.query() \
+                .options(joinedload(db.UserLog.user)) \
+                .options(joinedload(db.UserLog.repository))
             # filter
             journal = _journal_filter(journal, c.search_term)
             journal = journal.filter(filtering_criterion) \
-                        .order_by(UserLog.action_date.desc())
+                        .order_by(db.UserLog.action_date.desc())
         else:
             journal = []
 
@@ -166,10 +165,10 @@ class JournalController(BaseController):
     def index(self):
         # Return a rendered template
         p = safe_int(request.GET.get('page'), 1)
-        c.user = User.get(request.authuser.user_id)
-        c.following = UserFollowing.query() \
-            .filter(UserFollowing.user_id == request.authuser.user_id) \
-            .options(joinedload(UserFollowing.follows_repository)) \
+        c.user = db.User.get(request.authuser.user_id)
+        c.following = db.UserFollowing.query() \
+            .filter(db.UserFollowing.user_id == request.authuser.user_id) \
+            .options(joinedload(db.UserFollowing.follows_repository)) \
             .all()
 
         journal = self._get_journal_data(c.following)
@@ -181,7 +180,7 @@ class JournalController(BaseController):
         if request.environ.get('HTTP_X_PARTIAL_XHR'):
             return render('journal/journal_data.html')
 
-        repos_list = Repository.query(sorted=True) \
+        repos_list = db.Repository.query(sorted=True) \
             .filter_by(owner_id=request.authuser.user_id).all()
 
         repos_data = RepoModel().get_repos_as_dict(repos_list, admin=True)
@@ -193,18 +192,18 @@ class JournalController(BaseController):
     @LoginRequired()
     def journal_atom(self):
         """Produce a simple atom-1.0 feed"""
-        following = UserFollowing.query() \
-            .filter(UserFollowing.user_id == request.authuser.user_id) \
-            .options(joinedload(UserFollowing.follows_repository)) \
+        following = db.UserFollowing.query() \
+            .filter(db.UserFollowing.user_id == request.authuser.user_id) \
+            .options(joinedload(db.UserFollowing.follows_repository)) \
             .all()
         return self._atom_feed(following, public=False)
 
     @LoginRequired()
     def journal_rss(self):
         """Produce a simple rss2 feed"""
-        following = UserFollowing.query() \
-            .filter(UserFollowing.user_id == request.authuser.user_id) \
-            .options(joinedload(UserFollowing.follows_repository)) \
+        following = db.UserFollowing.query() \
+            .filter(db.UserFollowing.user_id == request.authuser.user_id) \
+            .options(joinedload(db.UserFollowing.follows_repository)) \
             .all()
         return self._rss_feed(following, public=False)
 
@@ -239,9 +238,9 @@ class JournalController(BaseController):
         # Return a rendered template
         p = safe_int(request.GET.get('page'), 1)
 
-        c.following = UserFollowing.query() \
-            .filter(UserFollowing.user_id == request.authuser.user_id) \
-            .options(joinedload(UserFollowing.follows_repository)) \
+        c.following = db.UserFollowing.query() \
+            .filter(db.UserFollowing.user_id == request.authuser.user_id) \
+            .options(joinedload(db.UserFollowing.follows_repository)) \
             .all()
 
         journal = self._get_journal_data(c.following)
@@ -258,9 +257,9 @@ class JournalController(BaseController):
     @LoginRequired(allow_default_user=True)
     def public_journal_atom(self):
         """Produce a simple atom-1.0 feed"""
-        c.following = UserFollowing.query() \
-            .filter(UserFollowing.user_id == request.authuser.user_id) \
-            .options(joinedload(UserFollowing.follows_repository)) \
+        c.following = db.UserFollowing.query() \
+            .filter(db.UserFollowing.user_id == request.authuser.user_id) \
+            .options(joinedload(db.UserFollowing.follows_repository)) \
             .all()
 
         return self._atom_feed(c.following)
@@ -268,9 +267,9 @@ class JournalController(BaseController):
     @LoginRequired(allow_default_user=True)
     def public_journal_rss(self):
         """Produce a simple rss2 feed"""
-        c.following = UserFollowing.query() \
-            .filter(UserFollowing.user_id == request.authuser.user_id) \
-            .options(joinedload(UserFollowing.follows_repository)) \
+        c.following = db.UserFollowing.query() \
+            .filter(db.UserFollowing.user_id == request.authuser.user_id) \
+            .options(joinedload(db.UserFollowing.follows_repository)) \
             .all()
 
         return self._rss_feed(c.following)

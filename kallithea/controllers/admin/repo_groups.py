@@ -40,9 +40,8 @@ from kallithea.lib import helpers as h
 from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel, HasRepoGroupPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseController, render
 from kallithea.lib.utils2 import safe_int
-from kallithea.lib.webutils import url
-from kallithea.model import meta
-from kallithea.model.db import RepoGroup, Repository
+from kallithea.lib.utils3 import url
+from kallithea.model import db, meta
 from kallithea.model.forms import RepoGroupForm, RepoGroupPermsForm
 from kallithea.model.repo import RepoModel
 from kallithea.model.repo_group import RepoGroupModel
@@ -74,7 +73,7 @@ class RepoGroupsController(BaseController):
 
         :param group_id:
         """
-        repo_group = RepoGroup.get_or_404(group_id)
+        repo_group = db.RepoGroup.get_or_404(group_id)
         data = repo_group.get_dict()
         data['group_name'] = repo_group.name
 
@@ -98,7 +97,7 @@ class RepoGroupsController(BaseController):
         return False
 
     def index(self, format='html'):
-        _list = RepoGroup.query(sorted=True).all()
+        _list = db.RepoGroup.query(sorted=True).all()
         group_iter = RepoGroupList(_list, perm_level='admin')
         repo_groups_data = []
         _tmpl_lookup = app_globals.mako_lookup
@@ -181,7 +180,7 @@ class RepoGroupsController(BaseController):
             # we pass in parent group into creation form, thus we know
             # what would be the group, we can check perms here !
             group_id = safe_int(request.GET.get('parent_group'))
-            group = RepoGroup.get(group_id) if group_id else None
+            group = db.RepoGroup.get(group_id) if group_id else None
             group_name = group.group_name if group else None
             if HasRepoGroupPermissionLevel('admin')(group_name, 'group create'):
                 pass
@@ -193,7 +192,7 @@ class RepoGroupsController(BaseController):
 
     @HasRepoGroupPermissionLevelDecorator('admin')
     def update(self, group_name):
-        c.repo_group = RepoGroup.guess_instance(group_name)
+        c.repo_group = db.RepoGroup.guess_instance(group_name)
         self.__load_defaults(extras=[c.repo_group.parent_group],
                              exclude=[c.repo_group])
 
@@ -239,7 +238,7 @@ class RepoGroupsController(BaseController):
 
     @HasRepoGroupPermissionLevelDecorator('admin')
     def delete(self, group_name):
-        gr = c.repo_group = RepoGroup.guess_instance(group_name)
+        gr = c.repo_group = db.RepoGroup.guess_instance(group_name)
         repos = gr.repositories.all()
         if repos:
             h.flash(_('This group contains %s repositories and cannot be '
@@ -273,7 +272,7 @@ class RepoGroupsController(BaseController):
         the group by id view instead
         """
         group_name = group_name.rstrip('/')
-        id_ = RepoGroup.get_by_group_name(group_name)
+        id_ = db.RepoGroup.get_by_group_name(group_name)
         if id_:
             return self.show(group_name)
         raise HTTPNotFound
@@ -282,12 +281,12 @@ class RepoGroupsController(BaseController):
     def show(self, group_name):
         c.active = 'settings'
 
-        c.group = c.repo_group = RepoGroup.guess_instance(group_name)
+        c.group = c.repo_group = db.RepoGroup.guess_instance(group_name)
 
-        groups = RepoGroup.query(sorted=True).filter_by(parent_group=c.group).all()
+        groups = db.RepoGroup.query(sorted=True).filter_by(parent_group=c.group).all()
         repo_groups_list = self.scm_model.get_repo_groups(groups)
 
-        repos_list = Repository.query(sorted=True).filter_by(group=c.group).all()
+        repos_list = db.Repository.query(sorted=True).filter_by(group=c.group).all()
         c.data = RepoModel().get_repos_as_dict(repos_list,
                                                repo_groups_list=repo_groups_list,
                                                short_name=True)
@@ -298,7 +297,7 @@ class RepoGroupsController(BaseController):
     def edit(self, group_name):
         c.active = 'settings'
 
-        c.repo_group = RepoGroup.guess_instance(group_name)
+        c.repo_group = db.RepoGroup.guess_instance(group_name)
         self.__load_defaults(extras=[c.repo_group.parent_group],
                              exclude=[c.repo_group])
         defaults = self.__load_data(c.repo_group.group_id)
@@ -313,14 +312,14 @@ class RepoGroupsController(BaseController):
     @HasRepoGroupPermissionLevelDecorator('admin')
     def edit_repo_group_advanced(self, group_name):
         c.active = 'advanced'
-        c.repo_group = RepoGroup.guess_instance(group_name)
+        c.repo_group = db.RepoGroup.guess_instance(group_name)
 
         return render('admin/repo_groups/repo_group_edit.html')
 
     @HasRepoGroupPermissionLevelDecorator('admin')
     def edit_repo_group_perms(self, group_name):
         c.active = 'perms'
-        c.repo_group = RepoGroup.guess_instance(group_name)
+        c.repo_group = db.RepoGroup.guess_instance(group_name)
         self.__load_defaults()
         defaults = self.__load_data(c.repo_group.group_id)
 
@@ -339,7 +338,7 @@ class RepoGroupsController(BaseController):
         :param group_name:
         """
 
-        c.repo_group = RepoGroup.guess_instance(group_name)
+        c.repo_group = db.RepoGroup.guess_instance(group_name)
         valid_recursive_choices = ['none', 'repos', 'groups', 'all']
         form_result = RepoGroupPermsForm(valid_recursive_choices)().to_python(request.POST)
         if not request.authuser.is_admin:

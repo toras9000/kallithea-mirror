@@ -8,8 +8,7 @@ import pytest
 
 import kallithea
 from kallithea.lib import vcs
-from kallithea.model import meta
-from kallithea.model.db import Permission, Repository, Ui, User, UserRepoToPerm
+from kallithea.model import db, meta
 from kallithea.model.repo import RepoModel
 from kallithea.model.repo_group import RepoGroupModel
 from kallithea.model.user import UserModel
@@ -21,10 +20,10 @@ fixture = Fixture()
 
 
 def _get_permission_for_user(user, repo):
-    perm = UserRepoToPerm.query() \
-                .filter(UserRepoToPerm.repository ==
-                        Repository.get_by_repo_name(repo)) \
-                .filter(UserRepoToPerm.user == User.get_by_username(user)) \
+    perm = db.UserRepoToPerm.query() \
+                .filter(db.UserRepoToPerm.repository ==
+                        db.Repository.get_by_repo_name(repo)) \
+                .filter(db.UserRepoToPerm.user == db.User.get_by_username(user)) \
                 .all()
     return perm
 
@@ -61,8 +60,8 @@ class _BaseTestCase(base.TestController):
                                % (repo_name, repo_name))
 
         # test if the repo was created in the database
-        new_repo = meta.Session().query(Repository) \
-            .filter(Repository.repo_name == repo_name).one()
+        new_repo = meta.Session().query(db.Repository) \
+            .filter(db.Repository.repo_name == repo_name).one()
 
         assert new_repo.repo_name == repo_name
         assert new_repo.description == description
@@ -74,7 +73,7 @@ class _BaseTestCase(base.TestController):
 
         # test if the repository was created on filesystem
         try:
-            vcs.get_repo(os.path.join(Ui.get_by_key('paths', '/').ui_value, repo_name))
+            vcs.get_repo(os.path.join(db.Ui.get_by_key('paths', '/').ui_value, repo_name))
         except vcs.exceptions.VCSError:
             pytest.fail('no repo %s in filesystem' % repo_name)
 
@@ -131,8 +130,8 @@ class _BaseTestCase(base.TestController):
                                'Created repository <a href="/%s">%s</a>'
                                % (repo_name_full, repo_name_full))
         # test if the repo was created in the database
-        new_repo = meta.Session().query(Repository) \
-            .filter(Repository.repo_name == repo_name_full).one()
+        new_repo = meta.Session().query(db.Repository) \
+            .filter(db.Repository.repo_name == repo_name_full).one()
         new_repo_id = new_repo.repo_id
 
         assert new_repo.repo_name == repo_name_full
@@ -143,13 +142,13 @@ class _BaseTestCase(base.TestController):
         response.mustcontain(repo_name_full)
         response.mustcontain(self.REPO_TYPE)
 
-        inherited_perms = UserRepoToPerm.query() \
-            .filter(UserRepoToPerm.repository_id == new_repo_id).all()
+        inherited_perms = db.UserRepoToPerm.query() \
+            .filter(db.UserRepoToPerm.repository_id == new_repo_id).all()
         assert len(inherited_perms) == 1
 
         # test if the repository was created on filesystem
         try:
-            vcs.get_repo(os.path.join(Ui.get_by_key('paths', '/').ui_value, repo_name_full))
+            vcs.get_repo(os.path.join(db.Ui.get_by_key('paths', '/').ui_value, repo_name_full))
         except vcs.exceptions.VCSError:
             RepoGroupModel().delete(group_name)
             meta.Session().commit()
@@ -166,10 +165,10 @@ class _BaseTestCase(base.TestController):
         # revoke
         user_model = UserModel()
         # disable fork and create on default user
-        user_model.revoke_perm(User.DEFAULT_USER_NAME, 'hg.create.repository')
-        user_model.grant_perm(User.DEFAULT_USER_NAME, 'hg.create.none')
-        user_model.revoke_perm(User.DEFAULT_USER_NAME, 'hg.fork.repository')
-        user_model.grant_perm(User.DEFAULT_USER_NAME, 'hg.fork.none')
+        user_model.revoke_perm(db.User.DEFAULT_USER_NAME, 'hg.create.repository')
+        user_model.grant_perm(db.User.DEFAULT_USER_NAME, 'hg.create.none')
+        user_model.revoke_perm(db.User.DEFAULT_USER_NAME, 'hg.fork.repository')
+        user_model.grant_perm(db.User.DEFAULT_USER_NAME, 'hg.fork.none')
 
         # disable on regular user
         user_model.revoke_perm(base.TEST_USER_REGULAR_LOGIN, 'hg.create.repository')
@@ -223,8 +222,8 @@ class _BaseTestCase(base.TestController):
                                'Created repository <a href="/%s">%s</a>'
                                % (repo_name_full, repo_name_full))
         # test if the repo was created in the database
-        new_repo = meta.Session().query(Repository) \
-            .filter(Repository.repo_name == repo_name_full).one()
+        new_repo = meta.Session().query(db.Repository) \
+            .filter(db.Repository.repo_name == repo_name_full).one()
         new_repo_id = new_repo.repo_id
 
         assert new_repo.repo_name == repo_name_full
@@ -235,13 +234,13 @@ class _BaseTestCase(base.TestController):
         response.mustcontain(repo_name_full)
         response.mustcontain(self.REPO_TYPE)
 
-        inherited_perms = UserRepoToPerm.query() \
-            .filter(UserRepoToPerm.repository_id == new_repo_id).all()
+        inherited_perms = db.UserRepoToPerm.query() \
+            .filter(db.UserRepoToPerm.repository_id == new_repo_id).all()
         assert len(inherited_perms) == 1
 
         # test if the repository was created on filesystem
         try:
-            vcs.get_repo(os.path.join(Ui.get_by_key('paths', '/').ui_value, repo_name_full))
+            vcs.get_repo(os.path.join(db.Ui.get_by_key('paths', '/').ui_value, repo_name_full))
         except vcs.exceptions.VCSError:
             RepoGroupModel().delete(group_name)
             meta.Session().commit()
@@ -260,7 +259,7 @@ class _BaseTestCase(base.TestController):
         gr = RepoGroupModel().create(group_name=group_name,
                                      group_description='test',
                                      owner=base.TEST_USER_ADMIN_LOGIN)
-        perm = Permission.get_by_key('repository.write')
+        perm = db.Permission.get_by_key('repository.write')
         RepoGroupModel().grant_user_permission(gr, base.TEST_USER_REGULAR_LOGIN, perm)
 
         ## add repo permissions
@@ -284,8 +283,8 @@ class _BaseTestCase(base.TestController):
                                'Created repository <a href="/%s">%s</a>'
                                % (repo_name_full, repo_name_full))
         # test if the repo was created in the database
-        new_repo = meta.Session().query(Repository) \
-            .filter(Repository.repo_name == repo_name_full).one()
+        new_repo = meta.Session().query(db.Repository) \
+            .filter(db.Repository.repo_name == repo_name_full).one()
         new_repo_id = new_repo.repo_id
 
         assert new_repo.repo_name == repo_name_full
@@ -298,15 +297,15 @@ class _BaseTestCase(base.TestController):
 
         # test if the repository was created on filesystem
         try:
-            vcs.get_repo(os.path.join(Ui.get_by_key('paths', '/').ui_value, repo_name_full))
+            vcs.get_repo(os.path.join(db.Ui.get_by_key('paths', '/').ui_value, repo_name_full))
         except vcs.exceptions.VCSError:
             RepoGroupModel().delete(group_name)
             meta.Session().commit()
             pytest.fail('no repo %s in filesystem' % repo_name)
 
         # check if inherited permissiona are applied
-        inherited_perms = UserRepoToPerm.query() \
-            .filter(UserRepoToPerm.repository_id == new_repo_id).all()
+        inherited_perms = db.UserRepoToPerm.query() \
+            .filter(db.UserRepoToPerm.repository_id == new_repo_id).all()
         assert len(inherited_perms) == 2
 
         assert base.TEST_USER_REGULAR_LOGIN in [x.user.username
@@ -373,8 +372,8 @@ class _BaseTestCase(base.TestController):
                                'Created repository <a href="/%s">%s</a>'
                                % (repo_name, repo_name))
         # test if the repo was created in the database
-        new_repo = meta.Session().query(Repository) \
-            .filter(Repository.repo_name == repo_name).one()
+        new_repo = meta.Session().query(db.Repository) \
+            .filter(db.Repository.repo_name == repo_name).one()
 
         assert new_repo.repo_name == repo_name
         assert new_repo.description == description
@@ -386,7 +385,7 @@ class _BaseTestCase(base.TestController):
 
         # test if the repository was created on filesystem
         try:
-            vcs.get_repo(os.path.join(Ui.get_by_key('paths', '/').ui_value, repo_name))
+            vcs.get_repo(os.path.join(db.Ui.get_by_key('paths', '/').ui_value, repo_name))
         except vcs.exceptions.VCSError:
             pytest.fail('no repo %s in filesystem' % repo_name)
 
@@ -398,12 +397,12 @@ class _BaseTestCase(base.TestController):
         response.follow()
 
         # check if repo was deleted from db
-        deleted_repo = meta.Session().query(Repository) \
-            .filter(Repository.repo_name == repo_name).scalar()
+        deleted_repo = meta.Session().query(db.Repository) \
+            .filter(db.Repository.repo_name == repo_name).scalar()
 
         assert deleted_repo is None
 
-        assert os.path.isdir(os.path.join(Ui.get_by_key('paths', '/').ui_value, repo_name)) == False
+        assert os.path.isdir(os.path.join(db.Ui.get_by_key('paths', '/').ui_value, repo_name)) == False
 
     def test_delete_non_ascii(self):
         self.log_user()
@@ -423,8 +422,8 @@ class _BaseTestCase(base.TestController):
                                'Created repository <a href="/%s">%s</a>'
                                % (urllib.parse.quote(repo_name), repo_name))
         # test if the repo was created in the database
-        new_repo = meta.Session().query(Repository) \
-            .filter(Repository.repo_name == repo_name).one()
+        new_repo = meta.Session().query(db.Repository) \
+            .filter(db.Repository.repo_name == repo_name).one()
 
         assert new_repo.repo_name == repo_name
         assert new_repo.description == description
@@ -436,7 +435,7 @@ class _BaseTestCase(base.TestController):
 
         # test if the repository was created on filesystem
         try:
-            vcs.get_repo(os.path.join(Ui.get_by_key('paths', '/').ui_value, repo_name))
+            vcs.get_repo(os.path.join(db.Ui.get_by_key('paths', '/').ui_value, repo_name))
         except vcs.exceptions.VCSError:
             pytest.fail('no repo %s in filesystem' % repo_name)
 
@@ -446,12 +445,12 @@ class _BaseTestCase(base.TestController):
         response.follow()
 
         # check if repo was deleted from db
-        deleted_repo = meta.Session().query(Repository) \
-            .filter(Repository.repo_name == repo_name).scalar()
+        deleted_repo = meta.Session().query(db.Repository) \
+            .filter(db.Repository.repo_name == repo_name).scalar()
 
         assert deleted_repo is None
 
-        assert os.path.isdir(os.path.join(Ui.get_by_key('paths', '/').ui_value, repo_name)) == False
+        assert os.path.isdir(os.path.join(db.Ui.get_by_key('paths', '/').ui_value, repo_name)) == False
 
     def test_delete_repo_with_group(self):
         # TODO:
@@ -474,7 +473,7 @@ class _BaseTestCase(base.TestController):
         perm = _get_permission_for_user(user='default', repo=self.REPO)
         assert len(perm), 1
         assert perm[0].permission.permission_name == 'repository.read'
-        assert Repository.get_by_repo_name(self.REPO).private == False
+        assert db.Repository.get_by_repo_name(self.REPO).private == False
 
         response = self.app.post(base.url('update_repo', repo_name=self.REPO),
                         fixture._get_repo_create_params(repo_private=1,
@@ -484,7 +483,7 @@ class _BaseTestCase(base.TestController):
                                                 _session_csrf_secret_token=self.session_csrf_secret_token()))
         self.checkSessionFlash(response,
                                msg='Repository %s updated successfully' % (self.REPO))
-        assert Repository.get_by_repo_name(self.REPO).private == True
+        assert db.Repository.get_by_repo_name(self.REPO).private == True
 
         # now the repo default permission should be None
         perm = _get_permission_for_user(user='default', repo=self.REPO)
@@ -499,7 +498,7 @@ class _BaseTestCase(base.TestController):
                                                 _session_csrf_secret_token=self.session_csrf_secret_token()))
         self.checkSessionFlash(response,
                                msg='Repository %s updated successfully' % (self.REPO))
-        assert Repository.get_by_repo_name(self.REPO).private == False
+        assert db.Repository.get_by_repo_name(self.REPO).private == False
 
         # we turn off private now the repo default permission should stay None
         perm = _get_permission_for_user(user='default', repo=self.REPO)
@@ -507,12 +506,12 @@ class _BaseTestCase(base.TestController):
         assert perm[0].permission.permission_name == 'repository.none'
 
         # update this permission back
-        perm[0].permission = Permission.get_by_key('repository.read')
+        perm[0].permission = db.Permission.get_by_key('repository.read')
         meta.Session().commit()
 
     def test_set_repo_fork_has_no_self_id(self):
         self.log_user()
-        repo = Repository.get_by_repo_name(self.REPO)
+        repo = db.Repository.get_by_repo_name(self.REPO)
         response = self.app.get(base.url('edit_repo_advanced', repo_name=self.REPO))
         opt = """<option value="%s">%s</option>""" % (repo.repo_id, self.REPO)
         response.mustcontain(no=[opt])
@@ -521,12 +520,12 @@ class _BaseTestCase(base.TestController):
         self.log_user()
         other_repo = 'other_%s' % self.REPO_TYPE
         fixture.create_repo(other_repo, repo_type=self.REPO_TYPE)
-        repo = Repository.get_by_repo_name(self.REPO)
-        repo2 = Repository.get_by_repo_name(other_repo)
+        repo = db.Repository.get_by_repo_name(self.REPO)
+        repo2 = db.Repository.get_by_repo_name(other_repo)
         response = self.app.post(base.url('edit_repo_advanced_fork', repo_name=self.REPO),
                                 params=dict(id_fork_of=repo2.repo_id, _session_csrf_secret_token=self.session_csrf_secret_token()))
-        repo = Repository.get_by_repo_name(self.REPO)
-        repo2 = Repository.get_by_repo_name(other_repo)
+        repo = db.Repository.get_by_repo_name(self.REPO)
+        repo2 = db.Repository.get_by_repo_name(other_repo)
         self.checkSessionFlash(response,
             'Marked repository %s as fork of %s' % (repo.repo_name, repo2.repo_name))
 
@@ -542,12 +541,12 @@ class _BaseTestCase(base.TestController):
 
     def test_set_fork_of_other_type_repo(self):
         self.log_user()
-        repo = Repository.get_by_repo_name(self.REPO)
-        repo2 = Repository.get_by_repo_name(self.OTHER_TYPE_REPO)
+        repo = db.Repository.get_by_repo_name(self.REPO)
+        repo2 = db.Repository.get_by_repo_name(self.OTHER_TYPE_REPO)
         response = self.app.post(base.url('edit_repo_advanced_fork', repo_name=self.REPO),
                                 params=dict(id_fork_of=repo2.repo_id, _session_csrf_secret_token=self.session_csrf_secret_token()))
-        repo = Repository.get_by_repo_name(self.REPO)
-        repo2 = Repository.get_by_repo_name(self.OTHER_TYPE_REPO)
+        repo = db.Repository.get_by_repo_name(self.REPO)
+        repo2 = db.Repository.get_by_repo_name(self.OTHER_TYPE_REPO)
         self.checkSessionFlash(response,
             'Cannot set repository as fork of repository with other type')
 
@@ -556,8 +555,8 @@ class _BaseTestCase(base.TestController):
         ## mark it as None
         response = self.app.post(base.url('edit_repo_advanced_fork', repo_name=self.REPO),
                                 params=dict(id_fork_of=None, _session_csrf_secret_token=self.session_csrf_secret_token()))
-        repo = Repository.get_by_repo_name(self.REPO)
-        repo2 = Repository.get_by_repo_name(self.OTHER_TYPE_REPO)
+        repo = db.Repository.get_by_repo_name(self.REPO)
+        repo2 = db.Repository.get_by_repo_name(self.OTHER_TYPE_REPO)
         self.checkSessionFlash(response,
                                'Marked repository %s as fork of %s'
                                % (repo.repo_name, "Nothing"))
@@ -565,7 +564,7 @@ class _BaseTestCase(base.TestController):
 
     def test_set_fork_of_same_repo(self):
         self.log_user()
-        repo = Repository.get_by_repo_name(self.REPO)
+        repo = db.Repository.get_by_repo_name(self.REPO)
         response = self.app.post(base.url('edit_repo_advanced_fork', repo_name=self.REPO),
                                 params=dict(id_fork_of=repo.repo_id, _session_csrf_secret_token=self.session_csrf_secret_token()))
         self.checkSessionFlash(response,
@@ -576,10 +575,10 @@ class _BaseTestCase(base.TestController):
         # revoke
         user_model = UserModel()
         # disable fork and create on default user
-        user_model.revoke_perm(User.DEFAULT_USER_NAME, 'hg.create.repository')
-        user_model.grant_perm(User.DEFAULT_USER_NAME, 'hg.create.none')
-        user_model.revoke_perm(User.DEFAULT_USER_NAME, 'hg.fork.repository')
-        user_model.grant_perm(User.DEFAULT_USER_NAME, 'hg.fork.none')
+        user_model.revoke_perm(db.User.DEFAULT_USER_NAME, 'hg.create.repository')
+        user_model.grant_perm(db.User.DEFAULT_USER_NAME, 'hg.create.none')
+        user_model.revoke_perm(db.User.DEFAULT_USER_NAME, 'hg.fork.repository')
+        user_model.grant_perm(db.User.DEFAULT_USER_NAME, 'hg.fork.none')
 
         # disable on regular user
         user_model.revoke_perm(base.TEST_USER_REGULAR_LOGIN, 'hg.create.repository')
@@ -589,7 +588,7 @@ class _BaseTestCase(base.TestController):
         meta.Session().commit()
 
 
-        user = User.get(usr['user_id'])
+        user = db.User.get(usr['user_id'])
 
         repo_name = self.NEW_REPO + 'no_perms'
         description = 'description for newly created repo'
@@ -621,11 +620,11 @@ class _BaseTestCase(base.TestController):
         self.checkSessionFlash(response,
                                'Error creating repository %s' % repo_name)
         # repo must not be in db
-        repo = Repository.get_by_repo_name(repo_name)
+        repo = db.Repository.get_by_repo_name(repo_name)
         assert repo is None
 
         # repo must not be in filesystem !
-        assert not os.path.isdir(os.path.join(Ui.get_by_key('paths', '/').ui_value, repo_name))
+        assert not os.path.isdir(os.path.join(db.Ui.get_by_key('paths', '/').ui_value, repo_name))
 
 
 class TestAdminReposControllerGIT(_BaseTestCase):
@@ -644,7 +643,7 @@ class TestAdminReposControllerHG(_BaseTestCase):
     OTHER_TYPE = 'git'
 
     def test_permanent_url_protocol_access(self):
-        repo = Repository.get_by_repo_name(self.REPO)
+        repo = db.Repository.get_by_repo_name(self.REPO)
         permanent_name = '_%d' % repo.repo_id
 
         # 400 Bad Request - Unable to detect pull/push action

@@ -38,10 +38,9 @@ from kallithea.lib.exceptions import DefaultUserException, UserGroupsAssignedExc
 from kallithea.lib.utils import action_logger, repo2db_mapper
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.exceptions import EmptyRepositoryError
-from kallithea.model import meta
+from kallithea.model import db, meta
 from kallithea.model.changeset_status import ChangesetStatusModel
 from kallithea.model.comment import ChangesetCommentsModel
-from kallithea.model.db import ChangesetStatus, Gist, Permission, PullRequest, RepoGroup, Repository, Setting, User, UserGroup, UserIpMap
 from kallithea.model.gist import GistModel
 from kallithea.model.pull_request import PullRequestModel
 from kallithea.model.repo import RepoModel
@@ -93,7 +92,7 @@ def get_repo_group_or_error(repogroupid):
 
     :param repogroupid:
     """
-    repo_group = RepoGroup.guess_instance(repogroupid)
+    repo_group = db.RepoGroup.guess_instance(repogroupid)
     if repo_group is None:
         raise JSONRPCError(
             'repository group `%s` does not exist' % (repogroupid,))
@@ -118,7 +117,7 @@ def get_perm_or_error(permid, prefix=None):
 
     :param permid:
     """
-    perm = Permission.get_by_key(permid)
+    perm = db.Permission.get_by_key(permid)
     if perm is None:
         raise JSONRPCError('permission `%s` does not exist' % (permid,))
     if prefix:
@@ -323,7 +322,7 @@ class ApiController(JSONRPCController):
         if userid is None:
             userid = request.authuser.user_id
         user = get_user_or_error(userid)
-        ips = UserIpMap.query().filter(UserIpMap.user == user).all()
+        ips = db.UserIpMap.query().filter(db.UserIpMap.user == user).all()
         return dict(
             server_ip_addr=request.ip_addr,
             user_ips=ips
@@ -349,7 +348,7 @@ class ApiController(JSONRPCController):
           }
           error :  null
         """
-        return Setting.get_server_info()
+        return db.Setting.get_server_info()
 
     def get_user(self, userid=None):
         """
@@ -425,8 +424,8 @@ class ApiController(JSONRPCController):
 
         return [
             user.get_api_data()
-            for user in User.query()
-                .order_by(User.username)
+            for user in db.User.query()
+                .order_by(db.User.username)
                 .filter_by(is_default_user=False)
         ]
 
@@ -434,7 +433,7 @@ class ApiController(JSONRPCController):
     def create_user(self, username, email, password='',
                     firstname='', lastname='',
                     active=True, admin=False,
-                    extern_type=User.DEFAULT_AUTH_TYPE,
+                    extern_type=db.User.DEFAULT_AUTH_TYPE,
                     extern_name=''):
         """
         Creates new user. Returns new user object. This command can
@@ -483,10 +482,10 @@ class ApiController(JSONRPCController):
 
         """
 
-        if User.get_by_username(username):
+        if db.User.get_by_username(username):
             raise JSONRPCError("user `%s` already exist" % (username,))
 
-        if User.get_by_email(email):
+        if db.User.get_by_email(email):
             raise JSONRPCError("email `%s` already exist" % (email,))
 
         try:
@@ -681,7 +680,7 @@ class ApiController(JSONRPCController):
 
         return [
             user_group.get_api_data()
-            for user_group in UserGroupList(UserGroup.query().all(), perm_level='read')
+            for user_group in UserGroupList(db.UserGroup.query().all(), perm_level='read')
         ]
 
     @HasPermissionAnyDecorator('hg.admin', 'hg.usergroup.create.true')
@@ -1100,7 +1099,7 @@ class ApiController(JSONRPCController):
         if not HasPermissionAny('hg.admin')():
             repos = RepoModel().get_all_user_repos(user=request.authuser.user_id)
         else:
-            repos = Repository.query()
+            repos = db.Repository.query()
 
         return [
             repo.get_api_data()
@@ -1235,7 +1234,7 @@ class ApiController(JSONRPCController):
         if RepoModel().get_by_repo_name(repo_name):
             raise JSONRPCError("repo `%s` already exist" % repo_name)
 
-        defs = Setting.get_default_repo_settings(strip_prefix=True)
+        defs = db.Setting.get_default_repo_settings(strip_prefix=True)
         if private is None:
             private = defs.get('repo_private') or False
         if repo_type is None:
@@ -1250,7 +1249,7 @@ class ApiController(JSONRPCController):
             repo_group = None
             if len(repo_name_parts) > 1:
                 group_name = '/'.join(repo_name_parts[:-1])
-                repo_group = RepoGroup.get_by_group_name(group_name)
+                repo_group = db.RepoGroup.get_by_group_name(group_name)
                 if repo_group is None:
                     raise JSONRPCError("repo group `%s` not found" % group_name)
             data = dict(
@@ -1426,7 +1425,7 @@ class ApiController(JSONRPCController):
             repo_group = None
             if len(fork_name_parts) > 1:
                 group_name = '/'.join(fork_name_parts[:-1])
-                repo_group = RepoGroup.get_by_group_name(group_name)
+                repo_group = db.RepoGroup.get_by_group_name(group_name)
                 if repo_group is None:
                     raise JSONRPCError("repo group `%s` not found" % group_name)
 
@@ -1756,7 +1755,7 @@ class ApiController(JSONRPCController):
         """
         return [
             repo_group.get_api_data()
-            for repo_group in RepoGroup.query()
+            for repo_group in db.RepoGroup.query()
         ]
 
     @HasPermissionAnyDecorator('hg.admin')
@@ -1797,7 +1796,7 @@ class ApiController(JSONRPCController):
           }
 
         """
-        if RepoGroup.get_by_group_name(group_name):
+        if db.RepoGroup.get_by_group_name(group_name):
             raise JSONRPCError("repo group `%s` already exist" % (group_name,))
 
         if owner is None:
@@ -2190,14 +2189,14 @@ class ApiController(JSONRPCController):
 
         return [
             gist.get_api_data()
-            for gist in Gist().query()
+            for gist in db.Gist().query()
                 .filter_by(is_expired=False)
-                .filter(Gist.owner_id == user_id)
-                .order_by(Gist.created_on.desc())
+                .filter(db.Gist.owner_id == user_id)
+                .order_by(db.Gist.created_on.desc())
         ]
 
     def create_gist(self, files, owner=None,
-                    gist_type=Gist.GIST_PUBLIC, lifetime=-1,
+                    gist_type=db.Gist.GIST_PUBLIC, lifetime=-1,
                     description=''):
 
         """
@@ -2340,7 +2339,7 @@ class ApiController(JSONRPCController):
         """
         Get given pull request by id
         """
-        pull_request = PullRequest.get(pullrequest_id)
+        pull_request = db.PullRequest.get(pullrequest_id)
         if pull_request is None:
             raise JSONRPCError('pull request `%s` does not exist' % (pullrequest_id,))
         if not HasRepoPermissionLevel('read')(pull_request.org_repo.repo_name):
@@ -2353,7 +2352,7 @@ class ApiController(JSONRPCController):
         Add comment, close and change status of pull request.
         """
         apiuser = get_user_or_error(request.authuser.user_id)
-        pull_request = PullRequest.get(pull_request_id)
+        pull_request = db.PullRequest.get(pull_request_id)
         if pull_request is None:
             raise JSONRPCError('pull request `%s` does not exist' % (pull_request_id,))
         if (not HasRepoPermissionLevel('read')(pull_request.org_repo.repo_name)):
@@ -2375,7 +2374,7 @@ class ApiController(JSONRPCController):
             pull_request=pull_request.pull_request_id,
             f_path=None,
             line_no=None,
-            status_change=ChangesetStatus.get_status_lbl(status),
+            status_change=db.ChangesetStatus.get_status_lbl(status),
             closing_pr=close_pr
         )
         action_logger(apiuser,
@@ -2407,7 +2406,7 @@ class ApiController(JSONRPCController):
         if add is None and remove is None:
             raise JSONRPCError('''Invalid request. Neither 'add' nor 'remove' is specified.''')
 
-        pull_request = PullRequest.get(pull_request_id)
+        pull_request = db.PullRequest.get(pull_request_id)
         if pull_request is None:
             raise JSONRPCError('pull request `%s` does not exist' % (pull_request_id,))
 

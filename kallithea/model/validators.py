@@ -33,7 +33,7 @@ from kallithea.lib.compat import OrderedSet
 from kallithea.lib.exceptions import InvalidCloneUriException, LdapImportError
 from kallithea.lib.utils import is_valid_repo_uri
 from kallithea.lib.utils2 import asbool, aslist, repo_name_slug
-from kallithea.model.db import RepoGroup, Repository, User, UserGroup
+from kallithea.model import db
 
 
 # silence warnings and pylint
@@ -85,10 +85,10 @@ def ValidUsername(edit=False, old_data=None):
             # check if user is unique
             old_un = None
             if edit:
-                old_un = User.get(old_data.get('user_id')).username
+                old_un = db.User.get(old_data.get('user_id')).username
 
             if old_un != value or not edit:
-                if User.get_by_username(value, case_insensitive=True):
+                if db.User.get_by_username(value, case_insensitive=True):
                     msg = self.message('username_exists', state, username=value)
                     raise formencode.Invalid(msg, value, state)
 
@@ -112,8 +112,8 @@ def ValidRepoUser():
 
         def _validate_python(self, value, state):
             try:
-                User.query().filter(User.active == True) \
-                    .filter(User.username == value).one()
+                db.User.query().filter(db.User.active == True) \
+                    .filter(db.User.username == value).one()
             except sqlalchemy.exc.InvalidRequestError: # NoResultFound/MultipleResultsFound
                 msg = self.message('invalid_username', state, username=value)
                 raise formencode.Invalid(msg, value, state,
@@ -146,10 +146,10 @@ def ValidUserGroup(edit=False, old_data=None):
             old_ugname = None
             if edit:
                 old_id = old_data.get('users_group_id')
-                old_ugname = UserGroup.get(old_id).users_group_name
+                old_ugname = db.UserGroup.get(old_id).users_group_name
 
             if old_ugname != value or not edit:
-                is_existing_group = UserGroup.get_by_group_name(value,
+                is_existing_group = db.UserGroup.get_by_group_name(value,
                                                         case_insensitive=True)
                 if is_existing_group:
                     msg = self.message('group_exist', state, usergroup=value)
@@ -194,14 +194,14 @@ def ValidRepoGroup(edit=False, old_data=None):
 
             old_gname = None
             if edit:
-                old_gname = RepoGroup.get(old_data.get('group_id')).group_name
+                old_gname = db.RepoGroup.get(old_data.get('group_id')).group_name
 
             if old_gname != group_name or not edit:
 
                 # check group
-                gr = RepoGroup.query() \
-                      .filter(func.lower(RepoGroup.group_name) == func.lower(slug)) \
-                      .filter(RepoGroup.parent_group_id == parent_group_id) \
+                gr = db.RepoGroup.query() \
+                      .filter(func.lower(db.RepoGroup.group_name) == func.lower(slug)) \
+                      .filter(db.RepoGroup.parent_group_id == parent_group_id) \
                       .scalar()
                 if gr is not None:
                     msg = self.message('group_exists', state, group_name=slug)
@@ -210,8 +210,8 @@ def ValidRepoGroup(edit=False, old_data=None):
                     )
 
                 # check for same repo
-                repo = Repository.query() \
-                      .filter(func.lower(Repository.repo_name) == func.lower(slug)) \
+                repo = db.Repository.query() \
+                      .filter(func.lower(db.Repository.repo_name) == func.lower(slug)) \
                       .scalar()
                 if repo is not None:
                     msg = self.message('repo_exists', state, group_name=slug)
@@ -284,7 +284,7 @@ def ValidAuth():
             # authenticate returns unused dict but has called
             # plugin._authenticate which has create_or_update'ed the username user in db
             if auth_modules.authenticate(username, password) is None:
-                user = User.get_by_username_or_email(username)
+                user = db.User.get_by_username_or_email(username)
                 if user and not user.active:
                     log.warning('user %s is disabled', username)
                     msg = self.message('invalid_auth', state)
@@ -319,7 +319,7 @@ def ValidRepoName(edit=False, old_data=None):
             repo_name = repo_name_slug(value.get('repo_name', ''))
             repo_group = value.get('repo_group')
             if repo_group:
-                gr = RepoGroup.get(repo_group)
+                gr = db.RepoGroup.get(repo_group)
                 group_path = gr.full_path
                 group_name = gr.group_name
                 # value needs to be aware of group name in order to check
@@ -351,8 +351,8 @@ def ValidRepoName(edit=False, old_data=None):
             rename = old_data.get('repo_name') != repo_name_full
             create = not edit
             if rename or create:
-                repo = Repository.get_by_repo_name(repo_name_full, case_insensitive=True)
-                repo_group = RepoGroup.get_by_group_name(repo_name_full, case_insensitive=True)
+                repo = db.Repository.get_by_repo_name(repo_name_full, case_insensitive=True)
+                repo_group = db.RepoGroup.get_by_group_name(repo_name_full, case_insensitive=True)
                 if group_path != '':
                     if repo is not None:
                         msg = self.message('repository_in_group_exists', state,
@@ -451,7 +451,7 @@ def CanWriteGroup(old_data=None):
             return value
 
         def _validate_python(self, value, state):
-            gr = RepoGroup.get(value)
+            gr = db.RepoGroup.get(value)
             gr_name = gr.group_name if gr is not None else None # None means ROOT location
 
             # create repositories with write permission on group is set to true
@@ -500,7 +500,7 @@ def CanCreateGroup(can_create_in_root=False):
             return value
 
         def _validate_python(self, value, state):
-            gr = RepoGroup.get(value)
+            gr = db.RepoGroup.get(value)
             gr_name = gr.group_name if gr is not None else None # None means ROOT location
 
             if can_create_in_root and gr is None:
@@ -565,7 +565,7 @@ def ValidPerms(type_='repo'):
                     t = {'u': 'user',
                          'g': 'users_group'
                     }[k[0]]
-                    if member_name == User.DEFAULT_USER_NAME:
+                    if member_name == db.User.DEFAULT_USER_NAME:
                         if asbool(value.get('repo_private')):
                             # set none for default when updating to
                             # private repo protects against form manipulation
@@ -579,13 +579,13 @@ def ValidPerms(type_='repo'):
             for k, v, t in perms_new:
                 try:
                     if t == 'user':
-                        _user_db = User.query() \
-                            .filter(User.active == True) \
-                            .filter(User.username == k).one()
+                        _user_db = db.User.query() \
+                            .filter(db.User.active == True) \
+                            .filter(db.User.username == k).one()
                     if t == 'users_group':
-                        _user_db = UserGroup.query() \
-                            .filter(UserGroup.users_group_active == True) \
-                            .filter(UserGroup.users_group_name == k).one()
+                        _user_db = db.UserGroup.query() \
+                            .filter(db.UserGroup.users_group_active == True) \
+                            .filter(db.UserGroup.users_group_name == k).one()
 
                 except Exception as e:
                     log.warning('Error validating %s permission %s', t, k)
@@ -647,7 +647,7 @@ def UniqSystemEmail(old_data=None):
 
         def _validate_python(self, value, state):
             if (old_data.get('email') or '').lower() != value:
-                user = User.get_by_email(value)
+                user = db.User.get_by_email(value)
                 if user is not None:
                     msg = self.message('email_taken', state)
                     raise formencode.Invalid(msg, value, state,
@@ -666,7 +666,7 @@ def ValidSystemEmail():
             return value.lower()
 
         def _validate_python(self, value, state):
-            user = User.get_by_email(value)
+            user = db.User.get_by_email(value)
             if user is None:
                 msg = self.message('non_existing_email', state, email=value)
                 raise formencode.Invalid(msg, value, state,

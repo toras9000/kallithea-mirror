@@ -41,8 +41,8 @@ from kallithea.lib.auth import HasPermissionAnyDecorator, HasRepoPermissionLevel
 from kallithea.lib.base import BaseRepoController, render
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import safe_int
-from kallithea.lib.webutils import url
-from kallithea.model.db import Repository, Ui, UserFollowing
+from kallithea.lib.utils3 import url
+from kallithea.model import db
 from kallithea.model.forms import RepoForkForm
 from kallithea.model.repo import RepoModel
 from kallithea.model.scm import AvailableRepoGroupChoices, ScmModel
@@ -58,7 +58,7 @@ class ForksController(BaseRepoController):
 
         c.landing_revs_choices, c.landing_revs = ScmModel().get_repo_landing_revs()
 
-        c.can_update = Ui.get_by_key('hooks', Ui.HOOK_UPDATE).ui_active
+        c.can_update = db.Ui.get_by_key('hooks', db.Ui.HOOK_UPDATE).ui_active
 
     def __load_data(self):
         """
@@ -74,9 +74,9 @@ class ForksController(BaseRepoController):
             raise HTTPFound(location=url('repos'))
 
         c.default_user_id = kallithea.DEFAULT_USER_ID
-        c.in_public_journal = UserFollowing.query() \
-            .filter(UserFollowing.user_id == c.default_user_id) \
-            .filter(UserFollowing.follows_repository == c.repo_info).scalar()
+        c.in_public_journal = db.UserFollowing.query() \
+            .filter(db.UserFollowing.user_id == c.default_user_id) \
+            .filter(db.UserFollowing.follows_repository == c.repo_info).scalar()
 
         if c.repo_info.stats:
             last_rev = c.repo_info.stats.stat_on_revision + 1
@@ -108,7 +108,7 @@ class ForksController(BaseRepoController):
         p = safe_int(request.GET.get('page'), 1)
         repo_id = c.db_repo.repo_id
         d = []
-        for r in Repository.get_repo_forks(repo_id):
+        for r in db.Repository.get_repo_forks(repo_id):
             if not HasRepoPermissionLevel('read')(r.repo_name, 'get forks check'):
                 continue
             d.append(r)
@@ -123,7 +123,7 @@ class ForksController(BaseRepoController):
     @HasPermissionAnyDecorator('hg.admin', 'hg.fork.repository')
     @HasRepoPermissionLevelDecorator('read')
     def fork(self, repo_name):
-        c.repo_info = Repository.get_by_repo_name(repo_name)
+        c.repo_info = db.Repository.get_by_repo_name(repo_name)
         if not c.repo_info:
             h.not_mapped_error(repo_name)
             raise HTTPFound(location=url('home'))
@@ -141,7 +141,7 @@ class ForksController(BaseRepoController):
     @HasRepoPermissionLevelDecorator('read')
     def fork_create(self, repo_name):
         self.__load_defaults()
-        c.repo_info = Repository.get_by_repo_name(repo_name)
+        c.repo_info = db.Repository.get_by_repo_name(repo_name)
         _form = RepoForkForm(old_data={'repo_type': c.repo_info.repo_type},
                              repo_groups=c.repo_groups,
                              landing_revs=c.landing_revs_choices)()
@@ -151,7 +151,7 @@ class ForksController(BaseRepoController):
             form_result = _form.to_python(dict(request.POST))
 
             # an approximation that is better than nothing
-            if not Ui.get_by_key('hooks', Ui.HOOK_UPDATE).ui_active:
+            if not db.Ui.get_by_key('hooks', db.Ui.HOOK_UPDATE).ui_active:
                 form_result['update_after_clone'] = False
 
             # create fork is done sometimes async on celery, db transaction

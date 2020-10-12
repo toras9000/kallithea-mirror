@@ -41,7 +41,7 @@ from kallithea.lib.conf import INDEX_EXTENSIONS, INDEX_FILENAMES
 from kallithea.lib.indexers import CHGSET_IDX_NAME, CHGSETS_SCHEMA, IDX_NAME, SCHEMA
 from kallithea.lib.utils2 import safe_str
 from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError, ChangesetError, NodeDoesNotExistError, RepositoryError
-from kallithea.model.db import Repository
+from kallithea.model import db
 from kallithea.model.scm import ScmModel
 
 
@@ -109,7 +109,7 @@ class WhooshIndexingDaemon(object):
             self.initial = False
 
     def _get_index_revision(self, repo):
-        db_repo = Repository.get_by_repo_name(repo.name)
+        db_repo = db.Repository.get_by_repo_name(repo.name)
         landing_rev = 'tip'
         if db_repo:
             _rev_type, _rev = db_repo.landing_rev

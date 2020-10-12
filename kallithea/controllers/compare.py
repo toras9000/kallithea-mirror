@@ -39,8 +39,8 @@ from kallithea.lib import helpers as h
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController, render
 from kallithea.lib.graphmod import graph_data
-from kallithea.lib.webutils import url
-from kallithea.model.db import Repository
+from kallithea.lib.utils3 import url
+from kallithea.model import db
 
 
 log = logging.getLogger(__name__)
@@ -59,7 +59,7 @@ class CompareController(BaseRepoController):
         if other_repo is None:
             c.cs_repo = c.a_repo
         else:
-            c.cs_repo = Repository.get_by_repo_name(other_repo)
+            c.cs_repo = db.Repository.get_by_repo_name(other_repo)
             if c.cs_repo is None:
                 msg = _('Could not find other repository %s') % other_repo
                 h.flash(msg, category='error')

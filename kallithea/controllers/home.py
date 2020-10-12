@@ -38,7 +38,7 @@ from kallithea.lib import helpers as h
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseController, jsonify, render
 from kallithea.lib.utils2 import safe_str
-from kallithea.model.db import RepoGroup, Repository, User, UserGroup
+from kallithea.model import db
 from kallithea.model.repo import RepoModel
 from kallithea.model.scm import UserGroupList
 
@@ -56,7 +56,7 @@ class HomeController(BaseController):
         c.group = None
 
         repo_groups_list = self.scm_model.get_repo_groups()
-        repos_list = Repository.query(sorted=True).filter_by(group=None).all()
+        repos_list = db.Repository.query(sorted=True).filter_by(group=None).all()
 
         c.data = RepoModel().get_repos_as_dict(repos_list,
                                                repo_groups_list=repo_groups_list,
@@ -68,9 +68,9 @@ class HomeController(BaseController):
     @jsonify
     def repo_switcher_data(self):
         if request.is_xhr:
-            all_repos = Repository.query(sorted=True).all()
+            all_repos = db.Repository.query(sorted=True).all()
             repo_iter = self.scm_model.get_repos(all_repos)
-            all_groups = RepoGroup.query(sorted=True).all()
+            all_groups = db.RepoGroup.query(sorted=True).all()
             repo_groups_iter = self.scm_model.get_repo_groups(all_groups)
 
             res = [{
@@ -111,7 +111,7 @@ class HomeController(BaseController):
     @HasRepoPermissionLevelDecorator('read')
     @jsonify
     def repo_refs_data(self, repo_name):
-        repo = Repository.get_by_repo_name(repo_name).scm_instance
+        repo = db.Repository.get_by_repo_name(repo_name).scm_instance
         res = []
         _branches = repo.branches.items()
         if _branches:
@@ -163,20 +163,20 @@ class HomeController(BaseController):
         if 'users' in types:
             user_list = []
             if key:
-                u = User.get_by_username(key)
+                u = db.User.get_by_username(key)
                 if u:
                     user_list = [u]
             elif query:
-                user_list = User.query() \
-                    .filter(User.is_default_user == False) \
-                    .filter(User.active == True) \
+                user_list = db.User.query() \
+                    .filter(db.User.is_default_user == False) \
+                    .filter(db.User.active == True) \
                     .filter(or_(
-                        User.username.ilike("%%" + query + "%%"),
-                        User.name.concat(' ').concat(User.lastname).ilike("%%" + query + "%%"),
-                        User.lastname.concat(' ').concat(User.name).ilike("%%" + query + "%%"),
-                        User.email.ilike("%%" + query + "%%"),
+                        db.User.username.ilike("%%" + query + "%%"),
+                        db.User.name.concat(' ').concat(db.User.lastname).ilike("%%" + query + "%%"),
+                        db.User.lastname.concat(' ').concat(db.User.name).ilike("%%" + query + "%%"),
+                        db.User.email.ilike("%%" + query + "%%"),
                     )) \
-                    .order_by(User.username) \
+                    .order_by(db.User.username) \
                     .limit(500) \
                     .all()
             for u in user_list:
@@ -192,14 +192,14 @@ class HomeController(BaseController):
         if 'groups' in types:
             grp_list = []
             if key:
-                grp = UserGroup.get_by_group_name(key)
+                grp = db.UserGroup.get_by_group_name(key)
                 if grp:
                     grp_list = [grp]
             elif query:
-                grp_list = UserGroup.query() \
-                    .filter(UserGroup.users_group_name.ilike("%%" + query + "%%")) \
-                    .filter(UserGroup.users_group_active == True) \
-                    .order_by(UserGroup.users_group_name) \
+                grp_list = db.UserGroup.query() \
+                    .filter(db.UserGroup.users_group_name.ilike("%%" + query + "%%")) \
+                    .filter(db.UserGroup.users_group_active == True) \
+                    .order_by(db.UserGroup.users_group_name) \
                     .limit(500) \
                     .all()
             for g in UserGroupList(grp_list, perm_level='read'):

@@ -37,9 +37,8 @@ from webob.exc import HTTPFound
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import HasPermissionAnyDecorator, LoginRequired
 from kallithea.lib.base import BaseController, render
-from kallithea.lib.webutils import url
-from kallithea.model import meta
-from kallithea.model.db import Setting
+from kallithea.lib.utils3 import url
+from kallithea.model import db, meta
 from kallithea.model.forms import DefaultsForm
 
 
@@ -54,7 +53,7 @@ class DefaultsController(BaseController):
         super(DefaultsController, self)._before(*args, **kwargs)
 
     def index(self, format='html'):
-        defaults = Setting.get_default_repo_settings()
+        defaults = db.Setting.get_default_repo_settings()
 
         return htmlfill.render(
             render('admin/defaults/defaults.html'),
@@ -69,7 +68,7 @@ class DefaultsController(BaseController):
         try:
             form_result = _form.to_python(dict(request.POST))
             for k, v in form_result.items():
-                setting = Setting.create_or_update(k, v)
+                setting = db.Setting.create_or_update(k, v)
             meta.Session().commit()
             h.flash(_('Default settings updated successfully'),
                     category='success')

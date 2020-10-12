@@ -3,8 +3,7 @@ import json
 import mimetypes
 import posixpath
 
-from kallithea.model import meta
-from kallithea.model.db import Repository
+from kallithea.model import db, meta
 from kallithea.tests import base
 from kallithea.tests.fixture import Fixture
 
@@ -22,7 +21,7 @@ GIT_NODE_HISTORY = fixture.load_resource('git_node_history_response.json')
 
 
 def _set_downloads(repo_name, set_to):
-    repo = Repository.get_by_repo_name(repo_name)
+    repo = db.Repository.get_by_repo_name(repo_name)
     repo.enable_downloads = set_to
     meta.Session().commit()
 

@@ -40,9 +40,8 @@ import kallithea.lib.helpers as h
 from kallithea.lib.auth import AuthUser, HasPermissionAnyDecorator
 from kallithea.lib.base import BaseController, log_in_user, render
 from kallithea.lib.exceptions import UserCreationError
-from kallithea.lib.webutils import url
-from kallithea.model import meta
-from kallithea.model.db import Setting, User
+from kallithea.lib.utils3 import url
+from kallithea.model import db, meta
 from kallithea.model.forms import LoginForm, PasswordResetConfirmationForm, PasswordResetRequestForm, RegisterForm
 from kallithea.model.user import UserModel
 
@@ -82,7 +81,7 @@ class LoginController(BaseController):
                 # login_form will check username/password using ValidAuth and report failure to the user
                 c.form_result = login_form.to_python(dict(request.POST))
                 username = c.form_result['username']
-                user = User.get_by_username_or_email(username)
+                user = db.User.get_by_username_or_email(username)
                 assert user is not None  # the same user get just passed in the form validation
             except formencode.Invalid as errors:
                 defaults = errors.value
@@ -118,10 +117,10 @@ class LoginController(BaseController):
     @HasPermissionAnyDecorator('hg.admin', 'hg.register.auto_activate',
                                'hg.register.manual_activate')
     def register(self):
-        def_user_perms = AuthUser(dbuser=User.get_default_user()).global_permissions
+        def_user_perms = AuthUser(dbuser=db.User.get_default_user()).global_permissions
         c.auto_active = 'hg.register.auto_activate' in def_user_perms
 
-        settings = Setting.get_app_settings()
+        settings = db.Setting.get_app_settings()
         captcha_private_key = settings.get('captcha_private_key')
         c.captcha_active = bool(captcha_private_key)
         c.captcha_public_key = settings.get('captcha_public_key')
@@ -168,7 +167,7 @@ class LoginController(BaseController):
         return render('/register.html')
 
     def password_reset(self):
-        settings = Setting.get_app_settings()
+        settings = db.Setting.get_app_settings()
         captcha_private_key = settings.get('captcha_private_key')
         c.captcha_active = bool(captcha_private_key)
         c.captcha_public_key = settings.get('captcha_public_key')

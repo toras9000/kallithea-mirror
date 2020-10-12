@@ -43,9 +43,8 @@ from kallithea.lib.base import BaseController, render
 from kallithea.lib.exceptions import RepoGroupAssignmentError, UserGroupsAssignedException
 from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import safe_int, safe_str
-from kallithea.lib.webutils import url
-from kallithea.model import meta
-from kallithea.model.db import User, UserGroup, UserGroupRepoGroupToPerm, UserGroupRepoToPerm, UserGroupToPerm
+from kallithea.lib.utils3 import url
+from kallithea.model import db, meta
 from kallithea.model.forms import CustomDefaultPermissionsForm, UserGroupForm, UserGroupPermsForm
 from kallithea.model.scm import UserGroupList
 from kallithea.model.user_group import UserGroupModel
@@ -66,7 +65,7 @@ class UserGroupsController(BaseController):
 
         c.group_members = [(x.user_id, x.username) for x in c.group_members_obj]
         c.available_members = sorted(((x.user_id, x.username) for x in
-                                      User.query().all()),
+                                      db.User.query().all()),
                                      key=lambda u: u[1].lower())
 
     def __load_defaults(self, user_group_id):
@@ -75,13 +74,13 @@ class UserGroupsController(BaseController):
 
         :param user_group_id:
         """
-        user_group = UserGroup.get_or_404(user_group_id)
+        user_group = db.UserGroup.get_or_404(user_group_id)
         data = user_group.get_dict()
         return data
 
     def index(self, format='html'):
-        _list = UserGroup.query() \
-                        .order_by(func.lower(UserGroup.users_group_name)) \
+        _list = db.UserGroup.query() \
+                        .order_by(func.lower(db.UserGroup.users_group_name)) \
                         .all()
         group_iter = UserGroupList(_list, perm_level='admin')
         user_groups_data = []
@@ -154,7 +153,7 @@ class UserGroupsController(BaseController):
 
     @HasUserGroupPermissionLevelDecorator('admin')
     def update(self, id):
-        c.user_group = UserGroup.get_or_404(id)
+        c.user_group = db.UserGroup.get_or_404(id)
         c.active = 'settings'
         self.__load_data(id)
 
@@ -200,7 +199,7 @@ class UserGroupsController(BaseController):
 
     @HasUserGroupPermissionLevelDecorator('admin')
     def delete(self, id):
-        usr_gr = UserGroup.get_or_404(id)
+        usr_gr = db.UserGroup.get_or_404(id)
         try:
             UserGroupModel().delete(usr_gr)
             meta.Session().commit()
@@ -215,7 +214,7 @@ class UserGroupsController(BaseController):
 
     @HasUserGroupPermissionLevelDecorator('admin')
     def edit(self, id, format='html'):
-        c.user_group = UserGroup.get_or_404(id)
+        c.user_group = db.UserGroup.get_or_404(id)
         c.active = 'settings'
         self.__load_data(id)
 
@@ -230,7 +229,7 @@ class UserGroupsController(BaseController):
 
     @HasUserGroupPermissionLevelDecorator('admin')
     def edit_perms(self, id):
-        c.user_group = UserGroup.get_or_404(id)
+        c.user_group = db.UserGroup.get_or_404(id)
         c.active = 'perms'
 
         defaults = {}
@@ -257,7 +256,7 @@ class UserGroupsController(BaseController):
 
         :param id:
         """
-        user_group = UserGroup.get_or_404(id)
+        user_group = db.UserGroup.get_or_404(id)
         form = UserGroupPermsForm()().to_python(request.POST)
 
         # set the permissions !
@@ -304,27 +303,27 @@ class UserGroupsController(BaseController):
 
     @HasUserGroupPermissionLevelDecorator('admin')
     def edit_default_perms(self, id):
-        c.user_group = UserGroup.get_or_404(id)
+        c.user_group = db.UserGroup.get_or_404(id)
         c.active = 'default_perms'
 
         permissions = {
             'repositories': {},
             'repositories_groups': {}
         }
-        ugroup_repo_perms = UserGroupRepoToPerm.query() \
-            .options(joinedload(UserGroupRepoToPerm.permission)) \
-            .options(joinedload(UserGroupRepoToPerm.repository)) \
-            .filter(UserGroupRepoToPerm.users_group_id == id) \
+        ugroup_repo_perms = db.UserGroupRepoToPerm.query() \
+            .options(joinedload(db.UserGroupRepoToPerm.permission)) \
+            .options(joinedload(db.UserGroupRepoToPerm.repository)) \
+            .filter(db.UserGroupRepoToPerm.users_group_id == id) \
             .all()
 
         for gr in ugroup_repo_perms:
             permissions['repositories'][gr.repository.repo_name]  \
                 = gr.permission.permission_name
 
-        ugroup_group_perms = UserGroupRepoGroupToPerm.query() \
-            .options(joinedload(UserGroupRepoGroupToPerm.permission)) \
-            .options(joinedload(UserGroupRepoGroupToPerm.group)) \
-            .filter(UserGroupRepoGroupToPerm.users_group_id == id) \
+        ugroup_group_perms = db.UserGroupRepoGroupToPerm.query() \
+            .options(joinedload(db.UserGroupRepoGroupToPerm.permission)) \
+            .options(joinedload(db.UserGroupRepoGroupToPerm.group)) \
+            .filter(db.UserGroupRepoGroupToPerm.users_group_id == id) \
             .all()
 
         for gr in ugroup_group_perms:
@@ -353,7 +352,7 @@ class UserGroupsController(BaseController):
 
     @HasUserGroupPermissionLevelDecorator('admin')
     def update_default_perms(self, id):
-        user_group = UserGroup.get_or_404(id)
+        user_group = db.UserGroup.get_or_404(id)
 
         try:
             form = CustomDefaultPermissionsForm()()
@@ -361,8 +360,8 @@ class UserGroupsController(BaseController):
 
             usergroup_model = UserGroupModel()
 
-            defs = UserGroupToPerm.query() \
-                .filter(UserGroupToPerm.users_group == user_group) \
+            defs = db.UserGroupToPerm.query() \
+                .filter(db.UserGroupToPerm.users_group == user_group) \
                 .all()
             for ug in defs:
                 meta.Session().delete(ug)
@@ -391,7 +390,7 @@ class UserGroupsController(BaseController):
 
     @HasUserGroupPermissionLevelDecorator('admin')
     def edit_advanced(self, id):
-        c.user_group = UserGroup.get_or_404(id)
+        c.user_group = db.UserGroup.get_or_404(id)
         c.active = 'advanced'
         c.group_members_obj = sorted((x.user for x in c.user_group.members),
                                      key=lambda u: u.username.lower())
@@ -399,7 +398,7 @@ class UserGroupsController(BaseController):
 
     @HasUserGroupPermissionLevelDecorator('admin')
     def edit_members(self, id):
-        c.user_group = UserGroup.get_or_404(id)
+        c.user_group = db.UserGroup.get_or_404(id)
         c.active = 'members'
         c.group_members_obj = sorted((x.user for x in c.user_group.members),
                                      key=lambda u: u.username.lower())

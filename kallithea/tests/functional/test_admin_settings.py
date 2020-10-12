@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from kallithea.model.db import Setting, Ui
+from kallithea.model import db
 from kallithea.tests import base
 from kallithea.tests.fixture import Fixture
 
@@ -80,7 +80,7 @@ class TestAdminSettingsController(base.TestController):
         response.mustcontain('test_hooks_2')
         response.mustcontain('cd %s2' % base.TESTS_TMP_PATH)
 
-        hook_id = Ui.get_by_key('hooks', 'test_hooks_2').ui_id
+        hook_id = db.Ui.get_by_key('hooks', 'test_hooks_2').ui_id
         ## delete
         self.app.post(base.url('admin_settings_hooks'),
                         params=dict(hook_id=hook_id, _session_csrf_secret_token=self.session_csrf_secret_token()))
@@ -124,7 +124,7 @@ class TestAdminSettingsController(base.TestController):
 
         self.checkSessionFlash(response, 'Updated application settings')
 
-        assert Setting.get_app_settings()['ga_code'] == new_ga_code
+        assert db.Setting.get_app_settings()['ga_code'] == new_ga_code
 
         response = response.follow()
         response.mustcontain("""_gaq.push(['_setAccount', '%s']);""" % new_ga_code)
@@ -144,7 +144,7 @@ class TestAdminSettingsController(base.TestController):
                                  ))
 
         self.checkSessionFlash(response, 'Updated application settings')
-        assert Setting.get_app_settings()['ga_code'] == new_ga_code
+        assert db.Setting.get_app_settings()['ga_code'] == new_ga_code
 
         response = response.follow()
         response.mustcontain(no=["_gaq.push(['_setAccount', '%s']);" % new_ga_code])
@@ -164,7 +164,7 @@ class TestAdminSettingsController(base.TestController):
                                  ))
 
         self.checkSessionFlash(response, 'Updated application settings')
-        assert Setting.get_app_settings()['captcha_private_key'] == '1234567890'
+        assert db.Setting.get_app_settings()['captcha_private_key'] == '1234567890'
 
         response = self.app.get(base.url('register'))
         response.mustcontain('captcha')
@@ -184,7 +184,7 @@ class TestAdminSettingsController(base.TestController):
                                  ))
 
         self.checkSessionFlash(response, 'Updated application settings')
-        assert Setting.get_app_settings()['captcha_private_key'] == ''
+        assert db.Setting.get_app_settings()['captcha_private_key'] == ''
 
         response = self.app.get(base.url('register'))
         response.mustcontain(no=['captcha'])
@@ -206,7 +206,7 @@ class TestAdminSettingsController(base.TestController):
                                 ))
 
             self.checkSessionFlash(response, 'Updated application settings')
-            assert Setting.get_app_settings()['title'] == new_title
+            assert db.Setting.get_app_settings()['title'] == new_title
 
             response = response.follow()
             response.mustcontain("""<span class="branding">%s</span>""" % new_title)

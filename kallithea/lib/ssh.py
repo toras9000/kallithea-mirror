@@ -156,9 +156,9 @@ def authorized_keys_line(kallithea_cli_path, config_file, key):
     Return a line as it would appear in .authorized_keys
 
     >>> getfixture('doctest_mock_ugettext')
-    >>> from kallithea.model.db import UserSshKeys, User
-    >>> user = User(user_id=7, username='uu')
-    >>> key = UserSshKeys(user_ssh_key_id=17, user=user, description='test key')
+    >>> from kallithea.model import db
+    >>> user = db.User(user_id=7, username='uu')
+    >>> key = db.UserSshKeys(user_ssh_key_id=17, user=user, description='test key')
     >>> key.public_key='''ssh-rsa  AAAAB3NzaC1yc2EAAAANVGhpcyBpcyBmYWtlIQAAAANieWU= and a comment'''
     >>> authorized_keys_line('/srv/kallithea/venv/bin/kallithea-cli', '/srv/kallithea/my.ini', key)
     'no-pty,no-port-forwarding,no-X11-forwarding,no-agent-forwarding,command="/srv/kallithea/venv/bin/kallithea-cli ssh-serve -c /srv/kallithea/my.ini 7 17" ssh-rsa AAAAB3NzaC1yc2EAAAANVGhpcyBpcyBmYWtlIQAAAANieWU=\n'

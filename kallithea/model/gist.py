@@ -34,8 +34,7 @@ import traceback
 
 from kallithea.lib import ext_json
 from kallithea.lib.utils2 import AttributeDict, ascii_bytes, safe_int, time_to_datetime
-from kallithea.model import meta
-from kallithea.model.db import Gist, User
+from kallithea.model import db, meta
 from kallithea.model.repo import RepoModel
 from kallithea.model.scm import ScmModel
 
@@ -86,7 +85,7 @@ class GistModel(object):
             f.write(ascii_bytes(ext_json.dumps(metadata)))
 
     def get_gist(self, gist):
-        return Gist.guess_instance(gist)
+        return db.Gist.guess_instance(gist)
 
     def get_gist_files(self, gist_access_id, revision=None):
         """
@@ -94,12 +93,12 @@ class GistModel(object):
 
         :param gist_access_id:
         """
-        repo = Gist.get_by_access_id(gist_access_id)
+        repo = db.Gist.get_by_access_id(gist_access_id)
         cs = repo.scm_instance.get_changeset(revision)
         return cs, [n for n in cs.get_node('/')]
 
     def create(self, description, owner, ip_addr, gist_mapping,
-               gist_type=Gist.GIST_PUBLIC, lifetime=-1):
+               gist_type=db.Gist.GIST_PUBLIC, lifetime=-1):
         """
 
         :param description: description of the gist
@@ -108,7 +107,7 @@ class GistModel(object):
         :param gist_type: type of gist private/public
         :param lifetime: in minutes, -1 == forever
         """
-        owner = User.guess_instance(owner)
+        owner = db.User.guess_instance(owner)
         gist_access_id = make_gist_access_id()
         lifetime = safe_int(lifetime, -1)
         gist_expires = time.time() + (lifetime * 60) if lifetime != -1 else -1
@@ -116,7 +115,7 @@ class GistModel(object):
                   time_to_datetime(gist_expires)
                    if gist_expires != -1 else 'forever')
         # create the Database version
-        gist = Gist()
+        gist = db.Gist()
         gist.gist_description = description
         gist.gist_access_id = gist_access_id
         gist.owner_id = owner.user_id
@@ -124,7 +123,7 @@ class GistModel(object):
         gist.gist_type = gist_type
         meta.Session().add(gist)
         meta.Session().flush() # make database assign gist.gist_id
-        if gist_type == Gist.GIST_PUBLIC:
+        if gist_type == db.Gist.GIST_PUBLIC:
             # use DB ID for easy to use GIST ID
             gist.gist_access_id = str(gist.gist_id)
 
@@ -171,7 +170,7 @@ class GistModel(object):
         return gist
 
     def delete(self, gist, fs_remove=True):
-        gist = Gist.guess_instance(gist)
+        gist = db.Gist.guess_instance(gist)
         try:
             meta.Session().delete(gist)
             if fs_remove:
@@ -184,7 +183,7 @@ class GistModel(object):
 
     def update(self, gist, description, owner, ip_addr, gist_mapping, gist_type,
                lifetime):
-        gist = Gist.guess_instance(gist)
+        gist = db.Gist.guess_instance(gist)
         gist_repo = gist.scm_instance
 
         lifetime = safe_int(lifetime, -1)

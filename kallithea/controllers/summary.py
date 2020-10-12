@@ -50,7 +50,7 @@ from kallithea.lib.utils2 import safe_int, safe_str
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.exceptions import ChangesetError, EmptyRepositoryError, NodeDoesNotExistError
 from kallithea.lib.vcs.nodes import FileNode
-from kallithea.model.db import Statistics
+from kallithea.model import db
 
 
 log = logging.getLogger(__name__)
@@ -131,8 +131,8 @@ class SummaryController(BaseRepoController):
         else:
             c.show_stats = False
 
-        stats = Statistics.query() \
-            .filter(Statistics.repository == c.db_repo) \
+        stats = db.Statistics.query() \
+            .filter(db.Statistics.repository == c.db_repo) \
             .scalar()
 
         c.stats_percentage = 0
@@ -181,8 +181,8 @@ class SummaryController(BaseRepoController):
         c.ts_min = ts_min_m
         c.ts_max = ts_max_y
 
-        stats = Statistics.query() \
-            .filter(Statistics.repository == c.db_repo) \
+        stats = db.Statistics.query() \
+            .filter(db.Statistics.repository == c.db_repo) \
             .scalar()
         c.stats_percentage = 0
         if stats and stats.languages:

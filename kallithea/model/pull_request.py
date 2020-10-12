@@ -36,8 +36,7 @@ from kallithea.lib import helpers as h
 from kallithea.lib.hooks import log_create_pullrequest
 from kallithea.lib.utils import extract_mentioned_users
 from kallithea.lib.utils2 import ascii_bytes
-from kallithea.model import meta
-from kallithea.model.db import ChangesetStatus, PullRequest, PullRequestReviewer, User
+from kallithea.model import db, meta
 from kallithea.model.notification import NotificationModel
 
 
@@ -60,10 +59,10 @@ class PullRequestModel(object):
             mention_recipients = set(mention_recipients) - reviewers
             _assert_valid_reviewers(mention_recipients)
 
-        redundant_reviewers = set(User.query() \
-            .join(PullRequestReviewer) \
-            .filter(PullRequestReviewer.pull_request == pr) \
-            .filter(PullRequestReviewer.user_id.in_(r.user_id for r in reviewers))
+        redundant_reviewers = set(db.User.query() \
+            .join(db.PullRequestReviewer) \
+            .filter(db.PullRequestReviewer.pull_request == pr) \
+            .filter(db.PullRequestReviewer.user_id.in_(r.user_id for r in reviewers))
             .all())
 
         if redundant_reviewers:
@@ -73,7 +72,7 @@ class PullRequestModel(object):
 
         log.debug('Adding reviewers to pull request %s: %s', pr.pull_request_id, reviewers)
         for reviewer in reviewers:
-            prr = PullRequestReviewer(reviewer, pr)
+            prr = db.PullRequestReviewer(reviewer, pr)
             meta.Session().add(prr)
 
         # notification to reviewers
@@ -143,13 +142,13 @@ class PullRequestModel(object):
         if not reviewers:
             return # avoid SQLAlchemy warning about empty sequence for IN-predicate
 
-        PullRequestReviewer.query() \
+        db.PullRequestReviewer.query() \
             .filter_by(pull_request=pull_request) \
-            .filter(PullRequestReviewer.user_id.in_(r.user_id for r in reviewers)) \
+            .filter(db.PullRequestReviewer.user_id.in_(r.user_id for r in reviewers)) \
             .delete(synchronize_session='fetch') # the default of 'evaluate' is not available
 
     def delete(self, pull_request):
-        pull_request = PullRequest.guess_instance(pull_request)
+        pull_request = db.PullRequest.guess_instance(pull_request)
         meta.Session().delete(pull_request)
         if pull_request.org_repo.scm_instance.alias == 'git':
             # remove a ref under refs/pull/ so that commits can be garbage-collected
@@ -159,8 +158,8 @@ class PullRequestModel(object):
                 pass
 
     def close_pull_request(self, pull_request):
-        pull_request = PullRequest.guess_instance(pull_request)
-        pull_request.status = PullRequest.STATUS_CLOSED
+        pull_request = db.PullRequest.guess_instance(pull_request)
+        pull_request.status = db.PullRequest.STATUS_CLOSED
         pull_request.updated_on = datetime.datetime.now()
 
 
@@ -254,9 +253,9 @@ class CreatePullRequestAction(object):
             raise self.Unauthorized(_('You are not authorized to create the pull request'))
 
     def execute(self):
-        created_by = User.get(request.authuser.user_id)
+        created_by = db.User.get(request.authuser.user_id)
 
-        pr = PullRequest()
+        pr = db.PullRequest()
         pr.org_repo = self.org_repo
         pr.org_ref = self.org_ref
         pr.other_repo = self.other_repo
@@ -281,11 +280,11 @@ class CreatePullRequestAction(object):
             author=created_by,
             pull_request=pr,
             send_email=False,
-            status_change=ChangesetStatus.STATUS_UNDER_REVIEW,
+            status_change=db.ChangesetStatus.STATUS_UNDER_REVIEW,
         )
         ChangesetStatusModel().set_status(
             self.org_repo,
-            ChangesetStatus.STATUS_UNDER_REVIEW,
+            db.ChangesetStatus.STATUS_UNDER_REVIEW,
             created_by,
             comment,
             pull_request=pr,

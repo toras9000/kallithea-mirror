@@ -30,8 +30,7 @@ import kallithea
 import kallithea.bin.kallithea_cli_base as cli_base
 from kallithea.lib.utils import REMOVED_REPO_PAT, repo2db_mapper
 from kallithea.lib.utils2 import ask_ok
-from kallithea.model import meta
-from kallithea.model.db import Repository
+from kallithea.model import db, meta
 from kallithea.model.scm import ScmModel
 
 
@@ -73,11 +72,11 @@ def repo_update_metadata(repositories):
     updated.
     """
     if not repositories:
-        repo_list = Repository.query().all()
+        repo_list = db.Repository.query().all()
     else:
         repo_names = [n.strip() for n in repositories]
-        repo_list = list(Repository.query()
-                        .filter(Repository.repo_name.in_(repo_names)))
+        repo_list = list(db.Repository.query()
+                        .filter(db.Repository.repo_name.in_(repo_names)))
 
     for repo in repo_list:
         # update latest revision metadata in database

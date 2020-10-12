@@ -25,8 +25,7 @@ import sys
 
 from kallithea.lib.auth import AuthUser, HasPermissionAnyMiddleware
 from kallithea.lib.utils2 import set_hook_environment
-from kallithea.model import meta
-from kallithea.model.db import Repository, User, UserSshKeys
+from kallithea.model import db, meta
 
 
 log = logging.getLogger(__name__)
@@ -62,7 +61,7 @@ class BaseSshHandler(object):
         """Verify basic sanity of the repository, and that the user is
         valid and has access - then serve the native VCS protocol for
         repository access."""
-        dbuser = User.get(user_id)
+        dbuser = db.User.get(user_id)
         if dbuser is None:
             self.exit('User %r not found' % user_id)
         self.authuser = AuthUser.make(dbuser=dbuser, ip_addr=client_ip)
@@ -70,7 +69,7 @@ class BaseSshHandler(object):
         if self.authuser is None: # not ok ... but already kind of authenticated by SSH ... but not really not authorized ...
             self.exit('User %s from %s cannot be authorized' % (dbuser.username, client_ip))
 
-        ssh_key = UserSshKeys.get(key_id)
+        ssh_key = db.UserSshKeys.get(key_id)
         if ssh_key is None:
             self.exit('SSH key %r not found' % key_id)
         ssh_key.last_seen = datetime.datetime.now()
@@ -84,7 +83,7 @@ class BaseSshHandler(object):
         else:
             self.exit('Access to %r denied' % self.repo_name)
 
-        self.db_repo = Repository.get_by_repo_name(self.repo_name)
+        self.db_repo = db.Repository.get_by_repo_name(self.repo_name)
         if self.db_repo is None:
             self.exit("Repository '%s' not found" % self.repo_name)
         assert self.db_repo.repo_name == self.repo_name

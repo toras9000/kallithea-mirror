@@ -7,8 +7,7 @@ from tg.util.webtest import test_context
 import kallithea.lib.celerylib
 import kallithea.lib.celerylib.tasks
 from kallithea.lib import helpers as h
-from kallithea.model import meta
-from kallithea.model.db import User
+from kallithea.model import db, meta
 from kallithea.model.notification import EmailNotificationModel, NotificationModel
 from kallithea.model.user import UserModel
 from kallithea.tests import base
@@ -84,7 +83,7 @@ class TestNotifications(base.TestController):
                     pr_target_branch='trunk',
                     pr_source_repo='https://dev.org/repo',
                     pr_source_branch='devbranch',
-                    pr_owner=User.get(self.u2),
+                    pr_owner=db.User.get(self.u2),
                     pr_owner_username='u2'
                     )
 
@@ -103,8 +102,8 @@ class TestNotifications(base.TestController):
                             status_change=[None, 'Approved'],
                             cs_target_repo='http://example.com/repo_target',
                             cs_url='http://changeset.com',
-                            cs_author_username=User.get(self.u2).username,
-                            cs_author=User.get(self.u2))),
+                            cs_author_username=db.User.get(self.u2).username,
+                            cs_author=db.User.get(self.u2))),
                         (NotificationModel.TYPE_MESSAGE,
                          'This is the \'body\' of the "test" message\n - nothing interesting here except indentation.',
                          dict()),
@@ -160,7 +159,7 @@ class TestNotifications(base.TestController):
                     "Password reset link",
                     EmailNotificationModel().get_email_tmpl(EmailNotificationModel.TYPE_PASSWORD_RESET, 'txt', **kwargs),
                     EmailNotificationModel().get_email_tmpl(EmailNotificationModel.TYPE_PASSWORD_RESET, 'html', **kwargs),
-                    from_name=User.get(self.u1).full_name_or_username)
+                    from_name=db.User.get(self.u1).full_name_or_username)
 
         out = '<!doctype html>\n<html lang="en">\n<head><title>Notifications</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head>\n<body>\n%s\n</body>\n</html>\n' % \
             re.sub(r'<(/?(?:!doctype|html|head|title|meta|body)\b[^>]*)>', r'<!--\1-->', ''.join(l))

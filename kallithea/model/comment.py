@@ -32,8 +32,7 @@ from tg.i18n import ugettext as _
 
 from kallithea.lib import helpers as h
 from kallithea.lib.utils import extract_mentioned_users
-from kallithea.model import meta
-from kallithea.model.db import ChangesetComment, PullRequest, Repository, User
+from kallithea.model import db, meta
 from kallithea.model.notification import NotificationModel
 
 
@@ -41,15 +40,15 @@ log = logging.getLogger(__name__)
 
 
 def _list_changeset_commenters(revision):
-    return (meta.Session().query(User)
-        .join(ChangesetComment.author)
-        .filter(ChangesetComment.revision == revision)
+    return (meta.Session().query(db.User)
+        .join(db.ChangesetComment.author)
+        .filter(db.ChangesetComment.revision == revision)
         .all())
 
 def _list_pull_request_commenters(pull_request):
-    return (meta.Session().query(User)
-        .join(ChangesetComment.author)
-        .filter(ChangesetComment.pull_request_id == pull_request.pull_request_id)
+    return (meta.Session().query(db.User)
+        .join(db.ChangesetComment.author)
+        .filter(db.ChangesetComment.pull_request_id == pull_request.pull_request_id)
         .all())
 
 
@@ -88,7 +87,7 @@ class ChangesetCommentsModel(object):
             # get the current participants of this changeset
             recipients = _list_changeset_commenters(revision)
             # add changeset author if it's known locally
-            cs_author = User.get_from_cs_author(cs.author)
+            cs_author = db.User.get_from_cs_author(cs.author)
             if not cs_author:
                 # use repo owner if we cannot extract the author correctly
                 # FIXME: just use committer name even if not a user
@@ -176,9 +175,9 @@ class ChangesetCommentsModel(object):
             log.warning('Missing text for comment, skipping...')
             return None
 
-        repo = Repository.guess_instance(repo)
-        author = User.guess_instance(author)
-        comment = ChangesetComment()
+        repo = db.Repository.guess_instance(repo)
+        author = db.User.guess_instance(author)
+        comment = db.ChangesetComment()
         comment.repo = repo
         comment.author = author
         comment.text = text
@@ -188,7 +187,7 @@ class ChangesetCommentsModel(object):
         if revision is not None:
             comment.revision = revision
         elif pull_request is not None:
-            pull_request = PullRequest.guess_instance(pull_request)
+            pull_request = db.PullRequest.guess_instance(pull_request)
             comment.pull_request = pull_request
         else:
             raise Exception('Please specify revision or pull_request_id')
@@ -229,7 +228,7 @@ class ChangesetCommentsModel(object):
         return comment
 
     def delete(self, comment):
-        comment = ChangesetComment.guess_instance(comment)
+        comment = db.ChangesetComment.guess_instance(comment)
         meta.Session().delete(comment)
 
         return comment
@@ -270,34 +269,34 @@ class ChangesetCommentsModel(object):
         if inline is None and f_path is not None:
             raise Exception("f_path only makes sense for inline comments.")
 
-        q = meta.Session().query(ChangesetComment)
+        q = meta.Session().query(db.ChangesetComment)
 
         if inline:
             if f_path is not None:
                 # inline comments for a given file...
-                q = q.filter(ChangesetComment.f_path == f_path)
+                q = q.filter(db.ChangesetComment.f_path == f_path)
                 if line_no is None:
                     # ... on any line
-                    q = q.filter(ChangesetComment.line_no != None)
+                    q = q.filter(db.ChangesetComment.line_no != None)
                 else:
                     # ... on specific line
-                    q = q.filter(ChangesetComment.line_no == line_no)
+                    q = q.filter(db.ChangesetComment.line_no == line_no)
             else:
                 # all inline comments
-                q = q.filter(ChangesetComment.line_no != None) \
-                    .filter(ChangesetComment.f_path != None)
+                q = q.filter(db.ChangesetComment.line_no != None) \
+                    .filter(db.ChangesetComment.f_path != None)
         else:
             # all general comments
-            q = q.filter(ChangesetComment.line_no == None) \
-                .filter(ChangesetComment.f_path == None)
+            q = q.filter(db.ChangesetComment.line_no == None) \
+                .filter(db.ChangesetComment.f_path == None)
 
         if revision is not None:
-            q = q.filter(ChangesetComment.revision == revision) \
-                .filter(ChangesetComment.repo_id == repo_id)
+            q = q.filter(db.ChangesetComment.revision == revision) \
+                .filter(db.ChangesetComment.repo_id == repo_id)
         elif pull_request is not None:
-            pull_request = PullRequest.guess_instance(pull_request)
-            q = q.filter(ChangesetComment.pull_request == pull_request)
+            pull_request = db.PullRequest.guess_instance(pull_request)
+            q = q.filter(db.ChangesetComment.pull_request == pull_request)
         else:
             raise Exception('Please specify either revision or pull_request')
 
-        return q.order_by(ChangesetComment.created_on).all()
+        return q.order_by(db.ChangesetComment.created_on).all()

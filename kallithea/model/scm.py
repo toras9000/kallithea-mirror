@@ -46,8 +46,7 @@ from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.exceptions import RepositoryError
 from kallithea.lib.vcs.nodes import FileNode
 from kallithea.lib.vcs.utils.lazy import LazyProperty
-from kallithea.model import meta
-from kallithea.model.db import PullRequest, RepoGroup, Repository, Ui, User, UserFollowing, UserLog
+from kallithea.model import db, meta
 
 
 log = logging.getLogger(__name__)
@@ -136,7 +135,7 @@ class ScmModel(object):
     """
 
     def __get_repo(self, instance):
-        cls = Repository
+        cls = db.Repository
         if isinstance(instance, cls):
             return instance
         elif isinstance(instance, int):
@@ -154,7 +153,7 @@ class ScmModel(object):
         Gets the repositories root path from database
         """
 
-        q = Ui.query().filter(Ui.ui_key == '/').one()
+        q = db.Ui.query().filter(db.Ui.ui_key == '/').one()
 
         return q.ui_value
 
@@ -178,7 +177,7 @@ class ScmModel(object):
         for name, path in get_filesystem_repos(repos_path):
             # name need to be decomposed and put back together using the /
             # since this is internal storage separator for kallithea
-            name = Repository.normalize_repo_name(name)
+            name = db.Repository.normalize_repo_name(name)
 
             try:
                 if name in repos:
@@ -207,8 +206,8 @@ class ScmModel(object):
         If no groups are specified, use top level groups.
         """
         if groups is None:
-            groups = RepoGroup.query() \
-                .filter(RepoGroup.parent_group_id == None).all()
+            groups = db.RepoGroup.query() \
+                .filter(db.RepoGroup.parent_group_id == None).all()
         return RepoGroupList(groups, perm_level='read')
 
     def mark_for_invalidation(self, repo_name):
@@ -218,16 +217,16 @@ class ScmModel(object):
         :param repo_name: the repo for which caches should be marked invalid
         """
         log.debug("Marking %s as invalidated and update cache", repo_name)
-        repo = Repository.get_by_repo_name(repo_name)
+        repo = db.Repository.get_by_repo_name(repo_name)
         if repo is not None:
             repo.set_invalidate()
             repo.update_changeset_cache()
 
     def toggle_following_repo(self, follow_repo_id, user_id):
 
-        f = UserFollowing.query() \
-            .filter(UserFollowing.follows_repository_id == follow_repo_id) \
-            .filter(UserFollowing.user_id == user_id).scalar()
+        f = db.UserFollowing.query() \
+            .filter(db.UserFollowing.follows_repository_id == follow_repo_id) \
+            .filter(db.UserFollowing.user_id == user_id).scalar()
 
         if f is not None:
             try:
@@ -241,7 +240,7 @@ class ScmModel(object):
                 raise
 
         try:
-            f = UserFollowing()
+            f = db.UserFollowing()
             f.user_id = user_id
             f.follows_repository_id = follow_repo_id
             meta.Session().add(f)
@@ -254,9 +253,9 @@ class ScmModel(object):
             raise
 
     def toggle_following_user(self, follow_user_id, user_id):
-        f = UserFollowing.query() \
-            .filter(UserFollowing.follows_user_id == follow_user_id) \
-            .filter(UserFollowing.user_id == user_id).scalar()
+        f = db.UserFollowing.query() \
+            .filter(db.UserFollowing.follows_user_id == follow_user_id) \
+            .filter(db.UserFollowing.user_id == user_id).scalar()
 
         if f is not None:
             try:
@@ -267,7 +266,7 @@ class ScmModel(object):
                 raise
 
         try:
-            f = UserFollowing()
+            f = db.UserFollowing()
             f.user_id = user_id
             f.follows_user_id = follow_user_id
             meta.Session().add(f)
@@ -276,40 +275,40 @@ class ScmModel(object):
             raise
 
     def is_following_repo(self, repo_name, user_id):
-        r = Repository.query() \
-            .filter(Repository.repo_name == repo_name).scalar()
+        r = db.Repository.query() \
+            .filter(db.Repository.repo_name == repo_name).scalar()
 
-        f = UserFollowing.query() \
-            .filter(UserFollowing.follows_repository == r) \
-            .filter(UserFollowing.user_id == user_id).scalar()
+        f = db.UserFollowing.query() \
+            .filter(db.UserFollowing.follows_repository == r) \
+            .filter(db.UserFollowing.user_id == user_id).scalar()
 
         return f is not None
 
     def is_following_user(self, username, user_id):
-        u = User.get_by_username(username)
+        u = db.User.get_by_username(username)
 
-        f = UserFollowing.query() \
-            .filter(UserFollowing.follows_user == u) \
-            .filter(UserFollowing.user_id == user_id).scalar()
+        f = db.UserFollowing.query() \
+            .filter(db.UserFollowing.follows_user == u) \
+            .filter(db.UserFollowing.user_id == user_id).scalar()
 
         return f is not None
 
     def get_followers(self, repo):
-        repo = Repository.guess_instance(repo)
+        repo = db.Repository.guess_instance(repo)
 
-        return UserFollowing.query() \
-                .filter(UserFollowing.follows_repository == repo).count()
+        return db.UserFollowing.query() \
+                .filter(db.UserFollowing.follows_repository == repo).count()
 
     def get_forks(self, repo):
-        repo = Repository.guess_instance(repo)
-        return Repository.query() \
-                .filter(Repository.fork == repo).count()
+        repo = db.Repository.guess_instance(repo)
+        return db.Repository.query() \
+                .filter(db.Repository.fork == repo).count()
 
     def get_pull_requests(self, repo):
-        repo = Repository.guess_instance(repo)
-        return PullRequest.query() \
-                .filter(PullRequest.other_repo == repo) \
-                .filter(PullRequest.status != PullRequest.STATUS_CLOSED).count()
+        repo = db.Repository.guess_instance(repo)
+        return db.PullRequest.query() \
+                .filter(db.PullRequest.other_repo == repo) \
+                .filter(db.PullRequest.status != db.PullRequest.STATUS_CLOSED).count()
 
     def mark_as_fork(self, repo, fork, user):
         repo = self.__get_repo(repo)
@@ -393,7 +392,7 @@ class ScmModel(object):
 
         :param repo: a db_repo.scm_instance
         """
-        user = User.guess_instance(user)
+        user = db.User.guess_instance(user)
         IMC = self._get_IMC_module(repo.alias)
         imc = IMC(repo)
         imc.change(FileNode(f_path, content, mode=cs.get_file_mode(f_path)))
@@ -465,7 +464,7 @@ class ScmModel(object):
         :returns: new committed changeset
         """
 
-        user = User.guess_instance(user)
+        user = db.User.guess_instance(user)
         scm_instance = repo.scm_instance_no_cache()
 
         processed_nodes = []
@@ -517,7 +516,7 @@ class ScmModel(object):
         """
         Commits specified nodes to repo. Again.
         """
-        user = User.guess_instance(user)
+        user = db.User.guess_instance(user)
         scm_instance = repo.scm_instance_no_cache()
 
         message = message
@@ -590,7 +589,7 @@ class ScmModel(object):
         :returns: new committed changeset after deletion
         """
 
-        user = User.guess_instance(user)
+        user = db.User.guess_instance(user)
         scm_instance = repo.scm_instance_no_cache()
 
         processed_nodes = []
@@ -638,7 +637,7 @@ class ScmModel(object):
         return tip
 
     def get_unread_journal(self):
-        return UserLog.query().count()
+        return db.UserLog.query().count()
 
     def get_repo_landing_revs(self, repo=None):
         """
@@ -749,7 +748,7 @@ def AvailableRepoGroupChoices(repo_group_perm_level, extras=()):
 
     Top level is -1.
     """
-    groups = RepoGroup.query().all()
+    groups = db.RepoGroup.query().all()
     if HasPermissionAny('hg.admin')('available repo groups'):
         groups.append(None)
     else:
@@ -759,4 +758,4 @@ def AvailableRepoGroupChoices(repo_group_perm_level, extras=()):
         for extra in extras:
             if not any(rg == extra for rg in groups):
                 groups.append(extra)
-    return RepoGroup.groups_choices(groups=groups)
+    return db.RepoGroup.groups_choices(groups=groups)
