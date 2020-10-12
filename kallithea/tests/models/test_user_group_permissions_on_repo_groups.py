@@ -1,7 +1,7 @@
 import functools
 
+from kallithea.model import meta
 from kallithea.model.db import RepoGroup
-from kallithea.model.meta import Session
 from kallithea.model.repo_group import RepoGroupModel
 from kallithea.model.user_group import UserGroupModel
 from kallithea.tests.fixture import Fixture
@@ -34,20 +34,20 @@ def permissions_setup_func(group_name='g0', perm='group.read', recursive='all'):
     RepoGroupModel()._update_permissions(repo_group,
                                          perms_updates=perms_updates,
                                          recursive=recursive, check_perms=False)
-    Session().commit()
+    meta.Session().commit()
 
 
 def setup_module():
     global test_u2_id, test_u2_gr_id, _get_repo_perms, _get_group_perms
     test_u2 = _create_project_tree()
-    Session().commit()
+    meta.Session().commit()
     test_u2_id = test_u2.user_id
 
     gr1 = fixture.create_user_group('perms_group_1')
-    Session().commit()
+    meta.Session().commit()
     test_u2_gr_id = gr1.users_group_id
     UserGroupModel().add_user_to_group(gr1, user=test_u2_id)
-    Session().commit()
+    meta.Session().commit()
 
     _get_repo_perms = functools.partial(_get_perms, key='repositories',
                                         test_u1_id=test_u2_id)

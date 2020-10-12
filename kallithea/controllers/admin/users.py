@@ -45,10 +45,10 @@ from kallithea.lib.exceptions import DefaultUserException, UserCreationError, Us
 from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import datetime_to_time, generate_api_key, safe_int
 from kallithea.lib.webutils import url
+from kallithea.model import meta
 from kallithea.model.api_key import ApiKeyModel
 from kallithea.model.db import User, UserEmailMap, UserIpMap, UserToPerm
 from kallithea.model.forms import CustomDefaultPermissionsForm, UserForm
-from kallithea.model.meta import Session
 from kallithea.model.ssh_key import SshKeyModel, SshKeyModelException
 from kallithea.model.user import UserModel
 
@@ -119,7 +119,7 @@ class UsersController(BaseController):
                           None, request.ip_addr)
             h.flash(_('Created user %s') % user.username,
                     category='success')
-            Session().commit()
+            meta.Session().commit()
         except formencode.Invalid as errors:
             return htmlfill.render(
                 render('admin/users/user_add.html'),
@@ -157,7 +157,7 @@ class UsersController(BaseController):
             action_logger(request.authuser, 'admin_updated_user:%s' % usr,
                           None, request.ip_addr)
             h.flash(_('User updated successfully'), category='success')
-            Session().commit()
+            meta.Session().commit()
         except formencode.Invalid as errors:
             defaults = errors.value
             e = errors.error_dict or {}
@@ -184,7 +184,7 @@ class UsersController(BaseController):
         has_ssh_keys = bool(usr.ssh_keys)
         try:
             UserModel().delete(usr)
-            Session().commit()
+            meta.Session().commit()
             h.flash(_('Successfully deleted user'), category='success')
         except (UserOwnsReposException, DefaultUserException) as e:
             h.flash(e, category='warning')
@@ -268,7 +268,7 @@ class UsersController(BaseController):
         lifetime = safe_int(request.POST.get('lifetime'), -1)
         description = request.POST.get('description')
         ApiKeyModel().create(c.user.user_id, description, lifetime)
-        Session().commit()
+        meta.Session().commit()
         h.flash(_("API key successfully created"), category='success')
         raise HTTPFound(location=url('edit_user_api_keys', id=c.user.user_id))
 
@@ -278,11 +278,11 @@ class UsersController(BaseController):
         api_key = request.POST.get('del_api_key')
         if request.POST.get('del_api_key_builtin'):
             c.user.api_key = generate_api_key()
-            Session().commit()
+            meta.Session().commit()
             h.flash(_("API key successfully reset"), category='success')
         elif api_key:
             ApiKeyModel().delete(api_key, c.user.user_id)
-            Session().commit()
+            meta.Session().commit()
             h.flash(_("API key successfully deleted"), category='success')
 
         raise HTTPFound(location=url('edit_user_api_keys', id=c.user.user_id))
@@ -322,7 +322,7 @@ class UsersController(BaseController):
                 .filter(UserToPerm.user == user) \
                 .all()
             for ug in defs:
-                Session().delete(ug)
+                meta.Session().delete(ug)
 
             if form_result['create_repo_perm']:
                 user_model.grant_perm(id, 'hg.create.repository')
@@ -337,7 +337,7 @@ class UsersController(BaseController):
             else:
                 user_model.grant_perm(id, 'hg.fork.none')
             h.flash(_("Updated permissions"), category='success')
-            Session().commit()
+            meta.Session().commit()
         except Exception:
             log.error(traceback.format_exc())
             h.flash(_('An error occurred during permissions saving'),
@@ -364,7 +364,7 @@ class UsersController(BaseController):
 
         try:
             user_model.add_extra_email(id, email)
-            Session().commit()
+            meta.Session().commit()
             h.flash(_("Added email %s to user") % email, category='success')
         except formencode.Invalid as error:
             msg = error.error_dict['email']
@@ -380,7 +380,7 @@ class UsersController(BaseController):
         email_id = request.POST.get('del_email_id')
         user_model = UserModel()
         user_model.delete_extra_email(id, email_id)
-        Session().commit()
+        meta.Session().commit()
         h.flash(_("Removed email from user"), category='success')
         raise HTTPFound(location=url('edit_user_emails', id=id))
 
@@ -406,7 +406,7 @@ class UsersController(BaseController):
 
         try:
             user_model.add_extra_ip(id, ip)
-            Session().commit()
+            meta.Session().commit()
             h.flash(_("Added IP address %s to user whitelist") % ip, category='success')
         except formencode.Invalid as error:
             msg = error.error_dict['ip']
@@ -424,7 +424,7 @@ class UsersController(BaseController):
         ip_id = request.POST.get('del_ip_id')
         user_model = UserModel()
         user_model.delete_extra_ip(id, ip_id)
-        Session().commit()
+        meta.Session().commit()
         h.flash(_("Removed IP address from user whitelist"), category='success')
 
         if 'default_user' in request.POST:
@@ -452,7 +452,7 @@ class UsersController(BaseController):
         try:
             new_ssh_key = SshKeyModel().create(c.user.user_id,
                                                description, public_key)
-            Session().commit()
+            meta.Session().commit()
             SshKeyModel().write_authorized_keys()
             h.flash(_("SSH key %s successfully added") % new_ssh_key.fingerprint, category='success')
         except SshKeyModelException as e:
@@ -466,7 +466,7 @@ class UsersController(BaseController):
         fingerprint = request.POST.get('del_public_key_fingerprint')
         try:
             SshKeyModel().delete(fingerprint, c.user.user_id)
-            Session().commit()
+            meta.Session().commit()
             SshKeyModel().write_authorized_keys()
             h.flash(_("SSH key successfully deleted"), category='success')
         except SshKeyModelException as e:

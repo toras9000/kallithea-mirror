@@ -21,9 +21,8 @@ import kallithea
 from kallithea.controllers.admin.users import UsersController
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import check_password
-from kallithea.model import validators
+from kallithea.model import meta, validators
 from kallithea.model.db import Permission, RepoGroup, User, UserApiKeys, UserSshKeys
-from kallithea.model.meta import Session
 from kallithea.model.user import UserModel
 from kallithea.tests import base
 from kallithea.tests.fixture import Fixture
@@ -51,7 +50,7 @@ class TestAdminUsersController(base.TestController):
     def teardown_class(cls):
         if User.get_by_username(cls.test_user_1):
             UserModel().delete(cls.test_user_1)
-            Session().commit()
+            meta.Session().commit()
 
     def test_index(self):
         self.log_user()
@@ -86,7 +85,7 @@ class TestAdminUsersController(base.TestController):
         response = response.follow()
         response.mustcontain("""%s user settings""" % username) # in <title>
 
-        new_user = Session().query(User). \
+        new_user = meta.Session().query(User). \
             filter(User.username == username).one()
 
         assert new_user.username == username
@@ -120,7 +119,7 @@ class TestAdminUsersController(base.TestController):
         response.mustcontain("""<span class="error-message">An email address must contain a single @</span>""")
 
         def get_user():
-            Session().query(User).filter(User.username == username).one()
+            meta.Session().query(User).filter(User.username == username).one()
 
         with pytest.raises(NoResultFound):
             get_user(), 'found user in database'
@@ -151,7 +150,7 @@ class TestAdminUsersController(base.TestController):
                                   extern_type='internal',
                                   extern_name=self.test_user_1,
                                   skip_if_exists=True)
-        Session().commit()
+        meta.Session().commit()
         params = usr.get_api_data(True)
         params.update({'password_confirmation': ''})
         params.update({'new_password': ''})
@@ -185,7 +184,7 @@ class TestAdminUsersController(base.TestController):
 
         fixture.create_user(name=username)
 
-        new_user = Session().query(User) \
+        new_user = meta.Session().query(User) \
             .filter(User.username == username).one()
         response = self.app.post(base.url('delete_user', id=new_user.user_id),
             params={'_session_csrf_secret_token': self.session_csrf_secret_token()})
@@ -200,7 +199,7 @@ class TestAdminUsersController(base.TestController):
         fixture.create_user(name=username)
         fixture.create_repo(name=reponame, cur_user=username)
 
-        new_user = Session().query(User) \
+        new_user = meta.Session().query(User) \
             .filter(User.username == username).one()
         response = self.app.post(base.url('delete_user', id=new_user.user_id),
             params={'_session_csrf_secret_token': self.session_csrf_secret_token()})
@@ -251,7 +250,7 @@ class TestAdminUsersController(base.TestController):
         fixture.create_user(name=username)
         ug = fixture.create_user_group(name=groupname, cur_user=username)
 
-        new_user = Session().query(User) \
+        new_user = meta.Session().query(User) \
             .filter(User.username == username).one()
         response = self.app.post(base.url('delete_user', id=new_user.user_id),
             params={'_session_csrf_secret_token': self.session_csrf_secret_token()})
@@ -283,7 +282,7 @@ class TestAdminUsersController(base.TestController):
         user = UserModel().create_or_update(username='dummy', password='qwe',
                                             email='dummy', firstname='a',
                                             lastname='b')
-        Session().commit()
+        meta.Session().commit()
         uid = user.user_id
 
         try:
@@ -303,7 +302,7 @@ class TestAdminUsersController(base.TestController):
             assert UserModel().has_perm(uid, perm_create) == True
         finally:
             UserModel().delete(uid)
-            Session().commit()
+            meta.Session().commit()
 
     def test_revoke_perm_create_repo(self):
         self.log_user()
@@ -313,7 +312,7 @@ class TestAdminUsersController(base.TestController):
         user = UserModel().create_or_update(username='dummy', password='qwe',
                                             email='dummy', firstname='a',
                                             lastname='b')
-        Session().commit()
+        meta.Session().commit()
         uid = user.user_id
 
         try:
@@ -332,7 +331,7 @@ class TestAdminUsersController(base.TestController):
             assert UserModel().has_perm(uid, perm_create) == False
         finally:
             UserModel().delete(uid)
-            Session().commit()
+            meta.Session().commit()
 
     def test_add_perm_fork_repo(self):
         self.log_user()
@@ -342,7 +341,7 @@ class TestAdminUsersController(base.TestController):
         user = UserModel().create_or_update(username='dummy', password='qwe',
                                             email='dummy', firstname='a',
                                             lastname='b')
-        Session().commit()
+        meta.Session().commit()
         uid = user.user_id
 
         try:
@@ -362,7 +361,7 @@ class TestAdminUsersController(base.TestController):
             assert UserModel().has_perm(uid, perm_create) == True
         finally:
             UserModel().delete(uid)
-            Session().commit()
+            meta.Session().commit()
 
     def test_revoke_perm_fork_repo(self):
         self.log_user()
@@ -372,7 +371,7 @@ class TestAdminUsersController(base.TestController):
         user = UserModel().create_or_update(username='dummy', password='qwe',
                                             email='dummy', firstname='a',
                                             lastname='b')
-        Session().commit()
+        meta.Session().commit()
         uid = user.user_id
 
         try:
@@ -391,7 +390,7 @@ class TestAdminUsersController(base.TestController):
             assert UserModel().has_perm(uid, perm_create) == False
         finally:
             UserModel().delete(uid)
-            Session().commit()
+            meta.Session().commit()
 
     def test_ips(self):
         self.log_user()
@@ -434,7 +433,7 @@ class TestAdminUsersController(base.TestController):
         ip_range = '127.0.0.1 - 127.0.0.1'
         with test_context(self.app):
             new_ip = UserModel().add_extra_ip(user_id, ip)
-            Session().commit()
+            meta.Session().commit()
         new_ip_id = new_ip.ip_id
 
         response = self.app.get(base.url('edit_user_ips', id=user_id))
@@ -477,8 +476,8 @@ class TestAdminUsersController(base.TestController):
                 response.mustcontain(api_key)
         finally:
             for api_key in UserApiKeys.query().filter(UserApiKeys.user_id == user_id).all():
-                Session().delete(api_key)
-                Session().commit()
+                meta.Session().delete(api_key)
+                meta.Session().commit()
 
     def test_remove_api_key(self):
         self.log_user()
@@ -535,8 +534,8 @@ class TestAdminUsersController(base.TestController):
         ssh_key = UserSshKeys.query().filter(UserSshKeys.user_id == user_id).one()
         assert ssh_key.fingerprint == fingerprint
         assert ssh_key.description == description
-        Session().delete(ssh_key)
-        Session().commit()
+        meta.Session().delete(ssh_key)
+        meta.Session().commit()
 
     def test_remove_ssh_key(self):
         description = ''

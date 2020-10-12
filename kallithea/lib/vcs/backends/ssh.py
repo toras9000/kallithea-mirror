@@ -25,8 +25,8 @@ import sys
 
 from kallithea.lib.auth import AuthUser, HasPermissionAnyMiddleware
 from kallithea.lib.utils2 import set_hook_environment
+from kallithea.model import meta
 from kallithea.model.db import Repository, User, UserSshKeys
-from kallithea.model.meta import Session
 
 
 log = logging.getLogger(__name__)
@@ -74,7 +74,7 @@ class BaseSshHandler(object):
         if ssh_key is None:
             self.exit('SSH key %r not found' % key_id)
         ssh_key.last_seen = datetime.datetime.now()
-        Session().commit()
+        meta.Session().commit()
 
         if HasPermissionAnyMiddleware('repository.write',
                                       'repository.admin')(self.authuser, self.repo_name):

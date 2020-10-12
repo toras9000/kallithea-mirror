@@ -45,9 +45,9 @@ from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import safe_int
 from kallithea.lib.vcs import RepositoryError
 from kallithea.lib.webutils import url
+from kallithea.model import meta
 from kallithea.model.db import RepoGroup, Repository, RepositoryField, Setting, UserFollowing
 from kallithea.model.forms import RepoFieldForm, RepoForm, RepoPermsForm
-from kallithea.model.meta import Session
 from kallithea.model.repo import RepoModel
 from kallithea.model.scm import AvailableRepoGroupChoices, RepoList, ScmModel
 
@@ -226,7 +226,7 @@ class ReposController(BaseRepoController):
             changed_name = repo.repo_name
             action_logger(request.authuser, 'admin_updated_repo',
                 changed_name, request.ip_addr)
-            Session().commit()
+            meta.Session().commit()
         except formencode.Invalid as errors:
             log.info(errors)
             defaults = self.__load_data()
@@ -268,7 +268,7 @@ class ReposController(BaseRepoController):
                 repo_name, request.ip_addr)
             ScmModel().mark_for_invalidation(repo_name)
             h.flash(_('Deleted repository %s') % repo_name, category='success')
-            Session().commit()
+            meta.Session().commit()
         except AttachedForksError:
             h.flash(_('Cannot delete repository %s which still has forks')
                         % repo_name, category='warning')
@@ -314,7 +314,7 @@ class ReposController(BaseRepoController):
         # TODO: implement this
         #action_logger(request.authuser, 'admin_changed_repo_permissions',
         #              repo_name, request.ip_addr)
-        Session().commit()
+        meta.Session().commit()
         h.flash(_('Repository permissions updated'), category='success')
         raise HTTPFound(location=url('edit_repo_perms', repo_name=repo_name))
 
@@ -341,7 +341,7 @@ class ReposController(BaseRepoController):
             # TODO: implement this
             #action_logger(request.authuser, 'admin_revoked_repo_permissions',
             #              repo_name, request.ip_addr)
-            Session().commit()
+            meta.Session().commit()
         except Exception:
             log.error(traceback.format_exc())
             h.flash(_('An error occurred during revoking of permission'),
@@ -371,8 +371,8 @@ class ReposController(BaseRepoController):
             new_field.field_value = form_result['new_field_value']  # set initial blank value
             new_field.field_desc = form_result['new_field_desc']
             new_field.field_label = form_result['new_field_label']
-            Session().add(new_field)
-            Session().commit()
+            meta.Session().add(new_field)
+            meta.Session().commit()
         except formencode.Invalid as e:
             h.flash(_('Field validation error: %s') % e.msg, category='error')
         except Exception as e:
@@ -384,8 +384,8 @@ class ReposController(BaseRepoController):
     def delete_repo_field(self, repo_name, field_id):
         field = RepositoryField.get_or_404(field_id)
         try:
-            Session().delete(field)
-            Session().commit()
+            meta.Session().delete(field)
+            meta.Session().commit()
         except Exception as e:
             log.error(traceback.format_exc())
             msg = _('An error occurred during removal of field')
@@ -436,7 +436,7 @@ class ReposController(BaseRepoController):
             self.scm_model.toggle_following_repo(repo_id, user_id)
             h.flash(_('Updated repository visibility in public journal'),
                     category='success')
-            Session().commit()
+            meta.Session().commit()
         except Exception:
             h.flash(_('An error occurred during setting this'
                       ' repository in public journal'),
@@ -455,7 +455,7 @@ class ReposController(BaseRepoController):
             repo = ScmModel().mark_as_fork(repo_name, fork_id,
                                            request.authuser.username)
             fork = repo.fork.repo_name if repo.fork else _('Nothing')
-            Session().commit()
+            meta.Session().commit()
             h.flash(_('Marked repository %s as fork of %s') % (repo_name, fork),
                     category='success')
         except RepositoryError as e:
@@ -506,7 +506,7 @@ class ReposController(BaseRepoController):
         if request.POST:
             try:
                 RepoModel().delete_stats(repo_name)
-                Session().commit()
+                meta.Session().commit()
             except Exception as e:
                 log.error(traceback.format_exc())
                 h.flash(_('An error occurred during deletion of repository stats'),

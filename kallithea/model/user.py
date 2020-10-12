@@ -38,8 +38,8 @@ from tg.i18n import ugettext as _
 
 from kallithea.lib.exceptions import DefaultUserException, UserOwnsReposException
 from kallithea.lib.utils2 import generate_api_key, get_current_authuser
+from kallithea.model import meta
 from kallithea.model.db import Permission, User, UserEmailMap, UserIpMap, UserToPerm
-from kallithea.model.meta import Session
 
 
 log = logging.getLogger(__name__)
@@ -83,8 +83,8 @@ class UserModel(object):
             setattr(new_user, k, v)
 
         new_user.api_key = generate_api_key()
-        Session().add(new_user)
-        Session().flush() # make database assign new_user.user_id
+        meta.Session().add(new_user)
+        meta.Session().flush() # make database assign new_user.user_id
 
         log_create_user(new_user.get_dict(), cur_user)
         return new_user
@@ -154,8 +154,8 @@ class UserModel(object):
                     if password else ''
 
             if user is None:
-                Session().add(new_user)
-                Session().flush() # make database assign new_user.user_id
+                meta.Session().add(new_user)
+                meta.Session().flush() # make database assign new_user.user_id
 
             if not edit:
                 log_create_user(new_user.get_dict(), cur_user)
@@ -259,7 +259,7 @@ class UserModel(object):
                 _('User "%s" still owns %s user groups and cannot be '
                   'removed. Switch owners or remove those user groups: %s')
                 % (user.username, len(usergroups), ', '.join(usergroups)))
-        Session().delete(user)
+        meta.Session().delete(user)
 
         from kallithea.lib.hooks import log_delete_user
         log_delete_user(user.get_dict(), cur_user)
@@ -391,7 +391,7 @@ class UserModel(object):
             if not self.can_change_password(user):
                 raise Exception('trying to change password for external user')
             user.password = auth.get_crypt_password(new_passwd)
-            Session().commit()
+            meta.Session().commit()
             log.info('change password for %s', user_email)
         if new_passwd is None:
             raise Exception('unable to set new password')
@@ -429,7 +429,7 @@ class UserModel(object):
         new = UserToPerm()
         new.user = user
         new.permission = perm
-        Session().add(new)
+        meta.Session().add(new)
         return new
 
     def revoke_perm(self, user, perm):
@@ -462,7 +462,7 @@ class UserModel(object):
         obj = UserEmailMap()
         obj.user = user
         obj.email = data['email']
-        Session().add(obj)
+        meta.Session().add(obj)
         return obj
 
     def delete_extra_email(self, user, email_id):
@@ -475,7 +475,7 @@ class UserModel(object):
         user = User.guess_instance(user)
         obj = UserEmailMap.query().get(email_id)
         if obj is not None:
-            Session().delete(obj)
+            meta.Session().delete(obj)
 
     def add_extra_ip(self, user, ip):
         """
@@ -492,7 +492,7 @@ class UserModel(object):
         obj = UserIpMap()
         obj.user = user
         obj.ip_addr = data['ip']
-        Session().add(obj)
+        meta.Session().add(obj)
         return obj
 
     def delete_extra_ip(self, user, ip_id):
@@ -505,4 +505,4 @@ class UserModel(object):
         user = User.guess_instance(user)
         obj = UserIpMap.query().get(ip_id)
         if obj:
-            Session().delete(obj)
+            meta.Session().delete(obj)

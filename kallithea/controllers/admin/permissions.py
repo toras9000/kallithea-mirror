@@ -40,9 +40,9 @@ from kallithea.lib import helpers as h
 from kallithea.lib.auth import AuthUser, HasPermissionAnyDecorator, LoginRequired
 from kallithea.lib.base import BaseController, render
 from kallithea.lib.webutils import url
+from kallithea.model import meta
 from kallithea.model.db import User, UserIpMap
 from kallithea.model.forms import DefaultPermissionsForm
-from kallithea.model.meta import Session
 from kallithea.model.permission import PermissionModel
 
 
@@ -113,7 +113,7 @@ class PermissionsController(BaseController):
                 form_result = _form.to_python(dict(request.POST))
                 form_result.update({'perm_user_name': 'default'})
                 PermissionModel().update(form_result)
-                Session().commit()
+                meta.Session().commit()
                 h.flash(_('Global permissions updated successfully'),
                         category='success')
 

@@ -23,9 +23,8 @@ from inspect import isfunction
 from kallithea.lib.auth import AuthUser, PasswordGenerator
 from kallithea.lib.compat import hybrid_property
 from kallithea.lib.utils2 import asbool
-from kallithea.model import validators
+from kallithea.model import meta, validators
 from kallithea.model.db import Setting, User
-from kallithea.model.meta import Session
 from kallithea.model.user import UserModel
 from kallithea.model.user_group import UserGroupModel
 
@@ -267,7 +266,7 @@ class KallitheaExternalAuthPlugin(KallitheaAuthPluginBase):
             # created from plugins. We store this info in _group_data JSON field
             groups = user_data['groups'] or []
             UserGroupModel().enforce_groups(user, groups, self.name)
-            Session().commit()
+            meta.Session().commit()
         return user_data
 
 

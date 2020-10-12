@@ -41,10 +41,10 @@ from kallithea.lib.auth import AuthUser, LoginRequired
 from kallithea.lib.base import BaseController, IfSshEnabled, render
 from kallithea.lib.utils2 import generate_api_key, safe_int
 from kallithea.lib.webutils import url
+from kallithea.model import meta
 from kallithea.model.api_key import ApiKeyModel
 from kallithea.model.db import Repository, User, UserEmailMap, UserFollowing
 from kallithea.model.forms import PasswordChangeForm, UserForm
-from kallithea.model.meta import Session
 from kallithea.model.repo import RepoModel
 from kallithea.model.ssh_key import SshKeyModel, SshKeyModelException
 from kallithea.model.user import UserModel
@@ -69,13 +69,13 @@ class MyAccountController(BaseController):
     def _load_my_repos_data(self, watched=False):
         if watched:
             admin = False
-            repos_list = Session().query(Repository) \
+            repos_list = meta.Session().query(Repository) \
                          .join(UserFollowing) \
                          .filter(UserFollowing.user_id ==
                                  request.authuser.user_id).all()
         else:
             admin = True
-            repos_list = Session().query(Repository) \
+            repos_list = meta.Session().query(Repository) \
                          .filter(Repository.owner_id ==
                                  request.authuser.user_id).all()
 
@@ -113,7 +113,7 @@ class MyAccountController(BaseController):
                                    skip_attrs=skip_attrs)
                 h.flash(_('Your account was updated successfully'),
                         category='success')
-                Session().commit()
+                meta.Session().commit()
                 update = True
 
             except formencode.Invalid as errors:
@@ -148,7 +148,7 @@ class MyAccountController(BaseController):
             try:
                 form_result = _form.to_python(request.POST)
                 UserModel().update(request.authuser.user_id, form_result)
-                Session().commit()
+                meta.Session().commit()
                 h.flash(_("Successfully updated password"), category='success')
             except formencode.Invalid as errors:
                 return htmlfill.render(
@@ -200,7 +200,7 @@ class MyAccountController(BaseController):
 
         try:
             UserModel().add_extra_email(request.authuser.user_id, email)
-            Session().commit()
+            meta.Session().commit()
             h.flash(_("Added email %s to user") % email, category='success')
         except formencode.Invalid as error:
             msg = error.error_dict['email']
@@ -215,7 +215,7 @@ class MyAccountController(BaseController):
         email_id = request.POST.get('del_email_id')
         user_model = UserModel()
         user_model.delete_extra_email(request.authuser.user_id, email_id)
-        Session().commit()
+        meta.Session().commit()
         h.flash(_("Removed email from user"), category='success')
         raise HTTPFound(location=url('my_account_emails'))
 
@@ -239,7 +239,7 @@ class MyAccountController(BaseController):
         lifetime = safe_int(request.POST.get('lifetime'), -1)
         description = request.POST.get('description')
         ApiKeyModel().create(request.authuser.user_id, description, lifetime)
-        Session().commit()
+        meta.Session().commit()
         h.flash(_("API key successfully created"), category='success')
         raise HTTPFound(location=url('my_account_api_keys'))
 
@@ -248,11 +248,11 @@ class MyAccountController(BaseController):
         if request.POST.get('del_api_key_builtin'):
             user = User.get(request.authuser.user_id)
             user.api_key = generate_api_key()
-            Session().commit()
+            meta.Session().commit()
             h.flash(_("API key successfully reset"), category='success')
         elif api_key:
             ApiKeyModel().delete(api_key, request.authuser.user_id)
-            Session().commit()
+            meta.Session().commit()
             h.flash(_("API key successfully deleted"), category='success')
 
         raise HTTPFound(location=url('my_account_api_keys'))
@@ -271,7 +271,7 @@ class MyAccountController(BaseController):
         try:
             new_ssh_key = SshKeyModel().create(request.authuser.user_id,
                                                description, public_key)
-            Session().commit()
+            meta.Session().commit()
             SshKeyModel().write_authorized_keys()
             h.flash(_("SSH key %s successfully added") % new_ssh_key.fingerprint, category='success')
         except SshKeyModelException as e:
@@ -283,7 +283,7 @@ class MyAccountController(BaseController):
         fingerprint = request.POST.get('del_public_key_fingerprint')
         try:
             SshKeyModel().delete(fingerprint, request.authuser.user_id)
-            Session().commit()
+            meta.Session().commit()
             SshKeyModel().write_authorized_keys()
             h.flash(_("SSH key successfully deleted"), category='success')
         except SshKeyModelException as e:

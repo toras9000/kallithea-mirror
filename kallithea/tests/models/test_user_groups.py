@@ -1,5 +1,5 @@
+from kallithea.model import meta
 from kallithea.model.db import User, UserGroup
-from kallithea.model.meta import Session
 from kallithea.model.user_group import UserGroupModel
 from kallithea.tests import base
 from kallithea.tests.fixture import Fixture
@@ -14,7 +14,7 @@ class TestUserGroups(base.TestController):
         # delete all groups
         for gr in UserGroup.query():
             fixture.destroy_user_group(gr)
-        Session().commit()
+        meta.Session().commit()
 
     @base.parametrize('pre_existing,regular_should_be,external_should_be,groups,expected', [
         ([], [], [], [], []),
@@ -30,29 +30,29 @@ class TestUserGroups(base.TestController):
         # delete all groups
         for gr in UserGroup.query():
             fixture.destroy_user_group(gr)
-        Session().commit()
+        meta.Session().commit()
 
         user = User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
         for gr in pre_existing:
             gr = fixture.create_user_group(gr)
-        Session().commit()
+        meta.Session().commit()
 
         # make sure use is just in those groups
         for gr in regular_should_be:
             gr = fixture.create_user_group(gr)
-            Session().commit()
+            meta.Session().commit()
             UserGroupModel().add_user_to_group(gr, user)
-            Session().commit()
+            meta.Session().commit()
 
         # now special external groups created by auth plugins
         for gr in external_should_be:
             gr = fixture.create_user_group(gr, user_group_data={'extern_type': 'container'})
-            Session().commit()
+            meta.Session().commit()
             UserGroupModel().add_user_to_group(gr, user)
-            Session().commit()
+            meta.Session().commit()
 
         UserGroupModel().enforce_groups(user, groups, 'container')
-        Session().commit()
+        meta.Session().commit()
 
         user = User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
         in_groups = user.group_member

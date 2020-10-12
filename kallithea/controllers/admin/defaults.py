@@ -38,9 +38,9 @@ from kallithea.lib import helpers as h
 from kallithea.lib.auth import HasPermissionAnyDecorator, LoginRequired
 from kallithea.lib.base import BaseController, render
 from kallithea.lib.webutils import url
+from kallithea.model import meta
 from kallithea.model.db import Setting
 from kallithea.model.forms import DefaultsForm
-from kallithea.model.meta import Session
 
 
 log = logging.getLogger(__name__)
@@ -70,7 +70,7 @@ class DefaultsController(BaseController):
             form_result = _form.to_python(dict(request.POST))
             for k, v in form_result.items():
                 setting = Setting.create_or_update(k, v)
-            Session().commit()
+            meta.Session().commit()
             h.flash(_('Default settings updated successfully'),
                     category='success')
 

@@ -3,8 +3,8 @@ import datetime
 import os
 from os.path import dirname
 
+from kallithea.model import meta
 from kallithea.model.db import UserLog
-from kallithea.model.meta import Session
 from kallithea.tests import base
 
 
@@ -16,7 +16,7 @@ class TestAdminController(base.TestController):
     @classmethod
     def setup_class(cls):
         UserLog.query().delete()
-        Session().commit()
+        meta.Session().commit()
 
         def strptime(val):
             fmt = '%Y-%m-%d %H:%M:%S'
@@ -40,13 +40,13 @@ class TestAdminController(base.TestController):
                         # nullable due to FK problems
                         v = None
                     setattr(ul, k, v)
-                Session().add(ul)
-            Session().commit()
+                meta.Session().add(ul)
+            meta.Session().commit()
 
     @classmethod
     def teardown_class(cls):
         UserLog.query().delete()
-        Session().commit()
+        meta.Session().commit()
 
     def test_index(self):
         self.log_user()

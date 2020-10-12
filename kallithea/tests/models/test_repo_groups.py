@@ -4,8 +4,8 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 
 import kallithea
+from kallithea.model import meta
 from kallithea.model.db import RepoGroup
-from kallithea.model.meta import Session
 from kallithea.model.repo import RepoModel
 from kallithea.model.repo_group import RepoGroupModel
 from kallithea.tests import base
@@ -43,7 +43,7 @@ class TestRepoGroups(base.TestController):
         self.g3 = fixture.create_repo_group('test3', skip_if_exists=True)
 
     def teardown_method(self, method):
-        Session.remove()
+        meta.Session.remove()
 
     def __check_path(self, *path):
         """
@@ -58,7 +58,7 @@ class TestRepoGroups(base.TestController):
 
     def test_create_group(self):
         g = fixture.create_repo_group('newGroup')
-        Session().commit()
+        meta.Session().commit()
         assert g.full_path == 'newGroup'
 
         assert self.__check_path('newGroup')
@@ -66,7 +66,7 @@ class TestRepoGroups(base.TestController):
         # test_create_same_name_group
         with pytest.raises(IntegrityError):
             fixture.create_repo_group('newGroup')
-        Session().rollback()
+        meta.Session().rollback()
 
     def test_same_subgroup(self):
         sg1 = fixture.create_repo_group('sub1', parent_group_id=self.g1.group_id)
@@ -126,7 +126,7 @@ class TestRepoGroups(base.TestController):
         assert r.repo_name == 'john'
         # put repo into group
         r = _update_repo('john', repo_group=g1.group_id)
-        Session().commit()
+        meta.Session().commit()
         assert r.repo_name == 'g1/john'
 
         _update_repo_group(g1.group_id, 'g1', parent_id=g2.group_id)
@@ -143,7 +143,7 @@ class TestRepoGroups(base.TestController):
         assert self.__check_path('t11', 't22')
 
         g2 = _update_repo_group(g2.group_id, 'g22', parent_id=None)
-        Session().commit()
+        meta.Session().commit()
 
         assert g2.group_name == 'g22'
         # we moved out group from t1 to '' so it's full path should be 'g2'
@@ -160,7 +160,7 @@ class TestRepoGroups(base.TestController):
 
         ## rename L1 all groups should be now changed
         _update_repo_group(g1.group_id, 'L1_NEW')
-        Session().commit()
+        meta.Session().commit()
         assert g1.full_path == 'L1_NEW'
         assert g2.full_path == 'L1_NEW/L2'
         assert g3.full_path == 'L1_NEW/L2/L3'
@@ -175,7 +175,7 @@ class TestRepoGroups(base.TestController):
         r = fixture.create_repo('R1/R2/R3/R3_REPO', repo_group=g3.group_id)
         ## rename L1 all groups should be now changed
         _update_repo_group(g1.group_id, 'R1', parent_id=g4.group_id)
-        Session().commit()
+        meta.Session().commit()
         assert g1.full_path == 'R1_NEW/R1'
         assert g2.full_path == 'R1_NEW/R1/R2'
         assert g3.full_path == 'R1_NEW/R1/R2/R3'
@@ -191,7 +191,7 @@ class TestRepoGroups(base.TestController):
 
         ## rename L1 all groups should be now changed
         _update_repo_group(g1.group_id, 'X1_PRIM', parent_id=g4.group_id)
-        Session().commit()
+        meta.Session().commit()
         assert g1.full_path == 'X1_NEW/X1_PRIM'
         assert g2.full_path == 'X1_NEW/X1_PRIM/X2'
         assert g3.full_path == 'X1_NEW/X1_PRIM/X2/X3'

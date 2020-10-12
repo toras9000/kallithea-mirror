@@ -30,8 +30,8 @@ import kallithea
 import kallithea.bin.kallithea_cli_base as cli_base
 from kallithea.lib.utils import REMOVED_REPO_PAT, repo2db_mapper
 from kallithea.lib.utils2 import ask_ok
+from kallithea.model import meta
 from kallithea.model.db import Repository
-from kallithea.model.meta import Session
 from kallithea.model.scm import ScmModel
 
 
@@ -86,7 +86,7 @@ def repo_update_metadata(repositories):
         # first access
         repo.set_invalidate()
 
-    Session().commit()
+    meta.Session().commit()
 
     click.echo('Updated database with information about latest change in the following %s repositories:' % (len(repo_list)))
     click.echo('\n'.join(repo.repo_name for repo in repo_list))

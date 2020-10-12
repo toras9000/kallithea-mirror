@@ -42,10 +42,10 @@ from kallithea.lib.page import Page
 from kallithea.lib.utils2 import safe_int, safe_str, time_to_datetime
 from kallithea.lib.vcs.exceptions import NodeNotChangedError, VCSError
 from kallithea.lib.webutils import url
+from kallithea.model import meta
 from kallithea.model.db import Gist
 from kallithea.model.forms import GistForm
 from kallithea.model.gist import GistModel
-from kallithea.model.meta import Session
 
 
 log = logging.getLogger(__name__)
@@ -129,7 +129,7 @@ class GistsController(BaseController):
                 gist_type=gist_type,
                 lifetime=form_result['lifetime']
             )
-            Session().commit()
+            meta.Session().commit()
             new_gist_id = gist.gist_access_id
         except formencode.Invalid as errors:
             defaults = errors.value
@@ -159,7 +159,7 @@ class GistsController(BaseController):
         owner = gist.owner_id == request.authuser.user_id
         if h.HasPermissionAny('hg.admin')() or owner:
             GistModel().delete(gist)
-            Session().commit()
+            meta.Session().commit()
             h.flash(_('Deleted gist %s') % gist.gist_access_id, category='success')
         else:
             raise HTTPForbidden()
@@ -232,12 +232,12 @@ class GistsController(BaseController):
                     lifetime=rpost['lifetime']
                 )
 
-                Session().commit()
+                meta.Session().commit()
                 h.flash(_('Successfully updated gist content'), category='success')
             except NodeNotChangedError:
                 # raised if nothing was changed in repo itself. We anyway then
                 # store only DB stuff for gist
-                Session().commit()
+                meta.Session().commit()
                 h.flash(_('Successfully updated gist data'), category='success')
             except Exception:
                 log.error(traceback.format_exc())

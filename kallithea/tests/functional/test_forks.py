@@ -2,8 +2,8 @@
 
 import urllib.parse
 
+from kallithea.model import meta
 from kallithea.model.db import Repository, User
-from kallithea.model.meta import Session
 from kallithea.model.repo import RepoModel
 from kallithea.model.user import UserModel
 from kallithea.tests import base
@@ -27,11 +27,11 @@ class _BaseTestCase(base.TestController):
         self.password = 'qweqwe'
         u1 = fixture.create_user(self.username, password=self.password, email='fork_king@example.com')
         self.u1_id = u1.user_id
-        Session().commit()
+        meta.Session().commit()
 
     def teardown_method(self, method):
         fixture.destroy_user(self.u1_id)
-        Session().commit()
+        meta.Session().commit()
 
     def test_index(self):
         self.log_user()
@@ -48,7 +48,7 @@ class _BaseTestCase(base.TestController):
             usr = User.get_default_user()
             user_model.revoke_perm(usr, 'hg.fork.repository')
             user_model.grant_perm(usr, 'hg.fork.none')
-            Session().commit()
+            meta.Session().commit()
             # try create a fork
             repo_name = self.REPO
             self.app.post(base.url(controller='forks', action='fork_create',
@@ -57,7 +57,7 @@ class _BaseTestCase(base.TestController):
             usr = User.get_default_user()
             user_model.revoke_perm(usr, 'hg.fork.none')
             user_model.grant_perm(usr, 'hg.fork.repository')
-            Session().commit()
+            meta.Session().commit()
 
     def test_index_with_fork(self):
         self.log_user()
@@ -122,7 +122,7 @@ class _BaseTestCase(base.TestController):
                 % (repo_name, fork_name_full, fork_name_full))
 
         # test if the fork was created in the database
-        fork_repo = Session().query(Repository) \
+        fork_repo = meta.Session().query(Repository) \
             .filter(Repository.repo_name == fork_name_full).one()
 
         assert fork_repo.repo_name == fork_name_full
@@ -216,7 +216,7 @@ class _BaseTestCase(base.TestController):
                 % (repo_name, fork_name, fork_name))
 
         # test if the fork was created in the database
-        fork_repo = Session().query(Repository) \
+        fork_repo = meta.Session().query(Repository) \
             .filter(Repository.repo_name == fork_name).one()
 
         assert fork_repo.repo_name == fork_name
@@ -239,7 +239,7 @@ class _BaseTestCase(base.TestController):
         RepoModel().grant_user_permission(repo=forks[0],
                                           user=usr,
                                           perm='repository.read')
-        Session().commit()
+        meta.Session().commit()
 
         response = self.app.get(base.url(controller='forks', action='forks',
                                     repo_name=repo_name))
@@ -253,7 +253,7 @@ class _BaseTestCase(base.TestController):
                                               user=usr, perm='repository.none')
             RepoModel().grant_user_permission(repo=forks[0],
                                               user=default_user, perm='repository.none')
-            Session().commit()
+            meta.Session().commit()
 
             # fork shouldn't be visible
             response = self.app.get(base.url(controller='forks', action='forks',

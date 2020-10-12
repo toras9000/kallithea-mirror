@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
+from kallithea.model import meta
 from kallithea.model.db import Permission, UserGroup, UserGroupToPerm
-from kallithea.model.meta import Session
 from kallithea.tests import base
 
 
@@ -52,13 +52,13 @@ class TestAdminUsersGroupsController(base.TestController):
         self.checkSessionFlash(response,
                                'Created user group ')
 
-        gr = Session().query(UserGroup) \
+        gr = meta.Session().query(UserGroup) \
             .filter(UserGroup.users_group_name == users_group_name).one()
 
         response = self.app.post(base.url('delete_users_group', id=gr.users_group_id),
             params={'_session_csrf_secret_token': self.session_csrf_secret_token()})
 
-        gr = Session().query(UserGroup) \
+        gr = meta.Session().query(UserGroup) \
             .filter(UserGroup.users_group_name == users_group_name).scalar()
 
         assert gr is None
@@ -121,7 +121,7 @@ class TestAdminUsersGroupsController(base.TestController):
         response = self.app.post(base.url('delete_users_group', id=ug.users_group_id),
             params={'_session_csrf_secret_token': self.session_csrf_secret_token()})
         response = response.follow()
-        gr = Session().query(UserGroup) \
+        gr = meta.Session().query(UserGroup) \
             .filter(UserGroup.users_group_name == users_group_name).scalar()
 
         assert gr is None
@@ -188,7 +188,7 @@ class TestAdminUsersGroupsController(base.TestController):
         response = self.app.post(base.url('delete_users_group', id=ug.users_group_id),
             params={'_session_csrf_secret_token': self.session_csrf_secret_token()})
         response = response.follow()
-        gr = Session().query(UserGroup) \
+        gr = meta.Session().query(UserGroup) \
                            .filter(UserGroup.users_group_name ==
                                    users_group_name).scalar()
 

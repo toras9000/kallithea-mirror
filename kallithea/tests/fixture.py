@@ -30,11 +30,11 @@ from kallithea.lib import helpers
 from kallithea.lib.auth import AuthUser
 from kallithea.lib.db_manage import DbManage
 from kallithea.lib.vcs.backends.base import EmptyChangeset
+from kallithea.model import meta
 from kallithea.model.changeset_status import ChangesetStatusModel
 from kallithea.model.comment import ChangesetCommentsModel
 from kallithea.model.db import ChangesetStatus, Gist, RepoGroup, Repository, User, UserGroup
 from kallithea.model.gist import GistModel
-from kallithea.model.meta import Session
 from kallithea.model.pull_request import CreatePullRequestAction  # , CreatePullRequestIterationAction, PullRequestModel
 from kallithea.model.repo import RepoModel
 from kallithea.model.repo_group import RepoGroupModel
@@ -77,13 +77,13 @@ class Fixture(object):
                 anon = User.get_default_user()
                 self._before = anon.active
                 anon.active = status
-                Session().commit()
+                meta.Session().commit()
                 invalidate_all_caches()
 
             def __exit__(self, exc_type, exc_val, exc_tb):
                 anon = User.get_default_user()
                 anon.active = self._before
-                Session().commit()
+                meta.Session().commit()
 
         return context()
 
@@ -165,7 +165,7 @@ class Fixture(object):
         form_data['repo_group'] = repo_group # patch form dict so it can be used directly by model
         cur_user = kwargs.get('cur_user', TEST_USER_ADMIN_LOGIN)
         RepoModel().create(form_data, cur_user)
-        Session().commit()
+        meta.Session().commit()
         ScmModel().mark_for_invalidation(name)
         return Repository.get_by_repo_name(name)
 
@@ -183,7 +183,7 @@ class Fixture(object):
 
         owner = kwargs.get('cur_user', TEST_USER_ADMIN_LOGIN)
         RepoModel().create_fork(form_data, cur_user=owner)
-        Session().commit()
+        meta.Session().commit()
         ScmModel().mark_for_invalidation(fork_name)
         r = Repository.get_by_repo_name(fork_name)
         assert r
@@ -191,7 +191,7 @@ class Fixture(object):
 
     def destroy_repo(self, repo_name, **kwargs):
         RepoModel().delete(repo_name, **kwargs)
-        Session().commit()
+        meta.Session().commit()
 
     def create_repo_group(self, name, parent_group_id=None, **kwargs):
         assert '/' not in name, (name, kwargs) # use group_parent_id to make nested groups
@@ -207,13 +207,13 @@ class Fixture(object):
             parent=parent_group_id,
             owner=kwargs.get('cur_user', TEST_USER_ADMIN_LOGIN),
             )
-        Session().commit()
+        meta.Session().commit()
         gr = RepoGroup.get_by_group_name(gr.group_name)
         return gr
 
     def destroy_repo_group(self, repogroupid):
         RepoGroupModel().delete(repogroupid)
-        Session().commit()
+        meta.Session().commit()
 
     def create_user(self, name, **kwargs):
         if 'skip_if_exists' in kwargs:
@@ -223,13 +223,13 @@ class Fixture(object):
                 return user
         form_data = self._get_user_create_params(name, **kwargs)
         user = UserModel().create(form_data)
-        Session().commit()
+        meta.Session().commit()
         user = User.get_by_username(user.username)
         return user
 
     def destroy_user(self, userid):
         UserModel().delete(userid)
-        Session().commit()
+        meta.Session().commit()
 
     def create_user_group(self, name, **kwargs):
         if 'skip_if_exists' in kwargs:
@@ -244,13 +244,13 @@ class Fixture(object):
             description=form_data['user_group_description'],
             owner=owner, active=form_data['users_group_active'],
             group_data=form_data['user_group_data'])
-        Session().commit()
+        meta.Session().commit()
         user_group = UserGroup.get_by_group_name(user_group.users_group_name)
         return user_group
 
     def destroy_user_group(self, usergroupid):
         UserGroupModel().delete(user_group=usergroupid, force=True)
-        Session().commit()
+        meta.Session().commit()
 
     def create_gist(self, **kwargs):
         form_data = {
@@ -266,7 +266,7 @@ class Fixture(object):
             gist_mapping=form_data['gist_mapping'], gist_type=form_data['gist_type'],
             lifetime=form_data['lifetime']
         )
-        Session().commit()
+        meta.Session().commit()
 
         return gist
 
@@ -277,7 +277,7 @@ class Fixture(object):
                     GistModel().delete(g)
             else:
                 GistModel().delete(g)
-        Session().commit()
+        meta.Session().commit()
 
     def load_resource(self, resource_name, strip=True):
         with open(os.path.join(FIXTURES, resource_name), 'rb') as f:
@@ -327,7 +327,7 @@ class Fixture(object):
     def review_changeset(self, repo, revision, status, author=TEST_USER_ADMIN_LOGIN):
         comment = ChangesetCommentsModel().create("review comment", repo, author, revision=revision, send_email=False)
         csm = ChangesetStatusModel().set_status(repo, ChangesetStatus.STATUS_APPROVED, author, comment, revision=revision)
-        Session().commit()
+        meta.Session().commit()
         return csm
 
     def create_pullrequest(self, testcontroller, repo_name, pr_src_rev, pr_dst_rev, title='title'):
@@ -342,7 +342,7 @@ class Fixture(object):
             with mock.patch.object(helpers, 'url', (lambda arg, qualified=False, **kwargs: ('https://localhost' if qualified else '') + '/fake/' + arg)):
                 cmd = CreatePullRequestAction(org_repo, other_repo, org_ref, other_ref, title, 'No description', owner_user, reviewers)
                 pull_request = cmd.execute()
-            Session().commit()
+            meta.Session().commit()
         return pull_request.pull_request_id
 
 
@@ -381,7 +381,7 @@ def create_test_env(repos_test_path, config, reuse_database):
     dbmanage.create_user(TEST_USER_REGULAR2_LOGIN, TEST_USER_REGULAR2_PASS, TEST_USER_REGULAR2_EMAIL, False)
     dbmanage.create_permissions()
     dbmanage.populate_default_permissions()
-    Session().commit()
+    meta.Session().commit()
     # PART TWO make test repo
     log.debug('making test vcs repositories')
 

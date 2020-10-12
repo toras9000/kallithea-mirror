@@ -41,9 +41,9 @@ from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel, Ha
 from kallithea.lib.base import BaseController, render
 from kallithea.lib.utils2 import safe_int
 from kallithea.lib.webutils import url
+from kallithea.model import meta
 from kallithea.model.db import RepoGroup, Repository
 from kallithea.model.forms import RepoGroupForm, RepoGroupPermsForm
-from kallithea.model.meta import Session
 from kallithea.model.repo import RepoModel
 from kallithea.model.repo_group import RepoGroupModel
 from kallithea.model.scm import AvailableRepoGroupChoices, RepoGroupList
@@ -150,7 +150,7 @@ class RepoGroupsController(BaseController):
                 owner=request.authuser.user_id, # TODO: make editable
                 copy_permissions=form_result['group_copy_permissions']
             )
-            Session().commit()
+            meta.Session().commit()
             # TODO: in future action_logger(, '', '', '')
         except formencode.Invalid as errors:
             return htmlfill.render(
@@ -215,7 +215,7 @@ class RepoGroupsController(BaseController):
             form_result = repo_group_form.to_python(dict(request.POST))
 
             new_gr = RepoGroupModel().update(group_name, form_result)
-            Session().commit()
+            meta.Session().commit()
             h.flash(_('Updated repository group %s')
                     % form_result['group_name'], category='success')
             # we now have new name !
@@ -254,7 +254,7 @@ class RepoGroupsController(BaseController):
 
         try:
             RepoGroupModel().delete(group_name)
-            Session().commit()
+            meta.Session().commit()
             h.flash(_('Removed repository group %s') % group_name,
                     category='success')
             # TODO: in future action_logger(, '', '', '')
@@ -358,7 +358,7 @@ class RepoGroupsController(BaseController):
         # TODO: implement this
         #action_logger(request.authuser, 'admin_changed_repo_permissions',
         #              repo_name, request.ip_addr)
-        Session().commit()
+        meta.Session().commit()
         h.flash(_('Repository group permissions updated'), category='success')
         raise HTTPFound(location=url('edit_repo_group_perms', group_name=group_name))
 
@@ -388,7 +388,7 @@ class RepoGroupsController(BaseController):
                                                    obj_type='user_group',
                                                    recursive=recursive)
 
-            Session().commit()
+            meta.Session().commit()
         except Exception:
             log.error(traceback.format_exc())
             h.flash(_('An error occurred during revoking of permission'),

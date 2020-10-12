@@ -1,7 +1,7 @@
 import pytest
 
+from kallithea.model import meta
 from kallithea.model.db import Permission, User, UserEmailMap, UserGroup, UserGroupMember
-from kallithea.model.meta import Session
 from kallithea.model.user import UserModel
 from kallithea.model.user_group import UserGroupModel
 from kallithea.tests import base
@@ -15,17 +15,17 @@ class TestUser(base.TestController):
 
     @classmethod
     def setup_class(cls):
-        Session.remove()
+        meta.Session.remove()
 
     def teardown_method(self, method):
-        Session.remove()
+        meta.Session.remove()
 
     def test_create_and_remove(self):
         usr = UserModel().create_or_update(username='test_user',
                                            password='qweqwe',
                                            email='u232@example.com',
                                            firstname='u1', lastname='u1')
-        Session().commit()
+        meta.Session().commit()
         assert User.get_by_username('test_user') == usr
         assert User.get_by_username('test_USER', case_insensitive=True) == usr
         # User.get_by_username without explicit request for case insensitivty
@@ -36,15 +36,15 @@ class TestUser(base.TestController):
 
         # make user group
         user_group = fixture.create_user_group('some_example_group')
-        Session().commit()
+        meta.Session().commit()
 
         UserGroupModel().add_user_to_group(user_group, usr)
-        Session().commit()
+        meta.Session().commit()
 
         assert UserGroup.get(user_group.users_group_id) == user_group
         assert UserGroupMember.query().count() == 1
         UserModel().delete(usr.user_id)
-        Session().commit()
+        meta.Session().commit()
 
         assert UserGroupMember.query().all() == []
 
@@ -53,30 +53,30 @@ class TestUser(base.TestController):
                                            password='qweqwe',
                                      email='main_email@example.com',
                                      firstname='u1', lastname='u1')
-        Session().commit()
+        meta.Session().commit()
 
         with pytest.raises(AttributeError):
             m = UserEmailMap()
             m.email = 'main_email@example.com'
             m.user = usr
-            Session().add(m)
-            Session().commit()
+            meta.Session().add(m)
+            meta.Session().commit()
 
         UserModel().delete(usr.user_id)
-        Session().commit()
+        meta.Session().commit()
 
     def test_extra_email_map(self):
         usr = UserModel().create_or_update(username='test_user',
                                            password='qweqwe',
                                      email='main_email@example.com',
                                      firstname='u1', lastname='u1')
-        Session().commit()
+        meta.Session().commit()
 
         m = UserEmailMap()
         m.email = 'main_email2@example.com'
         m.user = usr
-        Session().add(m)
-        Session().commit()
+        meta.Session().add(m)
+        meta.Session().commit()
 
         u = User.get_by_email(email='MAIN_email@example.com')
         assert usr.user_id == u.user_id
@@ -98,7 +98,7 @@ class TestUser(base.TestController):
         assert u is None
 
         UserModel().delete(usr.user_id)
-        Session().commit()
+        meta.Session().commit()
 
 
 class TestUsers(base.TestController):
@@ -115,13 +115,13 @@ class TestUsers(base.TestController):
             UserModel().revoke_perm(self.u1, p)
 
         UserModel().delete(self.u1)
-        Session().commit()
-        Session.remove()
+        meta.Session().commit()
+        meta.Session.remove()
 
     def test_add_perm(self):
         perm = Permission.query().all()[0]
         UserModel().grant_perm(self.u1, perm)
-        Session().commit()
+        meta.Session().commit()
         assert UserModel().has_perm(self.u1, perm) == True
 
     def test_has_perm(self):
@@ -133,10 +133,10 @@ class TestUsers(base.TestController):
     def test_revoke_perm(self):
         perm = Permission.query().all()[0]
         UserModel().grant_perm(self.u1, perm)
-        Session().commit()
+        meta.Session().commit()
         assert UserModel().has_perm(self.u1, perm) == True
 
         # revoke
         UserModel().revoke_perm(self.u1, perm)
-        Session().commit()
+        meta.Session().commit()
         assert UserModel().has_perm(self.u1, perm) == False

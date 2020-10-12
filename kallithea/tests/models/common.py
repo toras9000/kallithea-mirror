@@ -1,6 +1,6 @@
 from kallithea.lib.auth import AuthUser
+from kallithea.model import meta
 from kallithea.model.db import RepoGroup, Repository, User
-from kallithea.model.meta import Session
 from kallithea.model.repo import RepoModel
 from kallithea.model.repo_group import RepoGroupModel
 from kallithea.model.user import UserModel
@@ -11,7 +11,7 @@ fixture = Fixture()
 
 
 def _destroy_project_tree(test_u1_id):
-    Session.remove()
+    meta.Session.remove()
     repo_group = RepoGroup.get_by_group_name(group_name='g0')
     for el in reversed(repo_group.recursive_groups_and_repos()):
         if isinstance(el, Repository):
@@ -20,8 +20,8 @@ def _destroy_project_tree(test_u1_id):
             RepoGroupModel().delete(el, force_delete=True)
 
     u = User.get(test_u1_id)
-    Session().delete(u)
-    Session().commit()
+    meta.Session().delete(u)
+    meta.Session().commit()
 
 
 def _create_project_tree():

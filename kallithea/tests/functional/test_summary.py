@@ -14,8 +14,8 @@
 
 import pytest
 
+from kallithea.model import meta
 from kallithea.model.db import Repository
-from kallithea.model.meta import Session
 from kallithea.model.repo import RepoModel
 from kallithea.model.scm import ScmModel
 from kallithea.tests import base
@@ -120,7 +120,7 @@ class TestSummaryController(base.TestController):
             response.mustcontain("repo_1")
         finally:
             RepoModel().delete(Repository.get_by_repo_name('repo_1'))
-            Session().commit()
+            meta.Session().commit()
 
     def test_index_by_id_git(self):
         self.log_user()
@@ -141,7 +141,7 @@ class TestSummaryController(base.TestController):
     def _enable_stats(self, repo):
         r = Repository.get_by_repo_name(repo)
         r.enable_statistics = True
-        Session().commit()
+        meta.Session().commit()
 
     def test_index_trending(self):
         self.log_user()

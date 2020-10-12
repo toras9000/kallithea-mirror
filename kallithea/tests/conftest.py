@@ -15,8 +15,8 @@ import kallithea.tests.base  # FIXME: needed for setting testapp instance!!!
 from kallithea.controllers.root import RootController
 from kallithea.lib import inifile
 from kallithea.lib.utils import repo2db_mapper
+from kallithea.model import meta
 from kallithea.model.db import Setting, User, UserIpMap
-from kallithea.model.meta import Session
 from kallithea.model.scm import ScmModel
 from kallithea.model.user import UserModel
 from kallithea.tests.base import TEST_USER_ADMIN_LOGIN, TEST_USER_ADMIN_PASS, TEST_USER_REGULAR_LOGIN, TESTS_TMP_PATH, invalidate_all_caches
@@ -104,11 +104,11 @@ def create_test_user():
     yield _create_test_user
     for user_id in test_user_ids:
         UserModel().delete(user_id)
-    Session().commit()
+    meta.Session().commit()
 
 
 def _set_settings(*kvtseq):
-    session = Session()
+    session = meta.Session()
     for kvt in kvtseq:
         assert len(kvt) in (2, 3)
         k = kvt[0]
@@ -127,7 +127,7 @@ def set_test_settings():
         for s in Setting.query().all()]
     yield _set_settings
     # Restore settings.
-    session = Session()
+    session = meta.Session()
     keys = frozenset(k for (k, v, t) in settings_snapshot)
     for s in Setting.query().all():
         if s.app_settings_name not in keys:
@@ -158,7 +158,7 @@ def auto_clear_ip_permissions():
 
     # IP permissions are cached, need to invalidate this cache explicitly
     invalidate_all_caches()
-    session = Session()
+    session = meta.Session()
     session.commit()
 
 

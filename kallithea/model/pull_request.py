@@ -36,8 +36,8 @@ from kallithea.lib import helpers as h
 from kallithea.lib.hooks import log_create_pullrequest
 from kallithea.lib.utils import extract_mentioned_users
 from kallithea.lib.utils2 import ascii_bytes
+from kallithea.model import meta
 from kallithea.model.db import ChangesetStatus, PullRequest, PullRequestReviewer, User
-from kallithea.model.meta import Session
 from kallithea.model.notification import NotificationModel
 
 
@@ -74,7 +74,7 @@ class PullRequestModel(object):
         log.debug('Adding reviewers to pull request %s: %s', pr.pull_request_id, reviewers)
         for reviewer in reviewers:
             prr = PullRequestReviewer(reviewer, pr)
-            Session().add(prr)
+            meta.Session().add(prr)
 
         # notification to reviewers
         pr_url = pr.url(canonical=True)
@@ -150,7 +150,7 @@ class PullRequestModel(object):
 
     def delete(self, pull_request):
         pull_request = PullRequest.guess_instance(pull_request)
-        Session().delete(pull_request)
+        meta.Session().delete(pull_request)
         if pull_request.org_repo.scm_instance.alias == 'git':
             # remove a ref under refs/pull/ so that commits can be garbage-collected
             try:
@@ -265,8 +265,8 @@ class CreatePullRequestAction(object):
         pr.title = self.title
         pr.description = self.description
         pr.owner = self.owner
-        Session().add(pr)
-        Session().flush() # make database assign pull_request_id
+        meta.Session().add(pr)
+        meta.Session().flush() # make database assign pull_request_id
 
         if self.org_repo.scm_instance.alias == 'git':
             # create a ref under refs/pull/ so that commits don't get garbage-collected

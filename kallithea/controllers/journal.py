@@ -43,8 +43,8 @@ from kallithea.lib.auth import LoginRequired
 from kallithea.lib.base import BaseController, render
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import AttributeDict, safe_int
+from kallithea.model import meta
 from kallithea.model.db import Repository, User, UserFollowing, UserLog
-from kallithea.model.meta import Session
 from kallithea.model.repo import RepoModel
 
 
@@ -215,7 +215,7 @@ class JournalController(BaseController):
             try:
                 self.scm_model.toggle_following_user(user_id,
                                             request.authuser.user_id)
-                Session().commit()
+                meta.Session().commit()
                 return 'ok'
             except Exception:
                 log.error(traceback.format_exc())
@@ -226,7 +226,7 @@ class JournalController(BaseController):
             try:
                 self.scm_model.toggle_following_repo(repo_id,
                                             request.authuser.user_id)
-                Session().commit()
+                meta.Session().commit()
                 return 'ok'
             except Exception:
                 log.error(traceback.format_exc())

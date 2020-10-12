@@ -31,8 +31,8 @@ from tg.i18n import ugettext as _
 from kallithea.lib import ssh
 from kallithea.lib.utils2 import asbool
 from kallithea.lib.vcs.exceptions import RepositoryError
+from kallithea.model import meta
 from kallithea.model.db import User, UserSshKeys
-from kallithea.model.meta import Session
 
 
 log = logging.getLogger(__name__)
@@ -69,7 +69,7 @@ class SshKeyModel(object):
             raise SshKeyModelException(_('SSH key %s is already used by %s') %
                                        (new_ssh_key.fingerprint, ssh_key.user.username))
 
-        Session().add(new_ssh_key)
+        meta.Session().add(new_ssh_key)
 
         return new_ssh_key
 
@@ -86,7 +86,7 @@ class SshKeyModel(object):
         ssh_key = ssh_key.scalar()
         if ssh_key is None:
             raise SshKeyModelException(_('SSH key with fingerprint %r found') % fingerprint)
-        Session().delete(ssh_key)
+        meta.Session().delete(ssh_key)
 
     def get_ssh_keys(self, user):
         user = User.guess_instance(user)

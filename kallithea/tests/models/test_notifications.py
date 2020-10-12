@@ -7,8 +7,8 @@ from tg.util.webtest import test_context
 import kallithea.lib.celerylib
 import kallithea.lib.celerylib.tasks
 from kallithea.lib import helpers as h
+from kallithea.model import meta
 from kallithea.model.db import User
-from kallithea.model.meta import Session
 from kallithea.model.notification import EmailNotificationModel, NotificationModel
 from kallithea.model.user import UserModel
 from kallithea.tests import base
@@ -17,26 +17,26 @@ from kallithea.tests import base
 class TestNotifications(base.TestController):
 
     def setup_method(self, method):
-        Session.remove()
+        meta.Session.remove()
         u1 = UserModel().create_or_update(username='u1',
                                         password='qweqwe',
                                         email='u1@example.com',
                                         firstname='u1', lastname='u1')
-        Session().commit()
+        meta.Session().commit()
         self.u1 = u1.user_id
 
         u2 = UserModel().create_or_update(username='u2',
                                         password='qweqwe',
                                         email='u2@example.com',
                                         firstname='u2', lastname='u3')
-        Session().commit()
+        meta.Session().commit()
         self.u2 = u2.user_id
 
         u3 = UserModel().create_or_update(username='u3',
                                         password='qweqwe',
                                         email='u3@example.com',
                                         firstname='u3', lastname='u3')
-        Session().commit()
+        meta.Session().commit()
         self.u3 = u3.user_id
 
     def test_create_notification(self):

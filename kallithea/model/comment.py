@@ -32,8 +32,8 @@ from tg.i18n import ugettext as _
 
 from kallithea.lib import helpers as h
 from kallithea.lib.utils import extract_mentioned_users
+from kallithea.model import meta
 from kallithea.model.db import ChangesetComment, PullRequest, Repository, User
-from kallithea.model.meta import Session
 from kallithea.model.notification import NotificationModel
 
 
@@ -41,13 +41,13 @@ log = logging.getLogger(__name__)
 
 
 def _list_changeset_commenters(revision):
-    return (Session().query(User)
+    return (meta.Session().query(User)
         .join(ChangesetComment.author)
         .filter(ChangesetComment.revision == revision)
         .all())
 
 def _list_pull_request_commenters(pull_request):
-    return (Session().query(User)
+    return (meta.Session().query(User)
         .join(ChangesetComment.author)
         .filter(ChangesetComment.pull_request_id == pull_request.pull_request_id)
         .all())
@@ -193,8 +193,8 @@ class ChangesetCommentsModel(object):
         else:
             raise Exception('Please specify revision or pull_request_id')
 
-        Session().add(comment)
-        Session().flush()
+        meta.Session().add(comment)
+        meta.Session().flush()
 
         if send_email:
             (subj, body, recipients, notification_type,
@@ -230,7 +230,7 @@ class ChangesetCommentsModel(object):
 
     def delete(self, comment):
         comment = ChangesetComment.guess_instance(comment)
-        Session().delete(comment)
+        meta.Session().delete(comment)
 
         return comment
 
@@ -270,7 +270,7 @@ class ChangesetCommentsModel(object):
         if inline is None and f_path is not None:
             raise Exception("f_path only makes sense for inline comments.")
 
-        q = Session().query(ChangesetComment)
+        q = meta.Session().query(ChangesetComment)
 
         if inline:
             if f_path is not None:

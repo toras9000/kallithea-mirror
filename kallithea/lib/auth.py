@@ -44,9 +44,9 @@ from kallithea.lib.utils import get_repo_group_slug, get_repo_slug, get_user_gro
 from kallithea.lib.utils2 import ascii_bytes, ascii_str, safe_bytes
 from kallithea.lib.vcs.utils.lazy import LazyProperty
 from kallithea.lib.webutils import url
+from kallithea.model import meta
 from kallithea.model.db import (Permission, UserApiKeys, UserGroup, UserGroupMember, UserGroupRepoGroupToPerm, UserGroupRepoToPerm, UserGroupToPerm,
                                 UserGroupUserGroupToPerm, UserIpMap, UserToPerm)
-from kallithea.model.meta import Session
 from kallithea.model.user import UserModel
 
 
@@ -232,7 +232,7 @@ class AuthUser(object):
             global_permissions.add(perm.permission.permission_name)
 
         # user group global permissions
-        user_perms_from_users_groups = Session().query(UserGroupToPerm) \
+        user_perms_from_users_groups = meta.Session().query(UserGroupToPerm) \
             .options(joinedload(UserGroupToPerm.permission)) \
             .join((UserGroupMember, UserGroupToPerm.users_group_id ==
                    UserGroupMember.users_group_id)) \
@@ -252,7 +252,7 @@ class AuthUser(object):
                 global_permissions.add(perm.permission.permission_name)
 
         # user specific global permissions
-        user_perms = Session().query(UserToPerm) \
+        user_perms = meta.Session().query(UserToPerm) \
                 .options(joinedload(UserToPerm.permission)) \
                 .filter(UserToPerm.user_id == self.user_id).all()
         for perm in user_perms:
@@ -291,7 +291,7 @@ class AuthUser(object):
 
             # user group repository permissions
             user_repo_perms_from_users_groups = \
-             Session().query(UserGroupRepoToPerm) \
+             meta.Session().query(UserGroupRepoToPerm) \
                 .join((UserGroup, UserGroupRepoToPerm.users_group_id ==
                        UserGroup.users_group_id)) \
                 .filter(UserGroup.users_group_active == True) \
@@ -337,7 +337,7 @@ class AuthUser(object):
 
             # user group for repo groups permissions
             user_repo_group_perms_from_users_groups = \
-                Session().query(UserGroupRepoGroupToPerm) \
+                meta.Session().query(UserGroupRepoGroupToPerm) \
                 .join((UserGroup, UserGroupRepoGroupToPerm.users_group_id ==
                        UserGroup.users_group_id)) \
                 .filter(UserGroup.users_group_active == True) \
@@ -382,7 +382,7 @@ class AuthUser(object):
 
             # user group for user group permissions
             user_group_user_groups_perms = \
-                Session().query(UserGroupUserGroupToPerm) \
+                meta.Session().query(UserGroupUserGroupToPerm) \
                 .join((UserGroup, UserGroupUserGroupToPerm.target_user_group_id
                        == UserGroup.users_group_id)) \
                 .join((UserGroupMember, UserGroupUserGroupToPerm.user_group_id

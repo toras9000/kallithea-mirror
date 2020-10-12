@@ -43,9 +43,9 @@ from kallithea.lib.utils import repo2db_mapper, set_app_settings
 from kallithea.lib.utils2 import safe_str
 from kallithea.lib.vcs import VCSError
 from kallithea.lib.webutils import url
+from kallithea.model import meta
 from kallithea.model.db import Repository, Setting, Ui
 from kallithea.model.forms import ApplicationSettingsForm, ApplicationUiSettingsForm, ApplicationVisualisationForm
-from kallithea.model.meta import Session
 from kallithea.model.notification import EmailNotificationModel
 from kallithea.model.scm import ScmModel
 
@@ -112,7 +112,7 @@ class SettingsController(BaseController):
 #                sett = Ui.get_or_create('extensions', 'hggit')
 #                sett.ui_active = form_result['extensions_hggit']
 
-                Session().commit()
+                meta.Session().commit()
 
                 h.flash(_('Updated VCS settings'), category='success')
 
@@ -204,7 +204,7 @@ class SettingsController(BaseController):
                 ):
                     Setting.create_or_update(setting, form_result[setting])
 
-                Session().commit()
+                meta.Session().commit()
                 set_app_settings(config)
                 h.flash(_('Updated application settings'), category='success')
 
@@ -258,7 +258,7 @@ class SettingsController(BaseController):
                 for setting, form_key, type_ in settings:
                     Setting.create_or_update(setting, form_result[form_key], type_)
 
-                Session().commit()
+                meta.Session().commit()
                 set_app_settings(config)
                 h.flash(_('Updated visualisation settings'),
                         category='success')
@@ -340,7 +340,7 @@ class SettingsController(BaseController):
                         h.flash(_('Added new hook'), category='success')
                     elif hook_id:
                         Ui.delete(hook_id)
-                        Session().commit()
+                        meta.Session().commit()
 
                     # check for edits
                     update = False
@@ -354,7 +354,7 @@ class SettingsController(BaseController):
 
                     if update:
                         h.flash(_('Updated hooks'), category='success')
-                    Session().commit()
+                    meta.Session().commit()
                 except Exception:
                     log.error(traceback.format_exc())
                     h.flash(_('Error occurred during hook creation'),

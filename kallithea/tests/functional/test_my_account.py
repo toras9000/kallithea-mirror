@@ -3,8 +3,8 @@
 from tg.util.webtest import test_context
 
 from kallithea.lib import helpers as h
+from kallithea.model import meta
 from kallithea.model.db import Repository, User, UserApiKeys, UserFollowing, UserSshKeys
-from kallithea.model.meta import Session
 from kallithea.model.user import UserModel
 from kallithea.tests import base
 from kallithea.tests.fixture import Fixture
@@ -20,7 +20,7 @@ class TestMyAccountController(base.TestController):
     def teardown_class(cls):
         if User.get_by_username(cls.test_user_1):
             UserModel().delete(cls.test_user_1)
-            Session().commit()
+            meta.Session().commit()
 
     def test_my_account(self):
         self.log_user()
@@ -216,8 +216,8 @@ class TestMyAccountController(base.TestController):
                 response.mustcontain(api_key)
         finally:
             for api_key in UserApiKeys.query().all():
-                Session().delete(api_key)
-                Session().commit()
+                meta.Session().delete(api_key)
+                meta.Session().commit()
 
     def test_my_account_remove_api_key(self):
         usr = self.log_user(base.TEST_USER_REGULAR2_LOGIN, base.TEST_USER_REGULAR2_PASS)
@@ -269,8 +269,8 @@ class TestMyAccountController(base.TestController):
         ssh_key = UserSshKeys.query().filter(UserSshKeys.user_id == user_id).one()
         assert ssh_key.fingerprint == fingerprint
         assert ssh_key.description == description
-        Session().delete(ssh_key)
-        Session().commit()
+        meta.Session().delete(ssh_key)
+        meta.Session().commit()
 
     def test_my_account_remove_ssh_key(self):
         description = ''

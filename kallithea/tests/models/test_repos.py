@@ -1,8 +1,8 @@
 import pytest
 
 from kallithea.lib.exceptions import AttachedForksError
+from kallithea.model import meta
 from kallithea.model.db import Repository
-from kallithea.model.meta import Session
 from kallithea.model.repo import RepoModel
 from kallithea.tests import base
 from kallithea.tests.fixture import Fixture
@@ -14,44 +14,44 @@ fixture = Fixture()
 class TestRepos(base.TestController):
 
     def teardown_method(self, method):
-        Session.remove()
+        meta.Session.remove()
 
     def test_remove_repo(self):
         repo = fixture.create_repo(name='test-repo-1')
-        Session().commit()
+        meta.Session().commit()
 
         RepoModel().delete(repo=repo)
-        Session().commit()
+        meta.Session().commit()
 
         assert Repository.get_by_repo_name(repo_name='test-repo-1') is None
 
     def test_remove_repo_repo_raises_exc_when_attached_forks(self):
         repo = fixture.create_repo(name='test-repo-1')
-        Session().commit()
+        meta.Session().commit()
 
         fixture.create_fork(repo.repo_name, 'test-repo-fork-1')
-        Session().commit()
+        meta.Session().commit()
 
         with pytest.raises(AttachedForksError):
             RepoModel().delete(repo=repo)
         # cleanup
         RepoModel().delete(repo='test-repo-fork-1')
         RepoModel().delete(repo='test-repo-1')
-        Session().commit()
+        meta.Session().commit()
 
     def test_remove_repo_delete_forks(self):
         repo = fixture.create_repo(name='test-repo-1')
-        Session().commit()
+        meta.Session().commit()
 
         fork = fixture.create_fork(repo.repo_name, 'test-repo-fork-1')
-        Session().commit()
+        meta.Session().commit()
 
         # fork of fork
         fixture.create_fork(fork.repo_name, 'test-repo-fork-fork-1')
-        Session().commit()
+        meta.Session().commit()
 
         RepoModel().delete(repo=repo, forks='delete')
-        Session().commit()
+        meta.Session().commit()
 
         assert Repository.get_by_repo_name(repo_name='test-repo-1') is None
         assert Repository.get_by_repo_name(repo_name='test-repo-fork-1') is None
@@ -59,17 +59,17 @@ class TestRepos(base.TestController):
 
     def test_remove_repo_detach_forks(self):
         repo = fixture.create_repo(name='test-repo-1')
-        Session().commit()
+        meta.Session().commit()
 
         fork = fixture.create_fork(repo.repo_name, 'test-repo-fork-1')
-        Session().commit()
+        meta.Session().commit()
 
         # fork of fork
         fixture.create_fork(fork.repo_name, 'test-repo-fork-fork-1')
-        Session().commit()
+        meta.Session().commit()
 
         RepoModel().delete(repo=repo, forks='detach')
-        Session().commit()
+        meta.Session().commit()
 
         try:
             assert Repository.get_by_repo_name(repo_name='test-repo-1') is None
@@ -78,4 +78,4 @@ class TestRepos(base.TestController):
         finally:
             RepoModel().delete(repo='test-repo-fork-fork-1')
             RepoModel().delete(repo='test-repo-fork-1')
-            Session().commit()
+            meta.Session().commit()

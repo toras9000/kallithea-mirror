@@ -1,8 +1,8 @@
 import functools
 
 import kallithea
+from kallithea.model import meta
 from kallithea.model.db import RepoGroup, Repository
-from kallithea.model.meta import Session
 from kallithea.model.repo_group import RepoGroupModel
 from kallithea.tests.models.common import _check_expected_count, _create_project_tree, _destroy_project_tree, _get_perms, check_tree_perms, expected_count
 
@@ -36,13 +36,13 @@ def permissions_setup_func(group_name='g0', perm='group.read', recursive='all',
     RepoGroupModel()._update_permissions(repo_group,
                                          perms_updates=perms_updates,
                                          recursive=recursive, check_perms=False)
-    Session().commit()
+    meta.Session().commit()
 
 
 def setup_module():
     global test_u1_id, _get_repo_perms, _get_group_perms
     test_u1 = _create_project_tree()
-    Session().commit()
+    meta.Session().commit()
     test_u1_id = test_u1.user_id
     _get_repo_perms = functools.partial(_get_perms, key='repositories',
                                         test_u1_id=test_u1_id)

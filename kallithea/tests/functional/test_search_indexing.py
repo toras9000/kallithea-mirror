@@ -2,7 +2,7 @@ import mock
 
 import kallithea
 from kallithea.lib.conf import INDEX_FILENAMES
-from kallithea.model.meta import Session
+from kallithea.model import meta
 from kallithea.model.repo import RepoModel
 from kallithea.model.repo_group import RepoGroupModel
 from kallithea.tests import base
@@ -103,8 +103,8 @@ class TestSearchControllerIndexing(base.TestController):
                 RepoGroupModel().delete(groupids.pop(groupname),
                                         force_delete=True)
 
-        Session().commit()
-        Session.remove()
+        meta.Session().commit()
+        meta.Session.remove()
 
         rebuild_index(full_index=True) # rebuild fully for subsequent tests
 

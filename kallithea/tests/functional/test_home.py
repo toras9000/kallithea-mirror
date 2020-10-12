@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 
-from kallithea.model.meta import Session
+from kallithea.model import meta
 from kallithea.model.repo import RepoModel
 from kallithea.model.repo_group import RepoGroupModel
 from kallithea.tests import base
@@ -62,7 +62,7 @@ class TestHomeController(base.TestController):
         finally:
             RepoModel().delete('gr1/repo_in_group')
             RepoGroupModel().delete(repo_group='gr1', force_delete=True)
-            Session().commit()
+            meta.Session().commit()
 
     def test_users_and_groups_data(self):
         fixture.create_user('evil', firstname='D\'o\'ct"o"r', lastname='Évíl')

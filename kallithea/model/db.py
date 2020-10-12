@@ -50,7 +50,7 @@ from kallithea.lib.utils2 import asbool, ascii_bytes, aslist, get_changeset_safe
 from kallithea.lib.vcs import get_backend
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.utils.helpers import get_scm
-from kallithea.model.meta import Base, Session
+from kallithea.model import meta
 
 
 log = logging.getLogger(__name__)
@@ -107,7 +107,7 @@ class BaseDbModel(object):
 
     @classmethod
     def query(cls):
-        return Session().query(cls)
+        return meta.Session().query(cls)
 
     @classmethod
     def get(cls, id_):
@@ -157,7 +157,7 @@ class BaseDbModel(object):
     @classmethod
     def delete(cls, id_):
         obj = cls.query().get(id_)
-        Session().delete(obj)
+        meta.Session().delete(obj)
 
     def __repr__(self):
         return '<DB:%s>' % (self.__class__.__name__)
@@ -168,7 +168,7 @@ _table_args_default_dict = {'extend_existing': True,
                             'sqlite_autoincrement': True,
                            }
 
-class Setting(Base, BaseDbModel):
+class Setting(meta.Base, BaseDbModel):
     __tablename__ = 'settings'
     __table_args__ = (
         _table_args_default_dict,
@@ -257,7 +257,7 @@ class Setting(Base, BaseDbModel):
             val = val if val is not None else ''
             type = type if type is not None else 'unicode'
             res = cls(key, val, type)
-            Session().add(res)
+            meta.Session().add(res)
         else:
             if val is not None:
                 # update if set
@@ -321,7 +321,7 @@ class Setting(Base, BaseDbModel):
         return info
 
 
-class Ui(Base, BaseDbModel):
+class Ui(meta.Base, BaseDbModel):
     __tablename__ = 'ui'
     __table_args__ = (
         Index('ui_ui_section_ui_key_idx', 'ui_section', 'ui_key'),
@@ -349,7 +349,7 @@ class Ui(Base, BaseDbModel):
         setting = cls.get_by_key(section, key)
         if setting is None:
             setting = cls(ui_section=section, ui_key=key)
-            Session().add(setting)
+            meta.Session().add(setting)
         return setting
 
     @classmethod
@@ -384,7 +384,7 @@ class Ui(Base, BaseDbModel):
             self.ui_section, self.ui_key, self.ui_value)
 
 
-class User(Base, BaseDbModel):
+class User(meta.Base, BaseDbModel):
     __tablename__ = 'users'
     __table_args__ = (
         Index('u_username_idx', 'username'),
@@ -664,7 +664,7 @@ class User(Base, BaseDbModel):
         return data
 
 
-class UserApiKeys(Base, BaseDbModel):
+class UserApiKeys(meta.Base, BaseDbModel):
     __tablename__ = 'user_api_keys'
     __table_args__ = (
         Index('uak_api_key_idx', 'api_key'),
@@ -686,7 +686,7 @@ class UserApiKeys(Base, BaseDbModel):
         return (self.expires != -1) & (time.time() > self.expires)
 
 
-class UserEmailMap(Base, BaseDbModel):
+class UserEmailMap(meta.Base, BaseDbModel):
     __tablename__ = 'user_email_map'
     __table_args__ = (
         Index('uem_email_idx', 'email'),
@@ -701,7 +701,7 @@ class UserEmailMap(Base, BaseDbModel):
     @validates('_email')
     def validate_email(self, key, email):
         # check if this email is not main one
-        main_email = Session().query(User).filter(User.email == email).scalar()
+        main_email = meta.Session().query(User).filter(User.email == email).scalar()
         if main_email is not None:
             raise AttributeError('email %s is present is user table' % email)
         return email
@@ -715,7 +715,7 @@ class UserEmailMap(Base, BaseDbModel):
         self._email = val.lower() if val else None
 
 
-class UserIpMap(Base, BaseDbModel):
+class UserIpMap(meta.Base, BaseDbModel):
     __tablename__ = 'user_ip_map'
     __table_args__ = (
         UniqueConstraint('user_id', 'ip_addr'),
@@ -743,7 +743,7 @@ class UserIpMap(Base, BaseDbModel):
         return "<%s %s: %s>" % (self.__class__.__name__, self.user_id, self.ip_addr)
 
 
-class UserLog(Base, BaseDbModel):
+class UserLog(meta.Base, BaseDbModel):
     __tablename__ = 'user_logs'
     __table_args__ = (
         _table_args_default_dict,
@@ -771,7 +771,7 @@ class UserLog(Base, BaseDbModel):
     repository = relationship('Repository', cascade='')
 
 
-class UserGroup(Base, BaseDbModel):
+class UserGroup(meta.Base, BaseDbModel):
     __tablename__ = 'users_groups'
     __table_args__ = (
         _table_args_default_dict,
@@ -852,7 +852,7 @@ class UserGroup(Base, BaseDbModel):
         return data
 
 
-class UserGroupMember(Base, BaseDbModel):
+class UserGroupMember(meta.Base, BaseDbModel):
     __tablename__ = 'users_groups_members'
     __table_args__ = (
         _table_args_default_dict,
@@ -870,7 +870,7 @@ class UserGroupMember(Base, BaseDbModel):
         self.user_id = u_id
 
 
-class RepositoryField(Base, BaseDbModel):
+class RepositoryField(meta.Base, BaseDbModel):
     __tablename__ = 'repositories_fields'
     __table_args__ = (
         UniqueConstraint('repository_id', 'field_key'),  # no-multi field
@@ -908,7 +908,7 @@ class RepositoryField(Base, BaseDbModel):
         return row
 
 
-class Repository(Base, BaseDbModel):
+class Repository(meta.Base, BaseDbModel):
     __tablename__ = 'repositories'
     __table_args__ = (
         Index('r_repo_name_idx', 'repo_name'),
@@ -1035,9 +1035,9 @@ class Repository(Base, BaseDbModel):
         """Get the repo, defaulting to database case sensitivity.
         case_insensitive will be slower and should only be specified if necessary."""
         if case_insensitive:
-            q = Session().query(cls).filter(sqlalchemy.func.lower(cls.repo_name) == sqlalchemy.func.lower(repo_name))
+            q = meta.Session().query(cls).filter(sqlalchemy.func.lower(cls.repo_name) == sqlalchemy.func.lower(repo_name))
         else:
-            q = Session().query(cls).filter(cls.repo_name == repo_name)
+            q = meta.Session().query(cls).filter(cls.repo_name == repo_name)
         q = q.options(joinedload(Repository.fork)) \
                 .options(joinedload(Repository.owner)) \
                 .options(joinedload(Repository.group))
@@ -1248,7 +1248,7 @@ class Repository(Base, BaseDbModel):
                       self.repo_name, cs_cache)
             self.updated_on = last_change
             self.changeset_cache = cs_cache
-            Session().commit()
+            meta.Session().commit()
         else:
             log.debug('changeset_cache for %s already up to date with %s',
                       self.repo_name, cs_cache['raw_id'])
@@ -1357,7 +1357,7 @@ class Repository(Base, BaseDbModel):
         )
 
 
-class RepoGroup(Base, BaseDbModel):
+class RepoGroup(meta.Base, BaseDbModel):
     __tablename__ = 'groups'
     __table_args__ = (
         _table_args_default_dict,
@@ -1526,7 +1526,7 @@ class RepoGroup(Base, BaseDbModel):
         return data
 
 
-class Permission(Base, BaseDbModel):
+class Permission(meta.Base, BaseDbModel):
     __tablename__ = 'permissions'
     __table_args__ = (
         Index('p_perm_name_idx', 'permission_name'),
@@ -1633,7 +1633,7 @@ class Permission(Base, BaseDbModel):
 
     @classmethod
     def get_default_perms(cls, default_user_id):
-        q = Session().query(UserRepoToPerm) \
+        q = meta.Session().query(UserRepoToPerm) \
          .options(joinedload(UserRepoToPerm.repository)) \
          .options(joinedload(UserRepoToPerm.permission)) \
          .filter(UserRepoToPerm.user_id == default_user_id)
@@ -1642,7 +1642,7 @@ class Permission(Base, BaseDbModel):
 
     @classmethod
     def get_default_group_perms(cls, default_user_id):
-        q = Session().query(UserRepoGroupToPerm) \
+        q = meta.Session().query(UserRepoGroupToPerm) \
          .options(joinedload(UserRepoGroupToPerm.group)) \
          .options(joinedload(UserRepoGroupToPerm.permission)) \
          .filter(UserRepoGroupToPerm.user_id == default_user_id)
@@ -1651,7 +1651,7 @@ class Permission(Base, BaseDbModel):
 
     @classmethod
     def get_default_user_group_perms(cls, default_user_id):
-        q = Session().query(UserUserGroupToPerm) \
+        q = meta.Session().query(UserUserGroupToPerm) \
          .options(joinedload(UserUserGroupToPerm.user_group)) \
          .options(joinedload(UserUserGroupToPerm.permission)) \
          .filter(UserUserGroupToPerm.user_id == default_user_id)
@@ -1659,7 +1659,7 @@ class Permission(Base, BaseDbModel):
         return q.all()
 
 
-class UserRepoToPerm(Base, BaseDbModel):
+class UserRepoToPerm(meta.Base, BaseDbModel):
     __tablename__ = 'repo_to_perm'
     __table_args__ = (
         UniqueConstraint('user_id', 'repository_id', 'permission_id'),
@@ -1681,7 +1681,7 @@ class UserRepoToPerm(Base, BaseDbModel):
         n.user = user
         n.repository = repository
         n.permission = permission
-        Session().add(n)
+        meta.Session().add(n)
         return n
 
     def __repr__(self):
@@ -1689,7 +1689,7 @@ class UserRepoToPerm(Base, BaseDbModel):
             self.__class__.__name__, self.user, self.repository, self.permission)
 
 
-class UserUserGroupToPerm(Base, BaseDbModel):
+class UserUserGroupToPerm(meta.Base, BaseDbModel):
     __tablename__ = 'user_user_group_to_perm'
     __table_args__ = (
         UniqueConstraint('user_id', 'user_group_id', 'permission_id'),
@@ -1711,7 +1711,7 @@ class UserUserGroupToPerm(Base, BaseDbModel):
         n.user = user
         n.user_group = user_group
         n.permission = permission
-        Session().add(n)
+        meta.Session().add(n)
         return n
 
     def __repr__(self):
@@ -1719,7 +1719,7 @@ class UserUserGroupToPerm(Base, BaseDbModel):
             self.__class__.__name__, self.user, self.user_group, self.permission)
 
 
-class UserToPerm(Base, BaseDbModel):
+class UserToPerm(meta.Base, BaseDbModel):
     __tablename__ = 'user_to_perm'
     __table_args__ = (
         UniqueConstraint('user_id', 'permission_id'),
@@ -1738,7 +1738,7 @@ class UserToPerm(Base, BaseDbModel):
             self.__class__.__name__, self.user, self.permission)
 
 
-class UserGroupRepoToPerm(Base, BaseDbModel):
+class UserGroupRepoToPerm(meta.Base, BaseDbModel):
     __tablename__ = 'users_group_repo_to_perm'
     __table_args__ = (
         UniqueConstraint('repository_id', 'users_group_id', 'permission_id'),
@@ -1760,7 +1760,7 @@ class UserGroupRepoToPerm(Base, BaseDbModel):
         n.users_group = users_group
         n.repository = repository
         n.permission = permission
-        Session().add(n)
+        meta.Session().add(n)
         return n
 
     def __repr__(self):
@@ -1768,7 +1768,7 @@ class UserGroupRepoToPerm(Base, BaseDbModel):
             self.__class__.__name__, self.users_group, self.repository, self.permission)
 
 
-class UserGroupUserGroupToPerm(Base, BaseDbModel):
+class UserGroupUserGroupToPerm(meta.Base, BaseDbModel):
     __tablename__ = 'user_group_user_group_to_perm'
     __table_args__ = (
         UniqueConstraint('target_user_group_id', 'user_group_id', 'permission_id'),
@@ -1790,7 +1790,7 @@ class UserGroupUserGroupToPerm(Base, BaseDbModel):
         n.target_user_group = target_user_group
         n.user_group = user_group
         n.permission = permission
-        Session().add(n)
+        meta.Session().add(n)
         return n
 
     def __repr__(self):
@@ -1798,7 +1798,7 @@ class UserGroupUserGroupToPerm(Base, BaseDbModel):
             self.__class__.__name__, self.user_group, self.target_user_group, self.permission)
 
 
-class UserGroupToPerm(Base, BaseDbModel):
+class UserGroupToPerm(meta.Base, BaseDbModel):
     __tablename__ = 'users_group_to_perm'
     __table_args__ = (
         UniqueConstraint('users_group_id', 'permission_id',),
@@ -1813,7 +1813,7 @@ class UserGroupToPerm(Base, BaseDbModel):
     permission = relationship('Permission')
 
 
-class UserRepoGroupToPerm(Base, BaseDbModel):
+class UserRepoGroupToPerm(meta.Base, BaseDbModel):
     __tablename__ = 'user_repo_group_to_perm'
     __table_args__ = (
         UniqueConstraint('user_id', 'group_id', 'permission_id'),
@@ -1835,11 +1835,11 @@ class UserRepoGroupToPerm(Base, BaseDbModel):
         n.user = user
         n.group = repository_group
         n.permission = permission
-        Session().add(n)
+        meta.Session().add(n)
         return n
 
 
-class UserGroupRepoGroupToPerm(Base, BaseDbModel):
+class UserGroupRepoGroupToPerm(meta.Base, BaseDbModel):
     __tablename__ = 'users_group_repo_group_to_perm'
     __table_args__ = (
         UniqueConstraint('users_group_id', 'group_id'),
@@ -1861,11 +1861,11 @@ class UserGroupRepoGroupToPerm(Base, BaseDbModel):
         n.users_group = user_group
         n.group = repository_group
         n.permission = permission
-        Session().add(n)
+        meta.Session().add(n)
         return n
 
 
-class Statistics(Base, BaseDbModel):
+class Statistics(meta.Base, BaseDbModel):
     __tablename__ = 'statistics'
     __table_args__ = (
          _table_args_default_dict,
@@ -1881,7 +1881,7 @@ class Statistics(Base, BaseDbModel):
     repository = relationship('Repository', single_parent=True)
 
 
-class UserFollowing(Base, BaseDbModel):
+class UserFollowing(meta.Base, BaseDbModel):
     __tablename__ = 'user_followings'
     __table_args__ = (
         UniqueConstraint('user_id', 'follows_repository_id', name='uq_user_followings_user_repo'),
@@ -1905,7 +1905,7 @@ class UserFollowing(Base, BaseDbModel):
         return cls.query().filter(cls.follows_repository_id == repo_id)
 
 
-class ChangesetComment(Base, BaseDbModel):
+class ChangesetComment(meta.Base, BaseDbModel):
     __tablename__ = 'changeset_comments'
     __table_args__ = (
         Index('cc_revision_idx', 'revision'),
@@ -1952,7 +1952,7 @@ class ChangesetComment(Base, BaseDbModel):
         return self.created_on > datetime.datetime.now() - datetime.timedelta(minutes=5)
 
 
-class ChangesetStatus(Base, BaseDbModel):
+class ChangesetStatus(meta.Base, BaseDbModel):
     __tablename__ = 'changeset_statuses'
     __table_args__ = (
         Index('cs_revision_idx', 'revision'),
@@ -2015,7 +2015,7 @@ class ChangesetStatus(Base, BaseDbModel):
             )
 
 
-class PullRequest(Base, BaseDbModel):
+class PullRequest(meta.Base, BaseDbModel):
     __tablename__ = 'pull_requests'
     __table_args__ = (
         Index('pr_org_repo_id_idx', 'org_repo_id'),
@@ -2157,7 +2157,7 @@ class PullRequest(Base, BaseDbModel):
                      pull_request_id=self.pull_request_id, **kwargs)
 
 
-class PullRequestReviewer(Base, BaseDbModel):
+class PullRequestReviewer(meta.Base, BaseDbModel):
     __tablename__ = 'pull_request_reviewers'
     __table_args__ = (
         Index('pull_request_reviewers_user_id_idx', 'user_id'),
@@ -2189,7 +2189,7 @@ class UserNotification(object):
     __tablename__ = 'user_to_notification'
 
 
-class Gist(Base, BaseDbModel):
+class Gist(meta.Base, BaseDbModel):
     __tablename__ = 'gists'
     __table_args__ = (
         Index('g_gist_access_id_idx', 'gist_access_id'),
@@ -2276,7 +2276,7 @@ class Gist(Base, BaseDbModel):
         return get_repo(os.path.join(gist_base_path, self.gist_access_id))
 
 
-class UserSshKeys(Base, BaseDbModel):
+class UserSshKeys(meta.Base, BaseDbModel):
     __tablename__ = 'user_ssh_keys'
     __table_args__ = (
         Index('usk_fingerprint_idx', 'fingerprint'),

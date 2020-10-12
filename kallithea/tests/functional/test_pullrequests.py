@@ -3,8 +3,8 @@ import re
 import pytest
 
 from kallithea.controllers.pullrequests import PullrequestsController
+from kallithea.model import meta
 from kallithea.model.db import PullRequest, User
-from kallithea.model.meta import Session
 from kallithea.tests import base
 from kallithea.tests.fixture import Fixture
 
@@ -256,7 +256,7 @@ class TestPullrequestsController(base.TestController):
         assert pr1.org_ref == 'branch:webvcs:9e6119747791ff886a5abe1193a730b6bf874e1c'
         assert pr1.other_ref == 'branch:default:948da46b29c125838a717f6a8496eb409717078d'
 
-        Session().rollback() # invalidate loaded PR objects before issuing next request.
+        meta.Session().rollback() # invalidate loaded PR objects before issuing next request.
 
         # create PR 2 (new iteration with same ancestor)
         response = self.app.post(
@@ -278,7 +278,7 @@ class TestPullrequestsController(base.TestController):
         assert pr2.org_ref == 'branch:webvcs:5ec21f21aafe95220f1fc4843a4a57c378498b71'
         assert pr2.other_ref == pr1.other_ref
 
-        Session().rollback() # invalidate loaded PR objects before issuing next request.
+        meta.Session().rollback() # invalidate loaded PR objects before issuing next request.
 
         # create PR 3 (new iteration with new ancestor)
         response = self.app.post(
@@ -308,13 +308,13 @@ class TestPullrequestsGetRepoRefs(base.TestController):
         self.repo_name = 'main'
         repo = fixture.create_repo(self.repo_name, repo_type='hg')
         self.repo_scm_instance = repo.scm_instance
-        Session().commit()
+        meta.Session().commit()
         self.c = PullrequestsController()
 
     def teardown_method(self, method):
         fixture.destroy_repo('main')
-        Session().commit()
-        Session.remove()
+        meta.Session().commit()
+        meta.Session.remove()
 
     def test_repo_refs_empty_repo(self):
         # empty repo with no commits, no branches, no bookmarks, just one tag

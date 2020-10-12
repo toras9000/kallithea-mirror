@@ -1,4 +1,4 @@
-from kallithea.model.meta import Session
+from kallithea.model import meta
 from kallithea.model.repo_group import RepoGroupModel
 from kallithea.tests.base import TestController, url
 from kallithea.tests.fixture import Fixture
@@ -23,4 +23,4 @@ class TestRepoGroupsController(TestController):
         response.mustcontain('already exists')
 
         RepoGroupModel().delete(group_name)
-        Session().commit()
+        meta.Session().commit()

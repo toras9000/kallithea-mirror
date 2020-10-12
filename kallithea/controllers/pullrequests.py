@@ -45,11 +45,11 @@ from kallithea.lib.page import Page
 from kallithea.lib.utils2 import ascii_bytes, safe_bytes, safe_int
 from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError, EmptyRepositoryError
 from kallithea.lib.webutils import url
+from kallithea.model import meta
 from kallithea.model.changeset_status import ChangesetStatusModel
 from kallithea.model.comment import ChangesetCommentsModel
 from kallithea.model.db import ChangesetStatus, PullRequest, PullRequestReviewer, Repository, User
 from kallithea.model.forms import PullRequestForm, PullRequestPostForm
-from kallithea.model.meta import Session
 from kallithea.model.pull_request import CreatePullRequestAction, CreatePullRequestIterationAction, PullRequestModel
 
 
@@ -339,7 +339,7 @@ class PullrequestsController(BaseRepoController):
 
         try:
             pull_request = cmd.execute()
-            Session().commit()
+            meta.Session().commit()
         except Exception:
             h.flash(_('Error occurred while creating pull request'),
                     category='error')
@@ -362,7 +362,7 @@ class PullrequestsController(BaseRepoController):
 
         try:
             pull_request = cmd.execute()
-            Session().commit()
+            meta.Session().commit()
         except Exception:
             h.flash(_('Error occurred while creating pull request'),
                     category='error')
@@ -425,7 +425,7 @@ class PullrequestsController(BaseRepoController):
         PullRequestModel().add_reviewers(user, pull_request, added_reviewers)
         PullRequestModel().remove_reviewers(user, pull_request, removed_reviewers)
 
-        Session().commit()
+        meta.Session().commit()
         h.flash(_('Pull request updated'), category='success')
 
         raise HTTPFound(location=pull_request.url())
@@ -438,7 +438,7 @@ class PullrequestsController(BaseRepoController):
         # only owner can delete it !
         if pull_request.owner_id == request.authuser.user_id:
             PullRequestModel().delete(pull_request)
-            Session().commit()
+            meta.Session().commit()
             h.flash(_('Successfully deleted pull request'),
                     category='success')
             raise HTTPFound(location=url('my_pullrequests'))

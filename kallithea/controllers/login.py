@@ -41,9 +41,9 @@ from kallithea.lib.auth import AuthUser, HasPermissionAnyDecorator
 from kallithea.lib.base import BaseController, log_in_user, render
 from kallithea.lib.exceptions import UserCreationError
 from kallithea.lib.webutils import url
+from kallithea.model import meta
 from kallithea.model.db import Setting, User
 from kallithea.model.forms import LoginForm, PasswordResetConfirmationForm, PasswordResetRequestForm, RegisterForm
-from kallithea.model.meta import Session
 from kallithea.model.user import UserModel
 
 
@@ -147,7 +147,7 @@ class LoginController(BaseController):
                 UserModel().create_registration(form_result)
                 h.flash(_('You have successfully registered with %s') % (c.site_name or 'Kallithea'),
                         category='success')
-                Session().commit()
+                meta.Session().commit()
                 raise HTTPFound(location=url('login_home'))
 
             except formencode.Invalid as errors:

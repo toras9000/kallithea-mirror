@@ -44,9 +44,9 @@ from kallithea.lib.exceptions import RepoGroupAssignmentError, UserGroupsAssigne
 from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import safe_int, safe_str
 from kallithea.lib.webutils import url
+from kallithea.model import meta
 from kallithea.model.db import User, UserGroup, UserGroupRepoGroupToPerm, UserGroupRepoToPerm, UserGroupToPerm
 from kallithea.model.forms import CustomDefaultPermissionsForm, UserGroupForm, UserGroupPermsForm
-from kallithea.model.meta import Session
 from kallithea.model.scm import UserGroupList
 from kallithea.model.user_group import UserGroupModel
 
@@ -132,7 +132,7 @@ class UserGroupsController(BaseController):
                           None, request.ip_addr)
             h.flash(h.HTML(_('Created user group %s')) % h.link_to(gr, url('edit_users_group', id=ug.users_group_id)),
                 category='success')
-            Session().commit()
+            meta.Session().commit()
         except formencode.Invalid as errors:
             return htmlfill.render(
                 render('admin/user_groups/user_group_add.html'),
@@ -172,7 +172,7 @@ class UserGroupsController(BaseController):
                           'admin_updated_users_group:%s' % gr,
                           None, request.ip_addr)
             h.flash(_('Updated user group %s') % gr, category='success')
-            Session().commit()
+            meta.Session().commit()
         except formencode.Invalid as errors:
             ug_model = UserGroupModel()
             defaults = errors.value
@@ -203,7 +203,7 @@ class UserGroupsController(BaseController):
         usr_gr = UserGroup.get_or_404(id)
         try:
             UserGroupModel().delete(usr_gr)
-            Session().commit()
+            meta.Session().commit()
             h.flash(_('Successfully deleted user group'), category='success')
         except UserGroupsAssignedException as e:
             h.flash(e, category='error')
@@ -270,7 +270,7 @@ class UserGroupsController(BaseController):
         # TODO: implement this
         #action_logger(request.authuser, 'admin_changed_repo_permissions',
         #              repo_name, request.ip_addr)
-        Session().commit()
+        meta.Session().commit()
         h.flash(_('User group permissions updated'), category='success')
         raise HTTPFound(location=url('edit_user_group_perms', id=id))
 
@@ -295,7 +295,7 @@ class UserGroupsController(BaseController):
             elif obj_type == 'user_group':
                 UserGroupModel().revoke_user_group_permission(target_user_group=id,
                                                               user_group=obj_id)
-            Session().commit()
+            meta.Session().commit()
         except Exception:
             log.error(traceback.format_exc())
             h.flash(_('An error occurred during revoking of permission'),
@@ -365,7 +365,7 @@ class UserGroupsController(BaseController):
                 .filter(UserGroupToPerm.users_group == user_group) \
                 .all()
             for ug in defs:
-                Session().delete(ug)
+                meta.Session().delete(ug)
 
             if form_result['create_repo_perm']:
                 usergroup_model.grant_perm(id, 'hg.create.repository')
@@ -381,7 +381,7 @@ class UserGroupsController(BaseController):
                 usergroup_model.grant_perm(id, 'hg.fork.none')
 
             h.flash(_("Updated permissions"), category='success')
-            Session().commit()
+            meta.Session().commit()
         except Exception:
             log.error(traceback.format_exc())
             h.flash(_('An error occurred during permissions saving'),

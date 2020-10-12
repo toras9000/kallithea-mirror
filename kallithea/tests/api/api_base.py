@@ -26,10 +26,10 @@ import pytest
 from kallithea.lib import ext_json
 from kallithea.lib.auth import AuthUser
 from kallithea.lib.utils2 import ascii_bytes
+from kallithea.model import meta
 from kallithea.model.changeset_status import ChangesetStatusModel
 from kallithea.model.db import ChangesetStatus, PullRequest, PullRequestReviewer, RepoGroup, Repository, Setting, Ui, User
 from kallithea.model.gist import GistModel
-from kallithea.model.meta import Session
 from kallithea.model.pull_request import PullRequestModel
 from kallithea.model.repo import RepoModel
 from kallithea.model.repo_group import RepoGroupModel
@@ -75,13 +75,13 @@ def make_user_group(name=TEST_USER_GROUP):
     gr = fixture.create_user_group(name, cur_user=base.TEST_USER_ADMIN_LOGIN)
     UserGroupModel().add_user_to_group(user_group=gr,
                                        user=base.TEST_USER_ADMIN_LOGIN)
-    Session().commit()
+    meta.Session().commit()
     return gr
 
 
 def make_repo_group(name=TEST_REPO_GROUP):
     gr = fixture.create_repo_group(name, cur_user=base.TEST_USER_ADMIN_LOGIN)
-    Session().commit()
+    meta.Session().commit()
     return gr
 
 
@@ -100,7 +100,7 @@ class _BaseTestApi(object):
             firstname='first',
             lastname='last'
         )
-        Session().commit()
+        meta.Session().commit()
         cls.TEST_USER_LOGIN = cls.test_user.username
         cls.apikey_regular = cls.test_user.api_key
 
@@ -259,7 +259,7 @@ class _BaseTestApi(object):
         # hack around that clone_uri can't be set to to a local path
         # (as shown by test_api_create_repo_clone_uri_local)
         r.clone_uri = os.path.join(Ui.get_by_key('paths', '/').ui_value, self.REPO)
-        Session().commit()
+        meta.Session().commit()
 
         pre_cached_tip = [repo.get_api_data()['last_changeset']['short_id'] for repo in Repository.query().filter(Repository.repo_name == repo_name)]
 
@@ -432,7 +432,7 @@ class _BaseTestApi(object):
                                            password='qweqwe',
                                            email='u232@example.com',
                                            firstname='u1', lastname='u1')
-        Session().commit()
+        meta.Session().commit()
         username = usr.username
         email = usr.email
         usr_id = usr.user_id
@@ -453,7 +453,7 @@ class _BaseTestApi(object):
                                            password='qweqwe',
                                            email='u232@example.com',
                                            firstname='u1', lastname='u1')
-        Session().commit()
+        meta.Session().commit()
         username = usr.username
 
         id_, params = _build_data(self.apikey, 'delete_user',
@@ -554,7 +554,7 @@ class _BaseTestApi(object):
         RepoModel().grant_user_group_permission(repo=self.REPO,
                                                 group_name=new_group,
                                                 perm='repository.read')
-        Session().commit()
+        meta.Session().commit()
         id_, params = _build_data(self.apikey, 'get_repo',
                                   repoid=self.REPO)
         response = api_call(self, params)
@@ -606,7 +606,7 @@ class _BaseTestApi(object):
         RepoModel().grant_user_permission(repo=self.REPO,
                                           user=self.TEST_USER_LOGIN,
                                           perm=grant_perm)
-        Session().commit()
+        meta.Session().commit()
         id_, params = _build_data(self.apikey_regular, 'get_repo',
                                   repoid=self.REPO)
         response = api_call(self, params)
@@ -758,7 +758,7 @@ class _BaseTestApi(object):
         RepoModel().grant_user_permission(repo=self.REPO,
                                           user=self.TEST_USER_LOGIN,
                                           perm=grant_perm)
-        Session().commit()
+        meta.Session().commit()
 
         rev = 'tip'
         path = '/'
@@ -851,7 +851,7 @@ class _BaseTestApi(object):
 
         # create group before creating repo
         rg = fixture.create_repo_group(repo_group_name)
-        Session().commit()
+        meta.Session().commit()
 
         id_, params = _build_data(self.apikey, 'create_repo',
                                   repo_name=repo_name,
@@ -878,11 +878,11 @@ class _BaseTestApi(object):
         top_group = RepoGroup.get_by_group_name(TEST_REPO_GROUP)
         assert top_group
         rg = fixture.create_repo_group(repo_group_basename, parent_group_id=top_group)
-        Session().commit()
+        meta.Session().commit()
         RepoGroupModel().grant_user_permission(repo_group_name,
                                                self.TEST_USER_LOGIN,
                                                'group.none')
-        Session().commit()
+        meta.Session().commit()
 
         id_, params = _build_data(self.apikey_regular, 'create_repo',
                                   repo_name=repo_name,
@@ -1551,7 +1551,7 @@ class _BaseTestApi(object):
         gr_name = 'test_group_3'
         gr = fixture.create_user_group(gr_name)
         UserGroupModel().add_user_to_group(gr, user=base.TEST_USER_ADMIN_LOGIN)
-        Session().commit()
+        meta.Session().commit()
         try:
             id_, params = _build_data(self.apikey, 'remove_user_from_user_group',
                                       usergroupid=gr_name,
@@ -1571,7 +1571,7 @@ class _BaseTestApi(object):
         gr_name = 'test_group_3'
         gr = fixture.create_user_group(gr_name)
         UserGroupModel().add_user_to_group(gr, user=base.TEST_USER_ADMIN_LOGIN)
-        Session().commit()
+        meta.Session().commit()
         try:
             id_, params = _build_data(self.apikey, 'remove_user_from_user_group',
                                       usergroupid=gr_name,
@@ -1764,7 +1764,7 @@ class _BaseTestApi(object):
         RepoModel().grant_user_group_permission(repo=self.REPO,
                                                 group_name=TEST_USER_GROUP,
                                                 perm='repository.read')
-        Session().commit()
+        meta.Session().commit()
         id_, params = _build_data(self.apikey,
                                   'revoke_user_group_permission',
                                   repoid=self.REPO,
@@ -1848,7 +1848,7 @@ class _BaseTestApi(object):
             RepoGroupModel().grant_user_permission(TEST_REPO_GROUP,
                                                    self.TEST_USER_LOGIN,
                                                    'group.admin')
-            Session().commit()
+            meta.Session().commit()
 
         id_, params = _build_data(self.apikey_regular,
                                   'grant_user_permission_to_repo_group',
@@ -1906,7 +1906,7 @@ class _BaseTestApi(object):
         RepoGroupModel().grant_user_permission(repo_group=TEST_REPO_GROUP,
                                                user=base.TEST_USER_ADMIN_LOGIN,
                                                perm='group.read',)
-        Session().commit()
+        meta.Session().commit()
 
         id_, params = _build_data(self.apikey,
                                   'revoke_user_permission_from_repo_group',
@@ -1940,13 +1940,13 @@ class _BaseTestApi(object):
         RepoGroupModel().grant_user_permission(repo_group=TEST_REPO_GROUP,
                                                user=base.TEST_USER_ADMIN_LOGIN,
                                                perm='group.read',)
-        Session().commit()
+        meta.Session().commit()
 
         if grant_admin:
             RepoGroupModel().grant_user_permission(TEST_REPO_GROUP,
                                                    self.TEST_USER_LOGIN,
                                                    'group.admin')
-            Session().commit()
+            meta.Session().commit()
 
         id_, params = _build_data(self.apikey_regular,
                                   'revoke_user_permission_from_repo_group',
@@ -2036,7 +2036,7 @@ class _BaseTestApi(object):
             RepoGroupModel().grant_user_permission(TEST_REPO_GROUP,
                                                    self.TEST_USER_LOGIN,
                                                    'group.admin')
-            Session().commit()
+            meta.Session().commit()
 
         id_, params = _build_data(self.apikey_regular,
                                   'grant_user_group_permission_to_repo_group',
@@ -2095,7 +2095,7 @@ class _BaseTestApi(object):
         RepoGroupModel().grant_user_group_permission(repo_group=TEST_REPO_GROUP,
                                                      group_name=TEST_USER_GROUP,
                                                      perm='group.read',)
-        Session().commit()
+        meta.Session().commit()
         id_, params = _build_data(self.apikey,
                                   'revoke_user_group_permission_from_repo_group',
                                   repogroupid=TEST_REPO_GROUP,
@@ -2128,13 +2128,13 @@ class _BaseTestApi(object):
         RepoGroupModel().grant_user_permission(repo_group=TEST_REPO_GROUP,
                                                user=base.TEST_USER_ADMIN_LOGIN,
                                                perm='group.read',)
-        Session().commit()
+        meta.Session().commit()
 
         if grant_admin:
             RepoGroupModel().grant_user_permission(TEST_REPO_GROUP,
                                                    self.TEST_USER_LOGIN,
                                                    'group.admin')
-            Session().commit()
+            meta.Session().commit()
 
         id_, params = _build_data(self.apikey_regular,
                                   'revoke_user_group_permission_from_repo_group',
@@ -2685,8 +2685,8 @@ class _BaseTestApi(object):
         pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
         pullrequest = PullRequest().get(pull_request_id)
         prr = PullRequestReviewer(User.get_by_username(base.TEST_USER_REGULAR2_LOGIN), pullrequest)
-        Session().add(prr)
-        Session().commit()
+        meta.Session().add(prr)
+        meta.Session().commit()
 
         assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
         assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
@@ -2776,8 +2776,8 @@ class _BaseTestApi(object):
         pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
         pullrequest = PullRequest().get(pull_request_id)
         prr = PullRequestReviewer(User.get_by_username(base.TEST_USER_ADMIN_LOGIN), pullrequest)
-        Session().add(prr)
-        Session().commit()
+        meta.Session().add(prr)
+        meta.Session().commit()
         assert User.get_by_username(base.TEST_USER_ADMIN_LOGIN) in pullrequest.get_reviewer_users()
         assert User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
         assert User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) not in pullrequest.get_reviewer_users()

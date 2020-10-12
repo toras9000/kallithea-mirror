@@ -29,8 +29,8 @@ import logging
 import time
 
 from kallithea.lib.utils2 import generate_api_key
+from kallithea.model import meta
 from kallithea.model.db import User, UserApiKeys
-from kallithea.model.meta import Session
 
 
 log = logging.getLogger(__name__)
@@ -51,7 +51,7 @@ class ApiKeyModel(object):
         new_api_key.user_id = user.user_id
         new_api_key.description = description
         new_api_key.expires = time.time() + (lifetime * 60) if lifetime != -1 else -1
-        Session().add(new_api_key)
+        meta.Session().add(new_api_key)
 
         return new_api_key
 
@@ -67,7 +67,7 @@ class ApiKeyModel(object):
             api_key = api_key.filter(UserApiKeys.user_id == user.user_id)
 
         api_key = api_key.scalar()
-        Session().delete(api_key)
+        meta.Session().delete(api_key)
 
     def get_api_keys(self, user, show_expired=True):
         user = User.guess_instance(user)

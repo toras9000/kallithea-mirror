@@ -38,9 +38,9 @@ import sqlalchemy
 from sqlalchemy.engine import create_engine
 
 from kallithea.lib.utils2 import ask_ok
+from kallithea.model import meta
 from kallithea.model.base import init_model
 from kallithea.model.db import Repository, Setting, Ui, User
-from kallithea.model.meta import Base, Session
 from kallithea.model.permission import PermissionModel
 from kallithea.model.user import UserModel
 
@@ -70,7 +70,7 @@ class DbManage(object):
             # init new sessions
             engine = create_engine(self.dburi)
             init_model(engine)
-            self.sa = Session()
+            self.sa = meta.Session()
 
     def create_tables(self, reuse_database=False):
         """
@@ -91,7 +91,7 @@ class DbManage(object):
             sys.exit(0)
 
         if reuse_database:
-            Base.metadata.drop_all()
+            meta.Base.metadata.drop_all()
         else:
             if url.drivername == 'mysql':
                 url.database = None  # don't connect to the database (it might not exist)
@@ -110,9 +110,9 @@ class DbManage(object):
             else:
                 # Some databases enforce foreign key constraints and Base.metadata.drop_all() doesn't work, but this is
                 # known to work on SQLite - possibly not on other databases with strong referential integrity
-                Base.metadata.drop_all()
+                meta.Base.metadata.drop_all()
 
-        Base.metadata.create_all(checkfirst=False)
+        meta.Base.metadata.create_all(checkfirst=False)
 
         # Create an Alembic configuration and generate the version table,
         # "stamping" it with the most recent Alembic migration revision, to
@@ -303,7 +303,7 @@ class DbManage(object):
         if self.cli_args.get('public_access') is False:
             log.info('Public access disabled')
             user.active = False
-            Session().commit()
+            meta.Session().commit()
 
     def create_permissions(self):
         """

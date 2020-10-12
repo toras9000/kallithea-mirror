@@ -16,7 +16,7 @@ import click
 import kallithea
 import kallithea.bin.kallithea_cli_base as cli_base
 from kallithea.lib.db_manage import DbManage
-from kallithea.model.meta import Session
+from kallithea.model import meta
 
 
 @cli_base.register_command(needs_config_file=True, config_file_initialize_app=True)
@@ -67,7 +67,7 @@ def db_create(user, password, email, repos, force_yes, force_no, public_access, 
         dbmanage.create_admin_user()
         dbmanage.create_permissions()
         dbmanage.populate_default_permissions()
-        Session().commit()
+        meta.Session().commit()
 
     else:  # then called again after app initialization
         added, _ = kallithea.lib.utils.repo2db_mapper(kallithea.model.scm.ScmModel().repo_scan())

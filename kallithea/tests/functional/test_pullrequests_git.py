@@ -3,7 +3,7 @@ import re
 import pytest
 
 from kallithea.controllers.pullrequests import PullrequestsController
-from kallithea.model.meta import Session
+from kallithea.model import meta
 from kallithea.tests import base
 from kallithea.tests.fixture import Fixture
 
@@ -92,13 +92,13 @@ class TestPullrequestsGetRepoRefs(base.TestController):
         self.repo_name = 'main'
         repo = fixture.create_repo(self.repo_name, repo_type='git')
         self.repo_scm_instance = repo.scm_instance
-        Session().commit()
+        meta.Session().commit()
         self.c = PullrequestsController()
 
     def teardown_method(self, method):
         fixture.destroy_repo('main')
-        Session().commit()
-        Session.remove()
+        meta.Session().commit()
+        meta.Session.remove()
 
     def test_repo_refs_empty_repo(self):
         # empty repo with no commits, no branches, no bookmarks, just one tag

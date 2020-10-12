@@ -1,7 +1,7 @@
 import kallithea
 from kallithea.lib.auth import AuthUser
+from kallithea.model import meta
 from kallithea.model.db import Permission, User, UserGroupRepoGroupToPerm, UserToPerm
-from kallithea.model.meta import Session
 from kallithea.model.permission import PermissionModel
 from kallithea.model.repo import RepoModel
 from kallithea.model.repo_group import RepoGroupModel
@@ -21,7 +21,7 @@ class TestPermissions(base.TestController):
         # recreate default user to get a clean start
         PermissionModel().create_default_permissions(user=User.DEFAULT_USER_NAME,
                                                      force=True)
-        Session().commit()
+        meta.Session().commit()
 
     def setup_method(self, method):
         self.u1 = UserModel().create_or_update(
@@ -41,7 +41,7 @@ class TestPermissions(base.TestController):
             username='a1', password='qweqwe',
             email='a1@example.com', firstname='a1', lastname='a1', admin=True
         )
-        Session().commit()
+        meta.Session().commit()
 
     def teardown_method(self, method):
         if hasattr(self, 'test_repo'):
@@ -52,7 +52,7 @@ class TestPermissions(base.TestController):
         UserModel().delete(self.u3)
         UserModel().delete(self.a1)
 
-        Session().commit() # commit early to avoid SQLAlchemy warning from double cascade delete to users_groups_members
+        meta.Session().commit() # commit early to avoid SQLAlchemy warning from double cascade delete to users_groups_members
 
         if hasattr(self, 'g1'):
             RepoGroupModel().delete(self.g1.group_id)
@@ -64,7 +64,7 @@ class TestPermissions(base.TestController):
         if hasattr(self, 'ug1'):
             UserGroupModel().delete(self.ug1, force=True)
 
-        Session().commit()
+        meta.Session().commit()
 
     def test_default_perms_set(self):
         u1_auth = AuthUser(user_id=self.u1.user_id)
@@ -72,7 +72,7 @@ class TestPermissions(base.TestController):
         new_perm = 'repository.write'
         RepoModel().grant_user_permission(repo=base.HG_REPO, user=self.u1,
                                           perm=new_perm)
-        Session().commit()
+        meta.Session().commit()
 
         u1_auth = AuthUser(user_id=self.u1.user_id)
         assert u1_auth.repository_permissions[base.HG_REPO] == new_perm
@@ -83,7 +83,7 @@ class TestPermissions(base.TestController):
         new_perm = 'repository.write'
         RepoModel().grant_user_permission(repo=base.HG_REPO, user=self.a1,
                                           perm=new_perm)
-        Session().commit()
+        meta.Session().commit()
         # cannot really downgrade admins permissions !? they still gets set as
         # admin !
         u1_auth = AuthUser(user_id=self.a1.user_id)
@@ -113,7 +113,7 @@ class TestPermissions(base.TestController):
 
         # set user permission none
         RepoModel().grant_user_permission(repo=base.HG_REPO, user=self.u1, perm='repository.none')
-        Session().commit()
+        meta.Session().commit()
         u1_auth = AuthUser(user_id=self.u1.user_id)
         assert u1_auth.repository_permissions[base.HG_REPO] == 'repository.read' # inherit from default user
 
@@ -150,7 +150,7 @@ class TestPermissions(base.TestController):
         new_perm_h = 'repository.write'
         RepoModel().grant_user_permission(repo=base.HG_REPO, user=self.u1,
                                           perm=new_perm_h)
-        Session().commit()
+        meta.Session().commit()
         u1_auth = AuthUser(user_id=self.u1.user_id)
         assert u1_auth.repository_permissions[base.HG_REPO] == new_perm_h
 
@@ -212,7 +212,7 @@ class TestPermissions(base.TestController):
                                                perm='group.read')
         RepoGroupModel().grant_user_permission(repo_group=self.g2, user=self.u2,
                                                perm='group.read')
-        Session().commit()
+        meta.Session().commit()
         assert self.u1 != self.u2
         # u1 and anon should have not change perms while u2 should !
         u1_auth = AuthUser(user_id=self.u1.user_id)
@@ -242,7 +242,7 @@ class TestPermissions(base.TestController):
         self.ug1 = fixture.create_user_group('G1')
         # add user to group
         UserGroupModel().add_user_to_group(self.ug1, self.u1)
-        Session().commit()
+        meta.Session().commit()
 
         # check if user is in the group
         members = [x.user_id for x in UserGroupModel().get(self.ug1.users_group_id).members]
@@ -260,9 +260,9 @@ class TestPermissions(base.TestController):
         RepoGroupModel().grant_user_group_permission(repo_group=self.g1,
                                                       group_name=self.ug1,
                                                       perm='group.read')
-        Session().commit()
+        meta.Session().commit()
         # check if the
-        obj = Session().query(UserGroupRepoGroupToPerm) \
+        obj = meta.Session().query(UserGroupRepoGroupToPerm) \
             .filter(UserGroupRepoGroupToPerm.group == self.g1) \
             .filter(UserGroupRepoGroupToPerm.users_group == self.ug1) \
             .scalar()
@@ -283,7 +283,7 @@ class TestPermissions(base.TestController):
         user_model.grant_perm(usr, 'hg.create.repository')
         user_model.revoke_perm(usr, 'hg.fork.none')
         user_model.grant_perm(usr, 'hg.fork.repository')
-        Session().commit()
+        meta.Session().commit()
         u1_auth = AuthUser(user_id=self.u1.user_id)
         # this user will have inherited permissions from default user
         assert u1_auth.global_permissions == set(['hg.create.repository', 'hg.fork.repository',
@@ -300,7 +300,7 @@ class TestPermissions(base.TestController):
         user_model.grant_perm(usr, 'hg.create.none')
         user_model.revoke_perm(usr, 'hg.fork.repository')
         user_model.grant_perm(usr, 'hg.fork.none')
-        Session().commit()
+        meta.Session().commit()
         u1_auth = AuthUser(user_id=self.u1.user_id)
         # this user will have inherited permissions from default user
         assert u1_auth.global_permissions == set(['hg.create.none', 'hg.fork.none',
@@ -324,7 +324,7 @@ class TestPermissions(base.TestController):
         user_model.revoke_perm(self.u1, 'hg.fork.repository')
         user_model.grant_perm(self.u1, 'hg.fork.none')
 
-        Session().commit()
+        meta.Session().commit()
         u1_auth = AuthUser(user_id=self.u1.user_id)
         # this user will have inherited more permissions from default user
         assert u1_auth.global_permissions == set([
@@ -350,7 +350,7 @@ class TestPermissions(base.TestController):
         user_model.revoke_perm(self.u1, 'hg.fork.none')
         user_model.grant_perm(self.u1, 'hg.fork.repository')
 
-        Session().commit()
+        meta.Session().commit()
         u1_auth = AuthUser(user_id=self.u1.user_id)
         # this user will have inherited less permissions from default user
         assert u1_auth.global_permissions == set([
@@ -383,7 +383,7 @@ class TestPermissions(base.TestController):
         user_model.revoke_perm(usr, 'hg.fork.repository')
         user_model.grant_perm(usr, 'hg.fork.none')
 
-        Session().commit()
+        meta.Session().commit()
         u1_auth = AuthUser(user_id=self.u1.user_id)
 
         assert u1_auth.global_permissions == set(['hg.create.none', 'hg.fork.none',
@@ -415,7 +415,7 @@ class TestPermissions(base.TestController):
         user_model.revoke_perm(usr, 'hg.fork.none')
         user_model.grant_perm(usr, 'hg.fork.repository')
 
-        Session().commit()
+        meta.Session().commit()
         u1_auth = AuthUser(user_id=self.u1.user_id)
 
         assert u1_auth.global_permissions == set(['hg.create.repository', 'hg.fork.repository',
@@ -445,7 +445,7 @@ class TestPermissions(base.TestController):
         RepoModel().grant_user_permission(self.test_repo,
                                           user='default',
                                           perm='repository.write')
-        Session().commit()
+        meta.Session().commit()
         u1_auth = AuthUser(user_id=self.u1.user_id)
         assert u1_auth.repository_permissions['myownrepo'] == 'repository.write'
 
@@ -469,7 +469,7 @@ class TestPermissions(base.TestController):
         RepoModel().grant_user_permission(self.test_repo,
                                           user='default',
                                           perm='repository.admin')
-        Session().commit()
+        meta.Session().commit()
         u1_auth = AuthUser(user_id=self.u1.user_id)
         assert u1_auth.repository_permissions['myownrepo'] == 'repository.admin'
 
@@ -489,7 +489,7 @@ class TestPermissions(base.TestController):
         RepoGroupModel().grant_user_permission(self.g1,
                                                user='default',
                                                perm='group.write')
-        Session().commit()
+        meta.Session().commit()
         u1_auth = AuthUser(user_id=self.u1.user_id)
         assert u1_auth.repository_group_permissions.get('group1') == 'group.write'
 
@@ -509,7 +509,7 @@ class TestPermissions(base.TestController):
         RepoGroupModel().grant_user_permission(self.g1,
                                                user='default',
                                                perm='group.admin')
-        Session().commit()
+        meta.Session().commit()
         u1_auth = AuthUser(user_id=self.u1.user_id)
         assert u1_auth.repository_group_permissions.get('group1') == 'group.admin'
 
@@ -529,7 +529,7 @@ class TestPermissions(base.TestController):
         UserGroupModel().grant_user_permission(self.ug2,
                                                user='default',
                                                perm='usergroup.write')
-        Session().commit()
+        meta.Session().commit()
         u1_auth = AuthUser(user_id=self.u1.user_id)
         assert u1_auth.user_group_permissions['G1'] == 'usergroup.read'
         assert u1_auth.user_group_permissions['G2'] == 'usergroup.write'
@@ -550,7 +550,7 @@ class TestPermissions(base.TestController):
         UserGroupModel().grant_user_permission(self.ug2,
                                                user='default',
                                                perm='usergroup.admin')
-        Session().commit()
+        meta.Session().commit()
         u1_auth = AuthUser(user_id=self.u1.user_id)
         assert u1_auth.user_group_permissions['G1'] == 'usergroup.read'
         assert u1_auth.user_group_permissions['G2'] == 'usergroup.admin'
@@ -571,7 +571,7 @@ class TestPermissions(base.TestController):
                                                  group_name=self.ug1,
                                                  perm='repository.none')
 
-        Session().commit()
+        meta.Session().commit()
         u1_auth = AuthUser(user_id=self.u1.user_id)
         assert u1_auth.repository_permissions['myownrepo'] == 'repository.admin'
 
@@ -587,7 +587,7 @@ class TestPermissions(base.TestController):
         # set his permission as user, he should still be admin
         RepoModel().grant_user_permission(self.test_repo, user=self.u1,
                                           perm='repository.none')
-        Session().commit()
+        meta.Session().commit()
         u1_auth = AuthUser(user_id=self.u1.user_id)
         assert u1_auth.repository_permissions['myownrepo'] == 'repository.admin'
 
@@ -608,8 +608,8 @@ class TestPermissions(base.TestController):
         perms = UserToPerm.query() \
                 .filter(UserToPerm.user == self.u1) \
                 .all()
-        Session().delete(perms[0])
-        Session().commit()
+        meta.Session().delete(perms[0])
+        meta.Session().commit()
 
         self._test_def_perm_equal(user=self.u1, change_factor=-1)
 
@@ -640,7 +640,7 @@ class TestPermissions(base.TestController):
                 .filter(UserToPerm.permission == old) \
                 .one()
         p.permission = new
-        Session().commit()
+        meta.Session().commit()
 
         PermissionModel().create_default_permissions(user=self.u1)
         self._test_def_perm_equal(user=self.u1)

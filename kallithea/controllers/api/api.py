@@ -38,11 +38,11 @@ from kallithea.lib.exceptions import DefaultUserException, UserGroupsAssignedExc
 from kallithea.lib.utils import action_logger, repo2db_mapper
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.exceptions import EmptyRepositoryError
+from kallithea.model import meta
 from kallithea.model.changeset_status import ChangesetStatusModel
 from kallithea.model.comment import ChangesetCommentsModel
 from kallithea.model.db import ChangesetStatus, Gist, Permission, PullRequest, RepoGroup, Repository, Setting, User, UserGroup, UserIpMap
 from kallithea.model.gist import GistModel
-from kallithea.model.meta import Session
 from kallithea.model.pull_request import PullRequestModel
 from kallithea.model.repo import RepoModel
 from kallithea.model.repo_group import RepoGroupModel
@@ -501,7 +501,7 @@ class ApiController(JSONRPCController):
                 extern_type=extern_type,
                 extern_name=extern_name
             )
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='created new user `%s`' % username,
                 user=user.get_api_data()
@@ -579,7 +579,7 @@ class ApiController(JSONRPCController):
             store_update(updates, extern_type, 'extern_type')
 
             user = UserModel().update_user(user, **updates)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='updated user ID:%s %s' % (user.user_id, user.username),
                 user=user.get_api_data()
@@ -622,7 +622,7 @@ class ApiController(JSONRPCController):
 
         try:
             UserModel().delete(userid)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='deleted user ID:%s %s' % (user.user_id, user.username),
                 user=None
@@ -732,7 +732,7 @@ class ApiController(JSONRPCController):
             owner = get_user_or_error(owner)
             ug = UserGroupModel().create(name=group_name, description=description,
                                          owner=owner, active=active)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='created new user group `%s`' % group_name,
                 user_group=ug.get_api_data()
@@ -793,7 +793,7 @@ class ApiController(JSONRPCController):
         store_update(updates, active, 'users_group_active')
         try:
             UserGroupModel().update(user_group, updates)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='updated user group ID:%s %s' % (user_group.users_group_id,
                                                      user_group.users_group_name),
@@ -839,7 +839,7 @@ class ApiController(JSONRPCController):
 
         try:
             UserGroupModel().delete(user_group)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='deleted user group ID:%s %s' %
                     (user_group.users_group_id, user_group.users_group_name),
@@ -900,7 +900,7 @@ class ApiController(JSONRPCController):
                 user.username, user_group.users_group_name
             )
             msg = msg if success else 'User is already in that group'
-            Session().commit()
+            meta.Session().commit()
 
             return dict(
                 success=success,
@@ -948,7 +948,7 @@ class ApiController(JSONRPCController):
                 user.username, user_group.users_group_name
             )
             msg = msg if success else "User wasn't in group"
-            Session().commit()
+            meta.Session().commit()
             return dict(success=success, msg=msg)
         except Exception:
             log.error(traceback.format_exc())
@@ -1339,7 +1339,7 @@ class ApiController(JSONRPCController):
             store_update(updates, enable_downloads, 'repo_enable_downloads')
 
             RepoModel().update(repo, **updates)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='updated repo ID:%s %s' % (repo.repo_id, repo.repo_name),
                 repository=repo.get_api_data()
@@ -1503,7 +1503,7 @@ class ApiController(JSONRPCController):
                 )
 
             RepoModel().delete(repo, forks=forks)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='Deleted repository `%s`%s' % (repo.repo_name, _forks_msg),
                 success=True
@@ -1544,7 +1544,7 @@ class ApiController(JSONRPCController):
 
             RepoModel().grant_user_permission(repo=repo, user=user, perm=perm)
 
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='Granted perm: `%s` for user: `%s` in repo: `%s`' % (
                     perm.permission_name, user.username, repo.repo_name
@@ -1584,7 +1584,7 @@ class ApiController(JSONRPCController):
         user = get_user_or_error(userid)
         try:
             RepoModel().revoke_user_permission(repo=repo, user=user)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='Revoked perm for user: `%s` in repo: `%s`' % (
                     user.username, repo.repo_name
@@ -1646,7 +1646,7 @@ class ApiController(JSONRPCController):
             RepoModel().grant_user_group_permission(
                 repo=repo, group_name=user_group, perm=perm)
 
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='Granted perm: `%s` for user group: `%s` in '
                     'repo: `%s`' % (
@@ -1696,7 +1696,7 @@ class ApiController(JSONRPCController):
             RepoModel().revoke_user_group_permission(
                 repo=repo, group_name=user_group)
 
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='Revoked perm for user group: `%s` in repo: `%s`' % (
                     user_group.users_group_name, repo.repo_name
@@ -1815,7 +1815,7 @@ class ApiController(JSONRPCController):
                 parent=parent_group,
                 copy_permissions=copy_permissions
             )
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='created new repo group `%s`' % group_name,
                 repo_group=repo_group.get_api_data()
@@ -1839,7 +1839,7 @@ class ApiController(JSONRPCController):
             store_update(updates, owner, 'owner')
             store_update(updates, parent, 'parent_group')
             repo_group = RepoGroupModel().update(repo_group, updates)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='updated repository group ID:%s %s' % (repo_group.group_id,
                                                            repo_group.group_name),
@@ -1879,7 +1879,7 @@ class ApiController(JSONRPCController):
 
         try:
             RepoGroupModel().delete(repo_group)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='deleted repo group ID:%s %s' %
                     (repo_group.group_id, repo_group.group_name),
@@ -1942,7 +1942,7 @@ class ApiController(JSONRPCController):
                                             obj_type="user",
                                             perm=perm,
                                             recursive=apply_to_children)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='Granted perm: `%s` (recursive:%s) for user: `%s` in repo group: `%s`' % (
                     perm.permission_name, apply_to_children, user.username, repo_group.name
@@ -2003,7 +2003,7 @@ class ApiController(JSONRPCController):
                                                obj_type="user",
                                                recursive=apply_to_children)
 
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='Revoked perm (recursive:%s) for user: `%s` in repo group: `%s`' % (
                     apply_to_children, user.username, repo_group.name
@@ -2072,7 +2072,7 @@ class ApiController(JSONRPCController):
                                             obj_type="user_group",
                                             perm=perm,
                                             recursive=apply_to_children)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='Granted perm: `%s` (recursive:%s) for user group: `%s` in repo group: `%s`' % (
                     perm.permission_name, apply_to_children,
@@ -2139,7 +2139,7 @@ class ApiController(JSONRPCController):
                                                obj=user_group,
                                                obj_type="user_group",
                                                recursive=apply_to_children)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='Revoked perm (recursive:%s) for user group: `%s` in repo group: `%s`' % (
                     apply_to_children, user_group.users_group_name, repo_group.name
@@ -2246,7 +2246,7 @@ class ApiController(JSONRPCController):
                                       gist_mapping=files,
                                       gist_type=gist_type,
                                       lifetime=lifetime)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='created new gist',
                 gist=gist.get_api_data()
@@ -2288,7 +2288,7 @@ class ApiController(JSONRPCController):
 
         try:
             GistModel().delete(gist)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='deleted gist ID:%s' % (gist.gist_access_id,),
                 gist=None
@@ -2394,7 +2394,7 @@ class ApiController(JSONRPCController):
             action_logger(apiuser,
                           'user_closed_pull_request:%s' % pull_request_id,
                           pull_request.org_repo, request.ip_addr)
-        Session().commit()
+        meta.Session().commit()
         return True
 
     # permission check inside
@@ -2434,7 +2434,7 @@ class ApiController(JSONRPCController):
         if remove_objs:
             PullRequestModel().remove_reviewers(apiuser, pull_request, remove_objs)
 
-        Session().commit()
+        meta.Session().commit()
 
         return {
             'added': [x.username for x in new_reviewers],

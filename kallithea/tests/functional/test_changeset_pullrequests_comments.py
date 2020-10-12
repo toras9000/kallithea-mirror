@@ -1,8 +1,8 @@
 import re
 
+from kallithea.model import meta
 from kallithea.model.changeset_status import ChangesetStatusModel
 from kallithea.model.db import ChangesetComment, PullRequest
-from kallithea.model.meta import Session
 from kallithea.tests import base
 
 
@@ -10,8 +10,8 @@ class TestChangeSetCommentsController(base.TestController):
 
     def setup_method(self, method):
         for x in ChangesetComment.query().all():
-            Session().delete(x)
-        Session().commit()
+            meta.Session().delete(x)
+        meta.Session().commit()
 
     def test_create(self):
         self.log_user()
@@ -153,8 +153,8 @@ class TestPullrequestsCommentsController(base.TestController):
 
     def setup_method(self, method):
         for x in ChangesetComment.query().all():
-            Session().delete(x)
-        Session().commit()
+            meta.Session().delete(x)
+        meta.Session().commit()
 
     def _create_pr(self):
         response = self.app.post(base.url(controller='pullrequests', action='create',

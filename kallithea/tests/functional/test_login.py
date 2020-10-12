@@ -10,10 +10,9 @@ import kallithea.lib.celerylib.tasks
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import check_password
 from kallithea.lib.utils2 import generate_api_key
-from kallithea.model import validators
+from kallithea.model import meta, validators
 from kallithea.model.api_key import ApiKeyModel
 from kallithea.model.db import User
-from kallithea.model.meta import Session
 from kallithea.model.user import UserModel
 from kallithea.tests import base
 from kallithea.tests.fixture import Fixture
@@ -362,7 +361,7 @@ class TestLoginController(base.TestController):
         assert response.status == '302 Found'
         self.checkSessionFlash(response, 'You have successfully registered with Kallithea')
 
-        ret = Session().query(User).filter(User.username == 'test_regular4').one()
+        ret = meta.Session().query(User).filter(User.username == 'test_regular4').one()
         assert ret.username == username
         assert check_password(password, ret.password) == True
         assert ret.email == email
@@ -403,8 +402,8 @@ class TestLoginController(base.TestController):
         new.name = name
         new.lastname = lastname
         new.api_key = generate_api_key()
-        Session().add(new)
-        Session().commit()
+        meta.Session().add(new)
+        meta.Session().commit()
 
         token = UserModel().get_reset_password_token(
             User.get_by_username(username), timestamp, self.session_csrf_secret_token())
@@ -522,13 +521,13 @@ class TestLoginController(base.TestController):
 
     def test_access_page_via_extra_api_key(self):
         new_api_key = ApiKeyModel().create(base.TEST_USER_ADMIN_LOGIN, 'test')
-        Session().commit()
+        meta.Session().commit()
         self._api_key_test(new_api_key.api_key, status=200)
 
     def test_access_page_via_expired_api_key(self):
         new_api_key = ApiKeyModel().create(base.TEST_USER_ADMIN_LOGIN, 'test')
-        Session().commit()
+        meta.Session().commit()
         # patch the API key and make it expired
         new_api_key.expires = 0
-        Session().commit()
+        meta.Session().commit()
         self._api_key_test(new_api_key.api_key, status=403)

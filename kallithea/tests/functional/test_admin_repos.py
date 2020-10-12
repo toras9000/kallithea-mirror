@@ -8,8 +8,8 @@ import pytest
 
 import kallithea
 from kallithea.lib import vcs
+from kallithea.model import meta
 from kallithea.model.db import Permission, Repository, Ui, User, UserRepoToPerm
-from kallithea.model.meta import Session
 from kallithea.model.repo import RepoModel
 from kallithea.model.repo_group import RepoGroupModel
 from kallithea.model.user import UserModel
@@ -61,7 +61,7 @@ class _BaseTestCase(base.TestController):
                                % (repo_name, repo_name))
 
         # test if the repo was created in the database
-        new_repo = Session().query(Repository) \
+        new_repo = meta.Session().query(Repository) \
             .filter(Repository.repo_name == repo_name).one()
 
         assert new_repo.repo_name == repo_name
@@ -79,7 +79,7 @@ class _BaseTestCase(base.TestController):
             pytest.fail('no repo %s in filesystem' % repo_name)
 
         RepoModel().delete(repo_name)
-        Session().commit()
+        meta.Session().commit()
 
     def test_case_insensitivity(self):
         self.log_user()
@@ -102,7 +102,7 @@ class _BaseTestCase(base.TestController):
         response.mustcontain('already exists')
 
         RepoModel().delete(repo_name)
-        Session().commit()
+        meta.Session().commit()
 
     def test_create_in_group(self):
         self.log_user()
@@ -112,7 +112,7 @@ class _BaseTestCase(base.TestController):
         gr = RepoGroupModel().create(group_name=group_name,
                                      group_description='test',
                                      owner=base.TEST_USER_ADMIN_LOGIN)
-        Session().commit()
+        meta.Session().commit()
 
         repo_name = 'ingroup'
         repo_name_full = kallithea.URL_SEP.join([group_name, repo_name])
@@ -131,7 +131,7 @@ class _BaseTestCase(base.TestController):
                                'Created repository <a href="/%s">%s</a>'
                                % (repo_name_full, repo_name_full))
         # test if the repo was created in the database
-        new_repo = Session().query(Repository) \
+        new_repo = meta.Session().query(Repository) \
             .filter(Repository.repo_name == repo_name_full).one()
         new_repo_id = new_repo.repo_id
 
@@ -152,12 +152,12 @@ class _BaseTestCase(base.TestController):
             vcs.get_repo(os.path.join(Ui.get_by_key('paths', '/').ui_value, repo_name_full))
         except vcs.exceptions.VCSError:
             RepoGroupModel().delete(group_name)
-            Session().commit()
+            meta.Session().commit()
             pytest.fail('no repo %s in filesystem' % repo_name)
 
         RepoModel().delete(repo_name_full)
         RepoGroupModel().delete(group_name)
-        Session().commit()
+        meta.Session().commit()
 
     def test_create_in_group_without_needed_permissions(self):
         usr = self.log_user(base.TEST_USER_REGULAR_LOGIN, base.TEST_USER_REGULAR_PASS)
@@ -176,20 +176,20 @@ class _BaseTestCase(base.TestController):
         user_model.grant_perm(base.TEST_USER_REGULAR_LOGIN, 'hg.create.none')
         user_model.revoke_perm(base.TEST_USER_REGULAR_LOGIN, 'hg.fork.repository')
         user_model.grant_perm(base.TEST_USER_REGULAR_LOGIN, 'hg.fork.none')
-        Session().commit()
+        meta.Session().commit()
 
         ## create GROUP
         group_name = 'reg_sometest_%s' % self.REPO_TYPE
         gr = RepoGroupModel().create(group_name=group_name,
                                      group_description='test',
                                      owner=base.TEST_USER_ADMIN_LOGIN)
-        Session().commit()
+        meta.Session().commit()
 
         group_name_allowed = 'reg_sometest_allowed_%s' % self.REPO_TYPE
         gr_allowed = RepoGroupModel().create(group_name=group_name_allowed,
                                      group_description='test',
                                      owner=base.TEST_USER_REGULAR_LOGIN)
-        Session().commit()
+        meta.Session().commit()
 
         repo_name = 'ingroup'
         repo_name_full = kallithea.URL_SEP.join([group_name, repo_name])
@@ -223,7 +223,7 @@ class _BaseTestCase(base.TestController):
                                'Created repository <a href="/%s">%s</a>'
                                % (repo_name_full, repo_name_full))
         # test if the repo was created in the database
-        new_repo = Session().query(Repository) \
+        new_repo = meta.Session().query(Repository) \
             .filter(Repository.repo_name == repo_name_full).one()
         new_repo_id = new_repo.repo_id
 
@@ -244,13 +244,13 @@ class _BaseTestCase(base.TestController):
             vcs.get_repo(os.path.join(Ui.get_by_key('paths', '/').ui_value, repo_name_full))
         except vcs.exceptions.VCSError:
             RepoGroupModel().delete(group_name)
-            Session().commit()
+            meta.Session().commit()
             pytest.fail('no repo %s in filesystem' % repo_name)
 
         RepoModel().delete(repo_name_full)
         RepoGroupModel().delete(group_name)
         RepoGroupModel().delete(group_name_allowed)
-        Session().commit()
+        meta.Session().commit()
 
     def test_create_in_group_inherit_permissions(self):
         self.log_user()
@@ -264,7 +264,7 @@ class _BaseTestCase(base.TestController):
         RepoGroupModel().grant_user_permission(gr, base.TEST_USER_REGULAR_LOGIN, perm)
 
         ## add repo permissions
-        Session().commit()
+        meta.Session().commit()
 
         repo_name = 'ingroup_inherited_%s' % self.REPO_TYPE
         repo_name_full = kallithea.URL_SEP.join([group_name, repo_name])
@@ -284,7 +284,7 @@ class _BaseTestCase(base.TestController):
                                'Created repository <a href="/%s">%s</a>'
                                % (repo_name_full, repo_name_full))
         # test if the repo was created in the database
-        new_repo = Session().query(Repository) \
+        new_repo = meta.Session().query(Repository) \
             .filter(Repository.repo_name == repo_name_full).one()
         new_repo_id = new_repo.repo_id
 
@@ -301,7 +301,7 @@ class _BaseTestCase(base.TestController):
             vcs.get_repo(os.path.join(Ui.get_by_key('paths', '/').ui_value, repo_name_full))
         except vcs.exceptions.VCSError:
             RepoGroupModel().delete(group_name)
-            Session().commit()
+            meta.Session().commit()
             pytest.fail('no repo %s in filesystem' % repo_name)
 
         # check if inherited permissiona are applied
@@ -316,7 +316,7 @@ class _BaseTestCase(base.TestController):
 
         RepoModel().delete(repo_name_full)
         RepoGroupModel().delete(group_name)
-        Session().commit()
+        meta.Session().commit()
 
     def test_create_remote_repo_wrong_clone_uri(self):
         self.log_user()
@@ -373,7 +373,7 @@ class _BaseTestCase(base.TestController):
                                'Created repository <a href="/%s">%s</a>'
                                % (repo_name, repo_name))
         # test if the repo was created in the database
-        new_repo = Session().query(Repository) \
+        new_repo = meta.Session().query(Repository) \
             .filter(Repository.repo_name == repo_name).one()
 
         assert new_repo.repo_name == repo_name
@@ -398,7 +398,7 @@ class _BaseTestCase(base.TestController):
         response.follow()
 
         # check if repo was deleted from db
-        deleted_repo = Session().query(Repository) \
+        deleted_repo = meta.Session().query(Repository) \
             .filter(Repository.repo_name == repo_name).scalar()
 
         assert deleted_repo is None
@@ -423,7 +423,7 @@ class _BaseTestCase(base.TestController):
                                'Created repository <a href="/%s">%s</a>'
                                % (urllib.parse.quote(repo_name), repo_name))
         # test if the repo was created in the database
-        new_repo = Session().query(Repository) \
+        new_repo = meta.Session().query(Repository) \
             .filter(Repository.repo_name == repo_name).one()
 
         assert new_repo.repo_name == repo_name
@@ -446,7 +446,7 @@ class _BaseTestCase(base.TestController):
         response.follow()
 
         # check if repo was deleted from db
-        deleted_repo = Session().query(Repository) \
+        deleted_repo = meta.Session().query(Repository) \
             .filter(Repository.repo_name == repo_name).scalar()
 
         assert deleted_repo is None
@@ -508,7 +508,7 @@ class _BaseTestCase(base.TestController):
 
         # update this permission back
         perm[0].permission = Permission.get_by_key('repository.read')
-        Session().commit()
+        meta.Session().commit()
 
     def test_set_repo_fork_has_no_self_id(self):
         self.log_user()
@@ -586,7 +586,7 @@ class _BaseTestCase(base.TestController):
         user_model.grant_perm(base.TEST_USER_REGULAR_LOGIN, 'hg.create.none')
         user_model.revoke_perm(base.TEST_USER_REGULAR_LOGIN, 'hg.fork.repository')
         user_model.grant_perm(base.TEST_USER_REGULAR_LOGIN, 'hg.fork.none')
-        Session().commit()
+        meta.Session().commit()
 
 
         user = User.get(usr['user_id'])
@@ -603,7 +603,7 @@ class _BaseTestCase(base.TestController):
         response.mustcontain('<span class="error-message">Invalid value</span>')
 
         RepoModel().delete(repo_name)
-        Session().commit()
+        meta.Session().commit()
 
     @mock.patch.object(RepoModel, '_create_filesystem_repo', raise_exception)
     def test_create_repo_when_filesystem_op_fails(self):
