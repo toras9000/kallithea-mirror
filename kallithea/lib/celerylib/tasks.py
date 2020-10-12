@@ -241,7 +241,7 @@ def send_email(recipients, subject, body='', html_body='', headers=None, from_na
     :param recipients: list of recipients, if this is None, the defined email
         address from field 'email_to' and all admins is used instead
     :param subject: subject of the mail
-    :param body: body of the mail
+    :param body: plain text body of the mail
     :param html_body: html version of body
     :param headers: dictionary of prepopulated e-mail headers
     :param from_name: full name to be used as sender of this mail - often a
@@ -275,25 +275,24 @@ def send_email(recipients, subject, body='', html_body='', headers=None, from_na
         log.warning("No recipients specified for '%s' - sending to admins %s", subject, ' '.join(recipients))
 
     # SMTP sender
-    envelope_from = email_config.get('app_email_from', 'Kallithea')
+    app_email_from = email_config.get('app_email_from', 'Kallithea')
     # 'From' header
     if from_name is not None:
         # set From header based on from_name but with a generic e-mail address
         # In case app_email_from is in "Some Name <e-mail>" format, we first
         # extract the e-mail address.
-        envelope_addr = author_email(envelope_from)
+        envelope_addr = author_email(app_email_from)
         headers['From'] = '"%s" <%s>' % (
             email.utils.quote('%s (no-reply)' % from_name),
             envelope_addr)
 
-    user = email_config.get('smtp_username')
-    passwd = email_config.get('smtp_password')
-    mail_server = email_config.get('smtp_server')
-    mail_port = email_config.get('smtp_port')
-    tls = asbool(email_config.get('smtp_use_tls'))
-    ssl = asbool(email_config.get('smtp_use_ssl'))
-    debug = asbool(email_config.get('debug'))
-    smtp_auth = email_config.get('smtp_auth')
+    smtp_server = email_config.get('smtp_server')
+    smtp_port = email_config.get('smtp_port')
+    smtp_use_tls = asbool(email_config.get('smtp_use_tls'))
+    smtp_use_ssl = asbool(email_config.get('smtp_use_ssl'))
+    smtp_auth = email_config.get('smtp_auth')  # undocumented - overrule automatic choice of auth mechanism
+    smtp_username = email_config.get('smtp_username')
+    smtp_password = email_config.get('smtp_password')
 
     logmsg = ("Mail details:\n"
               "recipients: %s\n"
@@ -303,7 +302,7 @@ def send_email(recipients, subject, body='', html_body='', headers=None, from_na
               "html:\n%s\n"
               % (' '.join(recipients), headers, subject, body, html_body))
 
-    if mail_server:
+    if smtp_server:
         log.debug("Sending e-mail. " + logmsg)
     else:
         log.error("SMTP mail server not configured - cannot send e-mail.")
@@ -311,8 +310,8 @@ def send_email(recipients, subject, body='', html_body='', headers=None, from_na
         return False
 
     try:
-        m = SmtpMailer(envelope_from, user, passwd, mail_server, smtp_auth,
-                       mail_port, ssl, tls, debug=debug)
+        m = SmtpMailer(app_email_from, smtp_username, smtp_password, smtp_server, smtp_auth,
+                       smtp_port, smtp_use_ssl, smtp_use_tls)
         m.send(recipients, subject, body, html_body, headers=headers)
     except:
         log.error('Mail sending failed')
