@@ -10,7 +10,7 @@ from kallithea.tests import base
 class smtplib_mock(object):
 
     @classmethod
-    def SMTP(cls, server, port, local_hostname):
+    def SMTP(cls, server, port):
         return smtplib_mock()
 
     def ehlo(self):
@@ -25,7 +25,7 @@ class smtplib_mock(object):
         smtplib_mock.lastmsg = msg
 
 
-@mock.patch('kallithea.lib.rcmail.smtp_mailer.smtplib', smtplib_mock)
+@mock.patch('kallithea.lib.celerylib.tasks.smtplib', smtplib_mock)
 class TestMail(base.TestController):
 
     def test_send_mail_trivial(self):
@@ -191,6 +191,6 @@ class TestMail(base.TestController):
         assert 'Subject: %s' % subject in smtplib_mock.lastmsg
         assert body in smtplib_mock.lastmsg
         assert html_body in smtplib_mock.lastmsg
-        assert 'Extra: yes' in smtplib_mock.lastmsg
+        assert 'extra: yes' in smtplib_mock.lastmsg
         # verify that headers dict hasn't mutated by send_email
         assert headers == {'extra': 'yes'}

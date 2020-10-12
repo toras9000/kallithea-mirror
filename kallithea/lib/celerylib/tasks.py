@@ -26,8 +26,12 @@ Original author and date, and relevant copyright and licensing information is be
 :license: GPLv3, see LICENSE.md for more details.
 """
 
+import email.mime.multipart
+import email.mime.text
 import email.utils
 import os
+import smtplib
+import time
 import traceback
 from collections import OrderedDict
 from operator import itemgetter
@@ -41,7 +45,6 @@ from kallithea.lib import celerylib, conf, ext_json
 from kallithea.lib.helpers import person
 from kallithea.lib.hooks import log_create_repository
 from kallithea.lib.indexers.daemon import WhooshIndexingDaemon
-from kallithea.lib.rcmail.smtp_mailer import SmtpMailer
 from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import asbool, ascii_bytes
 from kallithea.lib.vcs.utils import author_email
@@ -309,10 +312,38 @@ def send_email(recipients, subject, body='', html_body='', headers=None, from_na
         log.warning(logmsg)
         return False
 
+    msg = email.mime.multipart.MIMEMultipart('alternative')
+    msg['Subject'] = subject
+    msg['From'] = app_email_from  # fallback - might be overridden by a header
+    msg['To'] = ', '.join(recipients)
+    msg['Date'] = email.utils.formatdate(time.time())
+
+    for key, value in headers.items():
+        msg[key] = value
+
+    msg.attach(email.mime.text.MIMEText(body, 'plain'))
+    msg.attach(email.mime.text.MIMEText(html_body, 'html'))
+
     try:
-        m = SmtpMailer(app_email_from, smtp_username, smtp_password, smtp_server, smtp_auth,
-                       smtp_port, smtp_use_ssl, smtp_use_tls)
-        m.send(recipients, subject, body, html_body, headers=headers)
+        if smtp_use_ssl:
+            smtp_serv = smtplib.SMTP_SSL(smtp_server, smtp_port)
+        else:
+            smtp_serv = smtplib.SMTP(smtp_server, smtp_port)
+
+        if smtp_use_tls:
+            smtp_serv.starttls()
+
+        if smtp_auth:
+            smtp_serv.ehlo()  # populate esmtp_features
+            smtp_serv.esmtp_features["auth"] = smtp_auth
+
+        if smtp_username and smtp_password:
+            smtp_serv.login(smtp_username, smtp_password)
+
+        smtp_serv.sendmail(app_email_from, recipients, msg.as_string())
+        smtp_serv.quit()
+
+        log.info('Mail was sent to: %s' % recipients)
     except:
         log.error('Mail sending failed')
         log.error(traceback.format_exc())
