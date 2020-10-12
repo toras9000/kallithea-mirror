@@ -53,7 +53,6 @@ from kallithea.lib.vcs.utils.helpers import get_scm
 from kallithea.model.meta import Base, Session
 
 
-URL_SEP = '/'
 log = logging.getLogger(__name__)
 
 #==============================================================================
@@ -1025,7 +1024,7 @@ class Repository(Base, BaseDbModel):
         :param cls:
         :param repo_name:
         """
-        return URL_SEP.join(repo_name.split(os.sep))
+        return kallithea.URL_SEP.join(repo_name.split(os.sep))
 
     @classmethod
     def guess_instance(cls, value):
@@ -1051,7 +1050,7 @@ class Repository(Base, BaseDbModel):
         assert repo_full_path.startswith(base_full_path + os.path.sep)
         repo_name = repo_full_path[len(base_full_path) + 1:]
         repo_name = cls.normalize_repo_name(repo_name)
-        return cls.get_by_repo_name(repo_name.strip(URL_SEP))
+        return cls.get_by_repo_name(repo_name.strip(kallithea.URL_SEP))
 
     @classmethod
     def get_repo_forks(cls, repo_id):
@@ -1073,7 +1072,7 @@ class Repository(Base, BaseDbModel):
 
     @property
     def just_name(self):
-        return self.repo_name.split(URL_SEP)[-1]
+        return self.repo_name.split(kallithea.URL_SEP)[-1]
 
     @property
     def groups_with_parents(self):
@@ -1096,7 +1095,7 @@ class Repository(Base, BaseDbModel):
         # we need to split the name by / since this is how we store the
         # names in the database, but that eventually needs to be converted
         # into a valid system path
-        p += self.repo_name.split(URL_SEP)
+        p += self.repo_name.split(kallithea.URL_SEP)
         return os.path.join(*p)
 
     def get_new_name(self, repo_name):
@@ -1106,7 +1105,7 @@ class Repository(Base, BaseDbModel):
         :param group_name:
         """
         path_prefix = self.group.full_path_splitted if self.group else []
-        return URL_SEP.join(path_prefix + [repo_name])
+        return kallithea.URL_SEP.join(path_prefix + [repo_name])
 
     @property
     def _ui(self):
@@ -1445,7 +1444,7 @@ class RepoGroup(Base, BaseDbModel):
 
     @property
     def name(self):
-        return self.group_name.split(URL_SEP)[-1]
+        return self.group_name.split(kallithea.URL_SEP)[-1]
 
     @property
     def full_path(self):
@@ -1453,7 +1452,7 @@ class RepoGroup(Base, BaseDbModel):
 
     @property
     def full_path_splitted(self):
-        return self.group_name.split(URL_SEP)
+        return self.group_name.split(kallithea.URL_SEP)
 
     @property
     def repositories(self):
@@ -1508,7 +1507,7 @@ class RepoGroup(Base, BaseDbModel):
         """
         path_prefix = (self.parent_group.full_path_splitted if
                        self.parent_group else [])
-        return URL_SEP.join(path_prefix + [group_name])
+        return kallithea.URL_SEP.join(path_prefix + [group_name])
 
     def get_api_data(self):
         """

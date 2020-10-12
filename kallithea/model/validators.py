@@ -27,13 +27,13 @@ from formencode.validators import CIDR, Bool, Email, FancyValidator, Int, IPAddr
 from sqlalchemy import func
 from tg.i18n import ugettext as _
 
+import kallithea
 from kallithea.config.routing import ADMIN_PREFIX
 from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel
 from kallithea.lib.compat import OrderedSet
 from kallithea.lib.exceptions import InvalidCloneUriException, LdapImportError
 from kallithea.lib.utils import is_valid_repo_uri
 from kallithea.lib.utils2 import asbool, aslist, repo_name_slug
-from kallithea.model import db
 from kallithea.model.db import RepoGroup, Repository, User, UserGroup
 
 
@@ -326,7 +326,7 @@ def ValidRepoName(edit=False, old_data=None):
                 # value needs to be aware of group name in order to check
                 # db key This is an actual just the name to store in the
                 # database
-                repo_name_full = group_path + db.URL_SEP + repo_name
+                repo_name_full = group_path + kallithea.URL_SEP + repo_name
             else:
                 group_name = group_path = ''
                 repo_name_full = repo_name

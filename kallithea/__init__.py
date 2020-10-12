@@ -45,6 +45,8 @@ CELERY_EAGER = False
 
 CONFIG = {}
 
+URL_SEP = '/'
+
 # Linked module for extensions
 EXTENSIONS = {}
 

@@ -57,7 +57,7 @@ from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError
 #==============================================================================
 from kallithea.lib.vcs.utils import author_email, author_name
 from kallithea.model.changeset_status import ChangesetStatusModel
-from kallithea.model.db import URL_SEP, ChangesetStatus, Permission, PullRequest, User, UserIpMap
+from kallithea.model.db import ChangesetStatus, Permission, PullRequest, User, UserIpMap
 
 
 # mute pyflakes "imported but unused"
@@ -1242,7 +1242,7 @@ def urlify_issues(newtext, repo_name):
                     log.error('invalid issue_url setting %r -> %r %r. Error: %s', issue_pat, issue_server_link, issue_sub, str(e))
                     issue_url = issue_server_link
                 issue_url = issue_url.replace('{repo}', repo_name)
-                issue_url = issue_url.replace('{repo_name}', repo_name.split(URL_SEP)[-1])
+                issue_url = issue_url.replace('{repo_name}', repo_name.split(kallithea.URL_SEP)[-1])
                 # if issue_sub is empty use the matched issue reference verbatim
                 if not issue_sub:
                     issue_text = match_obj.group()

@@ -6,8 +6,8 @@ import urllib.parse
 import mock
 import pytest
 
+import kallithea
 from kallithea.lib import vcs
-from kallithea.model import db
 from kallithea.model.db import Permission, Repository, Ui, User, UserRepoToPerm
 from kallithea.model.meta import Session
 from kallithea.model.repo import RepoModel
@@ -115,7 +115,7 @@ class _BaseTestCase(base.TestController):
         Session().commit()
 
         repo_name = 'ingroup'
-        repo_name_full = db.URL_SEP.join([group_name, repo_name])
+        repo_name_full = kallithea.URL_SEP.join([group_name, repo_name])
         description = 'description for newly created repo'
         response = self.app.post(base.url('repos'),
                         fixture._get_repo_create_params(repo_private=False,
@@ -192,7 +192,7 @@ class _BaseTestCase(base.TestController):
         Session().commit()
 
         repo_name = 'ingroup'
-        repo_name_full = db.URL_SEP.join([group_name, repo_name])
+        repo_name_full = kallithea.URL_SEP.join([group_name, repo_name])
         description = 'description for newly created repo'
         response = self.app.post(base.url('repos'),
                         fixture._get_repo_create_params(repo_private=False,
@@ -206,7 +206,7 @@ class _BaseTestCase(base.TestController):
 
         # user is allowed to create in this group
         repo_name = 'ingroup'
-        repo_name_full = db.URL_SEP.join([group_name_allowed, repo_name])
+        repo_name_full = kallithea.URL_SEP.join([group_name_allowed, repo_name])
         description = 'description for newly created repo'
         response = self.app.post(base.url('repos'),
                         fixture._get_repo_create_params(repo_private=False,
@@ -267,7 +267,7 @@ class _BaseTestCase(base.TestController):
         Session().commit()
 
         repo_name = 'ingroup_inherited_%s' % self.REPO_TYPE
-        repo_name_full = db.URL_SEP.join([group_name, repo_name])
+        repo_name_full = kallithea.URL_SEP.join([group_name, repo_name])
         description = 'description for newly created repo'
         response = self.app.post(base.url('repos'),
                         fixture._get_repo_create_params(repo_private=False,
