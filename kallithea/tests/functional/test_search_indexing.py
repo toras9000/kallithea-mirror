@@ -1,7 +1,7 @@
 import mock
 
 import kallithea
-from kallithea.config.conf import INDEX_FILENAMES
+from kallithea.lib.conf import INDEX_FILENAMES
 from kallithea.model.meta import Session
 from kallithea.model.repo import RepoModel
 from kallithea.model.repo_group import RepoGroupModel

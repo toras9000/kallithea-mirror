@@ -38,7 +38,7 @@ import mercurial.config
 import mercurial.error
 import mercurial.ui
 
-import kallithea.config.conf
+import kallithea.lib.conf
 from kallithea.lib.exceptions import InvalidCloneUriException
 from kallithea.lib.utils2 import ascii_bytes, aslist, extract_mentioned_usernames, get_current_authuser, safe_bytes, safe_str
 from kallithea.lib.vcs.backends.git.repository import GitRepository
@@ -383,10 +383,10 @@ def set_indexer_config(config):
     :param config: kallithea.CONFIG
     """
     log.debug('adding extra into INDEX_EXTENSIONS')
-    kallithea.config.conf.INDEX_EXTENSIONS.extend(re.split(r'\s+', config.get('index.extensions', '')))
+    kallithea.lib.conf.INDEX_EXTENSIONS.extend(re.split(r'\s+', config.get('index.extensions', '')))
 
     log.debug('adding extra into INDEX_FILENAMES')
-    kallithea.config.conf.INDEX_FILENAMES.extend(re.split(r'\s+', config.get('index.filenames', '')))
+    kallithea.lib.conf.INDEX_FILENAMES.extend(re.split(r'\s+', config.get('index.filenames', '')))
 
 
 def map_groups(path):
@@ -526,16 +526,16 @@ def load_extensions(root_path):
     kallithea.EXTENSIONS = ext
 
     # Additional mappings that are not present in the pygments lexers
-    kallithea.config.conf.LANGUAGES_EXTENSIONS_MAP.update(getattr(ext, 'EXTRA_MAPPINGS', {}))
+    kallithea.lib.conf.LANGUAGES_EXTENSIONS_MAP.update(getattr(ext, 'EXTRA_MAPPINGS', {}))
 
     # Override any INDEX_EXTENSIONS
     if getattr(ext, 'INDEX_EXTENSIONS', []):
         log.debug('settings custom INDEX_EXTENSIONS')
-        kallithea.config.conf.INDEX_EXTENSIONS = getattr(ext, 'INDEX_EXTENSIONS', [])
+        kallithea.lib.conf.INDEX_EXTENSIONS = getattr(ext, 'INDEX_EXTENSIONS', [])
 
     # Additional INDEX_EXTENSIONS
     log.debug('adding extra into INDEX_EXTENSIONS')
-    kallithea.config.conf.INDEX_EXTENSIONS.extend(getattr(ext, 'EXTRA_INDEX_EXTENSIONS', []))
+    kallithea.lib.conf.INDEX_EXTENSIONS.extend(getattr(ext, 'EXTRA_INDEX_EXTENSIONS', []))
 
 
 #==============================================================================

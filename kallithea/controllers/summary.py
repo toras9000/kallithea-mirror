@@ -39,11 +39,11 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest
 
 import kallithea.lib.helpers as h
-from kallithea.config.conf import ALL_EXTS, ALL_READMES, LANGUAGES_EXTENSIONS_MAP
 from kallithea.lib import ext_json
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController, jsonify, render
 from kallithea.lib.celerylib.tasks import get_commits_stats
+from kallithea.lib.conf import ALL_EXTS, ALL_READMES, LANGUAGES_EXTENSIONS_MAP
 from kallithea.lib.markup_renderer import MarkupRenderer
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import safe_int, safe_str

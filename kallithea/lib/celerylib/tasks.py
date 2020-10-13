@@ -37,8 +37,7 @@ import celery.utils.log
 from tg import config
 
 import kallithea
-from kallithea.config import conf
-from kallithea.lib import celerylib, ext_json
+from kallithea.lib import celerylib, conf, ext_json
 from kallithea.lib.helpers import person
 from kallithea.lib.hooks import log_create_repository
 from kallithea.lib.indexers.daemon import WhooshIndexingDaemon
