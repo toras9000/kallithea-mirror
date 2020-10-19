@@ -18,14 +18,14 @@ import mercurial.hg
 import mercurial.wireprotoserver
 
 from kallithea.lib.utils import make_ui
-from kallithea.lib.vcs.backends.ssh import BaseSshHandler
+from kallithea.lib.vcs.ssh import base
 from kallithea.lib.vcs.utils import safe_bytes
 
 
 log = logging.getLogger(__name__)
 
 
-class MercurialSshHandler(BaseSshHandler):
+class MercurialSshHandler(base.BaseSshHandler):
     vcs_type = 'hg'
 
     @classmethod

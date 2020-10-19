@@ -22,8 +22,8 @@ import click
 import kallithea
 import kallithea.bin.kallithea_cli_base as cli_base
 from kallithea.lib.utils2 import asbool
-from kallithea.lib.vcs.backends.git.ssh import GitSshHandler
-from kallithea.lib.vcs.backends.hg.ssh import MercurialSshHandler
+from kallithea.lib.vcs.ssh.git import GitSshHandler
+from kallithea.lib.vcs.ssh.hg import MercurialSshHandler
 from kallithea.model.ssh_key import SshKeyModel, SshKeyModelException
 
 
