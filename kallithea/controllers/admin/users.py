@@ -44,7 +44,7 @@ from kallithea.lib.base import BaseController, IfSshEnabled, render
 from kallithea.lib.exceptions import DefaultUserException, UserCreationError, UserOwnsReposException
 from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import datetime_to_time, generate_api_key, safe_int
-from kallithea.lib.utils3 import url
+from kallithea.lib.webutils import url
 from kallithea.model import db, meta
 from kallithea.model.api_key import ApiKeyModel
 from kallithea.model.forms import CustomDefaultPermissionsForm, UserForm

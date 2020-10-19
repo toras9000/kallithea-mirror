@@ -43,7 +43,7 @@ from kallithea.lib.base import BaseController, render
 from kallithea.lib.exceptions import RepoGroupAssignmentError, UserGroupsAssignedException
 from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import safe_int, safe_str
-from kallithea.lib.utils3 import url
+from kallithea.lib.webutils import url
 from kallithea.model import db, meta
 from kallithea.model.forms import CustomDefaultPermissionsForm, UserGroupForm, UserGroupPermsForm
 from kallithea.model.scm import UserGroupList

@@ -40,7 +40,7 @@ from kallithea.lib import helpers as h
 from kallithea.lib.auth import AuthUser, LoginRequired
 from kallithea.lib.base import BaseController, IfSshEnabled, render
 from kallithea.lib.utils2 import generate_api_key, safe_int
-from kallithea.lib.utils3 import url
+from kallithea.lib.webutils import url
 from kallithea.model import db, meta
 from kallithea.model.api_key import ApiKeyModel
 from kallithea.model.forms import PasswordChangeForm, UserForm

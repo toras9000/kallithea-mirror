@@ -40,7 +40,7 @@ import kallithea.lib.helpers as h
 from kallithea.lib.auth import AuthUser, HasPermissionAnyDecorator
 from kallithea.lib.base import BaseController, log_in_user, render
 from kallithea.lib.exceptions import UserCreationError
-from kallithea.lib.utils3 import url
+from kallithea.lib.webutils import url
 from kallithea.model import db, meta
 from kallithea.model.forms import LoginForm, PasswordResetConfirmationForm, PasswordResetRequestForm, RegisterForm
 from kallithea.model.user import UserModel

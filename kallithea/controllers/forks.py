@@ -41,7 +41,7 @@ from kallithea.lib.auth import HasPermissionAnyDecorator, HasRepoPermissionLevel
 from kallithea.lib.base import BaseRepoController, render
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import safe_int
-from kallithea.lib.utils3 import url
+from kallithea.lib.webutils import url
 from kallithea.model import db
 from kallithea.model.forms import RepoForkForm
 from kallithea.model.repo import RepoModel

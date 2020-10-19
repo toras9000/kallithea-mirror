@@ -37,7 +37,7 @@ from webob.exc import HTTPFound
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import HasPermissionAnyDecorator, LoginRequired
 from kallithea.lib.base import BaseController, render
-from kallithea.lib.utils3 import url
+from kallithea.lib.webutils import url
 from kallithea.model import db, meta
 from kallithea.model.forms import DefaultsForm
 
