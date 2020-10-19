@@ -445,7 +445,7 @@ class DiffProcessor(object):
         return self.adds, self.removes
 
 
-_escape_re = re.compile(r'(&)|(<)|(>)|(\t)|(\r)|( $)|(\t$)')
+_escape_re = re.compile(r'(&)|(<)|(>)|(\t)($)?|(\r)|( $)')
 
 
 def _escaper(diff_line):
@@ -467,7 +467,7 @@ def _escaper(diff_line):
     >>> _escaper(' foo\rbar\r')
     ' foo<u class="cr"></u>bar<u class="cr"></u>'
     >>> _escaper(' foo\t')
-    ' foo<u>\t</u>'
+    ' foo<u>\t</u><i></i>'
     >>> _escaper(' foo ')
     ' foo <i></i>'
     >>> _escaper(' foo  ')
@@ -477,15 +477,15 @@ def _escaper(diff_line):
     >>> _escaper('  ')
     '  <i></i>'
     >>> _escaper(' \t')
-    ' <u>\t</u>'
+    ' <u>\t</u><i></i>'
     >>> _escaper(' \t  ')
     ' <u>\t</u>  <i></i>'
     >>> _escaper('   \t')
-    '   <u>\t</u>'
+    '   <u>\t</u><i></i>'
     >>> _escaper(' \t\t  ')
     ' <u>\t</u><u>\t</u>  <i></i>'
     >>> _escaper('   \t\t')
-    '   <u>\t</u><u>\t</u>'
+    '   <u>\t</u><u>\t</u><i></i>'
     >>> _escaper(' foo&bar<baz>  ')
     ' foo&amp;bar&lt;baz&gt;  <i></i>'
     """
@@ -499,15 +499,15 @@ def _escaper(diff_line):
         if groups[2]:
             return '&gt;'
         if groups[3]:
-            return '<u>\t</u>'  # Note: trailing tabs will get a longer match later
-        if groups[4]:
-            return '<u class="cr"></u>'
+            if groups[4] is not None:  # end of line
+                return '<u>\t</u><i></i>'
+            return '<u>\t</u>'
         if groups[5]:
+            return '<u class="cr"></u>'
+        if groups[6]:
             if m.start() == 0:
                 return ' '  # first column space shouldn't make empty lines show up as trailing space
             return ' <i></i>'
-        if groups[6]:
-            return '<u>\t</u><i></i>'
         assert False
 
     return _escape_re.sub(substitute, diff_line)
