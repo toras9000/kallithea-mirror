@@ -337,7 +337,7 @@ def send_email(recipients, subject, body='', html_body='', headers=None, from_na
             smtp_serv.ehlo()  # populate esmtp_features
             smtp_serv.esmtp_features["auth"] = smtp_auth
 
-        if smtp_username and smtp_password:
+        if smtp_username and smtp_password is not None:
             smtp_serv.login(smtp_username, smtp_password)
 
         smtp_serv.sendmail(app_email_from, recipients, msg.as_string())
