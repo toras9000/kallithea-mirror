@@ -59,7 +59,7 @@ def db_create(user, password, email, repos, force_yes, force_no, public_access, 
                 public_access=public_access,
         )
         dbmanage = DbManage(dbconf=dbconf, root=config['here'],
-                            tests=False, cli_args=cli_args)
+                            cli_args=cli_args)
         dbmanage.create_tables(reuse_database=reuse)
         repo_root_path = dbmanage.prompt_repo_root_path(None)
         dbmanage.create_settings(repo_root_path)
