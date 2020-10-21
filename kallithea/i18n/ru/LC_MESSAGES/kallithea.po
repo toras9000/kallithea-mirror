@@ -1569,7 +1569,7 @@ msgid "SSH Keys"
 msgstr "Ключи SSH"
 
 msgid "API Keys"
-msgstr "API-ключи"
+msgstr "Ключи API"
 
 msgid "Owned Repositories"
 msgstr "Свои репозитории"
