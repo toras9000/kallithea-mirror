@@ -21,4 +21,8 @@ class MercurialWorkdir(BaseWorkdir):
             raise BranchDoesNotExistError
 
         raw_id = self.repository.branches[branch]
-        mercurial.merge.update(self.repository._repo, ascii_bytes(raw_id), False, False, None)
+        try:
+            mercurial.merge.update(self.repository._repo[ascii_bytes(raw_id)])
+        except TypeError:  # mergeupdate() missing 3 required positional arguments: 'node', 'branchmerge', and 'force'
+            # update-update was introduced with Mercurial 5.6 (2c86b9587740/c1b603cdc95a)
+            mercurial.merge.update(self.repository._repo, ascii_bytes(raw_id), False, False, None)
