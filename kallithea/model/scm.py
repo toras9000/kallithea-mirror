@@ -40,7 +40,7 @@ from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel, Ha
 from kallithea.lib.exceptions import IMCCommitError, NonRelativePathError
 from kallithea.lib.hooks import process_pushed_raw_ids
 from kallithea.lib.utils import action_logger, get_filesystem_repos, make_ui
-from kallithea.lib.utils2 import safe_bytes, set_hook_environment
+from kallithea.lib.utils2 import safe_bytes, safe_str, set_hook_environment
 from kallithea.lib.vcs import get_repo
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.exceptions import RepositoryError, VCSError
@@ -681,19 +681,18 @@ class ScmModel(object):
             'kallithea', os.path.join('templates', 'py', 'git_pre_receive_hook.py')
         )
 
-        for h_type, tmpl in [('pre', tmpl_pre), ('post', tmpl_post)]:
-            hook_file = os.path.join(hooks_path, '%s-receive' % h_type)
+        for h_type, tmpl in [('pre-receive', tmpl_pre), ('post-receive', tmpl_post)]:
+            hook_file = os.path.join(hooks_path, h_type)
             other_hook = False
             log.debug('Installing git hook in repo %s', repo)
             if os.path.exists(hook_file):
-                # let's take a look at this hook, maybe it's kallithea ?
                 log.debug('hook exists, checking if it is from kallithea')
                 with open(hook_file, 'rb') as f:
                     data = f.read()
                     matches = re.search(br'^KALLITHEA_HOOK_VER\s*=\s*(.*)$', data, flags=re.MULTILINE)
                     if matches:
-                        ver = matches.groups()[0]
-                        log.debug('Found Kallithea hook - it has KALLITHEA_HOOK_VER %r', ver)
+                        ver = safe_str(matches.group(1))
+                        log.debug('Found Kallithea hook - it has KALLITHEA_HOOK_VER %s', ver)
                     else:
                         log.debug('Found non-Kallithea hook at %s', hook_file)
                         other_hook = True
@@ -704,8 +703,7 @@ class ScmModel(object):
                 log.debug('writing %s hook file !', h_type)
                 try:
                     with open(hook_file, 'wb') as f:
-                        tmpl = tmpl.replace(b'_TMPL_', safe_bytes(kallithea.__version__))
-                        f.write(tmpl)
+                        f.write(tmpl.replace(b'_TMPL_', safe_bytes(kallithea.__version__)))
                     os.chmod(hook_file, 0o755)
                 except IOError as e:
                     log.error('error writing hook %s: %s', hook_file, e)
