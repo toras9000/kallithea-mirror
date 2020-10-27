@@ -449,8 +449,45 @@ _escape_re = re.compile(r'(&)|(<)|(>)|(\t)|(\r)|(?<=.)( \n| $)|(\t\n|\t$)')
 
 
 def _escaper(diff_line):
-    """
+    r"""
     Do HTML escaping/markup of a single diff line (including first +/- column)
+
+    >>> _escaper('foobar')
+    'foobar'
+    >>> _escaper('@foo & bar')
+    '@foo &amp; bar'
+    >>> _escaper('+foo < bar')
+    '+foo &lt; bar'
+    >>> _escaper('-foo > bar')
+    '-foo &gt; bar'
+    >>> _escaper(' <foo>')
+    ' &lt;foo&gt;'
+    >>> _escaper(' foo\tbar')
+    ' foo<u>\t</u>bar'
+    >>> _escaper(' foo\rbar\r')
+    ' foo<u class="cr"></u>bar<u class="cr"></u>'
+    >>> _escaper(' foo\t')
+    ' foo<u>\t</u>'
+    >>> _escaper(' foo ')
+    ' foo <i></i>'
+    >>> _escaper(' foo  ')
+    ' foo  <i></i>'
+    >>> _escaper(' ')
+    ' '
+    >>> _escaper('  ')
+    '  <i></i>'
+    >>> _escaper(' \t')
+    ' <u>\t</u>'
+    >>> _escaper(' \t  ')
+    ' <u>\t</u>  <i></i>'
+    >>> _escaper('   \t')
+    '   <u>\t</u>'
+    >>> _escaper(' \t\t  ')
+    ' <u>\t</u><u>\t</u>  <i></i>'
+    >>> _escaper('   \t\t')
+    '   <u>\t</u><u>\t</u>'
+    >>> _escaper(' foo&bar<baz>  ')
+    ' foo&amp;bar&lt;baz&gt;  <i></i>'
     """
 
     def substitute(m):
