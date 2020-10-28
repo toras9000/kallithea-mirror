@@ -21,7 +21,7 @@ import click
 import mako.exceptions
 
 import kallithea.bin.kallithea_cli_base as cli_base
-import kallithea.lib.locale
+import kallithea.lib.locales
 from kallithea.lib import inifile
 
 
@@ -66,7 +66,7 @@ def config_create(config_file, key_value_pairs):
         'git_hook_interpreter': sys.executable,
         'user_home_path': os.path.expanduser('~'),
         'kallithea_cli_path': cli_base.kallithea_cli_path,
-        'ssh_locale': kallithea.lib.locale.get_current_locale(),
+        'ssh_locale': kallithea.lib.locales.get_current_locale(),
     }
     ini_settings = defaultdict(dict)
 

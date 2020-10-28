@@ -30,7 +30,7 @@ from alembic.script.base import ScriptDirectory
 from sqlalchemy import create_engine
 from tg import FullStackApplicationConfigurator
 
-import kallithea.lib.locale
+import kallithea.lib.locales
 import kallithea.model.base
 import kallithea.model.meta
 from kallithea.lib import celerypylons
@@ -99,7 +99,7 @@ else:
 def setup_configuration(app):
     config = app.config
 
-    if not kallithea.lib.locale.current_locale_is_valid():
+    if not kallithea.lib.locales.current_locale_is_valid():
         log.error("Terminating ...")
         sys.exit(1)
 
