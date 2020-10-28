@@ -445,7 +445,7 @@ class DiffProcessor(object):
         return self.adds, self.removes
 
 
-_escape_re = re.compile(r'(&)|(<)|(>)|(\t)|(\r)|(?<=.)( $)|(\t$)')
+_escape_re = re.compile(r'(&)|(<)|(>)|(\t)|(\r)|( $)|(\t$)')
 
 
 def _escaper(diff_line):
@@ -503,6 +503,8 @@ def _escaper(diff_line):
         if groups[4]:
             return '<u class="cr"></u>'
         if groups[5]:
+            if m.start() == 0:
+                return ' '  # first column space shouldn't make empty lines show up as trailing space
             return ' <i></i>'
         if groups[6]:
             return '<u>\t</u><i></i>'
