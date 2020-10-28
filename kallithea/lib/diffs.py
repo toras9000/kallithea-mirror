@@ -448,9 +448,9 @@ class DiffProcessor(object):
 _escape_re = re.compile(r'(&)|(<)|(>)|(\t)|(\r)|(?<=.)( \n| $)|(\t\n|\t$)')
 
 
-def _escaper(string):
+def _escaper(diff_line):
     """
-    Do HTML escaping/markup
+    Do HTML escaping/markup of a single diff line (including first +/- column)
     """
 
     def substitute(m):
@@ -471,7 +471,7 @@ def _escaper(string):
             return '<u>\t</u><i></i>'
         assert False
 
-    return _escape_re.sub(substitute, safe_str(string))
+    return _escape_re.sub(substitute, diff_line)
 
 
 _git_header_re = re.compile(br"""
@@ -536,7 +536,7 @@ def _get_header(vcs, diff_chunk):
     rest = diff_chunk[match.end():]
     if rest and _header_next_check.match(rest):
         raise Exception('cannot parse %s diff header: %r followed by %r' % (vcs, safe_str(bytes(diff_chunk[:match.end()])), safe_str(bytes(rest[:1000]))))
-    diff_lines = (_escaper(m.group(0)) for m in re.finditer(br'.*\n|.+$', rest)) # don't split on \r as str.splitlines do
+    diff_lines = (_escaper(safe_str(m.group(0))) for m in re.finditer(br'.*\n|.+$', rest)) # don't split on \r as str.splitlines do
     return meta_info, diff_lines
 
 
