@@ -445,7 +445,7 @@ class DiffProcessor(object):
         return self.adds, self.removes
 
 
-_escape_re = re.compile(r'(&)|(<)|(>)|(\t)|(\r)|(?<=.)( \n| $)|(\t\n|\t$)')
+_escape_re = re.compile(r'(&)|(<)|(>)|(\t)|(\r)|(?<=.)( $)|(\t$)')
 
 
 def _escaper(diff_line):
@@ -571,9 +571,13 @@ def _get_header(vcs, diff_chunk):
         raise Exception('diff not recognized as valid %s diff' % vcs)
     meta_info = {k: None if v is None else safe_str(v) for k, v in match.groupdict().items()}
     rest = diff_chunk[match.end():]
-    if rest and _header_next_check.match(rest):
-        raise Exception('cannot parse %s diff header: %r followed by %r' % (vcs, safe_str(bytes(diff_chunk[:match.end()])), safe_str(bytes(rest[:1000]))))
-    diff_lines = (_escaper(safe_str(m.group(0))) for m in re.finditer(br'.*\n|.+$', rest)) # don't split on \r as str.splitlines do
+    if rest:
+        if _header_next_check.match(rest):
+            raise Exception('cannot parse %s diff header: %r followed by %r' % (vcs, safe_str(bytes(diff_chunk[:match.end()])), safe_str(bytes(rest[:1000]))))
+        if rest[-1:] != b'\n':
+            # The diff will generally already have trailing \n (and be a memoryview). It might also be huge so we don't want to allocate it twice. But in this very rare case, we don't care.
+            rest = bytes(rest) + b'\n'
+    diff_lines = (_escaper(safe_str(m.group(1))) for m in re.finditer(br'(.*)\n', rest))
     return meta_info, diff_lines
 
 
