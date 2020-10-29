@@ -183,7 +183,7 @@ class FilesController(BaseRepoController):
 
         # TODO: tags and bookmarks?
         c.revision_options = [(c.changeset.raw_id,
-                              _('%s at %s') % (b, h.short_id(c.changeset.raw_id))) for b in c.changeset.branches] + \
+                              _('%s at %s') % (b, c.changeset.short_id)) for b in c.changeset.branches] + \
             [(n, b) for b, n in c.db_repo_scm_instance.branches.items()]
         if c.db_repo_scm_instance.closed_branches:
             prefix = _('(closed)') + ' '

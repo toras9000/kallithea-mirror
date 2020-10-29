@@ -552,7 +552,7 @@ class PullrequestsController(BaseRepoController):
                         show.update(org_scm_instance._repo.revs('::%ld - ::%ld - ::%s', brevs, avail_revs, c.a_branch_name))
                         show.add(revs[0]) # make sure graph shows this so we can see how they relate
                         c.update_msg_other = _('Note: Branch %s has another head: %s.') % (c.cs_branch_name,
-                            h.short_id(org_scm_instance.get_changeset((max(brevs))).raw_id))
+                            org_scm_instance.get_changeset(max(brevs)).short_id)
 
                     avail_show = sorted(show, reverse=True)
 

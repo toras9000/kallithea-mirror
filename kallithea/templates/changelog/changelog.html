@@ -18,7 +18,7 @@
      - /${c.changelog_for_path}
     %endif
     %if c.revision:
-    @ ${h.short_id(c.first_revision.raw_id)}
+    @ ${c.first_revision.short_id}
     %endif
     - ${ungettext('showing %d out of %d revision', 'showing %d out of %d revisions', size) % (size, c.total_cs)}
 </%def>
