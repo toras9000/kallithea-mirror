@@ -32,12 +32,10 @@ import re
 from tg import request
 from tg.i18n import ugettext as _
 
-from kallithea.lib import auth
-from kallithea.lib import helpers as h
-from kallithea.lib import webutils
+from kallithea.lib import auth, webutils
 from kallithea.lib.hooks import log_create_pullrequest
 from kallithea.lib.utils import extract_mentioned_users
-from kallithea.lib.utils2 import ascii_bytes, shorter
+from kallithea.lib.utils2 import ascii_bytes, short_ref_name, shorter
 from kallithea.model import db, meta
 from kallithea.model.notification import NotificationModel
 
@@ -199,7 +197,7 @@ class CreatePullRequestAction(object):
         (org_ref_type,
          org_ref_name,
          org_rev) = org_ref.split(':')
-        org_display = h.short_ref(org_ref_type, org_ref_name)
+        org_display = short_ref_name(org_ref_type, org_ref_name)
         if org_ref_type == 'rev':
             cs = org_repo.scm_instance.get_changeset(org_rev)
             org_ref = 'branch:%s:%s' % (cs.branch, cs.raw_id)
@@ -211,7 +209,7 @@ class CreatePullRequestAction(object):
             cs = other_repo.scm_instance.get_changeset(other_rev)
             other_ref_name = cs.raw_id[:12]
             other_ref = '%s:%s:%s' % (other_ref_type, other_ref_name, cs.raw_id)
-        other_display = h.short_ref(other_ref_type, other_ref_name)
+        other_display = short_ref_name(other_ref_type, other_ref_name)
 
         cs_ranges, _cs_ranges_not, ancestor_revs = \
             org_repo.scm_instance.get_diff_changesets(other_rev, org_repo.scm_instance, org_rev) # org and other "swapped"

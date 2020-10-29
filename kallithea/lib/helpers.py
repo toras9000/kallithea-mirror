@@ -38,8 +38,8 @@ from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel, Ha
 from kallithea.lib.diffs import BIN_FILENODE, CHMOD_FILENODE, DEL_FILENODE, MOD_FILENODE, NEW_FILENODE, RENAMED_FILENODE
 from kallithea.lib.markup_renderer import url_re
 from kallithea.lib.pygmentsutils import get_custom_lexer
-from kallithea.lib.utils2 import (MENTIONS_REGEX, AttributeDict, age, asbool, credentials_filter, fmt_date, safe_bytes, safe_int, safe_str, shorter,
-                                  time_to_datetime)
+from kallithea.lib.utils2 import (MENTIONS_REGEX, AttributeDict, age, asbool, credentials_filter, fmt_date, link_to_ref, safe_bytes, safe_int, safe_str,
+                                  shorter, time_to_datetime)
 from kallithea.lib.vcs.backends.base import BaseChangeset, EmptyChangeset
 from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError
 #==============================================================================
@@ -82,6 +82,7 @@ assert HasRepoPermissionLevel
 # from utils2
 assert age
 assert fmt_date
+assert link_to_ref
 assert shorter
 assert time_to_datetime
 # from vcs
@@ -1126,30 +1127,6 @@ def render_w_mentions(source, repo_name=None):
     s = safe_str(source)
     s = urlify_text(s, repo_name=repo_name)
     return literal('<div class="formatted-fixed">%s</div>' % s)
-
-
-def short_ref(ref_type, ref_name):
-    if ref_type == 'rev':
-        return short_id(ref_name)
-    return ref_name
-
-
-def link_to_ref(repo_name, ref_type, ref_name, rev=None):
-    """
-    Return full markup for a href to changeset_home for a changeset.
-    If ref_type is branch it will link to changelog.
-    ref_name is shortened if ref_type is 'rev'.
-    if rev is specified show it too, explicitly linking to that revision.
-    """
-    txt = short_ref(ref_type, ref_name)
-    if ref_type == 'branch':
-        u = url('changelog_home', repo_name=repo_name, branch=ref_name)
-    else:
-        u = url('changeset_home', repo_name=repo_name, revision=ref_name)
-    l = link_to(repo_name + '#' + txt, u)
-    if rev and ref_type != 'rev':
-        l = literal('%s (%s)' % (l, link_to(short_id(rev), url('changeset_home', repo_name=repo_name, revision=rev))))
-    return l
 
 
 def changeset_status(repo, revision):

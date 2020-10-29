@@ -45,6 +45,7 @@ from tg.support.converters import asbool, aslist
 from webhelpers2.text import collapse, remove_formatting, strip_tags
 
 import kallithea
+from kallithea.lib import webutils
 from kallithea.lib.vcs.backends.base import BaseRepository, EmptyChangeset
 from kallithea.lib.vcs.exceptions import RepositoryError
 from kallithea.lib.vcs.utils import ascii_bytes, ascii_str, safe_bytes, safe_str  # re-export
@@ -343,6 +344,31 @@ def get_clone_url(clone_uri_tmpl, prefix_url, repo_name, repo_id, username=None)
         url_obj = url_obj.with_username(None)
 
     return str(url_obj)
+
+
+def short_ref_name(ref_type, ref_name):
+    """Return short description of PR ref - revs will be truncated"""
+    if ref_type == 'rev':
+        return ref_name[:12]
+    return ref_name
+
+
+def link_to_ref(repo_name, ref_type, ref_name, rev=None):
+    """
+    Return full markup for a PR ref to changeset_home for a changeset.
+    If ref_type is 'branch', it will link to changelog.
+    ref_name is shortened if ref_type is 'rev'.
+    if rev is specified, show it too, explicitly linking to that revision.
+    """
+    txt = short_ref_name(ref_type, ref_name)
+    if ref_type == 'branch':
+        u = webutils.url('changelog_home', repo_name=repo_name, branch=ref_name)
+    else:
+        u = webutils.url('changeset_home', repo_name=repo_name, revision=ref_name)
+    l = webutils.link_to(repo_name + '#' + txt, u)
+    if rev and ref_type != 'rev':
+        l = webutils.literal('%s (%s)' % (l, webutils.link_to(rev[:12], webutils.url('changeset_home', repo_name=repo_name, revision=rev))))
+    return l
 
 
 def get_changeset_safe(repo, rev):
