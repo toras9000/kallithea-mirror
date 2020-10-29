@@ -55,7 +55,7 @@ from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError
 # SCM FILTERS available via h.
 #==============================================================================
 from kallithea.lib.vcs.utils import author_email, author_name
-from kallithea.lib.webutils import url
+from kallithea.lib.webutils import canonical_url, url
 from kallithea.model import db
 from kallithea.model.changeset_status import ChangesetStatusModel
 
@@ -78,31 +78,10 @@ assert HasRepoPermissionLevel
 assert age
 assert time_to_datetime
 assert EmptyChangeset
+assert canonical_url
 
 
 log = logging.getLogger(__name__)
-
-
-def canonical_url(*args, **kargs):
-    '''Like url(x, qualified=True), but returns url that not only is qualified
-    but also canonical, as configured in canonical_url'''
-    try:
-        parts = kallithea.CONFIG.get('canonical_url', '').split('://', 1)
-        kargs['host'] = parts[1]
-        kargs['protocol'] = parts[0]
-    except IndexError:
-        kargs['qualified'] = True
-    return url(*args, **kargs)
-
-
-def canonical_hostname():
-    '''Return canonical hostname of system'''
-    try:
-        parts = kallithea.CONFIG.get('canonical_url', '').split('://', 1)
-        return parts[1].split('/', 1)[0]
-    except IndexError:
-        parts = url('home', qualified=True).split('://', 1)
-        return parts[1].split('/', 1)[0]
 
 
 def html_escape(s):

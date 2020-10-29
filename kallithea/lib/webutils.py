@@ -15,13 +15,19 @@
 kallithea.lib.webutils
 ~~~~~~~~~~~~~~~~~~~~
 
-Helper functions that rely on the current WSGI request, exposed in the TG2
+Helper functions that may rely on the current WSGI request, exposed in the TG2
 thread-local "global" variables. It should have few dependencies so it can be
 imported anywhere - just like the global variables can be used everywhere.
 """
 
 from tg import request
 
+import kallithea
+
+
+#
+# General Kallithea URL handling
+#
 
 class UrlGenerator(object):
     """Emulate pylons.url in providing a wrapper around routes.url
@@ -47,3 +53,25 @@ class UrlGenerator(object):
 
 
 url = UrlGenerator()
+
+
+def canonical_url(*args, **kargs):
+    '''Like url(x, qualified=True), but returns url that not only is qualified
+    but also canonical, as configured in canonical_url'''
+    try:
+        parts = kallithea.CONFIG.get('canonical_url', '').split('://', 1)
+        kargs['host'] = parts[1]
+        kargs['protocol'] = parts[0]
+    except IndexError:
+        kargs['qualified'] = True
+    return url(*args, **kargs)
+
+
+def canonical_hostname():
+    '''Return canonical hostname of system'''
+    try:
+        parts = kallithea.CONFIG.get('canonical_url', '').split('://', 1)
+        return parts[1].split('/', 1)[0]
+    except IndexError:
+        parts = url('home', qualified=True).split('://', 1)
+        return parts[1].split('/', 1)[0]

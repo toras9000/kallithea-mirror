@@ -31,6 +31,7 @@ import hashlib
 import mock
 from tg.util.webtest import test_context
 
+from kallithea.lib import webutils
 from kallithea.lib.utils2 import AttributeDict, safe_bytes
 from kallithea.model import db
 from kallithea.tests import base
@@ -561,7 +562,6 @@ class TestLibs(base.TestController):
         import routes
         from tg import request
 
-        from kallithea.lib.helpers import canonical_url
         m = routes.Mapper()
         m.connect('about', '/about-page')
         url = routes.URLGenerator(m, {'HTTP_HOST': 'http_host.example.org'})
@@ -573,7 +573,7 @@ class TestLibs(base.TestController):
         with test_context(self.app):
             request.environ['routes.url'] = url
             with mock.patch('kallithea.CONFIG', config_mock):
-                assert canonical_url(test) == expected
+                assert webutils.canonical_url(test) == expected
 
     @base.parametrize('canonical,expected', [
         ('http://www.example.org', 'www.example.org'),
@@ -583,8 +583,6 @@ class TestLibs(base.TestController):
     def test_canonical_hostname(self, canonical, expected):
         import routes
         from tg import request
-
-        from kallithea.lib.helpers import canonical_hostname
 
         # setup url(), used by canonical_hostname
         m = routes.Mapper()
@@ -597,4 +595,4 @@ class TestLibs(base.TestController):
         with test_context(self.app):
             request.environ['routes.url'] = url
             with mock.patch('kallithea.CONFIG', config_mock):
-                assert canonical_hostname() == expected
+                assert webutils.canonical_hostname() == expected

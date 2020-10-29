@@ -31,6 +31,7 @@ from collections import defaultdict
 from tg.i18n import ugettext as _
 
 from kallithea.lib import helpers as h
+from kallithea.lib import webutils
 from kallithea.lib.utils import extract_mentioned_users
 from kallithea.model import db, meta
 from kallithea.model.notification import NotificationModel
@@ -72,11 +73,11 @@ class ChangesetCommentsModel(object):
             cs = repo.scm_instance.get_changeset(revision)
             desc = cs.short_id
 
-            threading = ['%s-rev-%s@%s' % (repo.repo_name, revision, h.canonical_hostname())]
+            threading = ['%s-rev-%s@%s' % (repo.repo_name, revision, webutils.canonical_hostname())]
             if line_no: # TODO: url to file _and_ line number
                 threading.append('%s-rev-%s-line-%s@%s' % (repo.repo_name, revision, line_no,
-                                                           h.canonical_hostname()))
-            comment_url = h.canonical_url('changeset_home',
+                                                           webutils.canonical_hostname()))
+            comment_url = webutils.canonical_url('changeset_home',
                 repo_name=repo.repo_name,
                 revision=revision,
                 anchor='comment-%s' % comment.comment_id)
@@ -97,9 +98,9 @@ class ChangesetCommentsModel(object):
             email_kwargs = {
                 'status_change': status_change,
                 'cs_comment_user': author.full_name_and_username,
-                'cs_target_repo': h.canonical_url('summary_home', repo_name=repo.repo_name),
+                'cs_target_repo': webutils.canonical_url('summary_home', repo_name=repo.repo_name),
                 'cs_comment_url': comment_url,
-                'cs_url': h.canonical_url('changeset_home', repo_name=repo.repo_name, revision=revision),
+                'cs_url': webutils.canonical_url('changeset_home', repo_name=repo.repo_name, revision=revision),
                 'raw_id': revision,
                 'message': cs.message,
                 'message_short': h.shorter(cs.message, 50, firstline=True),
@@ -119,11 +120,11 @@ class ChangesetCommentsModel(object):
             _other_ref_type, other_ref_name, _other_rev = comment.pull_request.other_ref.split(':')
             threading = ['%s-pr-%s@%s' % (pull_request.other_repo.repo_name,
                                           pull_request.pull_request_id,
-                                          h.canonical_hostname())]
+                                          webutils.canonical_hostname())]
             if line_no: # TODO: url to file _and_ line number
                 threading.append('%s-pr-%s-line-%s@%s' % (pull_request.other_repo.repo_name,
                                                           pull_request.pull_request_id, line_no,
-                                                          h.canonical_hostname()))
+                                                          webutils.canonical_hostname()))
             comment_url = pull_request.url(canonical=True,
                 anchor='comment-%s' % comment.comment_id)
             subj = h.link_to(
@@ -147,10 +148,10 @@ class ChangesetCommentsModel(object):
                 'pr_comment_url': comment_url,
                 'pr_url': pull_request.url(canonical=True),
                 'pr_comment_user': author.full_name_and_username,
-                'pr_target_repo': h.canonical_url('summary_home',
+                'pr_target_repo': webutils.canonical_url('summary_home',
                                    repo_name=pull_request.other_repo.repo_name),
                 'pr_target_branch': other_ref_name,
-                'pr_source_repo': h.canonical_url('summary_home',
+                'pr_source_repo': webutils.canonical_url('summary_home',
                                    repo_name=pull_request.org_repo.repo_name),
                 'pr_source_branch': org_ref_name,
                 'pr_owner': pull_request.owner,

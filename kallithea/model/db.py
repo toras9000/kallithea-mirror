@@ -1185,8 +1185,7 @@ class Repository(meta.Base, BaseDbModel):
         else:
             clone_uri_tmpl = clone_uri_tmpl.replace('_{repoid}', '{repo}')
 
-        import kallithea.lib.helpers as h
-        prefix_url = h.canonical_url('home')
+        prefix_url = webutils.canonical_url('home')
 
         return get_clone_url(clone_uri_tmpl=clone_uri_tmpl,
                              prefix_url=prefix_url,
@@ -2139,7 +2138,6 @@ class PullRequest(meta.Base, BaseDbModel):
 
     def url(self, **kwargs):
         canonical = kwargs.pop('canonical', None)
-        import kallithea.lib.helpers as h
         b = self.org_ref_parts[1]
         if b != self.other_ref_parts[1]:
             s = '/_/' + b
@@ -2147,7 +2145,7 @@ class PullRequest(meta.Base, BaseDbModel):
             s = '/_/' + self.title
         kwargs['extra'] = urlreadable(s)
         if canonical:
-            return h.canonical_url('pullrequest_show', repo_name=self.other_repo.repo_name,
+            return webutils.canonical_url('pullrequest_show', repo_name=self.other_repo.repo_name,
                                    pull_request_id=self.pull_request_id, **kwargs)
         return webutils.url('pullrequest_show', repo_name=self.other_repo.repo_name,
                      pull_request_id=self.pull_request_id, **kwargs)
@@ -2237,8 +2235,7 @@ class Gist(meta.Base, BaseDbModel):
         if alias_url:
             return alias_url.replace('{gistid}', self.gist_access_id)
 
-        import kallithea.lib.helpers as h
-        return h.canonical_url('gist', gist_id=self.gist_access_id)
+        return webutils.canonical_url('gist', gist_id=self.gist_access_id)
 
     def get_api_data(self):
         """

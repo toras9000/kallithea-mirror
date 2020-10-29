@@ -166,7 +166,6 @@ class UserModel(object):
             raise
 
     def create_registration(self, form_data):
-        import kallithea.lib.helpers as h
         from kallithea.model.notification import NotificationModel
 
         form_data['admin'] = False
@@ -183,7 +182,7 @@ class UserModel(object):
             '- Full Name: {user.full_name}\n'
             '- Email: {user.email}\n'
             ).format(user=new_user)
-        edit_url = h.canonical_url('edit_user', id=new_user.user_id)
+        edit_url = webutils.canonical_url('edit_user', id=new_user.user_id)
         email_kwargs = {
             'registered_user_url': edit_url,
             'new_username': new_user.username,

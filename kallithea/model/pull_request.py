@@ -34,6 +34,7 @@ from tg.i18n import ugettext as _
 
 from kallithea.lib import auth
 from kallithea.lib import helpers as h
+from kallithea.lib import webutils
 from kallithea.lib.hooks import log_create_pullrequest
 from kallithea.lib.utils import extract_mentioned_users
 from kallithea.lib.utils2 import ascii_bytes
@@ -80,7 +81,7 @@ class PullRequestModel(object):
         pr_url = pr.url(canonical=True)
         threading = ['%s-pr-%s@%s' % (pr.other_repo.repo_name,
                                       pr.pull_request_id,
-                                      h.canonical_hostname())]
+                                      webutils.canonical_hostname())]
         subject = h.link_to(
             _('%(user)s wants you to review pull request %(pr_nice_id)s: %(pr_title)s') %
                 {'user': user.username,
@@ -96,16 +97,16 @@ class PullRequestModel(object):
             'pr_title': pr.title,
             'pr_title_short': h.shorter(pr.title, 50),
             'pr_user_created': user.full_name_and_username,
-            'pr_repo_url': h.canonical_url('summary_home', repo_name=pr.other_repo.repo_name),
+            'pr_repo_url': webutils.canonical_url('summary_home', repo_name=pr.other_repo.repo_name),
             'pr_url': pr_url,
             'pr_revisions': revision_data,
             'repo_name': pr.other_repo.repo_name,
             'org_repo_name': pr.org_repo.repo_name,
             'pr_nice_id': pr.nice_id(),
-            'pr_target_repo': h.canonical_url('summary_home',
+            'pr_target_repo': webutils.canonical_url('summary_home',
                                repo_name=pr.other_repo.repo_name),
             'pr_target_branch': other_ref_name,
-            'pr_source_repo': h.canonical_url('summary_home',
+            'pr_source_repo': webutils.canonical_url('summary_home',
                                repo_name=pr.org_repo.repo_name),
             'pr_source_branch': org_ref_name,
             'pr_owner': pr.owner,
@@ -342,7 +343,7 @@ class CreatePullRequestIterationAction(object):
         lost = old_revisions.difference(revisions)
 
         infos = ['This is a new iteration of %s "%s".' %
-                 (h.canonical_url('pullrequest_show', repo_name=old_pull_request.other_repo.repo_name,
+                 (webutils.canonical_url('pullrequest_show', repo_name=old_pull_request.other_repo.repo_name,
                       pull_request_id=old_pull_request.pull_request_id),
                   old_pull_request.title)]
 
@@ -362,7 +363,7 @@ class CreatePullRequestIterationAction(object):
 
             if self.create_action.other_ref == old_pull_request.other_ref:
                 infos.append(_("Ancestor didn't change - diff since previous iteration:"))
-                infos.append(h.canonical_url('compare_url',
+                infos.append(webutils.canonical_url('compare_url',
                                  repo_name=org_repo.repo_name, # other_repo is always same as repo_name
                                  org_ref_type='rev', org_ref_name=org_rev[:12], # use old org_rev as base
                                  other_ref_type='rev', other_ref_name=new_org_rev[:12],

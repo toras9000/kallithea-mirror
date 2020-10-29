@@ -36,6 +36,7 @@ from tg.i18n import ugettext as _
 import kallithea
 from kallithea.lib import feeds
 from kallithea.lib import helpers as h
+from kallithea.lib import webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController
 from kallithea.lib.diffs import DiffProcessor
@@ -84,7 +85,7 @@ class FeedController(BaseRepoController):
                                  _('Changeset was too big and was cut off...')]
 
         # rev link
-        _url = h.canonical_url('changeset_home', repo_name=c.db_repo.repo_name,
+        _url = webutils.canonical_url('changeset_home', repo_name=c.db_repo.repo_name,
                    revision=cs.raw_id)
         desc_msg.append('changeset: <a href="%s">%s</a>' % (_url, cs.raw_id[:8]))
 
@@ -105,7 +106,7 @@ class FeedController(BaseRepoController):
         def _get_feed_from_cache(*_cache_keys):  # parameters are not really used - only as caching key
             header = dict(
                 title=_('%s %s feed') % (c.site_name, repo_name),
-                link=h.canonical_url('summary_home', repo_name=repo_name),
+                link=webutils.canonical_url('summary_home', repo_name=repo_name),
                 description=_('Changes on %s repository') % repo_name,
             )
 
@@ -114,7 +115,7 @@ class FeedController(BaseRepoController):
             for cs in reversed(list(c.db_repo_scm_instance[-rss_items_per_page:])):
                 entries.append(dict(
                     title=self._get_title(cs),
-                    link=h.canonical_url('changeset_home', repo_name=repo_name, revision=cs.raw_id),
+                    link=webutils.canonical_url('changeset_home', repo_name=repo_name, revision=cs.raw_id),
                     author_email=cs.author_email,
                     author_name=cs.author_name,
                     description=''.join(self.__get_desc(cs)),

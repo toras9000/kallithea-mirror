@@ -38,7 +38,7 @@ from webob.exc import HTTPBadRequest
 
 import kallithea.lib.helpers as h
 from kallithea.controllers.admin.admin import _journal_filter
-from kallithea.lib import feeds
+from kallithea.lib import feeds, webutils
 from kallithea.lib.auth import LoginRequired
 from kallithea.lib.base import BaseController, render
 from kallithea.lib.page import Page
@@ -125,13 +125,13 @@ class JournalController(BaseController):
                                     entry.repository.repo_name)
             _url = None
             if entry.repository is not None:
-                _url = h.canonical_url('changelog_home',
+                _url = webutils.canonical_url('changelog_home',
                            repo_name=entry.repository.repo_name)
 
             entries.append(dict(
                 title=title,
                 pubdate=entry.action_date,
-                link=_url or h.canonical_url(''),
+                link=_url or webutils.canonical_url(''),
                 author_email=user.email,
                 author_name=user.full_name_or_username,
                 description=action_extra(),
@@ -141,22 +141,22 @@ class JournalController(BaseController):
 
     def _atom_feed(self, repos, public=True):
         if public:
-            link = h.canonical_url('public_journal_atom')
+            link = webutils.canonical_url('public_journal_atom')
             desc = '%s %s %s' % (c.site_name, _('Public Journal'),
                                   'atom feed')
         else:
-            link = h.canonical_url('journal_atom')
+            link = webutils.canonical_url('journal_atom')
             desc = '%s %s %s' % (c.site_name, _('Journal'), 'atom feed')
 
         return self._feed(repos, feeds.AtomFeed, link, desc)
 
     def _rss_feed(self, repos, public=True):
         if public:
-            link = h.canonical_url('public_journal_atom')
+            link = webutils.canonical_url('public_journal_atom')
             desc = '%s %s %s' % (c.site_name, _('Public Journal'),
                                   'rss feed')
         else:
-            link = h.canonical_url('journal_atom')
+            link = webutils.canonical_url('journal_atom')
             desc = '%s %s %s' % (c.site_name, _('Journal'), 'rss feed')
 
         return self._feed(repos, feeds.RssFeed, link, desc)
