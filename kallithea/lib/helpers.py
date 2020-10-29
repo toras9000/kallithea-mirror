@@ -38,7 +38,7 @@ from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel, Ha
 from kallithea.lib.diffs import BIN_FILENODE, CHMOD_FILENODE, DEL_FILENODE, MOD_FILENODE, NEW_FILENODE, RENAMED_FILENODE
 from kallithea.lib.markup_renderer import url_re
 from kallithea.lib.pygmentsutils import get_custom_lexer
-from kallithea.lib.utils2 import MENTIONS_REGEX, AttributeDict, age, asbool, credentials_filter, safe_bytes, safe_int, safe_str, time_to_datetime
+from kallithea.lib.utils2 import MENTIONS_REGEX, AttributeDict, age, asbool, credentials_filter, safe_bytes, safe_int, safe_str, shorter, time_to_datetime
 from kallithea.lib.vcs.backends.base import BaseChangeset, EmptyChangeset
 from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError
 #==============================================================================
@@ -80,6 +80,7 @@ assert HasRepoGroupPermissionLevel
 assert HasRepoPermissionLevel
 # from utils2
 assert age
+assert shorter
 assert time_to_datetime
 # from vcs
 assert EmptyChangeset
@@ -131,17 +132,6 @@ def jshtml(val):
     better to escape too much than too little.
     """
     return js(escape(val))
-
-
-def shorter(s, size=20, firstline=False, postfix='...'):
-    """Truncate s to size, including the postfix string if truncating.
-    If firstline, truncate at newline.
-    """
-    if firstline:
-        s = s.split('\n', 1)[0].rstrip()
-    if len(s) > size:
-        return s[:size - len(postfix)] + postfix
-    return s
 
 
 def FID(raw_id, path):

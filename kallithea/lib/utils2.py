@@ -153,6 +153,17 @@ def remove_prefix(s, prefix):
     return s
 
 
+def shorter(s, size=20, firstline=False, postfix='...'):
+    """Truncate s to size, including the postfix string if truncating.
+    If firstline, truncate at newline.
+    """
+    if firstline:
+        s = s.split('\n', 1)[0].rstrip()
+    if len(s) > size:
+        return s[:size - len(postfix)] + postfix
+    return s
+
+
 def age(prevdate, show_short_version=False, now=None):
     """
     turns a datetime into an age string.

@@ -30,9 +30,9 @@ from collections import defaultdict
 
 from tg.i18n import ugettext as _
 
-from kallithea.lib import helpers as h
 from kallithea.lib import webutils
 from kallithea.lib.utils import extract_mentioned_users
+from kallithea.lib.utils2 import shorter
 from kallithea.model import db, meta
 from kallithea.model.notification import NotificationModel
 
@@ -103,7 +103,7 @@ class ChangesetCommentsModel(object):
                 'cs_url': webutils.canonical_url('changeset_home', repo_name=repo.repo_name, revision=revision),
                 'raw_id': revision,
                 'message': cs.message,
-                'message_short': h.shorter(cs.message, 50, firstline=True),
+                'message_short': shorter(cs.message, 50, firstline=True),
                 'cs_author': cs_author,
                 'cs_author_username': cs_author.username,
                 'repo_name': repo.repo_name,
@@ -141,7 +141,7 @@ class ChangesetCommentsModel(object):
             # set some variables for email notification
             email_kwargs = {
                 'pr_title': pull_request.title,
-                'pr_title_short': h.shorter(pull_request.title, 50),
+                'pr_title_short': shorter(pull_request.title, 50),
                 'pr_nice_id': pull_request.nice_id(),
                 'status_change': status_change,
                 'closing_pr': closing_pr,
