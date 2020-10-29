@@ -36,6 +36,7 @@ from sqlalchemy.exc import DatabaseError
 from tg import config
 from tg.i18n import ugettext as _
 
+from kallithea.lib import webutils
 from kallithea.lib.exceptions import DefaultUserException, UserOwnsReposException
 from kallithea.lib.utils2 import generate_api_key, get_current_authuser
 from kallithea.model import db, meta
@@ -330,7 +331,7 @@ class UserModel(object):
                 # URL must be fully qualified; but since the token is locked to
                 # the current browser session, we must provide a URL with the
                 # current scheme and hostname, rather than the canonical_url.
-                link = h.url('reset_password_confirmation', qualified=True,
+                link = webutils.url('reset_password_confirmation', qualified=True,
                              email=user_email,
                              timestamp=timestamp,
                              token=token)
@@ -354,7 +355,7 @@ class UserModel(object):
         else:
             log.debug("password reset email %s not found", user_email)
 
-        return h.url('reset_password_confirmation',
+        return webutils.url('reset_password_confirmation',
                      email=user_email,
                      timestamp=timestamp)
 

@@ -22,11 +22,9 @@ import shutil
 import tarfile
 from os.path import dirname
 
-import mock
 from tg import request
 from tg.util.webtest import test_context
 
-from kallithea.lib import helpers
 from kallithea.lib.auth import AuthUser
 from kallithea.lib.db_manage import DbManage
 from kallithea.lib.vcs.backends.base import EmptyChangeset
@@ -332,15 +330,15 @@ class Fixture(object):
     def create_pullrequest(self, testcontroller, repo_name, pr_src_rev, pr_dst_rev, title='title'):
         org_ref = 'branch:stable:%s' % pr_src_rev
         other_ref = 'branch:default:%s' % pr_dst_rev
-        with test_context(testcontroller.app): # needed to be able to mock request user
+        with test_context(testcontroller.app): # needed to be able to mock request user and routes.url
             org_repo = other_repo = db.Repository.get_by_repo_name(repo_name)
             owner_user = db.User.get_by_username(TEST_USER_ADMIN_LOGIN)
             reviewers = [db.User.get_by_username(TEST_USER_REGULAR_LOGIN)]
             request.authuser = AuthUser(dbuser=owner_user)
             # creating a PR sends a message with an absolute URL - without routing that requires mocking
-            with mock.patch.object(helpers, 'url', (lambda arg, qualified=False, **kwargs: ('https://localhost' if qualified else '') + '/fake/' + arg)):
-                cmd = CreatePullRequestAction(org_repo, other_repo, org_ref, other_ref, title, 'No description', owner_user, reviewers)
-                pull_request = cmd.execute()
+            request.environ['routes.url'] = lambda arg, qualified=False, **kwargs: ('https://localhost' if qualified else '') + '/fake/' + arg
+            cmd = CreatePullRequestAction(org_repo, other_repo, org_ref, other_ref, title, 'No description', owner_user, reviewers)
+            pull_request = cmd.execute()
             meta.Session().commit()
         return pull_request.pull_request_id
 

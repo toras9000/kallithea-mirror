@@ -36,7 +36,7 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest, HTTPForbidden, HTTPNotFound
 
 import kallithea.lib.helpers as h
-from kallithea.lib import diffs
+from kallithea.lib import diffs, webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController, jsonify, render
 from kallithea.lib.graphmod import graph_data
@@ -100,7 +100,7 @@ def create_cs_pr_comment(repo_name, revision=None, pull_request=None, allowed_to
             h.flash(_('Successfully deleted pull request %s') % pull_request_id,
                     category='success')
             return {
-               'location': h.url('my_pullrequests'), # or repo pr list?
+               'location': webutils.url('my_pullrequests'), # or repo pr list?
             }
         raise HTTPForbidden()
 

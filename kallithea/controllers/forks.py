@@ -37,6 +37,7 @@ from webob.exc import HTTPFound, HTTPNotFound
 
 import kallithea
 import kallithea.lib.helpers as h
+from kallithea.lib import webutils
 from kallithea.lib.auth import HasPermissionAnyDecorator, HasRepoPermissionLevel, HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController, render
 from kallithea.lib.page import Page
@@ -168,6 +169,6 @@ class ForksController(BaseRepoController):
             h.flash(_('An error occurred during repository forking %s') %
                     repo_name, category='error')
 
-        raise HTTPFound(location=h.url('repo_creating_home',
+        raise HTTPFound(location=webutils.url('repo_creating_home',
                               repo_name=form_result['repo_name_full'],
                               task_id=task_id))

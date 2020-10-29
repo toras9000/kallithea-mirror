@@ -41,6 +41,7 @@ from webob.exc import HTTPFound, HTTPNotFound
 import kallithea
 from kallithea.lib import diffs
 from kallithea.lib import helpers as h
+from kallithea.lib import webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController, jsonify, render
 from kallithea.lib.exceptions import NonRelativePathError
@@ -294,7 +295,7 @@ class FilesController(BaseRepoController):
         if revision not in _branches and revision not in _branches.values():
             h.flash(_('You can only delete files with revision '
                       'being a valid branch'), category='warning')
-            raise HTTPFound(location=h.url('files_home',
+            raise HTTPFound(location=webutils.url('files_home',
                                   repo_name=repo_name, revision='tip',
                                   f_path=f_path))
 
@@ -348,7 +349,7 @@ class FilesController(BaseRepoController):
         if revision not in _branches and revision not in _branches.values():
             h.flash(_('You can only edit files with revision '
                       'being a valid branch'), category='warning')
-            raise HTTPFound(location=h.url('files_home',
+            raise HTTPFound(location=webutils.url('files_home',
                                   repo_name=repo_name, revision='tip',
                                   f_path=f_path))
 

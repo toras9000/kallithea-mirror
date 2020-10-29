@@ -34,6 +34,7 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest, HTTPFound, HTTPNotFound
 
 import kallithea.lib.helpers as h
+from kallithea.lib import webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController, render
 from kallithea.lib.graphmod import graph_data
@@ -112,7 +113,7 @@ class ChangelogController(BaseRepoController):
                         collection = cs.get_file_history(f_path)
                     except RepositoryError as e:
                         h.flash(e, category='warning')
-                        raise HTTPFound(location=h.url('changelog_home', repo_name=repo_name))
+                        raise HTTPFound(location=webutils.url('changelog_home', repo_name=repo_name))
             else:
                 collection = c.db_repo_scm_instance.get_changesets(start=0, end=revision,
                                                         branch_name=branch_name, reverse=True)

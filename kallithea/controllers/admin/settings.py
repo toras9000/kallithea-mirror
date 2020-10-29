@@ -36,6 +36,7 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPFound
 
 from kallithea.lib import helpers as h
+from kallithea.lib import webutils
 from kallithea.lib.auth import HasPermissionAnyDecorator, LoginRequired
 from kallithea.lib.base import BaseController, render
 from kallithea.lib.celerylib import tasks
@@ -147,7 +148,7 @@ class SettingsController(BaseController):
                                             user=request.authuser.username,
                                             overwrite_git_hooks=overwrite_git_hooks)
             added_msg = h.HTML(', ').join(
-                h.link_to(safe_str(repo_name), h.url('summary_home', repo_name=repo_name)) for repo_name in added
+                h.link_to(safe_str(repo_name), webutils.url('summary_home', repo_name=repo_name)) for repo_name in added
             ) or '-'
             removed_msg = h.HTML(', ').join(
                 safe_str(repo_name) for repo_name in removed

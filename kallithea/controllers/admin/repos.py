@@ -38,6 +38,7 @@ from webob.exc import HTTPForbidden, HTTPFound, HTTPInternalServerError, HTTPNot
 
 import kallithea
 from kallithea.lib import helpers as h
+from kallithea.lib import webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired, NotAnonymous
 from kallithea.lib.base import BaseRepoController, jsonify, render
 from kallithea.lib.exceptions import AttachedForksError
@@ -127,7 +128,7 @@ class ReposController(BaseRepoController):
             h.flash(msg, category='error')
             raise HTTPFound(location=url('home'))
 
-        raise HTTPFound(location=h.url('repo_creating_home',
+        raise HTTPFound(location=webutils.url('repo_creating_home',
                               repo_name=form_result['repo_name_full'],
                               task_id=task_id))
 
@@ -182,7 +183,7 @@ class ReposController(BaseRepoController):
                         % (repo.repo_name, repo.clone_uri_hidden), category='success')
             else:
                 repo_url = h.link_to(repo.repo_name,
-                                     h.url('summary_home',
+                                     webutils.url('summary_home',
                                            repo_name=repo.repo_name))
                 fork = repo.fork
                 if fork is not None:

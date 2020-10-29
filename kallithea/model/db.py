@@ -44,7 +44,7 @@ from tg.i18n import lazy_ugettext as _
 from webob.exc import HTTPNotFound
 
 import kallithea
-from kallithea.lib import ext_json, ssh
+from kallithea.lib import ext_json, ssh, webutils
 from kallithea.lib.exceptions import DefaultUserException
 from kallithea.lib.utils2 import asbool, ascii_bytes, aslist, get_changeset_safe, get_clone_url, remove_prefix, safe_bytes, safe_int, safe_str, urlreadable
 from kallithea.lib.vcs import get_backend
@@ -1932,9 +1932,8 @@ class ChangesetComment(meta.Base, BaseDbModel):
 
     def url(self):
         anchor = "comment-%s" % self.comment_id
-        import kallithea.lib.helpers as h
         if self.revision:
-            return h.url('changeset_home', repo_name=self.repo.repo_name, revision=self.revision, anchor=anchor)
+            return webutils.url('changeset_home', repo_name=self.repo.repo_name, revision=self.revision, anchor=anchor)
         elif self.pull_request_id is not None:
             return self.pull_request.url(anchor=anchor)
 
@@ -2150,7 +2149,7 @@ class PullRequest(meta.Base, BaseDbModel):
         if canonical:
             return h.canonical_url('pullrequest_show', repo_name=self.other_repo.repo_name,
                                    pull_request_id=self.pull_request_id, **kwargs)
-        return h.url('pullrequest_show', repo_name=self.other_repo.repo_name,
+        return webutils.url('pullrequest_show', repo_name=self.other_repo.repo_name,
                      pull_request_id=self.pull_request_id, **kwargs)
 
 

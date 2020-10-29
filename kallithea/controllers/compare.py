@@ -36,6 +36,7 @@ from webob.exc import HTTPBadRequest, HTTPFound, HTTPNotFound
 
 from kallithea.lib import diffs
 from kallithea.lib import helpers as h
+from kallithea.lib import webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController, render
 from kallithea.lib.graphmod import graph_data
@@ -100,7 +101,7 @@ class CompareController(BaseRepoController):
         # is_ajax_preview puts hidden input field with changeset revisions
         c.is_ajax_preview = partial and request.GET.get('is_ajax_preview')
         # swap url for compare_diff page - never partial and never is_ajax_preview
-        c.swap_url = h.url('compare_url',
+        c.swap_url = webutils.url('compare_url',
             repo_name=c.cs_repo.repo_name,
             org_ref_type=other_ref_type, org_ref_name=other_ref_name,
             other_repo=c.a_repo.repo_name,
