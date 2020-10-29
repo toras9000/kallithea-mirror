@@ -64,8 +64,7 @@ class ReposController(BaseRepoController):
         repo_obj = c.db_repo
 
         if repo_obj is None:
-            h.not_mapped_error(c.repo_name)
-            raise HTTPFound(location=url('repos'))
+            raise HTTPNotFound()
 
         return repo_obj
 
@@ -249,8 +248,7 @@ class ReposController(BaseRepoController):
         repo_model = RepoModel()
         repo = repo_model.get_by_repo_name(repo_name)
         if not repo:
-            h.not_mapped_error(repo_name)
-            raise HTTPFound(location=url('repos'))
+            raise HTTPNotFound()
         try:
             _forks = repo.forks.count()
             handle_forks = None

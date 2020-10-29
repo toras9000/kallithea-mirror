@@ -33,7 +33,7 @@ from formencode import htmlfill
 from tg import request
 from tg import tmpl_context as c
 from tg.i18n import ugettext as _
-from webob.exc import HTTPFound
+from webob.exc import HTTPFound, HTTPNotFound
 
 import kallithea
 import kallithea.lib.helpers as h
@@ -41,7 +41,6 @@ from kallithea.lib.auth import HasPermissionAnyDecorator, HasRepoPermissionLevel
 from kallithea.lib.base import BaseRepoController, render
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import safe_int
-from kallithea.lib.webutils import url
 from kallithea.model import db
 from kallithea.model.forms import RepoForkForm
 from kallithea.model.repo import RepoModel
@@ -70,8 +69,7 @@ class ForksController(BaseRepoController):
         repo = c.db_repo.scm_instance
 
         if c.repo_info is None:
-            h.not_mapped_error(c.repo_name)
-            raise HTTPFound(location=url('repos'))
+            raise HTTPNotFound()
 
         c.default_user_id = kallithea.DEFAULT_USER_ID
         c.in_public_journal = db.UserFollowing.query() \
@@ -125,8 +123,7 @@ class ForksController(BaseRepoController):
     def fork(self, repo_name):
         c.repo_info = db.Repository.get_by_repo_name(repo_name)
         if not c.repo_info:
-            h.not_mapped_error(repo_name)
-            raise HTTPFound(location=url('home'))
+            raise HTTPNotFound()
 
         defaults = self.__load_data()
 

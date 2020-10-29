@@ -1337,13 +1337,6 @@ def journal_filter_help():
     '''))
 
 
-def not_mapped_error(repo_name):
-    flash(_('%s repository is not mapped to db perhaps'
-            ' it was created or renamed from the filesystem'
-            ' please run the application again'
-            ' in order to rescan repositories') % repo_name, category='error')
-
-
 def ip_range(ip_addr):
     s, e = db.UserIpMap._get_ip_range(ip_addr)
     return '%s - %s' % (s, e)
