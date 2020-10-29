@@ -31,6 +31,7 @@ import hashlib
 import mock
 from tg.util.webtest import test_context
 
+import kallithea.lib.helpers as h
 from kallithea.lib import webutils
 from kallithea.lib.utils2 import AttributeDict, safe_bytes
 from kallithea.model import db
@@ -198,8 +199,7 @@ class TestLibs(base.TestController):
             "[requires => url] [lang => python] [just a tag]"
             "[,d] [ => ULR ] [obsolete] [desc]]"
         )
-        from kallithea.lib.helpers import urlify_text
-        res = urlify_text(sample, stylize=True)
+        res = h.urlify_text(sample, stylize=True)
         assert '<div class="label label-meta" data-tag="tag">tag</div>' in res
         assert '<div class="label label-meta" data-tag="obsolete">obsolete</div>' in res
         assert '<div class="label label-meta" data-tag="stale">stale</div>' in res
@@ -208,7 +208,6 @@ class TestLibs(base.TestController):
         assert '<div class="label label-meta" data-tag="tag">tag</div>' in res
 
     def test_alternative_gravatar(self):
-        from kallithea.lib.helpers import gravatar_url
         _md5 = lambda s: hashlib.md5(safe_bytes(s)).hexdigest()
 
         # mock tg.tmpl_context
@@ -225,30 +224,30 @@ class TestLibs(base.TestController):
             with mock.patch('tg.tmpl_context', fake):
                     from kallithea.lib.webutils import url
                     assert url.current() == 'https://example.com'
-                    grav = gravatar_url(email_address='test@example.com', size=24)
+                    grav = h.gravatar_url(email_address='test@example.com', size=24)
                     assert grav == 'http://example.com/test@example.com'
 
             fake = fake_tmpl_context(_url='http://example.com/{email}')
             with mock.patch('tg.tmpl_context', fake):
-                grav = gravatar_url(email_address='test@example.com', size=24)
+                grav = h.gravatar_url(email_address='test@example.com', size=24)
                 assert grav == 'http://example.com/test@example.com'
 
             fake = fake_tmpl_context(_url='http://example.com/{md5email}')
             with mock.patch('tg.tmpl_context', fake):
                 em = 'test@example.com'
-                grav = gravatar_url(email_address=em, size=24)
+                grav = h.gravatar_url(email_address=em, size=24)
                 assert grav == 'http://example.com/%s' % (_md5(em))
 
             fake = fake_tmpl_context(_url='http://example.com/{md5email}/{size}')
             with mock.patch('tg.tmpl_context', fake):
                 em = 'test@example.com'
-                grav = gravatar_url(email_address=em, size=24)
+                grav = h.gravatar_url(email_address=em, size=24)
                 assert grav == 'http://example.com/%s/%s' % (_md5(em), 24)
 
             fake = fake_tmpl_context(_url='{scheme}://{netloc}/{md5email}/{size}')
             with mock.patch('tg.tmpl_context', fake):
                 em = 'test@example.com'
-                grav = gravatar_url(email_address=em, size=24)
+                grav = h.gravatar_url(email_address=em, size=24)
                 assert grav == 'https://example.com/%s/%s' % (_md5(em), 24)
 
     @base.parametrize('clone_uri_tmpl,repo_name,username,prefix,expected', [
@@ -322,8 +321,7 @@ class TestLibs(base.TestController):
         with mock.patch('kallithea.lib.webutils.UrlGenerator.__call__',
             lambda self, name, **kwargs: dict(changeset_home='/%(repo_name)s/changeset/%(revision)s')[name] % kwargs,
         ):
-            from kallithea.lib.helpers import urlify_text
-            assert urlify_text(sample, 'repo_name') == expected
+            assert h.urlify_text(sample, 'repo_name') == expected
 
     @base.parametrize('sample,expected,url_', [
       ("",
@@ -378,8 +376,7 @@ class TestLibs(base.TestController):
         with mock.patch('kallithea.lib.webutils.UrlGenerator.__call__',
             lambda self, name, **kwargs: dict(changeset_home='/%(repo_name)s/changeset/%(revision)s')[name] % kwargs,
         ):
-            from kallithea.lib.helpers import urlify_text
-            assert urlify_text(sample, 'repo_name', stylize=True) == expected
+            assert h.urlify_text(sample, 'repo_name', stylize=True) == expected
 
     @base.parametrize('sample,expected', [
       ("deadbeefcafe @mention, and http://foo.bar/ yo",
@@ -392,8 +389,7 @@ class TestLibs(base.TestController):
         with mock.patch('kallithea.lib.webutils.UrlGenerator.__call__',
             lambda self, name, **kwargs: dict(changeset_home='/%(repo_name)s/changeset/%(revision)s')[name] % kwargs,
         ):
-            from kallithea.lib.helpers import urlify_text
-            assert urlify_text(sample, 'repo_name', link_='#the-link') == expected
+            assert h.urlify_text(sample, 'repo_name', link_='#the-link') == expected
 
     @base.parametrize('issue_pat,issue_server,issue_sub,sample,expected', [
         (r'#(\d+)', 'http://foo/{repo}/issue/\\1', '#\\1',
@@ -474,7 +470,6 @@ class TestLibs(base.TestController):
             """<a class="issue-tracker-link" href="http://foo/BRU/pullrequest/747/">PR-BRU-747</a>"""),
     ])
     def test_urlify_issues(self, issue_pat, issue_server, issue_sub, sample, expected):
-        from kallithea.lib.helpers import urlify_text
         config_stub = {
             'sqlalchemy.url': 'foo',
             'issue_pat': issue_pat,
@@ -484,7 +479,7 @@ class TestLibs(base.TestController):
         # force recreation of lazy function
         with mock.patch('kallithea.lib.helpers._urlify_issues_f', None):
             with mock.patch('kallithea.CONFIG', config_stub):
-                assert urlify_text(sample, 'repo_name') == expected
+                assert h.urlify_text(sample, 'repo_name') == expected
 
     @base.parametrize('sample,expected', [
         ('abc X5', 'abc <a class="issue-tracker-link" href="http://main/repo_name/main/5/">#5</a>'),
@@ -496,7 +491,6 @@ class TestLibs(base.TestController):
         ('issue FAILMORE89', 'issue FAILMORE89'), # no match because absent prefix
     ])
     def test_urlify_issues_multiple_issue_patterns(self, sample, expected):
-        from kallithea.lib.helpers import urlify_text
         config_stub = {
             'sqlalchemy.url': r'foo',
             'issue_pat': r'X(\d+)',
@@ -517,7 +511,7 @@ class TestLibs(base.TestController):
         # force recreation of lazy function
         with mock.patch('kallithea.lib.helpers._urlify_issues_f', None):
             with mock.patch('kallithea.CONFIG', config_stub):
-                assert urlify_text(sample, 'repo_name') == expected
+                assert h.urlify_text(sample, 'repo_name') == expected
 
     @base.parametrize('test,expected', [
       ("", None),

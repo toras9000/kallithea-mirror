@@ -41,8 +41,8 @@ import celery.utils.log
 from tg import config
 
 import kallithea
+import kallithea.lib.helpers as h
 from kallithea.lib import celerylib, conf, ext_json
-from kallithea.lib.helpers import person
 from kallithea.lib.hooks import log_create_repository
 from kallithea.lib.indexers.daemon import WhooshIndexingDaemon
 from kallithea.lib.utils import action_logger
@@ -72,7 +72,7 @@ def whoosh_index(repo_location, full_index):
 
 # for js data compatibility cleans the key for person from '
 def akc(k):
-    return person(k).replace('"', '')
+    return h.person(k).replace('"', '')
 
 
 @celerylib.task

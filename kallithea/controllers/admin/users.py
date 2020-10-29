@@ -37,9 +37,8 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPFound, HTTPNotFound
 
 import kallithea
-from kallithea.lib import auth_modules
-from kallithea.lib import helpers as h
-from kallithea.lib import webutils
+import kallithea.lib.helpers as h
+from kallithea.lib import auth_modules, webutils
 from kallithea.lib.auth import AuthUser, HasPermissionAnyDecorator, LoginRequired
 from kallithea.lib.base import BaseController, IfSshEnabled, render
 from kallithea.lib.exceptions import DefaultUserException, UserCreationError, UserOwnsReposException

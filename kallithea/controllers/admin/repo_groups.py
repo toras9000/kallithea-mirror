@@ -36,7 +36,7 @@ from tg.i18n import ugettext as _
 from tg.i18n import ungettext
 from webob.exc import HTTPForbidden, HTTPFound, HTTPInternalServerError, HTTPNotFound
 
-from kallithea.lib import helpers as h
+import kallithea.lib.helpers as h
 from kallithea.lib import webutils
 from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel, HasRepoGroupPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseController, render

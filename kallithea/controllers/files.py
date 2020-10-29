@@ -39,9 +39,8 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPFound, HTTPNotFound
 
 import kallithea
-from kallithea.lib import diffs
-from kallithea.lib import helpers as h
-from kallithea.lib import webutils
+import kallithea.lib.helpers as h
+from kallithea.lib import diffs, webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController, jsonify, render
 from kallithea.lib.exceptions import NonRelativePathError

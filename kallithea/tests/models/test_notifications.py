@@ -6,7 +6,7 @@ from tg.util.webtest import test_context
 
 import kallithea.lib.celerylib
 import kallithea.lib.celerylib.tasks
-from kallithea.lib import helpers as h
+import kallithea.lib.helpers as h
 from kallithea.model import db, meta
 from kallithea.model.notification import EmailNotificationModel, NotificationModel
 from kallithea.model.user import UserModel

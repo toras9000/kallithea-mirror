@@ -3,6 +3,7 @@ import json
 import mimetypes
 import posixpath
 
+import kallithea.lib.helpers
 from kallithea.model import db, meta
 from kallithea.tests import base
 from kallithea.tests.fixture import Fixture
@@ -95,7 +96,6 @@ class TestFilesController(base.TestController):
     def test_file_source(self):
         # Force the global cache to be populated now when we know the right .ini has been loaded.
         # (Without this, the test would fail.)
-        import kallithea.lib.helpers
         kallithea.lib.helpers._urlify_issues_f = None
         self.log_user()
         response = self.app.get(base.url(controller='files', action='index',

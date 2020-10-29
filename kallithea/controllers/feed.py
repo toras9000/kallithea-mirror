@@ -34,9 +34,8 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 
 import kallithea
-from kallithea.lib import feeds
-from kallithea.lib import helpers as h
-from kallithea.lib import webutils
+import kallithea.lib.helpers as h
+from kallithea.lib import feeds, webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController
 from kallithea.lib.diffs import DiffProcessor
