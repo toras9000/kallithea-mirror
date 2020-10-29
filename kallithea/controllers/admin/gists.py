@@ -35,6 +35,7 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPForbidden, HTTPFound, HTTPNotFound
 
+from kallithea.lib import auth
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import LoginRequired
 from kallithea.lib.base import BaseController, jsonify, render
@@ -156,7 +157,7 @@ class GistsController(BaseController):
     def delete(self, gist_id):
         gist = GistModel().get_gist(gist_id)
         owner = gist.owner_id == request.authuser.user_id
-        if h.HasPermissionAny('hg.admin')() or owner:
+        if auth.HasPermissionAny('hg.admin')() or owner:
             GistModel().delete(gist)
             meta.Session().commit()
             h.flash(_('Deleted gist %s') % gist.gist_access_id, category='success')

@@ -36,7 +36,7 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest, HTTPForbidden, HTTPFound, HTTPNotFound
 
 from kallithea.controllers.changeset import create_cs_pr_comment, delete_cs_pr_comment
-from kallithea.lib import diffs
+from kallithea.lib import auth, diffs
 from kallithea.lib import helpers as h
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController, jsonify, render
@@ -382,8 +382,8 @@ class PullrequestsController(BaseRepoController):
         assert pull_request.other_repo.repo_name == repo_name
         # only owner or admin can update it
         owner = pull_request.owner_id == request.authuser.user_id
-        repo_admin = h.HasRepoPermissionLevel('admin')(c.repo_name)
-        if not (h.HasPermissionAny('hg.admin')() or repo_admin or owner):
+        repo_admin = auth.HasRepoPermissionLevel('admin')(c.repo_name)
+        if not (auth.HasPermissionAny('hg.admin')() or repo_admin or owner):
             raise HTTPForbidden()
 
         _form = PullRequestPostForm()().to_python(request.POST)

@@ -36,7 +36,7 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest, HTTPForbidden, HTTPNotFound
 
 import kallithea.lib.helpers as h
-from kallithea.lib import diffs, webutils
+from kallithea.lib import auth, diffs, webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController, jsonify, render
 from kallithea.lib.graphmod import graph_data
@@ -91,9 +91,9 @@ def create_cs_pr_comment(repo_name, revision=None, pull_request=None, allowed_to
 
     if pull_request and delete == "delete":
         if (pull_request.owner_id == request.authuser.user_id or
-            h.HasPermissionAny('hg.admin')() or
-            h.HasRepoPermissionLevel('admin')(pull_request.org_repo.repo_name) or
-            h.HasRepoPermissionLevel('admin')(pull_request.other_repo.repo_name)
+            auth.HasPermissionAny('hg.admin')() or
+            auth.HasRepoPermissionLevel('admin')(pull_request.org_repo.repo_name) or
+            auth.HasRepoPermissionLevel('admin')(pull_request.other_repo.repo_name)
         ) and not pull_request.is_closed():
             PullRequestModel().delete(pull_request)
             meta.Session().commit()
@@ -163,8 +163,8 @@ def delete_cs_pr_comment(repo_name, comment_id):
         raise HTTPForbidden()
 
     owner = co.author_id == request.authuser.user_id
-    repo_admin = h.HasRepoPermissionLevel('admin')(repo_name)
-    if h.HasPermissionAny('hg.admin')() or repo_admin or owner:
+    repo_admin = auth.HasRepoPermissionLevel('admin')(repo_name)
+    if auth.HasPermissionAny('hg.admin')() or repo_admin or owner:
         ChangesetCommentsModel().delete(comment=co)
         meta.Session().commit()
         return True

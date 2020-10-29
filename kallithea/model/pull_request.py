@@ -32,6 +32,7 @@ import re
 from tg import request
 from tg.i18n import ugettext as _
 
+from kallithea.lib import auth
 from kallithea.lib import helpers as h
 from kallithea.lib.hooks import log_create_pullrequest
 from kallithea.lib.utils import extract_mentioned_users
@@ -183,8 +184,8 @@ class CreatePullRequestAction(object):
         information needed for such a check, rather than a full command
         object.
         """
-        if (h.HasRepoPermissionLevel('read')(org_repo.repo_name) and
-            h.HasRepoPermissionLevel('read')(other_repo.repo_name)
+        if (auth.HasRepoPermissionLevel('read')(org_repo.repo_name) and
+            auth.HasRepoPermissionLevel('read')(other_repo.repo_name)
         ):
             return True
 
@@ -305,7 +306,7 @@ class CreatePullRequestIterationAction(object):
         information needed for such a check, rather than a full command
         object.
         """
-        if h.HasPermissionAny('hg.admin')():
+        if auth.HasPermissionAny('hg.admin')():
             return True
 
         # Authorized to edit the old PR?
