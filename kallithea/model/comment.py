@@ -106,7 +106,7 @@ class ChangesetCommentsModel(object):
                 'cs_author': cs_author,
                 'cs_author_username': cs_author.username,
                 'repo_name': repo.repo_name,
-                'short_id': h.short_id(revision),
+                'short_id': revision[:12],
                 'branch': cs.branch,
                 'comment_username': author.username,
                 'threading': threading,
