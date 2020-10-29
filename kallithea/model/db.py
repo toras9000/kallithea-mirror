@@ -49,6 +49,7 @@ from kallithea.lib.exceptions import DefaultUserException
 from kallithea.lib.utils2 import asbool, ascii_bytes, aslist, get_changeset_safe, get_clone_url, remove_prefix, safe_bytes, safe_int, safe_str, urlreadable
 from kallithea.lib.vcs import get_backend
 from kallithea.lib.vcs.backends.base import EmptyChangeset
+from kallithea.lib.vcs.utils import author_email, author_name
 from kallithea.lib.vcs.utils.helpers import get_scm
 from kallithea.model import meta
 
@@ -591,13 +592,9 @@ class User(meta.Base, BaseDbModel):
     def get_from_cs_author(cls, author):
         """
         Tries to get User objects out of commit author string
-
-        :param author:
         """
-        from kallithea.lib.helpers import author_name, email
-
         # Valid email in the attribute passed, see if they're in the system
-        _email = email(author)
+        _email = author_email(author)
         if _email:
             user = cls.get_by_email(_email)
             if user is not None:

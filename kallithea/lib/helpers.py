@@ -542,8 +542,6 @@ def pop_flash_messages():
 def capitalize(x):
     return x.capitalize()
 
-email = author_email
-
 def short_id(x):
     return x[:12]
 
@@ -636,7 +634,7 @@ def person(author, show_attr="username"):
         return value
 
     # Still nothing?  Just pass back the author name if any, else the email
-    return author_name(author) or email(author)
+    return author_name(author) or author_email(author)
 
 
 def person_by_id(id_, show_attr="username"):

@@ -51,6 +51,7 @@ from kallithea.lib.vcs.conf import settings
 from kallithea.lib.vcs.exceptions import (ChangesetDoesNotExistError, ChangesetError, EmptyRepositoryError, ImproperArchiveTypeError, NodeAlreadyExistsError,
                                           NodeDoesNotExistError, NodeError, RepositoryError, VCSError)
 from kallithea.lib.vcs.nodes import FileNode
+from kallithea.lib.vcs.utils import author_email
 from kallithea.lib.webutils import url
 from kallithea.model.repo import RepoModel
 from kallithea.model.scm import ScmModel
@@ -170,7 +171,7 @@ class FilesController(BaseRepoController):
 
                 c.authors = []
                 for a in set([x.author for x in _hist]):
-                    c.authors.append((h.email(a), h.person(a)))
+                    c.authors.append((author_email(a), h.person(a)))
             else:
                 c.authors = c.file_history = []
         except RepositoryError as e:
@@ -222,7 +223,7 @@ class FilesController(BaseRepoController):
             file_history, _hist = self._get_node_history(changeset, f_path)
             c.authors = []
             for a in set([x.author for x in _hist]):
-                c.authors.append((h.email(a), h.person(a)))
+                c.authors.append((author_email(a), h.person(a)))
             return render('files/files_history_box.html')
 
     @LoginRequired(allow_default_user=True)
