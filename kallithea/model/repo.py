@@ -33,7 +33,6 @@ import traceback
 from datetime import datetime
 
 import kallithea.lib.utils2
-from kallithea.lib import helpers as h
 from kallithea.lib.auth import HasRepoPermissionLevel, HasUserGroupPermissionLevel
 from kallithea.lib.exceptions import AttachedForksError
 from kallithea.lib.hooks import log_delete_repository
@@ -110,6 +109,8 @@ class RepoModel(object):
         from tg import tmpl_context as c
         from tg.i18n import ugettext as _
 
+        import kallithea.lib.helpers as h
+
         _tmpl_lookup = app_globals.mako_lookup
         template = _tmpl_lookup.get_template('data_table/_dt_elements.html')
 
@@ -129,6 +130,7 @@ class RepoModel(object):
         from tg import request
         from tg import tmpl_context as c
 
+        import kallithea.lib.helpers as h
         from kallithea.model.scm import ScmModel
 
         def repo_lnk(name, rtype, rstate, private, fork_of):
@@ -153,6 +155,7 @@ class RepoModel(object):
                            cs_cache.get('message'))
 
         def desc(desc):
+            import kallithea.lib.helpers as h
             return h.urlify_text(desc, truncate=80, stylize=c.visual.stylify_metalabels)
 
         def state(repo_state):

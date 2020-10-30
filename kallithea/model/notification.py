@@ -33,7 +33,6 @@ from tg import app_globals
 from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 
-from kallithea.lib import helpers as h
 from kallithea.model import db
 
 
@@ -66,6 +65,7 @@ class NotificationModel(object):
         :param with_email: send email with this notification
         :param email_kwargs: additional dict to pass as args to email template
         """
+        import kallithea.lib.helpers as h
         from kallithea.lib.celerylib import tasks
         email_kwargs = email_kwargs or {}
         if recipients and not getattr(recipients, '__iter__', False):
@@ -203,6 +203,7 @@ class EmailNotificationModel(object):
         """
         return generated template for email based on given type
         """
+        import kallithea.lib.helpers as h
 
         base = 'email/' + self.email_types.get(type_, self.email_types[self.TYPE_DEFAULT]) + '.' + content_type
         email_template = self._tmpl_lookup.get_template(base)
