@@ -66,7 +66,7 @@ def _safe_id(idstring):
 def as_html(table_class='code-difftable', line_class='line',
             old_lineno_class='lineno old', new_lineno_class='lineno new',
             no_lineno_class='lineno',
-            code_class='code', enable_comments=False, parsed_lines=None):
+            code_class='code', parsed_lines=None):
     """
     Return given diff as html table with customized css classes
     """
@@ -141,10 +141,8 @@ def as_html(table_class='code-difftable', line_class='line',
                 ###########################################################
                 # CODE
                 ###########################################################
-                comments = '' if enable_comments else 'no-comment'
-                _html.append('''\t<td class="%(cc)s %(inc)s">''' % {
+                _html.append('''\t<td class="%(cc)s">''' % {
                     'cc': code_class,
-                    'inc': comments
                 })
                 _html.append('''\n\t\t<div class="add-bubble"><div>&nbsp;</div></div><pre>%(code)s</pre>\n''' % {
                     'code': change['line']
@@ -163,16 +161,15 @@ def wrap_to_table(html):
     DiffProcessor returns."""
     return '''\
               <table class="code-difftable">
-                <tr class="line no-comment">
+                <tr class="line">
                 <td class="lineno new"></td>
-                <td class="code no-comment"><pre>%s</pre></td>
+                <td class="code"><pre>%s</pre></td>
                 </tr>
               </table>''' % html
 
 
 def wrapped_diff(filenode_old, filenode_new, diff_limit=None,
-                ignore_whitespace=True, line_context=3,
-                enable_comments=False):
+                ignore_whitespace=True, line_context=3):
     """
     Returns a file diff wrapped into a table.
     Checks for diff_limit and presents a message if the diff is too big.
@@ -199,7 +196,7 @@ def wrapped_diff(filenode_old, filenode_new, diff_limit=None,
             op = f['operation']
             a_path = f['old_filename']
 
-        html_diff = as_html(parsed_lines=diff_processor.parsed, enable_comments=enable_comments)
+        html_diff = as_html(parsed_lines=diff_processor.parsed)
         stats = diff_processor.stat()
 
     else:

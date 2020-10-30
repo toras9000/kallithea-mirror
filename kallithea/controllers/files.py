@@ -642,8 +642,7 @@ class FilesController(BaseRepoController):
                                          filenode_new=node2,
                                          diff_limit=diff_limit,
                                          ignore_whitespace=ignore_whitespace_diff,
-                                         line_context=diff_context_size,
-                                         enable_comments=False)
+                                         line_context=diff_context_size)
             c.file_diff_data = [(fid, fid, op, a_path, node2.path, diff, st)]
             return render('files/file_diff.html')
 

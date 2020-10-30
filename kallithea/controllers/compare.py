@@ -182,7 +182,7 @@ class CompareController(BaseRepoController):
             c.lines_deleted += st['deleted']
             filename = f['filename']
             fid = h.FID('', filename)
-            html_diff = diffs.as_html(enable_comments=False, parsed_lines=[f])
+            html_diff = diffs.as_html(parsed_lines=[f])
             c.file_diff_data.append((fid, None, f['operation'], f['old_filename'], filename, html_diff, st))
 
         return render('compare/compare_diff.html')

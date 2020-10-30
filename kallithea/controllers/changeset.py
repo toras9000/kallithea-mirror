@@ -182,11 +182,9 @@ class ChangesetController(BaseRepoController):
         c.fulldiff = request.GET.get('fulldiff') # for reporting number of changed files
         # get ranges of revisions if preset
         rev_range = revision.split('...')[:2]
-        enable_comments = True
         c.cs_repo = c.db_repo
         try:
             if len(rev_range) == 2:
-                enable_comments = False
                 rev_start = rev_range[0]
                 rev_end = rev_range[1]
                 rev_ranges = c.db_repo_scm_instance.get_changesets(start=rev_start,
@@ -259,7 +257,7 @@ class ChangesetController(BaseRepoController):
                     filename = f['filename']
                     fid = h.FID(changeset.raw_id, filename)
                     url_fid = h.FID('', filename)
-                    html_diff = diffs.as_html(enable_comments=enable_comments, parsed_lines=[f])
+                    html_diff = diffs.as_html(parsed_lines=[f])
                     file_diff_data.append((fid, url_fid, f['operation'], f['old_filename'], filename, html_diff, st))
             else:
                 # downloads/raw we only need RAW diff nothing else
