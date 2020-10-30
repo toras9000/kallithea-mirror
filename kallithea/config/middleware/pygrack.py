@@ -127,7 +127,7 @@ class GitRepository(object):
             log.error(traceback.format_exc())
             raise exc.HTTPExpectationFailed()
         resp = Response()
-        resp.content_type = 'application/x-%s-advertisement' % str(git_command)
+        resp.content_type = 'application/x-%s-advertisement' % git_command
         resp.charset = None
         resp.app_iter = out
         return resp
@@ -177,7 +177,7 @@ class GitRepository(object):
                 update_server_info(repo._repo)
 
         resp = Response()
-        resp.content_type = 'application/x-%s-result' % git_command.encode('utf-8')
+        resp.content_type = 'application/x-%s-result' % git_command
         resp.charset = None
         resp.app_iter = out
         return resp
