@@ -36,8 +36,7 @@ from kallithea.lib import auth, webutils
 from kallithea.lib.hooks import log_create_pullrequest
 from kallithea.lib.utils import extract_mentioned_users
 from kallithea.lib.utils2 import ascii_bytes, short_ref_name, shorter
-from kallithea.model import db, meta
-from kallithea.model.notification import NotificationModel
+from kallithea.model import changeset_status, comment, db, meta, notification
 
 
 log = logging.getLogger(__name__)
@@ -114,18 +113,18 @@ class PullRequestModel(object):
             'is_mention': False,
             }
         if reviewers:
-            NotificationModel().create(created_by=user, subject=subject, body=body,
+            notification.NotificationModel().create(created_by=user, subject=subject, body=body,
                                        recipients=reviewers,
-                                       type_=NotificationModel.TYPE_PULL_REQUEST,
+                                       type_=notification.NotificationModel.TYPE_PULL_REQUEST,
                                        email_kwargs=email_kwargs)
 
         if mention_recipients:
             email_kwargs['is_mention'] = True
             subject = _('[Mention]') + ' ' + subject
             # FIXME: this subject is wrong and unused!
-            NotificationModel().create(created_by=user, subject=subject, body=body,
+            notification.NotificationModel().create(created_by=user, subject=subject, body=body,
                                        recipients=mention_recipients,
-                                       type_=NotificationModel.TYPE_PULL_REQUEST,
+                                       type_=notification.NotificationModel.TYPE_PULL_REQUEST,
                                        email_kwargs=email_kwargs)
 
         return reviewers, redundant_reviewers
@@ -272,9 +271,7 @@ class CreatePullRequestAction(object):
             self.org_repo.scm_instance._repo[b"refs/pull/%d/head" % pr.pull_request_id] = ascii_bytes(self.org_rev)
 
         # reset state to under-review
-        from kallithea.model.changeset_status import ChangesetStatusModel
-        from kallithea.model.comment import ChangesetCommentsModel
-        comment = ChangesetCommentsModel().create(
+        new_comment = comment.ChangesetCommentsModel().create(
             text='',
             repo=self.org_repo,
             author=created_by,
@@ -282,11 +279,11 @@ class CreatePullRequestAction(object):
             send_email=False,
             status_change=db.ChangesetStatus.STATUS_UNDER_REVIEW,
         )
-        ChangesetStatusModel().set_status(
+        changeset_status.ChangesetStatusModel().set_status(
             self.org_repo,
             db.ChangesetStatus.STATUS_UNDER_REVIEW,
             created_by,
-            comment,
+            new_comment,
             pull_request=pr,
         )
 
@@ -393,8 +390,7 @@ class CreatePullRequestIterationAction(object):
         pull_request = self.create_action.execute()
 
         # Close old iteration
-        from kallithea.model.comment import ChangesetCommentsModel
-        ChangesetCommentsModel().create(
+        comment.ChangesetCommentsModel().create(
             text=_('Closed, next iteration: %s .') % pull_request.url(canonical=True),
             repo=self.old_pull_request.other_repo_id,
             author=request.authuser.user_id,

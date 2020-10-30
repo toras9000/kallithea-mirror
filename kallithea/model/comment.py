@@ -33,8 +33,7 @@ from tg.i18n import ugettext as _
 from kallithea.lib import webutils
 from kallithea.lib.utils import extract_mentioned_users
 from kallithea.lib.utils2 import shorter
-from kallithea.model import db, meta
-from kallithea.model.notification import NotificationModel
+from kallithea.model import db, meta, notification
 
 
 log = logging.getLogger(__name__)
@@ -69,7 +68,7 @@ class ChangesetCommentsModel(object):
 
         # changeset
         if revision:
-            notification_type = NotificationModel.TYPE_CHANGESET_COMMENT
+            notification_type = notification.NotificationModel.TYPE_CHANGESET_COMMENT
             cs = repo.scm_instance.get_changeset(revision)
             desc = cs.short_id
 
@@ -114,7 +113,7 @@ class ChangesetCommentsModel(object):
             }
         # pull request
         elif pull_request:
-            notification_type = NotificationModel.TYPE_PULL_REQUEST_COMMENT
+            notification_type = notification.NotificationModel.TYPE_PULL_REQUEST_COMMENT
             desc = comment.pull_request.title
             _org_ref_type, org_ref_name, _org_rev = comment.pull_request.org_ref.split(':')
             _other_ref_type, other_ref_name, _other_rev = comment.pull_request.other_ref.split(':')
@@ -208,7 +207,7 @@ class ChangesetCommentsModel(object):
                                 closing_pr=closing_pr)
             email_kwargs['is_mention'] = False
             # create notification objects, and emails
-            NotificationModel().create(
+            notification.NotificationModel().create(
                 created_by=author, subject=subj, body=body,
                 recipients=recipients, type_=notification_type,
                 email_kwargs=email_kwargs,
@@ -219,7 +218,7 @@ class ChangesetCommentsModel(object):
                 email_kwargs['is_mention'] = True
                 subj = _('[Mention]') + ' ' + subj
                 # FIXME: this subject is wrong and unused!
-                NotificationModel().create(
+                notification.NotificationModel().create(
                     created_by=author, subject=subj, body=body,
                     recipients=mention_recipients,
                     type_=notification_type,

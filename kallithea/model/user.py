@@ -166,7 +166,7 @@ class UserModel(object):
             raise
 
     def create_registration(self, form_data):
-        from kallithea.model.notification import NotificationModel
+        from kallithea.model import notification
 
         form_data['admin'] = False
         form_data['extern_type'] = db.User.DEFAULT_AUTH_TYPE
@@ -188,9 +188,9 @@ class UserModel(object):
             'new_username': new_user.username,
             'new_email': new_user.email,
             'new_full_name': new_user.full_name}
-        NotificationModel().create(created_by=new_user, subject=subject,
+        notification.NotificationModel().create(created_by=new_user, subject=subject,
                                    body=body, recipients=None,
-                                   type_=NotificationModel.TYPE_REGISTRATION,
+                                   type_=notification.NotificationModel.TYPE_REGISTRATION,
                                    email_kwargs=email_kwargs)
 
     def update(self, user_id, form_data, skip_attrs=None):
@@ -315,7 +315,7 @@ class UserModel(object):
         email.
         """
         from kallithea.lib.celerylib import tasks
-        from kallithea.model.notification import EmailNotificationModel
+        from kallithea.model import notification
 
         user_email = data['email']
         user = db.User.get_by_email(user_email)
@@ -336,13 +336,13 @@ class UserModel(object):
             else:
                 log.debug('password reset user %s found but was managed', user)
                 token = link = None
-            reg_type = EmailNotificationModel.TYPE_PASSWORD_RESET
-            body = EmailNotificationModel().get_email_tmpl(
+            reg_type = notification.EmailNotificationModel.TYPE_PASSWORD_RESET
+            body = notification.EmailNotificationModel().get_email_tmpl(
                 reg_type, 'txt',
                 user=user.short_contact,
                 reset_token=token,
                 reset_url=link)
-            html_body = EmailNotificationModel().get_email_tmpl(
+            html_body = notification.EmailNotificationModel().get_email_tmpl(
                 reg_type, 'html',
                 user=user.short_contact,
                 reset_token=token,

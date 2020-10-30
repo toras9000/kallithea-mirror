@@ -39,7 +39,7 @@ from kallithea.lib.hooks import log_delete_repository
 from kallithea.lib.utils import is_valid_repo_uri, make_ui
 from kallithea.lib.utils2 import LazyProperty, get_current_authuser, obfuscate_url_pw, remove_prefix
 from kallithea.lib.vcs.backends import get_backend
-from kallithea.model import db, meta
+from kallithea.model import db, meta, scm
 
 
 log = logging.getLogger(__name__)
@@ -131,7 +131,6 @@ class RepoModel(object):
         from tg import tmpl_context as c
 
         import kallithea.lib.helpers as h
-        from kallithea.model.scm import ScmModel
 
         def repo_lnk(name, rtype, rstate, private, fork_of):
             return _render('repo_name', name, rtype, rstate, private, fork_of,
@@ -187,7 +186,7 @@ class RepoModel(object):
                                  repo.repo_state, repo.private, repo.fork),
                 "following": following(
                     repo.repo_id,
-                    ScmModel().is_following_repo(repo.repo_name, request.authuser.user_id),
+                    scm.ScmModel().is_following_repo(repo.repo_name, request.authuser.user_id),
                 ),
                 "last_change_iso": repo.last_db_change.isoformat(),
                 "last_change": last_change(repo.last_db_change),
@@ -332,8 +331,6 @@ class RepoModel(object):
         executed by create() repo, with exception of importing existing repos.
 
         """
-        from kallithea.model.scm import ScmModel
-
         owner = db.User.guess_instance(owner)
         fork_of = db.Repository.guess_instance(fork_of)
         repo_group = db.RepoGroup.guess_instance(repo_group)
@@ -408,7 +405,7 @@ class RepoModel(object):
                 self._create_default_perms(new_repo, private)
 
             # now automatically start following this repository as owner
-            ScmModel().toggle_following_repo(new_repo.repo_id, owner.user_id)
+            scm.ScmModel().toggle_following_repo(new_repo.repo_id, owner.user_id)
             # we need to flush here, in order to check if database won't
             # throw any exceptions, create filesystem dirs at the very end
             meta.Session().flush()
@@ -628,7 +625,6 @@ class RepoModel(object):
         Note: clone_uri is low level and not validated - it might be a file system path used for validated cloning
         """
         from kallithea.lib.utils import is_valid_repo, is_valid_repo_group
-        from kallithea.model.scm import ScmModel
 
         if '/' in repo_name:
             raise ValueError('repo_name must not contain groups got `%s`' % repo_name)
@@ -669,7 +665,7 @@ class RepoModel(object):
         elif repo_type == 'git':
             repo = backend(repo_path, create=True, src_url=clone_uri, bare=True)
             # add kallithea hook into this repo
-            ScmModel().install_git_hooks(repo)
+            scm.ScmModel().install_git_hooks(repo)
         else:
             raise Exception('Not supported repo_type %s expected hg/git' % repo_type)
 

@@ -34,9 +34,7 @@ import traceback
 
 from kallithea.lib import ext_json
 from kallithea.lib.utils2 import AttributeDict, ascii_bytes, safe_int, time_to_datetime
-from kallithea.model import db, meta
-from kallithea.model.repo import RepoModel
-from kallithea.model.scm import ScmModel
+from kallithea.model import db, meta, repo, scm
 
 
 log = logging.getLogger(__name__)
@@ -58,12 +56,12 @@ class GistModel(object):
 
         :param gist: gist object
         """
-        root_path = RepoModel().repos_path
+        root_path = repo.RepoModel().repos_path
         rm_path = os.path.join(root_path, db.Gist.GIST_STORE_LOC, gist.gist_access_id)
         log.info("Removing %s", rm_path)
         shutil.rmtree(rm_path)
 
-    def _store_metadata(self, repo, gist_id, gist_access_id, user_id, gist_type,
+    def _store_metadata(self, fs_repo, gist_id, gist_access_id, user_id, gist_type,
                         gist_expires):
         """
         store metadata inside the gist, this can be later used for imports
@@ -78,7 +76,7 @@ class GistModel(object):
             'gist_expires': gist_expires,
             'gist_updated': time.time(),
         }
-        with open(os.path.join(repo.path, '.hg', db.Gist.GIST_METADATA_FILE), 'wb') as f:
+        with open(os.path.join(fs_repo.path, '.hg', db.Gist.GIST_METADATA_FILE), 'wb') as f:
             f.write(ascii_bytes(ext_json.dumps(metadata)))
 
     def get_gist(self, gist):
@@ -90,8 +88,8 @@ class GistModel(object):
 
         :param gist_access_id:
         """
-        repo = db.Gist.get_by_access_id(gist_access_id)
-        cs = repo.scm_instance.get_changeset(revision)
+        gist_repo = db.Gist.get_by_access_id(gist_access_id)
+        cs = gist_repo.scm_instance.get_changeset(revision)
         return cs, [n for n in cs.get_node('/')]
 
     def create(self, description, owner, ip_addr, gist_mapping,
@@ -125,7 +123,7 @@ class GistModel(object):
             gist.gist_access_id = str(gist.gist_id)
 
         log.debug('Creating new %s GIST repo %s', gist_type, gist.gist_access_id)
-        repo = RepoModel()._create_filesystem_repo(
+        fs_repo = repo.RepoModel()._create_filesystem_repo(
             repo_name=gist.gist_access_id, repo_type='hg', repo_group=db.Gist.GIST_STORE_LOC)
 
         processed_mapping = {}
@@ -151,9 +149,9 @@ class GistModel(object):
         # fake Kallithea Repository object
         fake_repo = AttributeDict(dict(
             repo_name=os.path.join(db.Gist.GIST_STORE_LOC, gist.gist_access_id),
-            scm_instance_no_cache=lambda: repo,
+            scm_instance_no_cache=lambda: fs_repo,
         ))
-        ScmModel().create_nodes(
+        scm.ScmModel().create_nodes(
             user=owner.user_id,
             ip_addr=ip_addr,
             repo=fake_repo,
@@ -162,7 +160,7 @@ class GistModel(object):
             trigger_push_hook=False
         )
 
-        self._store_metadata(repo, gist.gist_id, gist.gist_access_id,
+        self._store_metadata(fs_repo, gist.gist_id, gist.gist_access_id,
                              owner.user_id, gist.gist_type, gist.gist_expires)
         return gist
 
@@ -221,7 +219,7 @@ class GistModel(object):
         self._store_metadata(gist_repo, gist.gist_id, gist.gist_access_id,
                              owner.user_id, gist.gist_type, gist.gist_expires)
 
-        ScmModel().update_nodes(
+        scm.ScmModel().update_nodes(
             user=owner.user_id,
             ip_addr=ip_addr,
             repo=fake_repo,

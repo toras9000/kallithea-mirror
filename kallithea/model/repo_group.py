@@ -34,7 +34,7 @@ import traceback
 
 import kallithea.lib.utils2
 from kallithea.lib.utils2 import LazyProperty
-from kallithea.model import db, meta
+from kallithea.model import db, meta, repo
 
 
 log = logging.getLogger(__name__)
@@ -189,7 +189,6 @@ class RepoGroupModel(object):
                             perms_updates=None, recursive=None,
                             check_perms=True):
         from kallithea.lib.auth import HasUserGroupPermissionLevel
-        from kallithea.model.repo import RepoModel
 
         if not perms_new:
             perms_new = []
@@ -210,7 +209,7 @@ class RepoGroupModel(object):
                 # we set group permission but we have to switch to repo
                 # permission
                 perm = perm.replace('group.', 'repository.')
-                RepoModel().grant_user_permission(
+                repo.RepoModel().grant_user_permission(
                     repo=obj, user=user, perm=perm
                 )
 
@@ -223,7 +222,7 @@ class RepoGroupModel(object):
                 # we set group permission but we have to switch to repo
                 # permission
                 perm = perm.replace('group.', 'repository.')
-                RepoModel().grant_user_group_permission(
+                repo.RepoModel().grant_user_group_permission(
                     repo=obj, group_name=users_group, perm=perm
                 )
 
@@ -335,7 +334,6 @@ class RepoGroupModel(object):
             raise
 
     def add_permission(self, repo_group, obj, obj_type, perm, recursive):
-        from kallithea.model.repo import RepoModel
         repo_group = db.RepoGroup.guess_instance(repo_group)
         perm = db.Permission.guess_instance(perm)
 
@@ -367,9 +365,9 @@ class RepoGroupModel(object):
                 # for repos we need to hotfix the name of permission
                 _perm = perm.permission_name.replace('group.', 'repository.')
                 if obj_type == 'user':
-                    RepoModel().grant_user_permission(el, user=obj, perm=_perm)
+                    repo.RepoModel().grant_user_permission(el, user=obj, perm=_perm)
                 elif obj_type == 'user_group':
-                    RepoModel().grant_user_group_permission(el, group_name=obj, perm=_perm)
+                    repo.RepoModel().grant_user_group_permission(el, group_name=obj, perm=_perm)
                 else:
                     raise Exception('undefined object type %s' % obj_type)
             else:
@@ -391,7 +389,6 @@ class RepoGroupModel(object):
         :param obj_type: user or user group type
         :param recursive: recurse to all children of group
         """
-        from kallithea.model.repo import RepoModel
         repo_group = db.RepoGroup.guess_instance(repo_group)
 
         for el in repo_group.recursive_groups_and_repos():
@@ -420,9 +417,9 @@ class RepoGroupModel(object):
                     raise Exception('undefined object type %s' % obj_type)
             elif isinstance(el, db.Repository):
                 if obj_type == 'user':
-                    RepoModel().revoke_user_permission(el, user=obj)
+                    repo.RepoModel().revoke_user_permission(el, user=obj)
                 elif obj_type == 'user_group':
-                    RepoModel().revoke_user_group_permission(el, group_name=obj)
+                    repo.RepoModel().revoke_user_group_permission(el, group_name=obj)
                 else:
                     raise Exception('undefined object type %s' % obj_type)
             else:
