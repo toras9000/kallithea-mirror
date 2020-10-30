@@ -38,7 +38,8 @@ from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel, Ha
 from kallithea.lib.diffs import BIN_FILENODE, CHMOD_FILENODE, DEL_FILENODE, MOD_FILENODE, NEW_FILENODE, RENAMED_FILENODE
 from kallithea.lib.markup_renderer import url_re
 from kallithea.lib.pygmentsutils import get_custom_lexer
-from kallithea.lib.utils2 import MENTIONS_REGEX, AttributeDict, age, asbool, credentials_filter, safe_bytes, safe_int, safe_str, shorter, time_to_datetime
+from kallithea.lib.utils2 import (MENTIONS_REGEX, AttributeDict, age, asbool, credentials_filter, fmt_date, safe_bytes, safe_int, safe_str, shorter,
+                                  time_to_datetime)
 from kallithea.lib.vcs.backends.base import BaseChangeset, EmptyChangeset
 from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError
 #==============================================================================
@@ -80,6 +81,7 @@ assert HasRepoGroupPermissionLevel
 assert HasRepoPermissionLevel
 # from utils2
 assert age
+assert fmt_date
 assert shorter
 assert time_to_datetime
 # from vcs
@@ -417,12 +419,6 @@ def show_id(cs):
         return 'r%s:%s' % (cs.revision, raw_id)
     else:
         return raw_id
-
-
-def fmt_date(date):
-    if date:
-        return date.strftime("%Y-%m-%d %H:%M:%S")
-    return ""
 
 
 def is_git(repository):

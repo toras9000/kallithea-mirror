@@ -44,7 +44,7 @@ from kallithea.lib.auth import AuthUser, HasPermissionAnyDecorator, LoginRequire
 from kallithea.lib.base import BaseController, IfSshEnabled, render
 from kallithea.lib.exceptions import DefaultUserException, UserCreationError, UserOwnsReposException
 from kallithea.lib.utils import action_logger
-from kallithea.lib.utils2 import datetime_to_time, generate_api_key, safe_int
+from kallithea.lib.utils2 import datetime_to_time, fmt_date, generate_api_key, safe_int
 from kallithea.lib.webutils import url
 from kallithea.model import db, meta
 from kallithea.model.api_key import ApiKeyModel
@@ -90,7 +90,7 @@ class UsersController(BaseController):
                 "username": username(user.user_id, user.username),
                 "firstname": webutils.escape(user.name),
                 "lastname": webutils.escape(user.lastname),
-                "last_login": h.fmt_date(user.last_login),
+                "last_login": fmt_date(user.last_login),
                 "last_login_raw": datetime_to_time(user.last_login),
                 "active": h.boolicon(user.active),
                 "admin": h.boolicon(user.admin),

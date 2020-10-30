@@ -265,6 +265,12 @@ def age(prevdate, show_short_version=False, now=None):
     return _('just now')
 
 
+def fmt_date(date):
+    if date:
+        return date.strftime("%Y-%m-%d %H:%M:%S")
+    return ""
+
+
 def uri_filter(uri):
     """
     Removes user:password from given url string
