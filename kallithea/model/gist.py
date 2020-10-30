@@ -41,9 +41,6 @@ from kallithea.model.scm import ScmModel
 
 log = logging.getLogger(__name__)
 
-GIST_STORE_LOC = '.rc_gist_store'
-GIST_METADATA_FILE = '.rc_gist_metadata'
-
 
 def make_gist_access_id():
     """Generate a random, URL safe, almost certainly unique gist identifier."""
@@ -62,7 +59,7 @@ class GistModel(object):
         :param gist: gist object
         """
         root_path = RepoModel().repos_path
-        rm_path = os.path.join(root_path, GIST_STORE_LOC, gist.gist_access_id)
+        rm_path = os.path.join(root_path, db.Gist.GIST_STORE_LOC, gist.gist_access_id)
         log.info("Removing %s", rm_path)
         shutil.rmtree(rm_path)
 
@@ -81,7 +78,7 @@ class GistModel(object):
             'gist_expires': gist_expires,
             'gist_updated': time.time(),
         }
-        with open(os.path.join(repo.path, '.hg', GIST_METADATA_FILE), 'wb') as f:
+        with open(os.path.join(repo.path, '.hg', db.Gist.GIST_METADATA_FILE), 'wb') as f:
             f.write(ascii_bytes(ext_json.dumps(metadata)))
 
     def get_gist(self, gist):
@@ -129,7 +126,7 @@ class GistModel(object):
 
         log.debug('Creating new %s GIST repo %s', gist_type, gist.gist_access_id)
         repo = RepoModel()._create_filesystem_repo(
-            repo_name=gist.gist_access_id, repo_type='hg', repo_group=GIST_STORE_LOC)
+            repo_name=gist.gist_access_id, repo_type='hg', repo_group=db.Gist.GIST_STORE_LOC)
 
         processed_mapping = {}
         for filename in gist_mapping:
@@ -153,7 +150,7 @@ class GistModel(object):
 
         # fake Kallithea Repository object
         fake_repo = AttributeDict(dict(
-            repo_name=os.path.join(GIST_STORE_LOC, gist.gist_access_id),
+            repo_name=os.path.join(db.Gist.GIST_STORE_LOC, gist.gist_access_id),
             scm_instance_no_cache=lambda: repo,
         ))
         ScmModel().create_nodes(
@@ -217,7 +214,7 @@ class GistModel(object):
 
         # fake Kallithea Repository object
         fake_repo = AttributeDict(dict(
-            repo_name=os.path.join(GIST_STORE_LOC, gist.gist_access_id),
+            repo_name=os.path.join(db.Gist.GIST_STORE_LOC, gist.gist_access_id),
             scm_instance_no_cache=lambda: gist_repo,
         ))
 

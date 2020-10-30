@@ -47,7 +47,7 @@ import kallithea
 from kallithea.lib import ext_json, ssh, webutils
 from kallithea.lib.exceptions import DefaultUserException
 from kallithea.lib.utils2 import asbool, ascii_bytes, aslist, get_changeset_safe, get_clone_url, remove_prefix, safe_bytes, safe_int, safe_str, urlreadable
-from kallithea.lib.vcs import get_backend
+from kallithea.lib.vcs import get_backend, get_repo
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.utils import author_email, author_name
 from kallithea.lib.vcs.utils.helpers import get_scm
@@ -2189,6 +2189,9 @@ class Gist(meta.Base, BaseDbModel):
         _table_args_default_dict,
     )
 
+    GIST_STORE_LOC = '.rc_gist_store'
+    GIST_METADATA_FILE = '.rc_gist_metadata'
+
     GIST_PUBLIC = 'public'
     GIST_PRIVATE = 'private'
     DEFAULT_FILENAME = 'gistfile1.txt'
@@ -2261,9 +2264,7 @@ class Gist(meta.Base, BaseDbModel):
 
     @property
     def scm_instance(self):
-        from kallithea.lib.vcs import get_repo
-        from kallithea.model.gist import GIST_STORE_LOC
-        gist_base_path = os.path.join(kallithea.CONFIG['base_path'], GIST_STORE_LOC)
+        gist_base_path = os.path.join(kallithea.CONFIG['base_path'], self.GIST_STORE_LOC)
         return get_repo(os.path.join(gist_base_path, self.gist_access_id))
 
 
