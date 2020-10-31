@@ -336,23 +336,6 @@ class ScmModel(object):
         set_hook_environment(username, ip_addr, repo_name, repo_alias=repo.alias, action=action)
         process_pushed_raw_ids(revisions) # also calls mark_for_invalidation
 
-    def _get_IMC_module(self, scm_type):
-        """
-        Returns InMemoryCommit class based on scm_type
-
-        :param scm_type:
-        """
-        if scm_type == 'hg':
-            from kallithea.lib.vcs.backends.hg import MercurialInMemoryChangeset
-            return MercurialInMemoryChangeset
-
-        if scm_type == 'git':
-            from kallithea.lib.vcs.backends.git import GitInMemoryChangeset
-            return GitInMemoryChangeset
-
-        raise Exception('Invalid scm_type, must be one of hg,git got %s'
-                        % (scm_type,))
-
     def pull_changes(self, repo, username, ip_addr, clone_uri=None):
         """
         Pull from "clone URL" or fork origin.
@@ -393,8 +376,7 @@ class ScmModel(object):
         :param repo: a db_repo.scm_instance
         """
         user = db.User.guess_instance(user)
-        IMC = self._get_IMC_module(repo.alias)
-        imc = IMC(repo)
+        imc = repo.in_memory_changeset
         imc.change(FileNode(f_path, content, mode=cs.get_file_mode(f_path)))
         try:
             tip = imc.commit(message=message, author=author,
@@ -480,9 +462,6 @@ class ScmModel(object):
         if not author:
             author = committer
 
-        IMC = self._get_IMC_module(scm_instance.alias)
-        imc = IMC(scm_instance)
-
         if not parent_cs:
             parent_cs = EmptyChangeset(alias=scm_instance.alias)
 
@@ -492,6 +471,7 @@ class ScmModel(object):
         else:
             parents = [parent_cs]
         # add multiple nodes
+        imc = scm_instance.in_memory_changeset
         for path, content in processed_nodes:
             imc.add(FileNode(path, content=content))
 
@@ -524,9 +504,6 @@ class ScmModel(object):
         if not author:
             author = committer
 
-        imc_class = self._get_IMC_module(scm_instance.alias)
-        imc = imc_class(scm_instance)
-
         if not parent_cs:
             parent_cs = EmptyChangeset(alias=scm_instance.alias)
 
@@ -537,6 +514,7 @@ class ScmModel(object):
             parents = [parent_cs]
 
         # add multiple nodes
+        imc = scm_instance.in_memory_changeset
         for _filename, data in nodes.items():
             # new filename, can be renamed from the old one
             filename = self._sanitize_path(data['filename'])
@@ -605,9 +583,6 @@ class ScmModel(object):
         if not author:
             author = committer
 
-        IMC = self._get_IMC_module(scm_instance.alias)
-        imc = IMC(scm_instance)
-
         if not parent_cs:
             parent_cs = EmptyChangeset(alias=scm_instance.alias)
 
@@ -617,6 +592,7 @@ class ScmModel(object):
         else:
             parents = [parent_cs]
         # add multiple nodes
+        imc = scm_instance.in_memory_changeset
         for path, content in processed_nodes:
             imc.remove(FileNode(path, content=content))
 
