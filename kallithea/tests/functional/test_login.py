@@ -8,8 +8,7 @@ from tg.util.webtest import test_context
 
 import kallithea.lib.celerylib.tasks
 from kallithea.lib import webutils
-from kallithea.lib.auth import check_password
-from kallithea.lib.utils2 import generate_api_key
+from kallithea.lib.utils2 import check_password, generate_api_key
 from kallithea.model import db, meta, validators
 from kallithea.model.api_key import ApiKeyModel
 from kallithea.model.user import UserModel

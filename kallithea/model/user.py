@@ -38,7 +38,7 @@ from tg.i18n import ugettext as _
 
 from kallithea.lib import webutils
 from kallithea.lib.exceptions import DefaultUserException, UserOwnsReposException
-from kallithea.lib.utils2 import generate_api_key, get_current_authuser
+from kallithea.lib.utils2 import check_password, generate_api_key, get_crypt_password, get_current_authuser
 from kallithea.model import db, forms, meta
 
 
@@ -72,7 +72,6 @@ class UserModel(object):
         }
         # raises UserCreationError if it's not allowed
         check_allowed_create_user(user_data, cur_user)
-        from kallithea.lib.auth import get_crypt_password
 
         new_user = db.User()
         for k, v in form_data.items():
@@ -110,7 +109,6 @@ class UserModel(object):
         if not cur_user:
             cur_user = getattr(get_current_authuser(), 'username', None)
 
-        from kallithea.lib.auth import check_password, get_crypt_password
         from kallithea.lib.hooks import check_allowed_create_user, log_create_user
         user_data = {
             'username': username, 'password': password,
@@ -194,7 +192,6 @@ class UserModel(object):
                                    email_kwargs=email_kwargs)
 
     def update(self, user_id, form_data, skip_attrs=None):
-        from kallithea.lib.auth import get_crypt_password
         skip_attrs = skip_attrs or []
         user = self.get(user_id)
         if user.is_default_user:
@@ -215,8 +212,6 @@ class UserModel(object):
                 setattr(user, k, v)
 
     def update_user(self, user, **kwargs):
-        from kallithea.lib.auth import get_crypt_password
-
         user = db.User.guess_instance(user)
         if user.is_default_user:
             raise DefaultUserException(
@@ -381,13 +376,12 @@ class UserModel(object):
         return expected_token == token
 
     def reset_password(self, user_email, new_passwd):
-        from kallithea.lib import auth
         from kallithea.lib.celerylib import tasks
         user = db.User.get_by_email(user_email)
         if user is not None:
             if not self.can_change_password(user):
                 raise Exception('trying to change password for external user')
-            user.password = auth.get_crypt_password(new_passwd)
+            user.password = get_crypt_password(new_passwd)
             meta.Session().commit()
             log.info('change password for %s', user_email)
         if new_passwd is None:

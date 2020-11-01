@@ -29,12 +29,16 @@ Original author and date, and relevant copyright and licensing information is be
 
 import binascii
 import datetime
+import hashlib
 import json
+import logging
 import os
 import re
+import string
 import time
 import urllib.parse
 
+import bcrypt
 import urlobject
 from dateutil import relativedelta
 from sqlalchemy.engine import url as sa_url
@@ -57,6 +61,9 @@ try:
     import pwd
 except ImportError:
     pass
+
+
+log = logging.getLogger(__name__)
 
 
 # mute pyflakes "imported but unused"
@@ -549,3 +556,67 @@ def ask_ok(prompt, retries=4, complaint='Yes or no please!'):
         if retries < 0:
             raise IOError
         print(complaint)
+
+
+class PasswordGenerator(object):
+    """
+    This is a simple class for generating password from different sets of
+    characters
+    usage::
+
+        passwd_gen = PasswordGenerator()
+        #print 8-letter password containing only big and small letters
+            of alphabet
+        passwd_gen.gen_password(8, passwd_gen.ALPHABETS_BIG_SMALL)
+    """
+    ALPHABETS_NUM = r'''1234567890'''
+    ALPHABETS_SMALL = r'''qwertyuiopasdfghjklzxcvbnm'''
+    ALPHABETS_BIG = r'''QWERTYUIOPASDFGHJKLZXCVBNM'''
+    ALPHABETS_SPECIAL = r'''`-=[]\;',./~!@#$%^&*()_+{}|:"<>?'''
+    ALPHABETS_FULL = ALPHABETS_BIG + ALPHABETS_SMALL \
+        + ALPHABETS_NUM + ALPHABETS_SPECIAL
+    ALPHABETS_ALPHANUM = ALPHABETS_BIG + ALPHABETS_SMALL + ALPHABETS_NUM
+    ALPHABETS_BIG_SMALL = ALPHABETS_BIG + ALPHABETS_SMALL
+    ALPHABETS_ALPHANUM_BIG = ALPHABETS_BIG + ALPHABETS_NUM
+    ALPHABETS_ALPHANUM_SMALL = ALPHABETS_SMALL + ALPHABETS_NUM
+
+    def gen_password(self, length, alphabet=ALPHABETS_FULL):
+        assert len(alphabet) <= 256, alphabet
+        l = []
+        while len(l) < length:
+            i = ord(os.urandom(1))
+            if i < len(alphabet):
+                l.append(alphabet[i])
+        return ''.join(l)
+
+
+def get_crypt_password(password):
+    """
+    Cryptographic function used for bcrypt password hashing.
+
+    :param password: password to hash
+    """
+    return ascii_str(bcrypt.hashpw(safe_bytes(password), bcrypt.gensalt(10)))
+
+
+def check_password(password, hashed):
+    """
+    Checks password match the hashed value using bcrypt.
+    Remains backwards compatible and accept plain sha256 hashes which used to
+    be used on Windows.
+
+    :param password: password
+    :param hashed: password in hashed form
+    """
+    # sha256 hashes will always be 64 hex chars
+    # bcrypt hashes will always contain $ (and be shorter)
+    if len(hashed) == 64 and all(x in string.hexdigits for x in hashed):
+        return hashlib.sha256(password).hexdigest() == hashed
+    try:
+        return bcrypt.checkpw(safe_bytes(password), ascii_bytes(hashed))
+    except ValueError as e:
+        # bcrypt will throw ValueError 'Invalid hashed_password salt' on all password errors
+        log.error('error from bcrypt checking password: %s', e)
+        return False
+    log.error('check_password failed - no method found for hash length %s', len(hashed))
+    return False

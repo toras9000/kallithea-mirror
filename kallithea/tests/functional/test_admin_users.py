@@ -20,7 +20,7 @@ from webob.exc import HTTPNotFound
 import kallithea
 from kallithea.controllers.admin.users import UsersController
 from kallithea.lib import webutils
-from kallithea.lib.auth import check_password
+from kallithea.lib.utils2 import check_password
 from kallithea.model import db, meta, validators
 from kallithea.model.user import UserModel
 from kallithea.tests import base

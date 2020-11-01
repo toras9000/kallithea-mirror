@@ -38,7 +38,7 @@ from paste.deploy import appconfig
 from sqlalchemy import engine_from_config
 
 import kallithea.config.application
-from kallithea.lib.auth import get_crypt_password
+from kallithea.lib.utils2 import get_crypt_password
 from kallithea.model import db, meta
 from kallithea.model.base import init_model
 from kallithea.model.repo import RepoModel
