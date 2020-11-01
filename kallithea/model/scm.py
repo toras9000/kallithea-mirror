@@ -41,9 +41,9 @@ from kallithea.lib.exceptions import IMCCommitError, NonRelativePathError
 from kallithea.lib.hooks import process_pushed_raw_ids
 from kallithea.lib.utils import action_logger, get_filesystem_repos, make_ui
 from kallithea.lib.utils2 import safe_bytes, set_hook_environment
-from kallithea.lib.vcs import get_backend
+from kallithea.lib.vcs import get_repo
 from kallithea.lib.vcs.backends.base import EmptyChangeset
-from kallithea.lib.vcs.exceptions import RepositoryError
+from kallithea.lib.vcs.exceptions import RepositoryError, VCSError
 from kallithea.lib.vcs.nodes import FileNode
 from kallithea.lib.vcs.utils.lazy import LazyProperty
 from kallithea.model import db, meta
@@ -184,15 +184,8 @@ class ScmModel(object):
                     raise RepositoryError('Duplicate repository name %s '
                                           'found in %s' % (name, path))
                 else:
-
-                    klass = get_backend(path[0])
-
-                    if path[0] == 'hg' and path[0] in kallithea.BACKENDS:
-                        repos[name] = klass(path[1], baseui=baseui)
-
-                    if path[0] == 'git' and path[0] in kallithea.BACKENDS:
-                        repos[name] = klass(path[1])
-            except OSError:
+                    repos[name] = get_repo(path[1], baseui=baseui)
+            except (OSError, VCSError):
                 continue
         log.debug('found %s paths with repositories', len(repos))
         return repos

@@ -1026,7 +1026,7 @@ class EmptyChangeset(BaseChangeset):
 
     @LazyProperty
     def branches(self):
-        return [get_backend(self.alias).DEFAULT_BRANCH_NAME]
+        return [self.branch]
 
     @LazyProperty
     def short_id(self):

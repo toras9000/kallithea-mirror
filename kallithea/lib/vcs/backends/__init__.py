@@ -17,7 +17,7 @@ from kallithea.lib.vcs.utils.imports import import_class
 from kallithea.lib.vcs.utils.paths import abspath
 
 
-def get_repo(path=None, alias=None, create=False):
+def get_repo(path=None, alias=None, create=False, baseui=None):
     """
     Returns ``Repository`` object of type linked with given ``alias`` at
     the specified ``path``. If ``alias`` is not given it will try to guess it
@@ -39,7 +39,7 @@ def get_repo(path=None, alias=None, create=False):
         alias = get_scm(path)[0]
 
     backend = get_backend(alias)
-    repo = backend(path, create=create)
+    repo = backend(path, create=create, baseui=baseui)
     return repo
 
 

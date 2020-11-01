@@ -52,8 +52,8 @@ class GitRepository(BaseRepository):
     scm = 'git'
 
     def __init__(self, repo_path, create=False, src_url=None,
-                 update_after_clone=False, bare=False):
-
+                 update_after_clone=False, bare=False, baseui=None):
+        baseui  # unused
         self.path = abspath(repo_path)
         self.repo = self._get_repo(create, src_url, update_after_clone, bare)
         self.bare = self.repo.bare

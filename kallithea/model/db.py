@@ -48,10 +48,9 @@ import kallithea
 from kallithea.lib import ext_json, ssh, webutils
 from kallithea.lib.exceptions import DefaultUserException
 from kallithea.lib.utils2 import asbool, ascii_bytes, aslist, get_changeset_safe, get_clone_url, remove_prefix, safe_bytes, safe_int, safe_str, urlreadable
-from kallithea.lib.vcs import get_backend, get_repo
+from kallithea.lib.vcs import get_repo
 from kallithea.lib.vcs.backends.base import BaseChangeset, EmptyChangeset
 from kallithea.lib.vcs.utils import author_email, author_name
-from kallithea.lib.vcs.utils.helpers import get_scm
 from kallithea.model import meta
 
 
@@ -1331,16 +1330,8 @@ class Repository(meta.Base, BaseDbModel):
 
     def scm_instance_no_cache(self):
         repo_full_path = self.repo_full_path
-        alias = get_scm(repo_full_path)[0]
-        log.debug('Creating instance of %s repository from %s',
-                  alias, self.repo_full_path)
-        backend = get_backend(alias)
-
-        if alias == 'hg':
-            self._scm_instance = backend(repo_full_path, create=False, baseui=self._ui)
-        else:
-            self._scm_instance = backend(repo_full_path, create=False)
-
+        log.debug('Creating instance of repository at %s', repo_full_path)
+        self._scm_instance = get_repo(repo_full_path, baseui=self._ui)
         return self._scm_instance
 
     def __json__(self):
