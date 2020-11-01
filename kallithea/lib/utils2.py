@@ -35,8 +35,10 @@ import logging
 import os
 import re
 import string
+import sys
 import time
 import urllib.parse
+from distutils.version import StrictVersion
 
 import bcrypt
 import urlobject
@@ -52,6 +54,8 @@ from webhelpers2.text import collapse, remove_formatting, strip_tags
 import kallithea
 from kallithea.lib import webutils
 from kallithea.lib.vcs.backends.base import BaseRepository, EmptyChangeset
+from kallithea.lib.vcs.backends.git.repository import GitRepository
+from kallithea.lib.vcs.conf import settings
 from kallithea.lib.vcs.exceptions import RepositoryError
 from kallithea.lib.vcs.utils import ascii_bytes, ascii_str, safe_bytes, safe_str  # re-export
 from kallithea.lib.vcs.utils.lazy import LazyProperty
@@ -620,3 +624,54 @@ def check_password(password, hashed):
         return False
     log.error('check_password failed - no method found for hash length %s', len(hashed))
     return False
+
+
+git_req_ver = StrictVersion('1.7.4')
+
+def check_git_version():
+    """
+    Checks what version of git is installed on the system, and raise a system exit
+    if it's too old for Kallithea to work properly.
+    """
+    if 'git' not in kallithea.BACKENDS:
+        return None
+
+    if not settings.GIT_EXECUTABLE_PATH:
+        log.warning('No git executable configured - check "git_path" in the ini file.')
+        return None
+
+    try:
+        stdout, stderr = GitRepository._run_git_command(['--version'])
+    except RepositoryError as e:
+        # message will already have been logged as error
+        log.warning('No working git executable found - check "git_path" in the ini file.')
+        return None
+
+    if stderr:
+        log.warning('Error/stderr from "%s --version":\n%s', settings.GIT_EXECUTABLE_PATH, safe_str(stderr))
+
+    if not stdout:
+        log.warning('No working git executable found - check "git_path" in the ini file.')
+        return None
+
+    output = safe_str(stdout).strip()
+    m = re.search(r"\d+.\d+.\d+", output)
+    if m:
+        ver = StrictVersion(m.group(0))
+        log.debug('Git executable: "%s", version %s (parsed from: "%s")',
+                  settings.GIT_EXECUTABLE_PATH, ver, output)
+        if ver < git_req_ver:
+            log.error('Kallithea detected %s version %s, which is too old '
+                      'for the system to function properly. '
+                      'Please upgrade to version %s or later. '
+                      'If you strictly need Mercurial repositories, you can '
+                      'clear the "git_path" setting in the ini file.',
+                      settings.GIT_EXECUTABLE_PATH, ver, git_req_ver)
+            log.error("Terminating ...")
+            sys.exit(1)
+    else:
+        ver = StrictVersion('0.0.0')
+        log.warning('Error finding version number in "%s --version" stdout:\n%s',
+                    settings.GIT_EXECUTABLE_PATH, output)
+
+    return ver

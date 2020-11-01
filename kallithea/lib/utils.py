@@ -29,10 +29,8 @@ import datetime
 import logging
 import os
 import re
-import sys
 import traceback
 import urllib.error
-from distutils.version import StrictVersion
 
 import mercurial.config
 import mercurial.error
@@ -44,7 +42,7 @@ from kallithea.lib.utils2 import ascii_bytes, aslist, extract_mentioned_username
 from kallithea.lib.vcs.backends.git.repository import GitRepository
 from kallithea.lib.vcs.backends.hg.repository import MercurialRepository
 from kallithea.lib.vcs.conf import settings
-from kallithea.lib.vcs.exceptions import RepositoryError, VCSError
+from kallithea.lib.vcs.exceptions import VCSError
 from kallithea.lib.vcs.utils.fakemod import create_module
 from kallithea.lib.vcs.utils.helpers import get_scm
 from kallithea.model import db, meta
@@ -540,57 +538,6 @@ def load_extensions(root_path):
 #==============================================================================
 # MISC
 #==============================================================================
-
-git_req_ver = StrictVersion('1.7.4')
-
-def check_git_version():
-    """
-    Checks what version of git is installed on the system, and raise a system exit
-    if it's too old for Kallithea to work properly.
-    """
-    if 'git' not in kallithea.BACKENDS:
-        return None
-
-    if not settings.GIT_EXECUTABLE_PATH:
-        log.warning('No git executable configured - check "git_path" in the ini file.')
-        return None
-
-    try:
-        stdout, stderr = GitRepository._run_git_command(['--version'])
-    except RepositoryError as e:
-        # message will already have been logged as error
-        log.warning('No working git executable found - check "git_path" in the ini file.')
-        return None
-
-    if stderr:
-        log.warning('Error/stderr from "%s --version":\n%s', settings.GIT_EXECUTABLE_PATH, safe_str(stderr))
-
-    if not stdout:
-        log.warning('No working git executable found - check "git_path" in the ini file.')
-        return None
-
-    output = safe_str(stdout).strip()
-    m = re.search(r"\d+.\d+.\d+", output)
-    if m:
-        ver = StrictVersion(m.group(0))
-        log.debug('Git executable: "%s", version %s (parsed from: "%s")',
-                  settings.GIT_EXECUTABLE_PATH, ver, output)
-        if ver < git_req_ver:
-            log.error('Kallithea detected %s version %s, which is too old '
-                      'for the system to function properly. '
-                      'Please upgrade to version %s or later. '
-                      'If you strictly need Mercurial repositories, you can '
-                      'clear the "git_path" setting in the ini file.',
-                      settings.GIT_EXECUTABLE_PATH, ver, git_req_ver)
-            log.error("Terminating ...")
-            sys.exit(1)
-    else:
-        ver = StrictVersion('0.0.0')
-        log.warning('Error finding version number in "%s --version" stdout:\n%s',
-                    settings.GIT_EXECUTABLE_PATH, output)
-
-    return ver
-
 
 def extract_mentioned_users(text):
     """ Returns set of actual database Users @mentioned in given text. """

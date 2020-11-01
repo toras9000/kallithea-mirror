@@ -34,8 +34,8 @@ import kallithea.lib.locales
 import kallithea.model.base
 import kallithea.model.meta
 from kallithea.lib import celerypylons
-from kallithea.lib.utils import check_git_version, load_extensions, set_app_settings, set_indexer_config, set_vcs_config
-from kallithea.lib.utils2 import asbool
+from kallithea.lib.utils import load_extensions, set_app_settings, set_indexer_config, set_vcs_config
+from kallithea.lib.utils2 import asbool, check_git_version
 from kallithea.model import db
 
 

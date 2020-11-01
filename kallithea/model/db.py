@@ -47,7 +47,8 @@ from webob.exc import HTTPNotFound
 import kallithea
 from kallithea.lib import ext_json, ssh, webutils
 from kallithea.lib.exceptions import DefaultUserException
-from kallithea.lib.utils2 import asbool, ascii_bytes, aslist, get_changeset_safe, get_clone_url, remove_prefix, safe_bytes, safe_int, safe_str, urlreadable
+from kallithea.lib.utils2 import (asbool, ascii_bytes, aslist, check_git_version, get_changeset_safe, get_clone_url, remove_prefix, safe_bytes, safe_int,
+                                  safe_str, urlreadable)
 from kallithea.lib.vcs import get_repo
 from kallithea.lib.vcs.backends.base import BaseChangeset, EmptyChangeset
 from kallithea.lib.vcs.utils import author_email, author_name
@@ -309,7 +310,6 @@ class Setting(meta.Base, BaseDbModel):
 
         import pkg_resources
 
-        from kallithea.lib.utils import check_git_version
         mods = [(p.project_name, p.version) for p in pkg_resources.working_set]
         info = {
             'modules': sorted(mods, key=lambda k: k[0].lower()),
