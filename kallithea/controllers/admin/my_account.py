@@ -35,8 +35,7 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPFound
 
-from kallithea.lib import auth_modules
-from kallithea.lib import helpers as h
+from kallithea.lib import auth_modules, webutils
 from kallithea.lib.auth import AuthUser, LoginRequired
 from kallithea.lib.base import BaseController, IfSshEnabled, render
 from kallithea.lib.utils2 import generate_api_key, safe_int
@@ -61,7 +60,7 @@ class MyAccountController(BaseController):
     def __load_data(self):
         c.user = db.User.get(request.authuser.user_id)
         if c.user.is_default_user:
-            h.flash(_("You can't edit this user since it's"
+            webutils.flash(_("You can't edit this user since it's"
                       " crucial for entire application"), category='warning')
             raise HTTPFound(location=url('users'))
 
@@ -110,7 +109,7 @@ class MyAccountController(BaseController):
 
                 UserModel().update(request.authuser.user_id, form_result,
                                    skip_attrs=skip_attrs)
-                h.flash(_('Your account was updated successfully'),
+                webutils.flash(_('Your account was updated successfully'),
                         category='success')
                 meta.Session().commit()
                 update = True
@@ -125,7 +124,7 @@ class MyAccountController(BaseController):
                     force_defaults=False)
             except Exception:
                 log.error(traceback.format_exc())
-                h.flash(_('Error occurred during update of user %s')
+                webutils.flash(_('Error occurred during update of user %s')
                         % form_result.get('username'), category='error')
         if update:
             raise HTTPFound(location='my_account')
@@ -148,7 +147,7 @@ class MyAccountController(BaseController):
                 form_result = _form.to_python(request.POST)
                 UserModel().update(request.authuser.user_id, form_result)
                 meta.Session().commit()
-                h.flash(_("Successfully updated password"), category='success')
+                webutils.flash(_("Successfully updated password"), category='success')
             except formencode.Invalid as errors:
                 return htmlfill.render(
                     render('admin/my_account/my_account.html'),
@@ -159,7 +158,7 @@ class MyAccountController(BaseController):
                     force_defaults=False)
             except Exception:
                 log.error(traceback.format_exc())
-                h.flash(_('Error occurred during update of user password'),
+                webutils.flash(_('Error occurred during update of user password'),
                         category='error')
         return render('admin/my_account/my_account.html')
 
@@ -200,13 +199,13 @@ class MyAccountController(BaseController):
         try:
             UserModel().add_extra_email(request.authuser.user_id, email)
             meta.Session().commit()
-            h.flash(_("Added email %s to user") % email, category='success')
+            webutils.flash(_("Added email %s to user") % email, category='success')
         except formencode.Invalid as error:
             msg = error.error_dict['email']
-            h.flash(msg, category='error')
+            webutils.flash(msg, category='error')
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('An error occurred during email saving'),
+            webutils.flash(_('An error occurred during email saving'),
                     category='error')
         raise HTTPFound(location=url('my_account_emails'))
 
@@ -215,7 +214,7 @@ class MyAccountController(BaseController):
         user_model = UserModel()
         user_model.delete_extra_email(request.authuser.user_id, email_id)
         meta.Session().commit()
-        h.flash(_("Removed email from user"), category='success')
+        webutils.flash(_("Removed email from user"), category='success')
         raise HTTPFound(location=url('my_account_emails'))
 
     def my_account_api_keys(self):
@@ -239,7 +238,7 @@ class MyAccountController(BaseController):
         description = request.POST.get('description')
         ApiKeyModel().create(request.authuser.user_id, description, lifetime)
         meta.Session().commit()
-        h.flash(_("API key successfully created"), category='success')
+        webutils.flash(_("API key successfully created"), category='success')
         raise HTTPFound(location=url('my_account_api_keys'))
 
     def my_account_api_keys_delete(self):
@@ -248,11 +247,11 @@ class MyAccountController(BaseController):
             user = db.User.get(request.authuser.user_id)
             user.api_key = generate_api_key()
             meta.Session().commit()
-            h.flash(_("API key successfully reset"), category='success')
+            webutils.flash(_("API key successfully reset"), category='success')
         elif api_key:
             ApiKeyModel().delete(api_key, request.authuser.user_id)
             meta.Session().commit()
-            h.flash(_("API key successfully deleted"), category='success')
+            webutils.flash(_("API key successfully deleted"), category='success')
 
         raise HTTPFound(location=url('my_account_api_keys'))
 
@@ -272,9 +271,9 @@ class MyAccountController(BaseController):
                                                description, public_key)
             meta.Session().commit()
             SshKeyModel().write_authorized_keys()
-            h.flash(_("SSH key %s successfully added") % new_ssh_key.fingerprint, category='success')
+            webutils.flash(_("SSH key %s successfully added") % new_ssh_key.fingerprint, category='success')
         except SshKeyModelException as e:
-            h.flash(e.args[0], category='error')
+            webutils.flash(e.args[0], category='error')
         raise HTTPFound(location=url('my_account_ssh_keys'))
 
     @IfSshEnabled
@@ -284,7 +283,7 @@ class MyAccountController(BaseController):
             SshKeyModel().delete(fingerprint, request.authuser.user_id)
             meta.Session().commit()
             SshKeyModel().write_authorized_keys()
-            h.flash(_("SSH key successfully deleted"), category='success')
+            webutils.flash(_("SSH key successfully deleted"), category='success')
         except SshKeyModelException as e:
-            h.flash(e.args[0], category='error')
+            webutils.flash(e.args[0], category='error')
         raise HTTPFound(location=url('my_account_ssh_keys'))

@@ -82,7 +82,7 @@ class PullRequestModel(object):
         threading = ['%s-pr-%s@%s' % (pr.other_repo.repo_name,
                                       pr.pull_request_id,
                                       webutils.canonical_hostname())]
-        subject = h.link_to(
+        subject = webutils.link_to(
             _('%(user)s wants you to review pull request %(pr_nice_id)s: %(pr_title)s') %
                 {'user': user.username,
                  'pr_title': pr.title,

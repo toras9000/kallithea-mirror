@@ -83,15 +83,15 @@ class FilesController(BaseRepoController):
             url_ = url('files_add_home',
                        repo_name=c.repo_name,
                        revision=0, f_path='', anchor='edit')
-            add_new = h.link_to(_('Click here to add new file'), url_, class_="alert-link")
-            h.flash(_('There are no files yet.') + ' ' + add_new, category='warning')
+            add_new = webutils.link_to(_('Click here to add new file'), url_, class_="alert-link")
+            webutils.flash(_('There are no files yet.') + ' ' + add_new, category='warning')
             raise HTTPNotFound()
         except (ChangesetDoesNotExistError, LookupError):
             msg = _('Such revision does not exist for this repository')
-            h.flash(msg, category='error')
+            webutils.flash(msg, category='error')
             raise HTTPNotFound()
         except RepositoryError as e:
-            h.flash(e, category='error')
+            webutils.flash(e, category='error')
             raise HTTPNotFound()
 
     def __get_filenode(self, cs, path):
@@ -108,10 +108,10 @@ class FilesController(BaseRepoController):
                 raise RepositoryError('given path is a directory')
         except ChangesetDoesNotExistError:
             msg = _('Such revision does not exist for this repository')
-            h.flash(msg, category='error')
+            webutils.flash(msg, category='error')
             raise HTTPNotFound()
         except RepositoryError as e:
-            h.flash(e, category='error')
+            webutils.flash(e, category='error')
             raise HTTPNotFound()
 
         return file_node
@@ -176,7 +176,7 @@ class FilesController(BaseRepoController):
             else:
                 c.authors = c.file_history = []
         except RepositoryError as e:
-            h.flash(e, category='error')
+            webutils.flash(e, category='error')
             raise HTTPNotFound()
 
         if request.environ.get('HTTP_X_PARTIAL_XHR'):
@@ -293,7 +293,7 @@ class FilesController(BaseRepoController):
         _branches = repo.scm_instance.branches
         # check if revision is a branch name or branch hash
         if revision not in _branches and revision not in _branches.values():
-            h.flash(_('You can only delete files with revision '
+            webutils.flash(_('You can only delete files with revision '
                       'being a valid branch'), category='warning')
             raise HTTPFound(location=webutils.url('files_home',
                                   repo_name=repo_name, revision='tip',
@@ -328,11 +328,11 @@ class FilesController(BaseRepoController):
                     author=author,
                 )
 
-                h.flash(_('Successfully deleted file %s') % f_path,
+                webutils.flash(_('Successfully deleted file %s') % f_path,
                         category='success')
             except Exception:
                 log.error(traceback.format_exc())
-                h.flash(_('Error occurred during commit'), category='error')
+                webutils.flash(_('Error occurred during commit'), category='error')
             raise HTTPFound(location=url('changeset_home',
                                 repo_name=c.repo_name, revision='tip'))
 
@@ -347,7 +347,7 @@ class FilesController(BaseRepoController):
         _branches = repo.scm_instance.branches
         # check if revision is a branch name or branch hash
         if revision not in _branches and revision not in _branches.values():
-            h.flash(_('You can only edit files with revision '
+            webutils.flash(_('You can only edit files with revision '
                       'being a valid branch'), category='warning')
             raise HTTPFound(location=webutils.url('files_home',
                                   repo_name=repo_name, revision='tip',
@@ -376,7 +376,7 @@ class FilesController(BaseRepoController):
             author = request.authuser.full_contact
 
             if content == old_content:
-                h.flash(_('No changes'), category='warning')
+                webutils.flash(_('No changes'), category='warning')
                 raise HTTPFound(location=url('changeset_home', repo_name=c.repo_name,
                                     revision='tip'))
             try:
@@ -386,11 +386,11 @@ class FilesController(BaseRepoController):
                                              ip_addr=request.ip_addr,
                                              author=author, message=message,
                                              content=content, f_path=f_path)
-                h.flash(_('Successfully committed to %s') % f_path,
+                webutils.flash(_('Successfully committed to %s') % f_path,
                         category='success')
             except Exception:
                 log.error(traceback.format_exc())
-                h.flash(_('Error occurred during commit'), category='error')
+                webutils.flash(_('Error occurred during commit'), category='error')
             raise HTTPFound(location=url('changeset_home',
                                 repo_name=c.repo_name, revision='tip'))
 
@@ -426,11 +426,11 @@ class FilesController(BaseRepoController):
                     content = content.file
 
             if not content:
-                h.flash(_('No content'), category='warning')
+                webutils.flash(_('No content'), category='warning')
                 raise HTTPFound(location=url('changeset_home', repo_name=c.repo_name,
                                     revision='tip'))
             if not filename:
-                h.flash(_('No filename'), category='warning')
+                webutils.flash(_('No filename'), category='warning')
                 raise HTTPFound(location=url('changeset_home', repo_name=c.repo_name,
                                     revision='tip'))
             # strip all crap out of file, just leave the basename
@@ -454,18 +454,18 @@ class FilesController(BaseRepoController):
                     author=author,
                 )
 
-                h.flash(_('Successfully committed to %s') % node_path,
+                webutils.flash(_('Successfully committed to %s') % node_path,
                         category='success')
             except NonRelativePathError as e:
-                h.flash(_('Location must be relative path and must not '
+                webutils.flash(_('Location must be relative path and must not '
                           'contain .. in path'), category='warning')
                 raise HTTPFound(location=url('changeset_home', repo_name=c.repo_name,
                                     revision='tip'))
             except (NodeError, NodeAlreadyExistsError) as e:
-                h.flash(_(e), category='error')
+                webutils.flash(_(e), category='error')
             except Exception:
                 log.error(traceback.format_exc())
-                h.flash(_('Error occurred during commit'), category='error')
+                webutils.flash(_('Error occurred during commit'), category='error')
             raise HTTPFound(location=url('changeset_home',
                                 repo_name=c.repo_name, revision='tip'))
 
@@ -687,7 +687,7 @@ class FilesController(BaseRepoController):
                 node2 = FileNode(f_path, '', changeset=c.changeset_2)
         except ChangesetDoesNotExistError as e:
             msg = _('Such revision does not exist for this repository')
-            h.flash(msg, category='error')
+            webutils.flash(msg, category='error')
             raise HTTPNotFound()
         c.node1 = node1
         c.node2 = node2

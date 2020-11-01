@@ -39,6 +39,7 @@ from webob.exc import HTTPFound, HTTPNotFound
 import kallithea
 from kallithea.lib import auth_modules
 from kallithea.lib import helpers as h
+from kallithea.lib import webutils
 from kallithea.lib.auth import AuthUser, HasPermissionAnyDecorator, LoginRequired
 from kallithea.lib.base import BaseController, IfSshEnabled, render
 from kallithea.lib.exceptions import DefaultUserException, UserCreationError, UserOwnsReposException
@@ -87,8 +88,8 @@ class UsersController(BaseController):
                 "gravatar": grav_tmpl % h.gravatar(user.email, size=20),
                 "raw_name": user.username,
                 "username": username(user.user_id, user.username),
-                "firstname": h.escape(user.name),
-                "lastname": h.escape(user.lastname),
+                "firstname": webutils.escape(user.name),
+                "lastname": webutils.escape(user.lastname),
                 "last_login": h.fmt_date(user.last_login),
                 "last_login_raw": datetime_to_time(user.last_login),
                 "active": h.boolicon(user.active),
@@ -116,7 +117,7 @@ class UsersController(BaseController):
             user = user_model.create(form_result)
             action_logger(request.authuser, 'admin_created_user:%s' % user.username,
                           None, request.ip_addr)
-            h.flash(_('Created user %s') % user.username,
+            webutils.flash(_('Created user %s') % user.username,
                     category='success')
             meta.Session().commit()
         except formencode.Invalid as errors:
@@ -128,10 +129,10 @@ class UsersController(BaseController):
                 encoding="UTF-8",
                 force_defaults=False)
         except UserCreationError as e:
-            h.flash(e, 'error')
+            webutils.flash(e, 'error')
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('Error occurred during creation of user %s')
+            webutils.flash(_('Error occurred during creation of user %s')
                     % request.POST.get('username'), category='error')
         raise HTTPFound(location=url('edit_user', id=user.user_id))
 
@@ -155,7 +156,7 @@ class UsersController(BaseController):
             usr = form_result['username']
             action_logger(request.authuser, 'admin_updated_user:%s' % usr,
                           None, request.ip_addr)
-            h.flash(_('User updated successfully'), category='success')
+            webutils.flash(_('User updated successfully'), category='success')
             meta.Session().commit()
         except formencode.Invalid as errors:
             defaults = errors.value
@@ -174,7 +175,7 @@ class UsersController(BaseController):
                 force_defaults=False)
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('Error occurred during update of user %s')
+            webutils.flash(_('Error occurred during update of user %s')
                     % form_result.get('username'), category='error')
         raise HTTPFound(location=url('edit_user', id=id))
 
@@ -184,12 +185,12 @@ class UsersController(BaseController):
         try:
             UserModel().delete(usr)
             meta.Session().commit()
-            h.flash(_('Successfully deleted user'), category='success')
+            webutils.flash(_('Successfully deleted user'), category='success')
         except (UserOwnsReposException, DefaultUserException) as e:
-            h.flash(e, category='warning')
+            webutils.flash(e, category='warning')
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('An error occurred during deletion of user'),
+            webutils.flash(_('An error occurred during deletion of user'),
                     category='error')
         else:
             if has_ssh_keys:
@@ -200,7 +201,7 @@ class UsersController(BaseController):
         try:
             return db.User.get_or_404(id, allow_default=False)
         except DefaultUserException:
-            h.flash(_("The default user cannot be edited"), category='warning')
+            webutils.flash(_("The default user cannot be edited"), category='warning')
             raise HTTPNotFound
 
     def _render_edit_profile(self, user):
@@ -268,7 +269,7 @@ class UsersController(BaseController):
         description = request.POST.get('description')
         ApiKeyModel().create(c.user.user_id, description, lifetime)
         meta.Session().commit()
-        h.flash(_("API key successfully created"), category='success')
+        webutils.flash(_("API key successfully created"), category='success')
         raise HTTPFound(location=url('edit_user_api_keys', id=c.user.user_id))
 
     def delete_api_key(self, id):
@@ -278,11 +279,11 @@ class UsersController(BaseController):
         if request.POST.get('del_api_key_builtin'):
             c.user.api_key = generate_api_key()
             meta.Session().commit()
-            h.flash(_("API key successfully reset"), category='success')
+            webutils.flash(_("API key successfully reset"), category='success')
         elif api_key:
             ApiKeyModel().delete(api_key, c.user.user_id)
             meta.Session().commit()
-            h.flash(_("API key successfully deleted"), category='success')
+            webutils.flash(_("API key successfully deleted"), category='success')
 
         raise HTTPFound(location=url('edit_user_api_keys', id=c.user.user_id))
 
@@ -335,11 +336,11 @@ class UsersController(BaseController):
                 user_model.grant_perm(id, 'hg.fork.repository')
             else:
                 user_model.grant_perm(id, 'hg.fork.none')
-            h.flash(_("Updated permissions"), category='success')
+            webutils.flash(_("Updated permissions"), category='success')
             meta.Session().commit()
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('An error occurred during permissions saving'),
+            webutils.flash(_('An error occurred during permissions saving'),
                     category='error')
         raise HTTPFound(location=url('edit_user_perms', id=id))
 
@@ -364,13 +365,13 @@ class UsersController(BaseController):
         try:
             user_model.add_extra_email(id, email)
             meta.Session().commit()
-            h.flash(_("Added email %s to user") % email, category='success')
+            webutils.flash(_("Added email %s to user") % email, category='success')
         except formencode.Invalid as error:
             msg = error.error_dict['email']
-            h.flash(msg, category='error')
+            webutils.flash(msg, category='error')
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('An error occurred during email saving'),
+            webutils.flash(_('An error occurred during email saving'),
                     category='error')
         raise HTTPFound(location=url('edit_user_emails', id=id))
 
@@ -380,7 +381,7 @@ class UsersController(BaseController):
         user_model = UserModel()
         user_model.delete_extra_email(id, email_id)
         meta.Session().commit()
-        h.flash(_("Removed email from user"), category='success')
+        webutils.flash(_("Removed email from user"), category='success')
         raise HTTPFound(location=url('edit_user_emails', id=id))
 
     def edit_ips(self, id):
@@ -406,13 +407,13 @@ class UsersController(BaseController):
         try:
             user_model.add_extra_ip(id, ip)
             meta.Session().commit()
-            h.flash(_("Added IP address %s to user whitelist") % ip, category='success')
+            webutils.flash(_("Added IP address %s to user whitelist") % ip, category='success')
         except formencode.Invalid as error:
             msg = error.error_dict['ip']
-            h.flash(msg, category='error')
+            webutils.flash(msg, category='error')
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('An error occurred while adding IP address'),
+            webutils.flash(_('An error occurred while adding IP address'),
                     category='error')
 
         if 'default_user' in request.POST:
@@ -424,7 +425,7 @@ class UsersController(BaseController):
         user_model = UserModel()
         user_model.delete_extra_ip(id, ip_id)
         meta.Session().commit()
-        h.flash(_("Removed IP address from user whitelist"), category='success')
+        webutils.flash(_("Removed IP address from user whitelist"), category='success')
 
         if 'default_user' in request.POST:
             raise HTTPFound(location=url('admin_permissions_ips'))
@@ -453,9 +454,9 @@ class UsersController(BaseController):
                                                description, public_key)
             meta.Session().commit()
             SshKeyModel().write_authorized_keys()
-            h.flash(_("SSH key %s successfully added") % new_ssh_key.fingerprint, category='success')
+            webutils.flash(_("SSH key %s successfully added") % new_ssh_key.fingerprint, category='success')
         except SshKeyModelException as e:
-            h.flash(e.args[0], category='error')
+            webutils.flash(e.args[0], category='error')
         raise HTTPFound(location=url('edit_user_ssh_keys', id=c.user.user_id))
 
     @IfSshEnabled
@@ -467,7 +468,7 @@ class UsersController(BaseController):
             SshKeyModel().delete(fingerprint, c.user.user_id)
             meta.Session().commit()
             SshKeyModel().write_authorized_keys()
-            h.flash(_("SSH key successfully deleted"), category='success')
+            webutils.flash(_("SSH key successfully deleted"), category='success')
         except SshKeyModelException as e:
-            h.flash(e.args[0], category='error')
+            webutils.flash(e.args[0], category='error')
         raise HTTPFound(location=url('edit_user_ssh_keys', id=c.user.user_id))

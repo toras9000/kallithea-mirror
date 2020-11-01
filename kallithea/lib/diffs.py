@@ -31,7 +31,7 @@ import re
 
 from tg.i18n import ugettext as _
 
-from kallithea.lib import helpers as h
+from kallithea.lib import webutils
 from kallithea.lib.utils2 import safe_str
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.exceptions import VCSError
@@ -207,7 +207,7 @@ def wrapped_diff(filenode_old, filenode_new, diff_limit=None,
     if not html_diff:
         submodules = [o for o in [filenode_new, filenode_old] if isinstance(o, SubModuleNode)]
         if submodules:
-            html_diff = wrap_to_table(h.escape('Submodule %r' % submodules[0]))
+            html_diff = wrap_to_table(webutils.escape('Submodule %r' % submodules[0]))
         else:
             html_diff = wrap_to_table(_('No changes detected'))
 
@@ -249,7 +249,7 @@ def get_diff(scm_instance, rev1, rev2, path=None, ignore_whitespace=False, conte
         return scm_instance.get_diff(rev1, rev2, path=path,
                                      ignore_whitespace=ignore_whitespace, context=context)
     except MemoryError:
-        h.flash('MemoryError: Diff is too big', category='error')
+        webutils.flash('MemoryError: Diff is too big', category='error')
         return b''
 
 

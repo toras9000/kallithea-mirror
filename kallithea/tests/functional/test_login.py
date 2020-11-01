@@ -7,7 +7,7 @@ import mock
 from tg.util.webtest import test_context
 
 import kallithea.lib.celerylib.tasks
-from kallithea.lib import helpers as h
+from kallithea.lib import webutils
 from kallithea.lib.auth import check_password
 from kallithea.lib.utils2 import generate_api_key
 from kallithea.model import db, meta, validators
@@ -238,7 +238,7 @@ class TestLoginController(base.TestController):
 
         with test_context(self.app):
             msg = validators.ValidUsername()._messages['username_exists']
-        msg = h.html_escape(msg % {'username': uname})
+        msg = webutils.html_escape(msg % {'username': uname})
         response.mustcontain(msg)
 
     def test_register_err_same_email(self):
@@ -311,7 +311,7 @@ class TestLoginController(base.TestController):
         response.mustcontain('An email address must contain a single @')
         with test_context(self.app):
             msg = validators.ValidUsername()._messages['username_exists']
-        msg = h.html_escape(msg % {'username': usr})
+        msg = webutils.html_escape(msg % {'username': usr})
         response.mustcontain(msg)
 
     def test_register_special_chars(self):

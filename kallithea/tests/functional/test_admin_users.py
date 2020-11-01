@@ -19,7 +19,7 @@ from webob.exc import HTTPNotFound
 
 import kallithea
 from kallithea.controllers.admin.users import UsersController
-from kallithea.lib import helpers as h
+from kallithea.lib import webutils
 from kallithea.lib.auth import check_password
 from kallithea.model import db, meta, validators
 from kallithea.model.user import UserModel
@@ -112,7 +112,7 @@ class TestAdminUsersController(base.TestController):
 
         with test_context(self.app):
             msg = validators.ValidUsername(False, {})._messages['system_invalid_username']
-        msg = h.html_escape(msg % {'username': 'new_user'})
+        msg = webutils.html_escape(msg % {'username': 'new_user'})
         response.mustcontain("""<span class="error-message">%s</span>""" % msg)
         response.mustcontain("""<span class="error-message">Please enter a value</span>""")
         response.mustcontain("""<span class="error-message">An email address must contain a single @</span>""")
@@ -569,7 +569,7 @@ class TestAdminUsersController_unittest(base.TestController):
         # flash complains about an non-existing session
         def flash_mock(*args, **kwargs):
             pass
-        monkeypatch.setattr(h, 'flash', flash_mock)
+        monkeypatch.setattr(webutils, 'flash', flash_mock)
 
         u = UsersController()
         # a regular user should work correctly

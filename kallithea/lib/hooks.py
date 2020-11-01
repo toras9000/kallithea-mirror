@@ -32,7 +32,7 @@ import time
 import mercurial.scmutil
 
 import kallithea
-from kallithea.lib import helpers as h
+from kallithea.lib import webutils
 from kallithea.lib.exceptions import UserCreationError
 from kallithea.lib.utils import action_logger, make_ui
 from kallithea.lib.utils2 import HookEnvironmentError, ascii_str, get_hook_environment, safe_bytes, safe_str
@@ -59,9 +59,9 @@ def _get_scm_size(alias, root_path):
                 except OSError:
                     pass
 
-    size_scm_f = h.format_byte_size(size_scm)
-    size_root_f = h.format_byte_size(size_root)
-    size_total_f = h.format_byte_size(size_root + size_scm)
+    size_scm_f = webutils.format_byte_size(size_scm)
+    size_root_f = webutils.format_byte_size(size_root)
+    size_total_f = webutils.format_byte_size(size_root + size_scm)
 
     return size_scm_f, size_root_f, size_total_f
 

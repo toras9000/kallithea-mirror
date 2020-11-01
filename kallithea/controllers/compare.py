@@ -63,13 +63,13 @@ class CompareController(BaseRepoController):
             c.cs_repo = db.Repository.get_by_repo_name(other_repo)
             if c.cs_repo is None:
                 msg = _('Could not find other repository %s') % other_repo
-                h.flash(msg, category='error')
+                webutils.flash(msg, category='error')
                 raise HTTPFound(location=url('compare_home', repo_name=c.a_repo.repo_name))
 
         # Verify that it's even possible to compare these two repositories.
         if c.a_repo.scm_instance.alias != c.cs_repo.scm_instance.alias:
             msg = _('Cannot compare repositories of different types')
-            h.flash(msg, category='error')
+            webutils.flash(msg, category='error')
             raise HTTPFound(location=url('compare_home', repo_name=c.a_repo.repo_name))
 
     @LoginRequired(allow_default_user=True)
@@ -146,7 +146,7 @@ class CompareController(BaseRepoController):
             else:
                 msg = _('Multiple merge ancestors found for merge compare')
             if rev1 is None:
-                h.flash(msg, category='error')
+                webutils.flash(msg, category='error')
                 log.error(msg)
                 raise HTTPNotFound
 
@@ -160,7 +160,7 @@ class CompareController(BaseRepoController):
             if org_repo != other_repo:
                 # TODO: we could do this by using hg unionrepo
                 log.error('cannot compare across repos %s and %s', org_repo, other_repo)
-                h.flash(_('Cannot compare repositories without using common ancestor'), category='error')
+                webutils.flash(_('Cannot compare repositories without using common ancestor'), category='error')
                 raise HTTPBadRequest
             rev1 = c.a_rev
 

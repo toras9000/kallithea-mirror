@@ -1306,9 +1306,8 @@ class Repository(meta.Base, BaseDbModel):
         return grouped
 
     def _repo_size(self):
-        from kallithea.lib import helpers as h
         log.debug('calculating repository size...')
-        return h.format_byte_size(self.scm_instance.size)
+        return webutils.format_byte_size(self.scm_instance.size)
 
     #==========================================================================
     # SCM CACHE INSTANCE
@@ -1397,10 +1396,9 @@ class RepoGroup(meta.Base, BaseDbModel):
     @classmethod
     def _generate_choice(cls, repo_group):
         """Return tuple with group_id and name as html literal"""
-        from webhelpers2.html import literal
         if repo_group is None:
             return (-1, '-- %s --' % _('top level'))
-        return repo_group.group_id, literal(cls.SEP.join(repo_group.full_path_splitted))
+        return repo_group.group_id, webutils.literal(cls.SEP.join(repo_group.full_path_splitted))
 
     @classmethod
     def groups_choices(cls, groups):

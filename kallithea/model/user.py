@@ -314,7 +314,6 @@ class UserModel(object):
         allowing users to copy-paste or manually enter the token from the
         email.
         """
-        import kallithea.lib.helpers as h
         from kallithea.lib.celerylib import tasks
         from kallithea.model.notification import EmailNotificationModel
 
@@ -326,7 +325,7 @@ class UserModel(object):
                 log.debug('password reset user %s found', user)
                 token = self.get_reset_password_token(user,
                                                       timestamp,
-                                                      h.session_csrf_secret_token())
+                                                      webutils.session_csrf_secret_token())
                 # URL must be fully qualified; but since the token is locked to
                 # the current browser session, we must provide a URL with the
                 # current scheme and hostname, rather than the canonical_url.
@@ -359,7 +358,6 @@ class UserModel(object):
                      timestamp=timestamp)
 
     def verify_reset_password_token(self, email, timestamp, token):
-        import kallithea.lib.helpers as h
         user = db.User.get_by_email(email)
         if user is None:
             log.debug("user with email %s not found", email)
@@ -377,7 +375,7 @@ class UserModel(object):
 
         expected_token = self.get_reset_password_token(user,
                                                        timestamp,
-                                                       h.session_csrf_secret_token())
+                                                       webutils.session_csrf_secret_token())
         log.debug('computed password reset token: %s', expected_token)
         log.debug('received password reset token: %s', token)
         return expected_token == token

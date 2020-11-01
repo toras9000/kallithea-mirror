@@ -36,7 +36,7 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPFound
 
-from kallithea.lib import helpers as h
+from kallithea.lib import webutils
 from kallithea.lib.auth import AuthUser, HasPermissionAnyDecorator, LoginRequired
 from kallithea.lib.base import BaseController, render
 from kallithea.lib.webutils import url
@@ -113,7 +113,7 @@ class PermissionsController(BaseController):
                 form_result.update({'perm_user_name': 'default'})
                 PermissionModel().update(form_result)
                 meta.Session().commit()
-                h.flash(_('Global permissions updated successfully'),
+                webutils.flash(_('Global permissions updated successfully'),
                         category='success')
 
             except formencode.Invalid as errors:
@@ -128,7 +128,7 @@ class PermissionsController(BaseController):
                     force_defaults=False)
             except Exception:
                 log.error(traceback.format_exc())
-                h.flash(_('Error occurred during update of permissions'),
+                webutils.flash(_('Error occurred during update of permissions'),
                         category='error')
 
             raise HTTPFound(location=url('admin_permissions'))

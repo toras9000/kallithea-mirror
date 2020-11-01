@@ -20,7 +20,6 @@ available to Controllers. This module is available to both as 'h'.
 import hashlib
 import json
 import logging
-import random
 import re
 import textwrap
 import urllib.parse
@@ -28,16 +27,7 @@ import urllib.parse
 from beaker.cache import cache_region
 from pygments import highlight as code_highlight
 from pygments.formatters.html import HtmlFormatter
-from tg import session
 from tg.i18n import ugettext as _
-from webhelpers2.html import HTML, escape, literal
-from webhelpers2.html.tags import NotGiven, Option, Options, _input, _make_safe_id_component, checkbox, end_form
-from webhelpers2.html.tags import form as insecure_form
-from webhelpers2.html.tags import hidden, link_to, password, radio
-from webhelpers2.html.tags import select as webhelpers2_select
-from webhelpers2.html.tags import submit, text, textarea
-from webhelpers2.number import format_byte_size
-from webhelpers2.text import chop_at, truncate, wrap_paragraphs
 
 import kallithea
 from kallithea.lib.annotate import annotate_highlight
@@ -55,46 +45,48 @@ from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError
 # SCM FILTERS available via h.
 #==============================================================================
 from kallithea.lib.vcs.utils import author_email, author_name
-from kallithea.lib.webutils import canonical_url, url
+from kallithea.lib.webutils import (HTML, Option, canonical_url, checkbox, chop_at, end_form, escape, form, format_byte_size, hidden, html_escape, link_to,
+                                    literal, password, pop_flash_messages, radio, reset, safeid, select, session_csrf_secret_name, session_csrf_secret_token,
+                                    submit, text, textarea, truncate, url, wrap_paragraphs)
 from kallithea.model import db
 from kallithea.model.changeset_status import ChangesetStatusModel
 
 
 # mute pyflakes "imported but unused"
+# from webutils
 assert Option
+assert canonical_url
 assert checkbox
+assert chop_at
 assert end_form
+assert form
+assert format_byte_size
+assert hidden
 assert password
+assert pop_flash_messages
 assert radio
+assert reset
+assert safeid
+assert select
+assert session_csrf_secret_name
+assert session_csrf_secret_token
 assert submit
 assert text
 assert textarea
-assert format_byte_size
-assert chop_at
 assert wrap_paragraphs
+# from kallithea.lib.auth
 assert HasPermissionAny
 assert HasRepoGroupPermissionLevel
 assert HasRepoPermissionLevel
+# from utils2
 assert age
 assert time_to_datetime
+# from vcs
 assert EmptyChangeset
-assert canonical_url
 
 
 log = logging.getLogger(__name__)
 
-
-def html_escape(s):
-    """Return string with all html escaped.
-    This is also safe for javascript in html but not necessarily correct.
-    """
-    return (s
-        .replace('&', '&amp;')
-        .replace(">", "&gt;")
-        .replace("<", "&lt;")
-        .replace('"', "&quot;")
-        .replace("'", "&apos;") # Note: this is HTML5 not HTML4 and might not work in mails
-        )
 
 def js(value):
     """Convert Python value to the corresponding JavaScript representation.
@@ -150,44 +142,6 @@ def shorter(s, size=20, firstline=False, postfix='...'):
     if len(s) > size:
         return s[:size - len(postfix)] + postfix
     return s
-
-
-def reset(name, value, id=NotGiven, **attrs):
-    """Create a reset button, similar to webhelpers2.html.tags.submit ."""
-    return _input("reset", name, value, id, attrs)
-
-
-def select(name, selected_values, options, id=NotGiven, **attrs):
-    """Convenient wrapper of webhelpers2 to let it accept options as a tuple list"""
-    if isinstance(options, list):
-        option_list = options
-        # Handle old value,label lists ... where value also can be value,label lists
-        options = Options()
-        for x in option_list:
-            if isinstance(x, tuple) and len(x) == 2:
-                value, label = x
-            elif isinstance(x, str):
-                value = label = x
-            else:
-                log.error('invalid select option %r', x)
-                raise
-            if isinstance(value, list):
-                og = options.add_optgroup(label)
-                for x in value:
-                    if isinstance(x, tuple) and len(x) == 2:
-                        group_value, group_label = x
-                    elif isinstance(x, str):
-                        group_value = group_label = x
-                    else:
-                        log.error('invalid select option %r', x)
-                        raise
-                    og.add_option(group_label, group_value)
-            else:
-                options.add_option(label, value)
-    return webhelpers2_select(name, selected_values, options, id=id, **attrs)
-
-
-safeid = _make_safe_id_component
 
 
 def FID(raw_id, path):
@@ -446,76 +400,6 @@ def pygmentize_annotation(repo_name, filenode, **kwargs):
         return uri
 
     return literal(markup_whitespace(annotate_highlight(filenode, url_func, **kwargs)))
-
-
-class _Message(object):
-    """A message returned by ``pop_flash_messages()``.
-
-    Converting the message to a string returns the message text. Instances
-    also have the following attributes:
-
-    * ``category``: the category specified when the message was created.
-    * ``message``: the html-safe message text.
-    """
-
-    def __init__(self, category, message):
-        self.category = category
-        self.message = message
-
-
-def _session_flash_messages(append=None, clear=False):
-    """Manage a message queue in tg.session: return the current message queue
-    after appending the given message, and possibly clearing the queue."""
-    key = 'flash'
-    if key in session:
-        flash_messages = session[key]
-    else:
-        if append is None:  # common fast path - also used for clearing empty queue
-            return []  # don't bother saving
-        flash_messages = []
-        session[key] = flash_messages
-    if append is not None and append not in flash_messages:
-        flash_messages.append(append)
-    if clear:
-        session.pop(key, None)
-    session.save()
-    return flash_messages
-
-
-def flash(message, category, logf=None):
-    """
-    Show a message to the user _and_ log it through the specified function
-
-    category: notice (default), warning, error, success
-    logf: a custom log function - such as log.debug
-
-    logf defaults to log.info, unless category equals 'success', in which
-    case logf defaults to log.debug.
-    """
-    assert category in ('error', 'success', 'warning'), category
-    if hasattr(message, '__html__'):
-        # render to HTML for storing in cookie
-        safe_message = str(message)
-    else:
-        # Apply str - the message might be an exception with __str__
-        # Escape, so we can trust the result without further escaping, without any risk of injection
-        safe_message = html_escape(str(message))
-    if logf is None:
-        logf = log.info
-        if category == 'success':
-            logf = log.debug
-
-    logf('Flash %s: %s', category, safe_message)
-
-    _session_flash_messages(append=(category, safe_message))
-
-
-def pop_flash_messages():
-    """Return all accumulated messages and delete them from the session.
-
-    The return value is a list of ``Message`` objects.
-    """
-    return [_Message(category, message) for category, message in _session_flash_messages(clear=True)]
 
 
 def capitalize(x):
@@ -1317,23 +1201,3 @@ def journal_filter_help():
 def ip_range(ip_addr):
     s, e = db.UserIpMap._get_ip_range(ip_addr)
     return '%s - %s' % (s, e)
-
-
-session_csrf_secret_name = "_session_csrf_secret_token"
-
-def session_csrf_secret_token():
-    """Return (and create) the current session's CSRF protection token."""
-    if not session_csrf_secret_name in session:
-        session[session_csrf_secret_name] = str(random.getrandbits(128))
-        session.save()
-    return session[session_csrf_secret_name]
-
-def form(url, method="post", **attrs):
-    """Like webhelpers.html.tags.form , but automatically adding
-    session_csrf_secret_token for POST. The secret is thus never leaked in GET
-    URLs.
-    """
-    form = insecure_form(url, method, **attrs)
-    if method.lower() == 'get':
-        return form
-    return form + HTML.div(hidden(session_csrf_secret_name, session_csrf_secret_token()), style="display: none;")

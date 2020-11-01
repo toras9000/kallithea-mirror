@@ -37,6 +37,7 @@ from tg.i18n import ungettext
 from webob.exc import HTTPForbidden, HTTPFound, HTTPInternalServerError, HTTPNotFound
 
 from kallithea.lib import helpers as h
+from kallithea.lib import webutils
 from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel, HasRepoGroupPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseController, render
 from kallithea.lib.utils2 import safe_int
@@ -118,7 +119,7 @@ class RepoGroupsController(BaseController):
             repo_groups_data.append({
                 "raw_name": repo_gr.group_name,
                 "group_name": repo_group_name(repo_gr.group_name, children_groups),
-                "desc": h.escape(repo_gr.group_description),
+                "desc": webutils.escape(repo_gr.group_description),
                 "repos": repo_count,
                 "owner": h.person(repo_gr.owner),
                 "action": repo_group_actions(repo_gr.group_id, repo_gr.group_name,
@@ -161,14 +162,14 @@ class RepoGroupsController(BaseController):
                 force_defaults=False)
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('Error occurred during creation of repository group %s')
+            webutils.flash(_('Error occurred during creation of repository group %s')
                     % request.POST.get('group_name'), category='error')
             if form_result is None:
                 raise
             parent_group_id = form_result['parent_group_id']
             # TODO: maybe we should get back to the main view, not the admin one
             raise HTTPFound(location=url('repos_groups', parent_group=parent_group_id))
-        h.flash(_('Created repository group %s') % gr.group_name,
+        webutils.flash(_('Created repository group %s') % gr.group_name,
                 category='success')
         raise HTTPFound(location=url('repos_group_home', group_name=gr.group_name))
 
@@ -215,7 +216,7 @@ class RepoGroupsController(BaseController):
 
             new_gr = RepoGroupModel().update(group_name, form_result)
             meta.Session().commit()
-            h.flash(_('Updated repository group %s')
+            webutils.flash(_('Updated repository group %s')
                     % form_result['group_name'], category='success')
             # we now have new name !
             group_name = new_gr.group_name
@@ -231,7 +232,7 @@ class RepoGroupsController(BaseController):
                 force_defaults=False)
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('Error occurred during update of repository group %s')
+            webutils.flash(_('Error occurred during update of repository group %s')
                     % request.POST.get('group_name'), category='error')
 
         raise HTTPFound(location=url('edit_repo_group', group_name=group_name))
@@ -241,25 +242,25 @@ class RepoGroupsController(BaseController):
         gr = c.repo_group = db.RepoGroup.guess_instance(group_name)
         repos = gr.repositories.all()
         if repos:
-            h.flash(_('This group contains %s repositories and cannot be '
+            webutils.flash(_('This group contains %s repositories and cannot be '
                       'deleted') % len(repos), category='warning')
             raise HTTPFound(location=url('repos_groups'))
 
         children = gr.children.all()
         if children:
-            h.flash(_('This group contains %s subgroups and cannot be deleted'
+            webutils.flash(_('This group contains %s subgroups and cannot be deleted'
                       % (len(children))), category='warning')
             raise HTTPFound(location=url('repos_groups'))
 
         try:
             RepoGroupModel().delete(group_name)
             meta.Session().commit()
-            h.flash(_('Removed repository group %s') % group_name,
+            webutils.flash(_('Removed repository group %s') % group_name,
                     category='success')
             # TODO: in future action_logger(, '', '', '')
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('Error occurred during deletion of repository group %s')
+            webutils.flash(_('Error occurred during deletion of repository group %s')
                     % group_name, category='error')
 
         if gr.parent_group:
@@ -344,7 +345,7 @@ class RepoGroupsController(BaseController):
         if not request.authuser.is_admin:
             if self._revoke_perms_on_yourself(form_result):
                 msg = _('Cannot revoke permission for yourself as admin')
-                h.flash(msg, category='warning')
+                webutils.flash(msg, category='warning')
                 raise HTTPFound(location=url('edit_repo_group_perms', group_name=group_name))
         recursive = form_result['recursive']
         # iterate over all members(if in recursive mode) of this groups and
@@ -358,7 +359,7 @@ class RepoGroupsController(BaseController):
         #action_logger(request.authuser, 'admin_changed_repo_permissions',
         #              repo_name, request.ip_addr)
         meta.Session().commit()
-        h.flash(_('Repository group permissions updated'), category='success')
+        webutils.flash(_('Repository group permissions updated'), category='success')
         raise HTTPFound(location=url('edit_repo_group_perms', group_name=group_name))
 
     @HasRepoGroupPermissionLevelDecorator('admin')
@@ -374,7 +375,7 @@ class RepoGroupsController(BaseController):
             if not request.authuser.is_admin:
                 if obj_type == 'user' and request.authuser.user_id == obj_id:
                     msg = _('Cannot revoke permission for yourself as admin')
-                    h.flash(msg, category='warning')
+                    webutils.flash(msg, category='warning')
                     raise Exception('revoke admin permission on self')
             recursive = request.POST.get('recursive', 'none')
             if obj_type == 'user':
@@ -390,6 +391,6 @@ class RepoGroupsController(BaseController):
             meta.Session().commit()
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('An error occurred during revoking of permission'),
+            webutils.flash(_('An error occurred during revoking of permission'),
                     category='error')
             raise HTTPInternalServerError()

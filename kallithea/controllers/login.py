@@ -36,7 +36,7 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest, HTTPFound
 
-import kallithea.lib.helpers as h
+from kallithea.lib import webutils
 from kallithea.lib.auth import AuthUser, HasPermissionAnyDecorator
 from kallithea.lib.base import BaseController, log_in_user, render
 from kallithea.lib.exceptions import UserCreationError
@@ -99,13 +99,13 @@ class LoginController(BaseController):
                 # the fly can throw this exception signaling that there's issue
                 # with user creation, explanation should be provided in
                 # Exception itself
-                h.flash(e, 'error')
+                webutils.flash(e, 'error')
             else:
                 # login_form already validated the password - now set the session cookie accordingly
                 auth_user = log_in_user(user, c.form_result['remember'], is_external_auth=False, ip_addr=request.ip_addr)
                 if auth_user:
                     raise HTTPFound(location=c.came_from)
-                h.flash(_('Authentication failed.'), 'error')
+                webutils.flash(_('Authentication failed.'), 'error')
         else:
             # redirect if already logged in
             if not request.authuser.is_anonymous:
@@ -144,7 +144,7 @@ class LoginController(BaseController):
                                                  error_dict=error_dict)
 
                 UserModel().create_registration(form_result)
-                h.flash(_('You have successfully registered with %s') % (c.site_name or 'Kallithea'),
+                webutils.flash(_('You have successfully registered with %s') % (c.site_name or 'Kallithea'),
                         category='success')
                 meta.Session().commit()
                 raise HTTPFound(location=url('login_home'))
@@ -162,7 +162,7 @@ class LoginController(BaseController):
                 # the fly can throw this exception signaling that there's issue
                 # with user creation, explanation should be provided in
                 # Exception itself
-                h.flash(e, 'error')
+                webutils.flash(e, 'error')
 
         return render('/register.html')
 
@@ -188,7 +188,7 @@ class LoginController(BaseController):
                         raise formencode.Invalid(_msg, _value, None,
                                                  error_dict=error_dict)
                 redirect_link = UserModel().send_reset_password_email(form_result)
-                h.flash(_('A password reset confirmation code has been sent'),
+                webutils.flash(_('A password reset confirmation code has been sent'),
                             category='success')
                 raise HTTPFound(location=redirect_link)
 
@@ -240,7 +240,7 @@ class LoginController(BaseController):
                 encoding='UTF-8')
 
         UserModel().reset_password(form_result['email'], form_result['password'])
-        h.flash(_('Successfully updated password'), category='success')
+        webutils.flash(_('Successfully updated password'), category='success')
         raise HTTPFound(location=url('login_home'))
 
     def logout(self):
@@ -254,4 +254,4 @@ class LoginController(BaseController):
         Only intended for testing but might also be useful for other kinds
         of automation.
         """
-        return h.session_csrf_secret_token()
+        return webutils.session_csrf_secret_token()

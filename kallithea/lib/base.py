@@ -44,7 +44,7 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 
 import kallithea
-from kallithea.lib import auth_modules, ext_json
+from kallithea.lib import auth_modules, ext_json, webutils
 from kallithea.lib.auth import AuthUser, HasPermissionAnyMiddleware
 from kallithea.lib.exceptions import UserCreationError
 from kallithea.lib.utils import get_repo_slug, is_valid_repo
@@ -361,9 +361,8 @@ class BaseController(TGController):
             # guaranteed to be side effect free. In practice, the only situation
             # where we allow side effects without ambient authority is when the
             # authority comes from an API key; and that is handled above.
-            from kallithea.lib import helpers as h
-            token = request.POST.get(h.session_csrf_secret_name)
-            if not token or token != h.session_csrf_secret_token():
+            token = request.POST.get(webutils.session_csrf_secret_name)
+            if not token or token != webutils.session_csrf_secret_token():
                 log.error('CSRF check failed')
                 raise webob.exc.HTTPForbidden()
 
@@ -444,8 +443,7 @@ class BaseController(TGController):
             try:
                 user_info = auth_modules.authenticate('', '', request.environ)
             except UserCreationError as e:
-                from kallithea.lib import helpers as h
-                h.flash(e, 'error', logf=log.error)
+                webutils.flash(e, 'error', logf=log.error)
             else:
                 if user_info is not None:
                     username = user_info['username']
@@ -474,12 +472,11 @@ class BaseController(TGController):
             raise webob.exc.HTTPMethodNotAllowed()
 
         # Make sure CSRF token never appears in the URL. If so, invalidate it.
-        from kallithea.lib import helpers as h
-        if h.session_csrf_secret_name in request.GET:
+        if webutils.session_csrf_secret_name in request.GET:
             log.error('CSRF key leak detected')
-            session.pop(h.session_csrf_secret_name, None)
+            session.pop(webutils.session_csrf_secret_name, None)
             session.save()
-            h.flash(_('CSRF token leak has been detected - all form tokens have been expired'),
+            webutils.flash(_('CSRF token leak has been detected - all form tokens have been expired'),
                     category='error')
 
         # WebOb already ignores request payload parameters for anything other
@@ -575,8 +572,7 @@ class BaseRepoController(BaseController):
             if c.db_repo_scm_instance is None:
                 log.error('%s this repository is present in database but it '
                           'cannot be created as an scm instance', c.repo_name)
-                from kallithea.lib import helpers as h
-                h.flash(_('Repository not found in the filesystem'),
+                webutils.flash(_('Repository not found in the filesystem'),
                         category='error')
                 raise webob.exc.HTTPNotFound()
 
@@ -592,22 +588,21 @@ class BaseRepoController(BaseController):
         """
         Safe way to get changeset. If error occurs show error.
         """
-        from kallithea.lib import helpers as h
         try:
             return repo.scm_instance.get_ref_revision(ref_type, ref_name)
         except EmptyRepositoryError as e:
             if returnempty:
                 return repo.scm_instance.EMPTY_CHANGESET
-            h.flash(_('There are no changesets yet'), category='error')
+            webutils.flash(_('There are no changesets yet'), category='error')
             raise webob.exc.HTTPNotFound()
         except ChangesetDoesNotExistError as e:
-            h.flash(_('Changeset for %s %s not found in %s') %
+            webutils.flash(_('Changeset for %s %s not found in %s') %
                               (ref_type, ref_name, repo.repo_name),
                     category='error')
             raise webob.exc.HTTPNotFound()
         except RepositoryError as e:
             log.error(traceback.format_exc())
-            h.flash(e, category='error')
+            webutils.flash(e, category='error')
             raise webob.exc.HTTPBadRequest()
 
 
@@ -642,7 +637,6 @@ def IfSshEnabled(func, *args, **kwargs):
     If SSH access is disabled in the configuration file, HTTPNotFound is raised.
     """
     if not c.ssh_enabled:
-        from kallithea.lib import helpers as h
-        h.flash(_("SSH access is disabled."), category='warning')
+        webutils.flash(_("SSH access is disabled."), category='warning')
         raise webob.exc.HTTPNotFound()
     return func(*args, **kwargs)

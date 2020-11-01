@@ -38,8 +38,7 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest
 
-import kallithea.lib.helpers as h
-from kallithea.lib import ext_json
+from kallithea.lib import ext_json, webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController, jsonify, render
 from kallithea.lib.celerylib.tasks import get_commits_stats
@@ -108,7 +107,7 @@ class SummaryController(BaseRepoController):
         try:
             collection = c.db_repo_scm_instance.get_changesets(reverse=True)
         except EmptyRepositoryError as e:
-            h.flash(e, category='warning')
+            webutils.flash(e, category='warning')
             collection = []
         c.cs_pagination = Page(collection, page=p, items_per_page=size)
         page_revisions = [x.raw_id for x in list(c.cs_pagination)]

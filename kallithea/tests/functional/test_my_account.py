@@ -2,7 +2,7 @@
 
 from tg.util.webtest import test_context
 
-from kallithea.lib import helpers as h
+from kallithea.lib import webutils
 from kallithea.model import db, meta
 from kallithea.model.user import UserModel
 from kallithea.tests import base
@@ -186,7 +186,7 @@ class TestMyAccountController(base.TestController):
         with test_context(self.app):
             msg = validators.ValidUsername(edit=False, old_data={}) \
                     ._messages['username_exists']
-        msg = h.html_escape(msg % {'username': base.TEST_USER_ADMIN_LOGIN})
+        msg = webutils.html_escape(msg % {'username': base.TEST_USER_ADMIN_LOGIN})
         response.mustcontain(msg)
 
     def test_my_account_api_keys(self):

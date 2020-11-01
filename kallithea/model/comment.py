@@ -81,7 +81,7 @@ class ChangesetCommentsModel(object):
                 repo_name=repo.repo_name,
                 revision=revision,
                 anchor='comment-%s' % comment.comment_id)
-            subj = h.link_to(
+            subj = webutils.link_to(
                 'Re changeset: %(desc)s %(line)s' %
                           {'desc': desc, 'line': line},
                  comment_url)
@@ -127,7 +127,7 @@ class ChangesetCommentsModel(object):
                                                           webutils.canonical_hostname()))
             comment_url = pull_request.url(canonical=True,
                 anchor='comment-%s' % comment.comment_id)
-            subj = h.link_to(
+            subj = webutils.link_to(
                 'Re pull request %(pr_nice_id)s: %(desc)s %(line)s' %
                           {'desc': desc,
                            'pr_nice_id': comment.pull_request.nice_id(),

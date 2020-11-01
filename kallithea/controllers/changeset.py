@@ -86,7 +86,7 @@ def create_cs_pr_comment(repo_name, revision=None, pull_request=None, allowed_to
 
     if not allowed_to_change_status:
         if status or close_pr:
-            h.flash(_('No permission to change status'), 'error')
+            webutils.flash(_('No permission to change status'), 'error')
             raise HTTPForbidden()
 
     if pull_request and delete == "delete":
@@ -97,7 +97,7 @@ def create_cs_pr_comment(repo_name, revision=None, pull_request=None, allowed_to
         ) and not pull_request.is_closed():
             PullRequestModel().delete(pull_request)
             meta.Session().commit()
-            h.flash(_('Successfully deleted pull request %s') % pull_request_id,
+            webutils.flash(_('Successfully deleted pull request %s') % pull_request_id,
                     category='success')
             return {
                'location': webutils.url('my_pullrequests'), # or repo pr list?
@@ -143,7 +143,7 @@ def create_cs_pr_comment(repo_name, revision=None, pull_request=None, allowed_to
     meta.Session().commit()
 
     data = {
-       'target_id': h.safeid(request.POST.get('f_path')),
+       'target_id': webutils.safeid(request.POST.get('f_path')),
     }
     if comment is not None:
         c.comment = comment
@@ -199,7 +199,7 @@ class ChangesetController(BaseRepoController):
         except (ChangesetDoesNotExistError, EmptyRepositoryError):
             log.debug(traceback.format_exc())
             msg = _('Such revision does not exist for this repository')
-            h.flash(msg, category='error')
+            webutils.flash(msg, category='error')
             raise HTTPNotFound()
 
         c.changes = OrderedDict()

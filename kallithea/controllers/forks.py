@@ -36,7 +36,6 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPFound, HTTPNotFound
 
 import kallithea
-import kallithea.lib.helpers as h
 from kallithea.lib import webutils
 from kallithea.lib.auth import HasPermissionAnyDecorator, HasRepoPermissionLevel, HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController, render
@@ -166,7 +165,7 @@ class ForksController(BaseRepoController):
                 force_defaults=False)
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('An error occurred during repository forking %s') %
+            webutils.flash(_('An error occurred during repository forking %s') %
                     repo_name, category='error')
 
         raise HTTPFound(location=webutils.url('repo_creating_home',

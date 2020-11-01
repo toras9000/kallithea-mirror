@@ -35,7 +35,6 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPFound
 
-from kallithea.lib import helpers as h
 from kallithea.lib import webutils
 from kallithea.lib.auth import HasPermissionAnyDecorator, LoginRequired
 from kallithea.lib.base import BaseController, render
@@ -114,11 +113,11 @@ class SettingsController(BaseController):
 
                 meta.Session().commit()
 
-                h.flash(_('Updated VCS settings'), category='success')
+                webutils.flash(_('Updated VCS settings'), category='success')
 
             except Exception:
                 log.error(traceback.format_exc())
-                h.flash(_('Error occurred while updating '
+                webutils.flash(_('Error occurred while updating '
                           'application settings'), category='error')
 
         defaults = db.Setting.get_app_settings()
@@ -147,13 +146,13 @@ class SettingsController(BaseController):
                                             install_git_hooks=install_git_hooks,
                                             user=request.authuser.username,
                                             overwrite_git_hooks=overwrite_git_hooks)
-            added_msg = h.HTML(', ').join(
-                h.link_to(safe_str(repo_name), webutils.url('summary_home', repo_name=repo_name)) for repo_name in added
+            added_msg = webutils.HTML(', ').join(
+                webutils.link_to(safe_str(repo_name), webutils.url('summary_home', repo_name=repo_name)) for repo_name in added
             ) or '-'
-            removed_msg = h.HTML(', ').join(
+            removed_msg = webutils.HTML(', ').join(
                 safe_str(repo_name) for repo_name in removed
             ) or '-'
-            h.flash(h.HTML(_('Repositories successfully rescanned. Added: %s. Removed: %s.')) %
+            webutils.flash(webutils.HTML(_('Repositories successfully rescanned. Added: %s. Removed: %s.')) %
                     (added_msg, removed_msg), category='success')
 
             if invalidate_cache:
@@ -165,7 +164,7 @@ class SettingsController(BaseController):
                         i += 1
                     except VCSError as e:
                         log.warning('VCS error invalidating %s: %s', repo.repo_name, e)
-                h.flash(_('Invalidated %s repositories') % i, category='success')
+                webutils.flash(_('Invalidated %s repositories') % i, category='success')
 
             raise HTTPFound(location=url('admin_settings_mapping'))
 
@@ -206,11 +205,11 @@ class SettingsController(BaseController):
 
                 meta.Session().commit()
                 set_app_settings(config)
-                h.flash(_('Updated application settings'), category='success')
+                webutils.flash(_('Updated application settings'), category='success')
 
             except Exception:
                 log.error(traceback.format_exc())
-                h.flash(_('Error occurred while updating '
+                webutils.flash(_('Error occurred while updating '
                           'application settings'),
                           category='error')
 
@@ -260,12 +259,12 @@ class SettingsController(BaseController):
 
                 meta.Session().commit()
                 set_app_settings(config)
-                h.flash(_('Updated visualisation settings'),
+                webutils.flash(_('Updated visualisation settings'),
                         category='success')
 
             except Exception:
                 log.error(traceback.format_exc())
-                h.flash(_('Error occurred during updating '
+                webutils.flash(_('Error occurred during updating '
                           'visualisation settings'),
                         category='error')
 
@@ -289,7 +288,7 @@ class SettingsController(BaseController):
             test_body = ('Kallithea Email test, '
                                'Kallithea version: %s' % c.kallithea_version)
             if not test_email:
-                h.flash(_('Please enter email address'), category='error')
+                webutils.flash(_('Please enter email address'), category='error')
                 raise HTTPFound(location=url('admin_settings_email'))
 
             test_email_txt_body = EmailNotificationModel() \
@@ -304,7 +303,7 @@ class SettingsController(BaseController):
             tasks.send_email(recipients, test_email_subj,
                              test_email_txt_body, test_email_html_body)
 
-            h.flash(_('Send email task created'), category='success')
+            webutils.flash(_('Send email task created'), category='success')
             raise HTTPFound(location=url('admin_settings_email'))
 
         defaults = db.Setting.get_app_settings()
@@ -332,12 +331,12 @@ class SettingsController(BaseController):
                 try:
                     ui_key = ui_key and ui_key.strip()
                     if ui_key in (x.ui_key for x in db.Ui.get_custom_hooks()):
-                        h.flash(_('Hook already exists'), category='error')
+                        webutils.flash(_('Hook already exists'), category='error')
                     elif ui_key in (x.ui_key for x in db.Ui.get_builtin_hooks()):
-                        h.flash(_('Builtin hooks are read-only. Please use another hook name.'), category='error')
+                        webutils.flash(_('Builtin hooks are read-only. Please use another hook name.'), category='error')
                     elif ui_value and ui_key:
                         db.Ui.create_or_update_hook(ui_key, ui_value)
-                        h.flash(_('Added new hook'), category='success')
+                        webutils.flash(_('Added new hook'), category='success')
                     elif hook_id:
                         db.Ui.delete(hook_id)
                         meta.Session().commit()
@@ -353,11 +352,11 @@ class SettingsController(BaseController):
                             update = True
 
                     if update:
-                        h.flash(_('Updated hooks'), category='success')
+                        webutils.flash(_('Updated hooks'), category='success')
                     meta.Session().commit()
                 except Exception:
                     log.error(traceback.format_exc())
-                    h.flash(_('Error occurred during hook creation'),
+                    webutils.flash(_('Error occurred during hook creation'),
                             category='error')
 
                 raise HTTPFound(location=url('admin_settings_hooks'))
@@ -381,7 +380,7 @@ class SettingsController(BaseController):
             repo_location = self._get_hg_ui_settings()['paths_root_path']
             full_index = request.POST.get('full_index', False)
             tasks.whoosh_index(repo_location, full_index)
-            h.flash(_('Whoosh reindex task scheduled'), category='success')
+            webutils.flash(_('Whoosh reindex task scheduled'), category='success')
             raise HTTPFound(location=url('admin_settings_search'))
 
         defaults = db.Setting.get_app_settings()

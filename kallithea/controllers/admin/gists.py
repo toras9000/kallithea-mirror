@@ -35,8 +35,7 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPForbidden, HTTPFound, HTTPNotFound
 
-from kallithea.lib import auth
-from kallithea.lib import helpers as h
+from kallithea.lib import auth, webutils
 from kallithea.lib.auth import LoginRequired
 from kallithea.lib.base import BaseController, jsonify, render
 from kallithea.lib.page import Page
@@ -144,7 +143,7 @@ class GistsController(BaseController):
 
         except Exception as e:
             log.error(traceback.format_exc())
-            h.flash(_('Error occurred during gist creation'), category='error')
+            webutils.flash(_('Error occurred during gist creation'), category='error')
             raise HTTPFound(location=url('new_gist'))
         raise HTTPFound(location=url('gist', gist_id=new_gist_id))
 
@@ -160,7 +159,7 @@ class GistsController(BaseController):
         if auth.HasPermissionAny('hg.admin')() or owner:
             GistModel().delete(gist)
             meta.Session().commit()
-            h.flash(_('Deleted gist %s') % gist.gist_access_id, category='success')
+            webutils.flash(_('Deleted gist %s') % gist.gist_access_id, category='success')
         else:
             raise HTTPForbidden()
 
@@ -233,15 +232,15 @@ class GistsController(BaseController):
                 )
 
                 meta.Session().commit()
-                h.flash(_('Successfully updated gist content'), category='success')
+                webutils.flash(_('Successfully updated gist content'), category='success')
             except NodeNotChangedError:
                 # raised if nothing was changed in repo itself. We anyway then
                 # store only DB stuff for gist
                 meta.Session().commit()
-                h.flash(_('Successfully updated gist data'), category='success')
+                webutils.flash(_('Successfully updated gist data'), category='success')
             except Exception:
                 log.error(traceback.format_exc())
-                h.flash(_('Error occurred during update of gist %s') % gist_id,
+                webutils.flash(_('Error occurred during update of gist %s') % gist_id,
                         category='error')
 
             raise HTTPFound(location=url('gist', gist_id=gist_id))

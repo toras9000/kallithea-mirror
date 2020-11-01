@@ -35,9 +35,9 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest, HTTPForbidden, HTTPFound, HTTPNotFound
 
+import kallithea.lib.helpers as h
 from kallithea.controllers.changeset import create_cs_pr_comment, delete_cs_pr_comment
-from kallithea.lib import auth, diffs
-from kallithea.lib import helpers as h
+from kallithea.lib import auth, diffs, webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController, jsonify, render
 from kallithea.lib.graphmod import graph_data
@@ -63,7 +63,7 @@ def _get_reviewer(user_id):
         user = None
 
     if user is None or user.is_default_user:
-        h.flash(_('Invalid reviewer "%s" specified') % user_id, category='error')
+        webutils.flash(_('Invalid reviewer "%s" specified') % user_id, category='error')
         raise HTTPBadRequest()
 
     return user
@@ -245,7 +245,7 @@ class PullrequestsController(BaseRepoController):
         try:
             org_scm_instance.get_changeset()
         except EmptyRepositoryError as e:
-            h.flash(_('There are no changesets yet'),
+            webutils.flash(_('There are no changesets yet'),
                     category='warning')
             raise HTTPFound(location=url('summary_home', repo_name=org_repo.repo_name))
 
@@ -314,7 +314,7 @@ class PullrequestsController(BaseRepoController):
             log.error(traceback.format_exc())
             log.error(str(errors))
             msg = _('Error creating pull request: %s') % errors.msg
-            h.flash(msg, 'error')
+            webutils.flash(msg, 'error')
             raise HTTPBadRequest
 
         # heads up: org and other might seem backward here ...
@@ -333,19 +333,19 @@ class PullrequestsController(BaseRepoController):
         try:
             cmd = CreatePullRequestAction(org_repo, other_repo, org_ref, other_ref, title, description, owner, reviewers)
         except CreatePullRequestAction.ValidationError as e:
-            h.flash(e, category='error', logf=log.error)
+            webutils.flash(e, category='error', logf=log.error)
             raise HTTPNotFound
 
         try:
             pull_request = cmd.execute()
             meta.Session().commit()
         except Exception:
-            h.flash(_('Error occurred while creating pull request'),
+            webutils.flash(_('Error occurred while creating pull request'),
                     category='error')
             log.error(traceback.format_exc())
             raise HTTPFound(location=url('pullrequest_home', repo_name=repo_name))
 
-        h.flash(_('Successfully opened new pull request'),
+        webutils.flash(_('Successfully opened new pull request'),
                 category='success')
         raise HTTPFound(location=pull_request.url())
 
@@ -356,19 +356,19 @@ class PullrequestsController(BaseRepoController):
         try:
             cmd = CreatePullRequestIterationAction(old_pull_request, new_org_rev, new_other_rev, title, description, owner, reviewers)
         except CreatePullRequestAction.ValidationError as e:
-            h.flash(e, category='error', logf=log.error)
+            webutils.flash(e, category='error', logf=log.error)
             raise HTTPNotFound
 
         try:
             pull_request = cmd.execute()
             meta.Session().commit()
         except Exception:
-            h.flash(_('Error occurred while creating pull request'),
+            webutils.flash(_('Error occurred while creating pull request'),
                     category='error')
             log.error(traceback.format_exc())
             raise HTTPFound(location=old_pull_request.url())
 
-        h.flash(_('New pull request iteration created'),
+        webutils.flash(_('New pull request iteration created'),
                 category='success')
         raise HTTPFound(location=pull_request.url())
 
@@ -396,11 +396,11 @@ class PullrequestsController(BaseRepoController):
         other_removed = old_reviewers - cur_reviewers
 
         if other_added:
-            h.flash(_('Meanwhile, the following reviewers have been added: %s') %
+            webutils.flash(_('Meanwhile, the following reviewers have been added: %s') %
                     (', '.join(u.username for u in other_added)),
                     category='warning')
         if other_removed:
-            h.flash(_('Meanwhile, the following reviewers have been removed: %s') %
+            webutils.flash(_('Meanwhile, the following reviewers have been removed: %s') %
                     (', '.join(u.username for u in other_removed)),
                     category='warning')
 
@@ -425,7 +425,7 @@ class PullrequestsController(BaseRepoController):
         PullRequestModel().remove_reviewers(user, pull_request, removed_reviewers)
 
         meta.Session().commit()
-        h.flash(_('Pull request updated'), category='success')
+        webutils.flash(_('Pull request updated'), category='success')
 
         raise HTTPFound(location=pull_request.url())
 
@@ -438,7 +438,7 @@ class PullrequestsController(BaseRepoController):
         if pull_request.owner_id == request.authuser.user_id:
             PullRequestModel().delete(pull_request)
             meta.Session().commit()
-            h.flash(_('Successfully deleted pull request'),
+            webutils.flash(_('Successfully deleted pull request'),
                     category='success')
             raise HTTPFound(location=url('my_pullrequests'))
         raise HTTPForbidden()
@@ -474,7 +474,7 @@ class PullrequestsController(BaseRepoController):
                 c.cs_ranges.append(org_scm_instance.get_changeset(x))
             except ChangesetDoesNotExistError:
                 c.cs_ranges = []
-                h.flash(_('Revision %s not found in %s') % (x, c.cs_repo.repo_name),
+                webutils.flash(_('Revision %s not found in %s') % (x, c.cs_repo.repo_name),
                     'error')
                 break
         c.cs_ranges_org = None # not stored and not important and moving target - could be calculated ...

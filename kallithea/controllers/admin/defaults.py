@@ -34,7 +34,7 @@ from tg import request
 from tg.i18n import ugettext as _
 from webob.exc import HTTPFound
 
-from kallithea.lib import helpers as h
+from kallithea.lib import webutils
 from kallithea.lib.auth import HasPermissionAnyDecorator, LoginRequired
 from kallithea.lib.base import BaseController, render
 from kallithea.lib.webutils import url
@@ -70,7 +70,7 @@ class DefaultsController(BaseController):
             for k, v in form_result.items():
                 setting = db.Setting.create_or_update(k, v)
             meta.Session().commit()
-            h.flash(_('Default settings updated successfully'),
+            webutils.flash(_('Default settings updated successfully'),
                     category='success')
 
         except formencode.Invalid as errors:
@@ -85,7 +85,7 @@ class DefaultsController(BaseController):
                 force_defaults=False)
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('Error occurred during update of defaults'),
+            webutils.flash(_('Error occurred during update of defaults'),
                     category='error')
 
         raise HTTPFound(location=url('defaults'))

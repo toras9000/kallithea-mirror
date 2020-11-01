@@ -19,9 +19,8 @@ import logging
 import paginate
 import paginate_sqlalchemy
 import sqlalchemy.orm
-from webhelpers2.html import literal
 
-from kallithea.lib.webutils import url
+from kallithea.lib import webutils
 
 
 log = logging.getLogger(__name__)
@@ -35,10 +34,10 @@ class Page(paginate.Page):
         if isinstance(collection, sqlalchemy.orm.query.Query):
             collection = paginate_sqlalchemy.SqlalchemyOrmWrapper(collection)
         paginate.Page.__init__(self, collection, page=page, items_per_page=items_per_page, item_count=item_count,
-                               url_maker=lambda page: url.current(page=page, **kwargs))
+                               url_maker=lambda page: webutils.url.current(page=page, **kwargs))
 
     def pager(self):
-        return literal(
+        return webutils.literal(
             paginate.Page.pager(self,
                 format='<ul class="pagination">$link_previous\n~4~$link_next</ul>',
                 link_attr={'class': 'pager_link'},

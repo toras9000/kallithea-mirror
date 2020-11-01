@@ -37,7 +37,6 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPForbidden, HTTPFound, HTTPInternalServerError, HTTPNotFound
 
 import kallithea
-from kallithea.lib import helpers as h
 from kallithea.lib import webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired, NotAnonymous
 from kallithea.lib.base import BaseRepoController, jsonify, render
@@ -125,7 +124,7 @@ class ReposController(BaseRepoController):
             log.error(traceback.format_exc())
             msg = (_('Error creating repository %s')
                    % form_result.get('repo_name'))
-            h.flash(msg, category='error')
+            webutils.flash(msg, category='error')
             raise HTTPFound(location=url('home'))
 
         raise HTTPFound(location=webutils.url('repo_creating_home',
@@ -179,19 +178,19 @@ class ReposController(BaseRepoController):
         repo = db.Repository.get_by_repo_name(repo_name)
         if repo and repo.repo_state == db.Repository.STATE_CREATED:
             if repo.clone_uri:
-                h.flash(_('Created repository %s from %s')
+                webutils.flash(_('Created repository %s from %s')
                         % (repo.repo_name, repo.clone_uri_hidden), category='success')
             else:
-                repo_url = h.link_to(repo.repo_name,
+                repo_url = webutils.link_to(repo.repo_name,
                                      webutils.url('summary_home',
                                            repo_name=repo.repo_name))
                 fork = repo.fork
                 if fork is not None:
                     fork_name = fork.repo_name
-                    h.flash(h.HTML(_('Forked repository %s as %s'))
+                    webutils.flash(webutils.HTML(_('Forked repository %s as %s'))
                             % (fork_name, repo_url), category='success')
                 else:
-                    h.flash(h.HTML(_('Created repository %s')) % repo_url,
+                    webutils.flash(webutils.HTML(_('Created repository %s')) % repo_url,
                             category='success')
             return {'result': True}
         return {'result': False}
@@ -220,7 +219,7 @@ class ReposController(BaseRepoController):
             form_result = _form.to_python(dict(request.POST))
             repo = repo_model.update(repo_name, **form_result)
             ScmModel().mark_for_invalidation(repo_name)
-            h.flash(_('Repository %s updated successfully') % repo_name,
+            webutils.flash(_('Repository %s updated successfully') % repo_name,
                     category='success')
             changed_name = repo.repo_name
             action_logger(request.authuser, 'admin_updated_repo',
@@ -240,7 +239,7 @@ class ReposController(BaseRepoController):
 
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('Error occurred during update of repository %s')
+            webutils.flash(_('Error occurred during update of repository %s')
                     % repo_name, category='error')
         raise HTTPFound(location=url('edit_repo', repo_name=changed_name))
 
@@ -257,23 +256,23 @@ class ReposController(BaseRepoController):
                 do = request.POST['forks']
                 if do == 'detach_forks':
                     handle_forks = 'detach'
-                    h.flash(_('Detached %s forks') % _forks, category='success')
+                    webutils.flash(_('Detached %s forks') % _forks, category='success')
                 elif do == 'delete_forks':
                     handle_forks = 'delete'
-                    h.flash(_('Deleted %s forks') % _forks, category='success')
+                    webutils.flash(_('Deleted %s forks') % _forks, category='success')
             repo_model.delete(repo, forks=handle_forks)
             action_logger(request.authuser, 'admin_deleted_repo',
                 repo_name, request.ip_addr)
             ScmModel().mark_for_invalidation(repo_name)
-            h.flash(_('Deleted repository %s') % repo_name, category='success')
+            webutils.flash(_('Deleted repository %s') % repo_name, category='success')
             meta.Session().commit()
         except AttachedForksError:
-            h.flash(_('Cannot delete repository %s which still has forks')
+            webutils.flash(_('Cannot delete repository %s which still has forks')
                         % repo_name, category='warning')
 
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('An error occurred during deletion of %s') % repo_name,
+            webutils.flash(_('An error occurred during deletion of %s') % repo_name,
                     category='error')
 
         if repo.group:
@@ -313,7 +312,7 @@ class ReposController(BaseRepoController):
         #action_logger(request.authuser, 'admin_changed_repo_permissions',
         #              repo_name, request.ip_addr)
         meta.Session().commit()
-        h.flash(_('Repository permissions updated'), category='success')
+        webutils.flash(_('Repository permissions updated'), category='success')
         raise HTTPFound(location=url('edit_repo_perms', repo_name=repo_name))
 
     @HasRepoPermissionLevelDecorator('admin')
@@ -342,7 +341,7 @@ class ReposController(BaseRepoController):
             meta.Session().commit()
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('An error occurred during revoking of permission'),
+            webutils.flash(_('An error occurred during revoking of permission'),
                     category='error')
             raise HTTPInternalServerError()
         return []
@@ -372,10 +371,10 @@ class ReposController(BaseRepoController):
             meta.Session().add(new_field)
             meta.Session().commit()
         except formencode.Invalid as e:
-            h.flash(_('Field validation error: %s') % e.msg, category='error')
+            webutils.flash(_('Field validation error: %s') % e.msg, category='error')
         except Exception as e:
             log.error(traceback.format_exc())
-            h.flash(_('An error occurred during creation of field: %r') % e, category='error')
+            webutils.flash(_('An error occurred during creation of field: %r') % e, category='error')
         raise HTTPFound(location=url('edit_repo_fields', repo_name=repo_name))
 
     @HasRepoPermissionLevelDecorator('admin')
@@ -387,7 +386,7 @@ class ReposController(BaseRepoController):
         except Exception as e:
             log.error(traceback.format_exc())
             msg = _('An error occurred during removal of field')
-            h.flash(msg, category='error')
+            webutils.flash(msg, category='error')
         raise HTTPFound(location=url('edit_repo_fields', repo_name=repo_name))
 
     @HasRepoPermissionLevelDecorator('admin')
@@ -432,11 +431,11 @@ class ReposController(BaseRepoController):
             repo_id = db.Repository.get_by_repo_name(repo_name).repo_id
             user_id = kallithea.DEFAULT_USER_ID
             self.scm_model.toggle_following_repo(repo_id, user_id)
-            h.flash(_('Updated repository visibility in public journal'),
+            webutils.flash(_('Updated repository visibility in public journal'),
                     category='success')
             meta.Session().commit()
         except Exception:
-            h.flash(_('An error occurred during setting this'
+            webutils.flash(_('An error occurred during setting this'
                       ' repository in public journal'),
                     category='error')
         raise HTTPFound(location=url('edit_repo_advanced', repo_name=repo_name))
@@ -454,14 +453,14 @@ class ReposController(BaseRepoController):
                                            request.authuser.username)
             fork = repo.fork.repo_name if repo.fork else _('Nothing')
             meta.Session().commit()
-            h.flash(_('Marked repository %s as fork of %s') % (repo_name, fork),
+            webutils.flash(_('Marked repository %s as fork of %s') % (repo_name, fork),
                     category='success')
         except RepositoryError as e:
             log.error(traceback.format_exc())
-            h.flash(e, category='error')
+            webutils.flash(e, category='error')
         except Exception as e:
             log.error(traceback.format_exc())
-            h.flash(_('An error occurred during this operation'),
+            webutils.flash(_('An error occurred during this operation'),
                     category='error')
 
         raise HTTPFound(location=url('edit_repo_advanced', repo_name=repo_name))
@@ -473,10 +472,10 @@ class ReposController(BaseRepoController):
         if request.POST:
             try:
                 ScmModel().pull_changes(repo_name, request.authuser.username, request.ip_addr)
-                h.flash(_('Pulled from remote location'), category='success')
+                webutils.flash(_('Pulled from remote location'), category='success')
             except Exception as e:
                 log.error(traceback.format_exc())
-                h.flash(_('An error occurred during pull from remote location'),
+                webutils.flash(_('An error occurred during pull from remote location'),
                         category='error')
             raise HTTPFound(location=url('edit_repo_remote', repo_name=c.repo_name))
         return render('admin/repos/repo_edit.html')
@@ -507,7 +506,7 @@ class ReposController(BaseRepoController):
                 meta.Session().commit()
             except Exception as e:
                 log.error(traceback.format_exc())
-                h.flash(_('An error occurred during deletion of repository stats'),
+                webutils.flash(_('An error occurred during deletion of repository stats'),
                         category='error')
             raise HTTPFound(location=url('edit_repo_statistics', repo_name=c.repo_name))
 

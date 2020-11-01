@@ -40,6 +40,7 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPForbidden, HTTPFound
 
 import kallithea
+from kallithea.lib import webutils
 from kallithea.lib.utils import get_repo_group_slug, get_repo_slug, get_user_group_slug
 from kallithea.lib.utils2 import ascii_bytes, ascii_str, safe_bytes
 from kallithea.lib.vcs.utils.lazy import LazyProperty
@@ -544,9 +545,8 @@ def _redirect_to_login(message=None):
     """Return an exception that must be raised. It will redirect to the login
     page which will redirect back to the current URL after authentication.
     The optional message will be shown in a flash message."""
-    from kallithea.lib import helpers as h
     if message:
-        h.flash(message, category='warning')
+        webutils.flash(message, category='warning')
     p = request.path_qs
     log.debug('Redirecting to login page, origin: %s', p)
     return HTTPFound(location=url('login_home', came_from=p))

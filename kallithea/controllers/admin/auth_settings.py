@@ -32,8 +32,7 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPFound
 
-from kallithea.lib import auth_modules
-from kallithea.lib import helpers as h
+from kallithea.lib import auth_modules, webutils
 from kallithea.lib.auth import HasPermissionAnyDecorator, LoginRequired
 from kallithea.lib.base import BaseController, render
 from kallithea.lib.webutils import url
@@ -132,7 +131,7 @@ class AuthSettingsController(BaseController):
                 log.debug("%s = %s", k, str(v))
                 setting = db.Setting.create_or_update(k, v)
             meta.Session().commit()
-            h.flash(_('Auth settings updated successfully'),
+            webutils.flash(_('Auth settings updated successfully'),
                        category='success')
         except formencode.Invalid as errors:
             log.error(traceback.format_exc())
@@ -143,7 +142,7 @@ class AuthSettingsController(BaseController):
             )
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('error occurred during update of auth settings'),
+            webutils.flash(_('error occurred during update of auth settings'),
                     category='error')
 
         raise HTTPFound(location=url('auth_home'))
