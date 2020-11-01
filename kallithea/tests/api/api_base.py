@@ -688,7 +688,7 @@ class _BaseTestApi(object):
 
         expected = jsonify([
             repo.get_api_data()
-            for repo in RepoModel().get_all_user_repos(self.TEST_USER_LOGIN)
+            for repo in AuthUser(dbuser=db.User.get_by_username(self.TEST_USER_LOGIN)).get_all_user_repos()
         ])
 
         self._compare_ok(id_, expected, given=response.body)

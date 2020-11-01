@@ -22,7 +22,7 @@ from inspect import isfunction
 
 from kallithea.lib.auth import AuthUser
 from kallithea.lib.compat import hybrid_property
-from kallithea.lib.utils2 import asbool, PasswordGenerator
+from kallithea.lib.utils2 import PasswordGenerator, asbool
 from kallithea.model import db, meta, validators
 from kallithea.model.user import UserModel
 from kallithea.model.user_group import UserGroupModel

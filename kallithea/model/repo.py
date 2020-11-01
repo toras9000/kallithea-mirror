@@ -89,20 +89,6 @@ class RepoModel(object):
             .filter(db.Repository.repo_name == repo_name)
         return repo.scalar()
 
-    def get_all_user_repos(self, user):
-        """
-        Gets all repositories that user have at least read access
-
-        :param user:
-        """
-        from kallithea.lib.auth import AuthUser
-        auth_user = AuthUser(dbuser=db.User.guess_instance(user))
-        repos = [repo_name
-            for repo_name, perm in auth_user.repository_permissions.items()
-            if perm in ['repository.read', 'repository.write', 'repository.admin']
-            ]
-        return db.Repository.query().filter(db.Repository.repo_name.in_(repos))
-
     @classmethod
     def _render_datatable(cls, tmpl, *args, **kwargs):
         from tg import app_globals, request

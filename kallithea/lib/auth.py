@@ -467,6 +467,16 @@ class AuthUser(object):
                 pass
         return _set or set(['0.0.0.0/0', '::/0'])
 
+    def get_all_user_repos(self):
+        """
+        Gets all repositories that user have at least read access
+        """
+        repos = [repo_name
+            for repo_name, perm in self.repository_permissions.items()
+            if perm in ['repository.read', 'repository.write', 'repository.admin']
+            ]
+        return db.Repository.query().filter(db.Repository.repo_name.in_(repos))
+
 
 #==============================================================================
 # CHECK DECORATORS

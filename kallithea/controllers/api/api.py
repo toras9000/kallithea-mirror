@@ -1097,7 +1097,7 @@ class ApiController(JSONRPCController):
             error:  null
         """
         if not HasPermissionAny('hg.admin')():
-            repos = RepoModel().get_all_user_repos(user=request.authuser.user_id)
+            repos = request.authuser.get_all_user_repos()
         else:
             repos = db.Repository.query()
 
