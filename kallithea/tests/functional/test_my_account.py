@@ -3,7 +3,7 @@
 from tg.util.webtest import test_context
 
 from kallithea.lib import webutils
-from kallithea.model import db, meta
+from kallithea.model import db, meta, validators
 from kallithea.model.user import UserModel
 from kallithea.tests import base
 from kallithea.tests.fixture import Fixture
@@ -182,7 +182,6 @@ class TestMyAccountController(base.TestController):
                                             _session_csrf_secret_token=self.session_csrf_secret_token()))
 
         response.mustcontain('An email address must contain a single @')
-        from kallithea.model import validators
         with test_context(self.app):
             msg = validators.ValidUsername(edit=False, old_data={}) \
                     ._messages['username_exists']

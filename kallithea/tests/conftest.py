@@ -19,6 +19,7 @@ from kallithea.model import db, meta
 from kallithea.model.scm import ScmModel
 from kallithea.model.user import UserModel
 from kallithea.tests.base import TEST_USER_ADMIN_LOGIN, TEST_USER_ADMIN_PASS, TEST_USER_REGULAR_LOGIN, TESTS_TMP_PATH, invalidate_all_caches
+from kallithea.tests.fixture import create_test_env, create_test_index
 
 
 def pytest_configure():
@@ -69,7 +70,6 @@ def pytest_configure():
     inifile.create(test_ini_file, None, ini_settings)
 
     context = loadwsgi.loadcontext(loadwsgi.APP, 'config:%s' % test_ini_file)
-    from kallithea.tests.fixture import create_test_env, create_test_index
 
     # set KALLITHEA_NO_TMP_PATH=1 to disable re-creating the database and test repos
     if not int(os.environ.get('KALLITHEA_NO_TMP_PATH', 0)):

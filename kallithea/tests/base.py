@@ -20,6 +20,7 @@ import tempfile
 import time
 
 import pytest
+from beaker.cache import cache_managers
 from webtest import TestApp
 
 from kallithea.lib.utils2 import ascii_str
@@ -126,7 +127,6 @@ def invalidate_all_caches():
     effect immediately.
     Note: Any use of this function is probably a workaround - it should be
     replaced with a more specific cache invalidation in code or test."""
-    from beaker.cache import cache_managers
     for cache in cache_managers.values():
         cache.clear()
 

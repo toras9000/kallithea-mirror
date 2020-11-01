@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 import platform
+import re
 import sys
 
 import setuptools
@@ -17,7 +18,6 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 
 def _get_meta_var(name, data, callback_handler=None):
-    import re
     matches = re.compile(r'(?:%s)\s*=\s*(.*)' % name).search(data)
     if matches:
         s = eval(matches.groups()[0])

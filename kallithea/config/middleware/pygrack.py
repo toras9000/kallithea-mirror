@@ -36,7 +36,7 @@ from webob import Request, Response, exc
 
 import kallithea
 from kallithea.lib.utils2 import ascii_bytes
-from kallithea.lib.vcs import subprocessio
+from kallithea.lib.vcs import get_repo, subprocessio
 
 
 log = logging.getLogger(__name__)
@@ -170,8 +170,6 @@ class GitRepository(object):
         if git_command in ['git-receive-pack']:
             # updating refs manually after each push.
             # Needed for pre-1.7.0.4 git clients using regular HTTP mode.
-
-            from kallithea.lib.vcs import get_repo
             repo = get_repo(self.content_path)
             if repo:
                 update_server_info(repo._repo)

@@ -35,6 +35,7 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPFound
 
+import kallithea
 from kallithea.lib import webutils
 from kallithea.lib.auth import HasPermissionAnyDecorator, LoginRequired
 from kallithea.lib.base import BaseController, render
@@ -309,7 +310,6 @@ class SettingsController(BaseController):
         defaults = db.Setting.get_app_settings()
         defaults.update(self._get_hg_ui_settings())
 
-        import kallithea
         c.ini = kallithea.CONFIG
 
         return htmlfill.render(
@@ -399,7 +399,6 @@ class SettingsController(BaseController):
         defaults = db.Setting.get_app_settings()
         defaults.update(self._get_hg_ui_settings())
 
-        import kallithea
         c.ini = kallithea.CONFIG
         server_info = db.Setting.get_server_info()
         for key, val in server_info.items():

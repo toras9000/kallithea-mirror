@@ -27,6 +27,7 @@ import urllib.parse
 from beaker.cache import cache_region
 from pygments import highlight as code_highlight
 from pygments.formatters.html import HtmlFormatter
+from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 
 import kallithea
@@ -771,7 +772,6 @@ def gravatar_div(email_address, cls='', size=30, **div_attributes):
     and '_' changed to '-' and be used as attributes on the div. The default
     class is 'gravatar'.
     """
-    from tg import tmpl_context as c
     if not c.visual.use_gravatar:
         return ''
     if 'div_class' not in div_attributes:
@@ -793,7 +793,6 @@ def gravatar(email_address, cls='', size=30):
     empty then we fallback to using an icon.
 
     """
-    from tg import tmpl_context as c
     if not c.visual.use_gravatar:
         return ''
 
@@ -815,8 +814,6 @@ def gravatar(email_address, cls='', size=30):
 
 
 def gravatar_url(email_address, size=30, default=''):
-    from tg import tmpl_context as c
-
     if not c.visual.use_gravatar:
         return ""
 

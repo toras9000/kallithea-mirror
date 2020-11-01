@@ -27,6 +27,8 @@ from tg.util.webtest import test_context
 
 from kallithea.lib.auth import AuthUser
 from kallithea.lib.db_manage import DbManage
+from kallithea.lib.indexers.daemon import WhooshIndexingDaemon
+from kallithea.lib.pidlock import DaemonLock
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.model import db, meta
 from kallithea.model.changeset_status import ChangesetStatusModel
@@ -41,6 +43,7 @@ from kallithea.model.user_group import UserGroupModel
 from kallithea.tests.base import (GIT_REPO, HG_REPO, IP_ADDR, TEST_USER_ADMIN_EMAIL, TEST_USER_ADMIN_LOGIN, TEST_USER_ADMIN_PASS, TEST_USER_REGULAR2_EMAIL,
                                   TEST_USER_REGULAR2_LOGIN, TEST_USER_REGULAR2_PASS, TEST_USER_REGULAR_EMAIL, TEST_USER_REGULAR_LOGIN, TEST_USER_REGULAR_PASS,
                                   TESTS_TMP_PATH, invalidate_all_caches)
+from kallithea.tests.vcs import setup_package
 
 
 log = logging.getLogger(__name__)
@@ -404,7 +407,6 @@ def create_test_env(repos_test_path, config, reuse_database):
     tar.close()
 
     # LOAD VCS test stuff
-    from kallithea.tests.vcs import setup_package
     setup_package()
 
 
@@ -412,9 +414,6 @@ def create_test_index(repo_location, config, full_index):
     """
     Makes default test index
     """
-
-    from kallithea.lib.indexers.daemon import WhooshIndexingDaemon
-    from kallithea.lib.pidlock import DaemonLock
 
     index_location = os.path.join(config['index_dir'])
     if not os.path.exists(index_location):

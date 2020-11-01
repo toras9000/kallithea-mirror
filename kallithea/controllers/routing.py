@@ -22,6 +22,7 @@ refer to the routes manual at http://routes.groovie.org/docs/
 import routes
 
 import kallithea
+from kallithea.lib.utils import is_valid_repo, is_valid_repo_group
 from kallithea.lib.utils2 import safe_str
 
 
@@ -49,8 +50,6 @@ def make_map(config):
                   always_scan=config['debug'])
     rmap.minimization = False
     rmap.explicit = False
-
-    from kallithea.lib.utils import is_valid_repo, is_valid_repo_group
 
     def check_repo(environ, match_dict):
         """

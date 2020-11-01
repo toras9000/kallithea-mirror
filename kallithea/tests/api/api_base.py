@@ -19,6 +19,7 @@ Tests for the JSON-RPC web api.
 import os
 import random
 import re
+import string
 
 import mock
 import pytest
@@ -177,7 +178,6 @@ class _BaseTestApi(object):
         assert response.status == '200 OK'
 
     def test_api_args_different_args(self):
-        import string
         expected = {
             'ascii_letters': string.ascii_letters,
             'ws': string.whitespace,

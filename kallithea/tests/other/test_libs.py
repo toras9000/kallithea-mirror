@@ -27,13 +27,17 @@ Original author and date, and relevant copyright and licensing information is be
 
 import datetime
 import hashlib
+import re
 
 import mock
+import routes
+from dateutil import relativedelta
+from tg import request
 from tg.util.webtest import test_context
 
 import kallithea.lib.helpers as h
 from kallithea.lib import webutils
-from kallithea.lib.utils2 import AttributeDict, safe_bytes
+from kallithea.lib.utils2 import AttributeDict, get_clone_url, safe_bytes
 from kallithea.model import db
 from kallithea.tests import base
 
@@ -138,8 +142,6 @@ class TestLibs(base.TestController):
         (dict(years= -3, months= -2), '3 years and 2 months ago'),
     ])
     def test_age(self, age_args, expected):
-        from dateutil import relativedelta
-
         from kallithea.lib.utils2 import age
         with test_context(self.app):
             n = datetime.datetime(year=2012, month=5, day=17)
@@ -164,8 +166,6 @@ class TestLibs(base.TestController):
         (dict(years= -4, months= -8), '5 years ago'),
     ])
     def test_age_short(self, age_args, expected):
-        from dateutil import relativedelta
-
         from kallithea.lib.utils2 import age
         with test_context(self.app):
             n = datetime.datetime(year=2012, month=5, day=17)
@@ -184,8 +184,6 @@ class TestLibs(base.TestController):
         (dict(years=1, months=1), 'in 1 year and 1 month')
     ])
     def test_age_in_future(self, age_args, expected):
-        from dateutil import relativedelta
-
         from kallithea.lib.utils2 import age
         with test_context(self.app):
             n = datetime.datetime(year=2012, month=5, day=17)
@@ -221,31 +219,30 @@ class TestLibs(base.TestController):
 
         with mock.patch('kallithea.lib.webutils.url.current', lambda *a, **b: 'https://example.com'):
             fake = fake_tmpl_context(_url='http://example.com/{email}')
-            with mock.patch('tg.tmpl_context', fake):
-                    from kallithea.lib.webutils import url
-                    assert url.current() == 'https://example.com'
+            with mock.patch('kallithea.lib.helpers.c', fake):
+                    assert webutils.url.current() == 'https://example.com'
                     grav = h.gravatar_url(email_address='test@example.com', size=24)
                     assert grav == 'http://example.com/test@example.com'
 
             fake = fake_tmpl_context(_url='http://example.com/{email}')
-            with mock.patch('tg.tmpl_context', fake):
+            with mock.patch('kallithea.lib.helpers.c', fake):
                 grav = h.gravatar_url(email_address='test@example.com', size=24)
                 assert grav == 'http://example.com/test@example.com'
 
             fake = fake_tmpl_context(_url='http://example.com/{md5email}')
-            with mock.patch('tg.tmpl_context', fake):
+            with mock.patch('kallithea.lib.helpers.c', fake):
                 em = 'test@example.com'
                 grav = h.gravatar_url(email_address=em, size=24)
                 assert grav == 'http://example.com/%s' % (_md5(em))
 
             fake = fake_tmpl_context(_url='http://example.com/{md5email}/{size}')
-            with mock.patch('tg.tmpl_context', fake):
+            with mock.patch('kallithea.lib.helpers.c', fake):
                 em = 'test@example.com'
                 grav = h.gravatar_url(email_address=em, size=24)
                 assert grav == 'http://example.com/%s/%s' % (_md5(em), 24)
 
             fake = fake_tmpl_context(_url='{scheme}://{netloc}/{md5email}/{size}')
-            with mock.patch('tg.tmpl_context', fake):
+            with mock.patch('kallithea.lib.helpers.c', fake):
                 em = 'test@example.com'
                 grav = h.gravatar_url(email_address=em, size=24)
                 assert grav == 'https://example.com/%s/%s' % (_md5(em), 24)
@@ -267,7 +264,6 @@ class TestLibs(base.TestController):
         ('https://proxy1.example.com/{user}/{repo}', 'group/repo1', 'username', '', 'https://proxy1.example.com/username/group/repo1'),
     ])
     def test_clone_url_generator(self, clone_uri_tmpl, repo_name, username, prefix, expected):
-        from kallithea.lib.utils2 import get_clone_url
         clone_url = get_clone_url(clone_uri_tmpl=clone_uri_tmpl, prefix_url='http://vps1:8000' + prefix,
                                   repo_name=repo_name, repo_id=23, username=username)
         assert clone_url == expected
@@ -278,8 +274,6 @@ class TestLibs(base.TestController):
 
         :param text:
         """
-        import re
-
         # quickly change expected url[] into a link
         url_pattern = re.compile(r'(?:url\[)(.+?)(?:\])')
 
@@ -553,9 +547,6 @@ class TestLibs(base.TestController):
     ])
     def test_canonical_url(self, canonical, test, expected):
         # setup url(), used by canonical_url
-        import routes
-        from tg import request
-
         m = routes.Mapper()
         m.connect('about', '/about-page')
         url = routes.URLGenerator(m, {'HTTP_HOST': 'http_host.example.org'})
@@ -575,9 +566,6 @@ class TestLibs(base.TestController):
         ('http://www.example.org/kallithea/repos/', 'www.example.org'),
     ])
     def test_canonical_hostname(self, canonical, expected):
-        import routes
-        from tg import request
-
         # setup url(), used by canonical_hostname
         m = routes.Mapper()
         url = routes.URLGenerator(m, {'HTTP_HOST': 'http_host.example.org'})

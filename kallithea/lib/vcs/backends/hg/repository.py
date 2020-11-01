@@ -44,9 +44,7 @@ from kallithea.lib.vcs.utils.helpers import get_urllib_request_handlers
 from kallithea.lib.vcs.utils.lazy import LazyProperty
 from kallithea.lib.vcs.utils.paths import abspath
 
-from .changeset import MercurialChangeset
-from .inmemory import MercurialInMemoryChangeset
-from .workdir import MercurialWorkdir
+from . import changeset, inmemory, workdir
 
 
 log = logging.getLogger(__name__)
@@ -380,7 +378,7 @@ class MercurialRepository(BaseRepository):
 
     @LazyProperty
     def in_memory_changeset(self):
-        return MercurialInMemoryChangeset(self)
+        return inmemory.MercurialInMemoryChangeset(self)
 
     @LazyProperty
     def description(self):
@@ -490,7 +488,7 @@ class MercurialRepository(BaseRepository):
         Returns ``MercurialChangeset`` object representing repository's
         changeset at the given ``revision``.
         """
-        return MercurialChangeset(repository=self, revision=self._get_revision(revision))
+        return changeset.MercurialChangeset(repository=self, revision=self._get_revision(revision))
 
     def get_changesets(self, start=None, end=None, start_date=None,
                        end_date=None, branch_name=None, reverse=False, max_revisions=None):
@@ -616,7 +614,7 @@ class MercurialRepository(BaseRepository):
         """
         Returns ``Workdir`` instance for this repository.
         """
-        return MercurialWorkdir(self)
+        return workdir.MercurialWorkdir(self)
 
     def get_config_value(self, section, name=None, config_file=None):
         """

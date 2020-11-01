@@ -14,6 +14,7 @@ from pygments import highlight
 from pygments.formatters import TerminalFormatter
 from pygments.lexers import ClassNotFound, guess_lexer_for_filename
 
+from kallithea.lib.vcs import backends
 from kallithea.lib.vcs.exceptions import RepositoryError, VCSError
 from kallithea.lib.vcs.utils import safe_str
 from kallithea.lib.vcs.utils.paths import abspath
@@ -71,7 +72,6 @@ def get_scms_for_path(path):
 
     :raises VCSError: if given ``path`` is not a directory
     """
-    from kallithea.lib.vcs.backends import get_backend
     if hasattr(path, '__call__'):
         path = path()
     if not os.path.isdir(path):
@@ -91,7 +91,7 @@ def get_scms_for_path(path):
         # We still need to check if it's not bare repository as
         # bare repos don't have working directories
         try:
-            get_backend(key)(path)
+            backends.get_backend(key)(path)
             result.append(key)
             continue
         except RepositoryError:

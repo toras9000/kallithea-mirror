@@ -7,6 +7,8 @@ from kallithea.lib.vcs.backends.base import BaseInMemoryChangeset
 from kallithea.lib.vcs.exceptions import RepositoryError
 from kallithea.lib.vcs.utils import ascii_str, safe_bytes, safe_str
 
+from . import repository
+
 
 class MercurialInMemoryChangeset(BaseInMemoryChangeset):
 
@@ -35,9 +37,8 @@ class MercurialInMemoryChangeset(BaseInMemoryChangeset):
         if not isinstance(author, str):
             raise RepositoryError('author must be a str - got %r' % type(author))
 
-        from .repository import MercurialRepository
         if branch is None:
-            branch = MercurialRepository.DEFAULT_BRANCH_NAME
+            branch = repository.MercurialRepository.DEFAULT_BRANCH_NAME
         kwargs[b'branch'] = safe_bytes(branch)
 
         def filectxfn(_repo, memctx, bytes_path):

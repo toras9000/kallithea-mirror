@@ -41,6 +41,7 @@ import kallithea.config.application
 from kallithea.lib.auth import get_crypt_password
 from kallithea.model import db, meta
 from kallithea.model.base import init_model
+from kallithea.model.repo import RepoModel
 from kallithea.tests.base import HG_REPO, TEST_USER_ADMIN_LOGIN, TEST_USER_ADMIN_PASS
 
 
@@ -114,7 +115,6 @@ def create_test_user(force=True):
 
 def create_test_repo(force=True):
     print('creating test repo')
-    from kallithea.model.repo import RepoModel
     sa = get_session()
 
     user = sa.query(db.User).filter(db.User.username == USER).scalar()

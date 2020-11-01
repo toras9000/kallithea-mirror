@@ -39,6 +39,7 @@ import urlobject
 from dateutil import relativedelta
 from sqlalchemy.engine import url as sa_url
 from sqlalchemy.exc import ArgumentError
+from tg import tmpl_context
 from tg.i18n import ugettext as _
 from tg.i18n import ungettext
 from tg.support.converters import asbool, aslist
@@ -491,7 +492,6 @@ def get_current_authuser():
     Gets kallithea user from threadlocal tmpl_context variable if it's
     defined, else returns None.
     """
-    from tg import tmpl_context
     try:
         return getattr(tmpl_context, 'authuser', None)
     except TypeError:  # No object (name: context) has been registered for this thread

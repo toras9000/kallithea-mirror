@@ -36,9 +36,7 @@ from kallithea.lib.vcs.utils.helpers import get_urllib_request_handlers
 from kallithea.lib.vcs.utils.lazy import LazyProperty
 from kallithea.lib.vcs.utils.paths import abspath, get_user_home
 
-from .changeset import GitChangeset
-from .inmemory import GitInMemoryChangeset
-from .workdir import GitWorkdir
+from . import changeset, inmemory, workdir
 
 
 SHA_PATTERN = re.compile(r'^([0-9a-fA-F]{12}|[0-9a-fA-F]{40})$')
@@ -467,9 +465,9 @@ class GitRepository(BaseRepository):
         Returns ``GitChangeset`` object representing commit from git repository
         at the given revision or head (most recent commit) if None given.
         """
-        if isinstance(revision, GitChangeset):
+        if isinstance(revision, changeset.GitChangeset):
             return revision
-        return GitChangeset(repository=self, revision=self._get_revision(revision))
+        return changeset.GitChangeset(repository=self, revision=self._get_revision(revision))
 
     def get_changesets(self, start=None, end=None, start_date=None,
            end_date=None, branch_name=None, reverse=False, max_revisions=None):
@@ -669,7 +667,7 @@ class GitRepository(BaseRepository):
         """
         Returns ``GitInMemoryChangeset`` object for this repository.
         """
-        return GitInMemoryChangeset(self)
+        return inmemory.GitInMemoryChangeset(self)
 
     def clone(self, url, update_after_clone=True, bare=False):
         """
@@ -728,7 +726,7 @@ class GitRepository(BaseRepository):
         """
         Returns ``Workdir`` instance for this repository.
         """
-        return GitWorkdir(self)
+        return workdir.GitWorkdir(self)
 
     def get_config_value(self, section, name, config_file=None):
         """

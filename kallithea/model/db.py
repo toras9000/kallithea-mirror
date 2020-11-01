@@ -37,6 +37,7 @@ import traceback
 
 import ipaddr
 import sqlalchemy
+import urlobject
 from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Index, Integer, LargeBinary, String, Unicode, UnicodeText, UniqueConstraint
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import class_mapper, joinedload, relationship, validates
@@ -48,7 +49,7 @@ from kallithea.lib import ext_json, ssh, webutils
 from kallithea.lib.exceptions import DefaultUserException
 from kallithea.lib.utils2 import asbool, ascii_bytes, aslist, get_changeset_safe, get_clone_url, remove_prefix, safe_bytes, safe_int, safe_str, urlreadable
 from kallithea.lib.vcs import get_backend, get_repo
-from kallithea.lib.vcs.backends.base import EmptyChangeset
+from kallithea.lib.vcs.backends.base import BaseChangeset, EmptyChangeset
 from kallithea.lib.vcs.utils import author_email, author_name
 from kallithea.lib.vcs.utils.helpers import get_scm
 from kallithea.model import meta
@@ -1171,7 +1172,6 @@ class Repository(meta.Base, BaseDbModel):
     def clone_uri_hidden(self):
         clone_uri = self.clone_uri
         if clone_uri:
-            import urlobject
             url_obj = urlobject.URLObject(self.clone_uri)
             if url_obj.password:
                 clone_uri = url_obj.with_password('*****')
@@ -1226,7 +1226,6 @@ class Repository(meta.Base, BaseDbModel):
 
         :param cs_cache:
         """
-        from kallithea.lib.vcs.backends.base import BaseChangeset
         if cs_cache is None:
             cs_cache = EmptyChangeset()
             # use no-cache version here

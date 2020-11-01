@@ -30,6 +30,7 @@ import sys
 import time
 
 import mercurial.scmutil
+import paste.deploy
 
 import kallithea
 from kallithea.lib import webutils
@@ -301,8 +302,6 @@ def _hook_environment(repo_path):
     they thus need enough info to be able to create an app environment and
     connect to the database.
     """
-    import paste.deploy
-
     import kallithea.config.application
 
     extras = get_hook_environment()

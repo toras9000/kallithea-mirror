@@ -39,7 +39,7 @@ from tg.i18n import ugettext as _
 from kallithea.lib import webutils
 from kallithea.lib.exceptions import DefaultUserException, UserOwnsReposException
 from kallithea.lib.utils2 import generate_api_key, get_current_authuser
-from kallithea.model import db, meta
+from kallithea.model import db, forms, meta
 
 
 log = logging.getLogger(__name__)
@@ -451,7 +451,6 @@ class UserModel(object):
         :param user:
         :param email:
         """
-        from kallithea.model import forms
         form = forms.UserExtraEmailForm()()
         data = form.to_python(dict(email=email))
         user = db.User.guess_instance(user)
@@ -481,7 +480,6 @@ class UserModel(object):
         :param user:
         :param ip:
         """
-        from kallithea.model import forms
         form = forms.UserExtraIpForm()()
         data = form.to_python(dict(ip=ip))
         user = db.User.guess_instance(user)

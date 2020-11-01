@@ -40,6 +40,7 @@ from kallithea.lib import webutils
 from kallithea.lib.auth import AuthUser, HasPermissionAnyDecorator
 from kallithea.lib.base import BaseController, log_in_user, render
 from kallithea.lib.exceptions import UserCreationError
+from kallithea.lib.recaptcha import submit
 from kallithea.lib.webutils import url
 from kallithea.model import db, meta
 from kallithea.model.forms import LoginForm, PasswordResetConfirmationForm, PasswordResetRequestForm, RegisterForm
@@ -132,7 +133,6 @@ class LoginController(BaseController):
                 form_result['active'] = c.auto_active
 
                 if c.captcha_active:
-                    from kallithea.lib.recaptcha import submit
                     response = submit(request.POST.get('g-recaptcha-response'),
                                       private_key=captcha_private_key,
                                       remoteip=request.ip_addr)
@@ -177,7 +177,6 @@ class LoginController(BaseController):
             try:
                 form_result = password_reset_form.to_python(dict(request.POST))
                 if c.captcha_active:
-                    from kallithea.lib.recaptcha import submit
                     response = submit(request.POST.get('g-recaptcha-response'),
                                       private_key=captcha_private_key,
                                       remoteip=request.ip_addr)
