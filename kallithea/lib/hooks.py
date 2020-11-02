@@ -83,7 +83,7 @@ def repo_size(ui, repo, hooktype=None, **kwargs):
     ui.status(safe_bytes(msg))
 
 
-def log_pull_action(ui, repo, **kwargs):
+def log_pull_action(*args, **kwargs):
     """Logs user last pull action
 
     Called as Mercurial hook outgoing.kallithea_log_pull_action or from Kallithea before invoking Git.

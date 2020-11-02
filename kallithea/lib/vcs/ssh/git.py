@@ -16,7 +16,6 @@ import logging
 import os
 
 from kallithea.lib import hooks
-from kallithea.lib.utils import make_ui
 from kallithea.lib.vcs.ssh import base
 
 
@@ -66,7 +65,7 @@ class GitSshHandler(base.BaseSshHandler):
     def _serve(self):
         if self.verb == 'git-upload-pack': # action 'pull'
             # base class called set_hook_environment with 'push' action ... but log_pull_action ignores that and will 'pull'
-            hooks.log_pull_action(ui=make_ui(), repo=self.db_repo.scm_instance._repo)
+            hooks.log_pull_action()
         else: # probably verb 'git-receive-pack', action 'push'
             if not self.allow_push:
                 self.exit('Push access to %r denied' % self.repo_name)

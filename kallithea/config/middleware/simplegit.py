@@ -34,8 +34,6 @@ import re
 from kallithea.config.middleware.pygrack import make_wsgi_app
 from kallithea.lib import hooks
 from kallithea.lib.base import BaseVCSController, get_path_info
-from kallithea.lib.utils import make_ui
-from kallithea.model import db
 
 
 log = logging.getLogger(__name__)
@@ -86,11 +84,8 @@ class SimpleGit(BaseVCSController):
             if (parsed_request.cmd == 'info/refs' and
                 parsed_request.service == 'git-upload-pack'
             ):
-                baseui = make_ui()
-                repo = db.Repository.get_by_repo_name(parsed_request.repo_name)
-                scm_repo = repo.scm_instance
                 # Run hooks like Mercurial outgoing.kallithea_log_pull_action does
-                hooks.log_pull_action(ui=baseui, repo=scm_repo._repo)
+                hooks.log_pull_action()
             # Note: push hooks are handled by post-receive hook
 
             return pygrack_app(environ, start_response)
