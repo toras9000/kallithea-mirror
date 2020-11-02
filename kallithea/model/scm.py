@@ -37,9 +37,9 @@ import pkg_resources
 from tg.i18n import ugettext as _
 
 import kallithea
+from kallithea.lib import hooks
 from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel, HasRepoPermissionLevel, HasUserGroupPermissionLevel
 from kallithea.lib.exceptions import IMCCommitError, NonRelativePathError
-from kallithea.lib.hooks import process_pushed_raw_ids
 from kallithea.lib.utils import action_logger, get_filesystem_repos, make_ui
 from kallithea.lib.utils2 import safe_bytes, safe_str, set_hook_environment, umask
 from kallithea.lib.vcs import get_repo
@@ -328,7 +328,7 @@ class ScmModel(object):
         :param revisions: list of revisions that we pushed
         """
         set_hook_environment(username, ip_addr, repo_name, repo_alias=repo.alias, action=action)
-        process_pushed_raw_ids(revisions) # also calls mark_for_invalidation
+        hooks.process_pushed_raw_ids(revisions) # also calls mark_for_invalidation
 
     def pull_changes(self, repo, username, ip_addr, clone_uri=None):
         """

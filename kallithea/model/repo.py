@@ -33,9 +33,9 @@ import traceback
 from datetime import datetime
 
 import kallithea.lib.utils2
+from kallithea.lib import hooks
 from kallithea.lib.auth import HasRepoPermissionLevel, HasUserGroupPermissionLevel
 from kallithea.lib.exceptions import AttachedForksError
-from kallithea.lib.hooks import log_delete_repository
 from kallithea.lib.utils import is_valid_repo_uri, make_ui
 from kallithea.lib.utils2 import LazyProperty, get_current_authuser, obfuscate_url_pw, remove_prefix
 from kallithea.lib.vcs.backends import get_backend
@@ -483,7 +483,7 @@ class RepoModel(object):
                     self._delete_filesystem_repo(repo)
                 else:
                     log.debug('skipping removal from filesystem')
-                log_delete_repository(old_repo_dict,
+                hooks.log_delete_repository(old_repo_dict,
                                       deleted_by=cur_user)
             except Exception:
                 log.error(traceback.format_exc())

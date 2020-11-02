@@ -36,7 +36,7 @@ from sqlalchemy.exc import DatabaseError
 from tg import config
 from tg.i18n import ugettext as _
 
-from kallithea.lib import webutils
+from kallithea.lib import hooks, webutils
 from kallithea.lib.exceptions import DefaultUserException, UserOwnsReposException
 from kallithea.lib.utils2 import check_password, generate_api_key, get_crypt_password, get_current_authuser
 from kallithea.model import db, forms, meta
@@ -59,7 +59,6 @@ class UserModel(object):
         if not cur_user:
             cur_user = getattr(get_current_authuser(), 'username', None)
 
-        from kallithea.lib.hooks import check_allowed_create_user, log_create_user
         _fd = form_data
         user_data = {
             'username': _fd['username'],
@@ -71,7 +70,7 @@ class UserModel(object):
             'admin': False
         }
         # raises UserCreationError if it's not allowed
-        check_allowed_create_user(user_data, cur_user)
+        hooks.check_allowed_create_user(user_data, cur_user)
 
         new_user = db.User()
         for k, v in form_data.items():
@@ -85,7 +84,7 @@ class UserModel(object):
         meta.Session().add(new_user)
         meta.Session().flush() # make database assign new_user.user_id
 
-        log_create_user(new_user.get_dict(), cur_user)
+        hooks.log_create_user(new_user.get_dict(), cur_user)
         return new_user
 
     def create_or_update(self, username, password, email, firstname='',
@@ -109,14 +108,13 @@ class UserModel(object):
         if not cur_user:
             cur_user = getattr(get_current_authuser(), 'username', None)
 
-        from kallithea.lib.hooks import check_allowed_create_user, log_create_user
         user_data = {
             'username': username, 'password': password,
             'email': email, 'firstname': firstname, 'lastname': lastname,
             'active': active, 'admin': admin
         }
         # raises UserCreationError if it's not allowed
-        check_allowed_create_user(user_data, cur_user)
+        hooks.check_allowed_create_user(user_data, cur_user)
 
         log.debug('Checking for %s account in Kallithea database', username)
         user = db.User.get_by_username(username, case_insensitive=True)
@@ -156,7 +154,7 @@ class UserModel(object):
                 meta.Session().flush() # make database assign new_user.user_id
 
             if not edit:
-                log_create_user(new_user.get_dict(), cur_user)
+                hooks.log_create_user(new_user.get_dict(), cur_user)
 
             return new_user
         except (DatabaseError,):
@@ -255,8 +253,7 @@ class UserModel(object):
                 % (user.username, len(usergroups), ', '.join(usergroups)))
         meta.Session().delete(user)
 
-        from kallithea.lib.hooks import log_delete_user
-        log_delete_user(user.get_dict(), cur_user)
+        hooks.log_delete_user(user.get_dict(), cur_user)
 
     def can_change_password(self, user):
         from kallithea.lib import auth_modules

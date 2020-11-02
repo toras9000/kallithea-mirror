@@ -42,8 +42,7 @@ from tg import config
 
 import kallithea
 import kallithea.lib.helpers as h
-from kallithea.lib import celerylib, conf, ext_json
-from kallithea.lib.hooks import log_create_repository
+from kallithea.lib import celerylib, conf, ext_json, hooks
 from kallithea.lib.indexers.daemon import WhooshIndexingDaemon
 from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import asbool, ascii_bytes
@@ -407,7 +406,7 @@ def create_repo(form_data, cur_user):
             clone_uri=clone_uri,
         )
         repo = db.Repository.get_by_repo_name(repo_name_full)
-        log_create_repository(repo.get_dict(), created_by=owner.username)
+        hooks.log_create_repository(repo.get_dict(), created_by=owner.username)
 
         # update repo changeset caches initially
         repo.update_changeset_cache()
@@ -483,7 +482,7 @@ def create_repo_fork(form_data, cur_user):
             clone_uri=source_repo_path,
         )
         repo = db.Repository.get_by_repo_name(repo_name_full)
-        log_create_repository(repo.get_dict(), created_by=owner.username)
+        hooks.log_create_repository(repo.get_dict(), created_by=owner.username)
 
         # update repo changeset caches initially
         repo.update_changeset_cache()
