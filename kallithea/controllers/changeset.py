@@ -40,11 +40,10 @@ from kallithea.lib import auth, diffs, webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController, jsonify, render
 from kallithea.lib.graphmod import graph_data
-from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import ascii_str, safe_str
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError, EmptyRepositoryError, RepositoryError
-from kallithea.model import db, meta
+from kallithea.model import db, meta, userlog
 from kallithea.model.changeset_status import ChangesetStatusModel
 from kallithea.model.comment import ChangesetCommentsModel
 from kallithea.model.pull_request import PullRequestModel
@@ -132,11 +131,11 @@ def create_cs_pr_comment(repo_name, revision=None, pull_request=None, allowed_to
         action = 'user_commented_pull_request:%s' % pull_request_id
     else:
         action = 'user_commented_revision:%s' % revision
-    action_logger(request.authuser, action, c.db_repo, request.ip_addr)
+    userlog.action_logger(request.authuser, action, c.db_repo, request.ip_addr)
 
     if pull_request and close_pr:
         PullRequestModel().close_pull_request(pull_request_id)
-        action_logger(request.authuser,
+        userlog.action_logger(request.authuser,
                       'user_closed_pull_request:%s' % pull_request_id,
                       c.db_repo, request.ip_addr)
 

@@ -42,10 +42,9 @@ from kallithea.lib import auth_modules, webutils
 from kallithea.lib.auth import AuthUser, HasPermissionAnyDecorator, LoginRequired
 from kallithea.lib.base import BaseController, IfSshEnabled, render
 from kallithea.lib.exceptions import DefaultUserException, UserCreationError, UserOwnsReposException
-from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import datetime_to_time, fmt_date, generate_api_key, safe_int
 from kallithea.lib.webutils import url
-from kallithea.model import db, meta
+from kallithea.model import db, meta, userlog
 from kallithea.model.api_key import ApiKeyModel
 from kallithea.model.forms import CustomDefaultPermissionsForm, UserForm
 from kallithea.model.ssh_key import SshKeyModel, SshKeyModelException
@@ -114,7 +113,7 @@ class UsersController(BaseController):
         try:
             form_result = user_form.to_python(dict(request.POST))
             user = user_model.create(form_result)
-            action_logger(request.authuser, 'admin_created_user:%s' % user.username,
+            userlog.action_logger(request.authuser, 'admin_created_user:%s' % user.username,
                           None, request.ip_addr)
             webutils.flash(_('Created user %s') % user.username,
                     category='success')
@@ -153,7 +152,7 @@ class UsersController(BaseController):
 
             user_model.update(id, form_result, skip_attrs=skip_attrs)
             usr = form_result['username']
-            action_logger(request.authuser, 'admin_updated_user:%s' % usr,
+            userlog.action_logger(request.authuser, 'admin_updated_user:%s' % usr,
                           None, request.ip_addr)
             webutils.flash(_('User updated successfully'), category='success')
             meta.Session().commit()

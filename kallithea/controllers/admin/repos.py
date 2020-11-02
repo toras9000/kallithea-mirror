@@ -41,11 +41,10 @@ from kallithea.lib import webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired, NotAnonymous
 from kallithea.lib.base import BaseRepoController, jsonify, render
 from kallithea.lib.exceptions import AttachedForksError
-from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import safe_int
 from kallithea.lib.vcs import RepositoryError
 from kallithea.lib.webutils import url
-from kallithea.model import db, meta
+from kallithea.model import db, meta, userlog
 from kallithea.model.forms import RepoFieldForm, RepoForm, RepoPermsForm
 from kallithea.model.repo import RepoModel
 from kallithea.model.scm import AvailableRepoGroupChoices, RepoList, ScmModel
@@ -222,7 +221,7 @@ class ReposController(BaseRepoController):
             webutils.flash(_('Repository %s updated successfully') % repo_name,
                     category='success')
             changed_name = repo.repo_name
-            action_logger(request.authuser, 'admin_updated_repo',
+            userlog.action_logger(request.authuser, 'admin_updated_repo',
                 changed_name, request.ip_addr)
             meta.Session().commit()
         except formencode.Invalid as errors:
@@ -261,7 +260,7 @@ class ReposController(BaseRepoController):
                     handle_forks = 'delete'
                     webutils.flash(_('Deleted %s forks') % _forks, category='success')
             repo_model.delete(repo, forks=handle_forks)
-            action_logger(request.authuser, 'admin_deleted_repo',
+            userlog.action_logger(request.authuser, 'admin_deleted_repo',
                 repo_name, request.ip_addr)
             ScmModel().mark_for_invalidation(repo_name)
             webutils.flash(_('Deleted repository %s') % repo_name, category='success')

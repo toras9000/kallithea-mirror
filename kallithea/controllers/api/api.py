@@ -35,10 +35,10 @@ from kallithea.controllers.api import JSONRPCController, JSONRPCError
 from kallithea.lib.auth import (AuthUser, HasPermissionAny, HasPermissionAnyDecorator, HasRepoGroupPermissionLevel, HasRepoPermissionLevel,
                                 HasUserGroupPermissionLevel)
 from kallithea.lib.exceptions import DefaultUserException, UserGroupsAssignedException
-from kallithea.lib.utils import action_logger, repo2db_mapper
+from kallithea.lib.utils import repo2db_mapper
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.exceptions import EmptyRepositoryError
-from kallithea.model import db, meta
+from kallithea.model import db, meta, userlog
 from kallithea.model.changeset_status import ChangesetStatusModel
 from kallithea.model.comment import ChangesetCommentsModel
 from kallithea.model.gist import GistModel
@@ -2377,7 +2377,7 @@ class ApiController(JSONRPCController):
             status_change=db.ChangesetStatus.get_status_lbl(status),
             closing_pr=close_pr
         )
-        action_logger(apiuser,
+        userlog.action_logger(apiuser,
                       'user_commented_pull_request:%s' % pull_request_id,
                       pull_request.org_repo, request.ip_addr)
         if status:
@@ -2390,7 +2390,7 @@ class ApiController(JSONRPCController):
             )
         if close_pr:
             PullRequestModel().close_pull_request(pull_request_id)
-            action_logger(apiuser,
+            userlog.action_logger(apiuser,
                           'user_closed_pull_request:%s' % pull_request_id,
                           pull_request.org_repo, request.ip_addr)
         meta.Session().commit()

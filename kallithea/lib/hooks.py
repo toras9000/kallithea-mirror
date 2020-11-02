@@ -30,8 +30,8 @@ import time
 
 import kallithea
 from kallithea.lib.exceptions import UserCreationError
-from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import get_hook_environment
+from kallithea.model import userlog
 
 
 def log_pull_action():
@@ -42,7 +42,7 @@ def log_pull_action():
     ex = get_hook_environment()
 
     action = 'pull'
-    action_logger(ex.username, action, ex.repository, ex.ip, commit=True)
+    userlog.action_logger(ex.username, action, ex.repository, ex.ip, commit=True)
     # extension hook call
     callback = getattr(kallithea.EXTENSIONS, 'PULL_HOOK', None)
     if callable(callback):
@@ -62,7 +62,7 @@ def process_pushed_raw_ids(revs):
     ex = get_hook_environment()
 
     action = '%s:%s' % (ex.action, ','.join(revs))
-    action_logger(ex.username, action, ex.repository, ex.ip, commit=True)
+    userlog.action_logger(ex.username, action, ex.repository, ex.ip, commit=True)
 
     from kallithea.model.scm import ScmModel
     ScmModel().mark_for_invalidation(ex.repository)

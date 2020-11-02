@@ -44,10 +44,9 @@ import kallithea
 import kallithea.lib.helpers as h
 from kallithea.lib import celerylib, conf, ext_json, hooks
 from kallithea.lib.indexers.daemon import WhooshIndexingDaemon
-from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import asbool, ascii_bytes
 from kallithea.lib.vcs.utils import author_email
-from kallithea.model import db
+from kallithea.model import db, userlog
 from kallithea.model.repo import RepoModel
 
 
@@ -394,7 +393,7 @@ def create_repo(form_data, cur_user):
             state=state
         )
 
-        action_logger(cur_user, 'user_created_repo',
+        userlog.action_logger(cur_user, 'user_created_repo',
                       form_data['repo_name_full'], '')
 
         DBS.commit()
@@ -468,7 +467,7 @@ def create_repo_fork(form_data, cur_user):
             fork_of=fork_of,
             copy_fork_permissions=copy_fork_permissions
         )
-        action_logger(cur_user, 'user_forked_repo:%s' % repo_name_full,
+        userlog.action_logger(cur_user, 'user_forked_repo:%s' % repo_name_full,
                       fork_of.repo_name, '')
         DBS.commit()
 

@@ -44,7 +44,6 @@ from kallithea.lib import diffs, webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController, jsonify, render
 from kallithea.lib.exceptions import NonRelativePathError
-from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import asbool, convert_line_endings, detect_mode, safe_str
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.conf import settings
@@ -53,6 +52,7 @@ from kallithea.lib.vcs.exceptions import (ChangesetDoesNotExistError, ChangesetE
 from kallithea.lib.vcs.nodes import FileNode
 from kallithea.lib.vcs.utils import author_email
 from kallithea.lib.webutils import url
+from kallithea.model import userlog
 from kallithea.model.repo import RepoModel
 from kallithea.model.scm import ScmModel
 
@@ -546,7 +546,7 @@ class FilesController(BaseRepoController):
                 log.debug('Destroying temp archive %s', archive_path)
                 os.remove(archive_path)
 
-        action_logger(user=request.authuser,
+        userlog.action_logger(user=request.authuser,
                       action='user_downloaded_archive:%s' % (archive_name),
                       repo=repo_name, ipaddr=request.ip_addr, commit=True)
 

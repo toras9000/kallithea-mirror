@@ -42,10 +42,9 @@ from kallithea.lib import webutils
 from kallithea.lib.auth import HasPermissionAnyDecorator, HasUserGroupPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseController, render
 from kallithea.lib.exceptions import RepoGroupAssignmentError, UserGroupsAssignedException
-from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import safe_int, safe_str
 from kallithea.lib.webutils import url
-from kallithea.model import db, meta
+from kallithea.model import db, meta, userlog
 from kallithea.model.forms import CustomDefaultPermissionsForm, UserGroupForm, UserGroupPermsForm
 from kallithea.model.scm import UserGroupList
 from kallithea.model.user_group import UserGroupModel
@@ -127,7 +126,7 @@ class UserGroupsController(BaseController):
                                          active=form_result['users_group_active'])
 
             gr = form_result['users_group_name']
-            action_logger(request.authuser,
+            userlog.action_logger(request.authuser,
                           'admin_created_users_group:%s' % gr,
                           None, request.ip_addr)
             webutils.flash(webutils.HTML(_('Created user group %s')) % webutils.link_to(gr, url('edit_users_group', id=ug.users_group_id)),
@@ -168,7 +167,7 @@ class UserGroupsController(BaseController):
             form_result = users_group_form.to_python(request.POST)
             UserGroupModel().update(c.user_group, form_result)
             gr = form_result['users_group_name']
-            action_logger(request.authuser,
+            userlog.action_logger(request.authuser,
                           'admin_updated_users_group:%s' % gr,
                           None, request.ip_addr)
             webutils.flash(_('Updated user group %s') % gr, category='success')

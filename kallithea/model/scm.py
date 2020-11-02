@@ -40,14 +40,14 @@ import kallithea
 from kallithea.lib import hooks
 from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel, HasRepoPermissionLevel, HasUserGroupPermissionLevel
 from kallithea.lib.exceptions import IMCCommitError, NonRelativePathError
-from kallithea.lib.utils import action_logger, get_filesystem_repos, make_ui
+from kallithea.lib.utils import get_filesystem_repos, make_ui
 from kallithea.lib.utils2 import safe_bytes, safe_str, set_hook_environment, umask
 from kallithea.lib.vcs import get_repo
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.exceptions import RepositoryError, VCSError
 from kallithea.lib.vcs.nodes import FileNode
 from kallithea.lib.vcs.utils.lazy import LazyProperty
-from kallithea.model import db, meta
+from kallithea.model import db, meta, userlog
 
 
 log = logging.getLogger(__name__)
@@ -225,7 +225,7 @@ class ScmModel(object):
         if f is not None:
             try:
                 meta.Session().delete(f)
-                action_logger(UserTemp(user_id),
+                userlog.action_logger(UserTemp(user_id),
                               'stopped_following_repo',
                               RepoTemp(follow_repo_id))
                 return
@@ -239,7 +239,7 @@ class ScmModel(object):
             f.follows_repository_id = follow_repo_id
             meta.Session().add(f)
 
-            action_logger(UserTemp(user_id),
+            userlog.action_logger(UserTemp(user_id),
                           'started_following_repo',
                           RepoTemp(follow_repo_id))
         except Exception:
