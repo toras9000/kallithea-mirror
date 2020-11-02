@@ -86,15 +86,14 @@ def repo_size(ui, repo, hooktype=None, **kwargs):
 def log_pull_action(ui, repo, **kwargs):
     """Logs user last pull action
 
-    Called as Mercurial hook outgoing.pull_logger or from Kallithea before invoking Git.
+    Called as Mercurial hook outgoing.kallithea_log_pull_action or from Kallithea before invoking Git.
 
     Does *not* use the action from the hook environment but is always 'pull'.
     """
     ex = get_hook_environment()
 
-    user = db.User.get_by_username(ex.username)
     action = 'pull'
-    action_logger(user, action, ex.repository, ex.ip, commit=True)
+    action_logger(ex.username, action, ex.repository, ex.ip, commit=True)
     # extension hook call
     callback = getattr(kallithea.EXTENSIONS, 'PULL_HOOK', None)
     if callable(callback):
