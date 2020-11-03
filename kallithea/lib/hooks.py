@@ -337,7 +337,7 @@ def handle_git_post_receive(repo_path, git_stdin_lines):
     try:
         baseui, repo = _hook_environment(repo_path)
     except HookEnvironmentError as e:
-        sys.stderr.write("Skipping Kallithea Git post-recieve hook %r.\nGit was apparently not invoked by Kallithea: %s\n" % (sys.argv[0], e))
+        sys.stderr.write("Skipping Kallithea Git post-receive hook %r.\nGit was apparently not invoked by Kallithea: %s\n" % (sys.argv[0], e))
         return 0
 
     # the post push hook should never use the cached instance

@@ -89,7 +89,7 @@ class SimpleGit(BaseVCSController):
                 baseui = make_ui()
                 repo = db.Repository.get_by_repo_name(parsed_request.repo_name)
                 scm_repo = repo.scm_instance
-                # Run hooks, like Mercurial outgoing.pull_logger does
+                # Run hooks like Mercurial outgoing.kallithea_log_pull_action does
                 hooks.log_pull_action(ui=baseui, repo=scm_repo._repo)
             # Note: push hooks are handled by post-receive hook
 

@@ -493,11 +493,11 @@ def set_hook_environment(username, ip_addr, repo_name, repo_alias, action=None):
     Must always be called before anything with hooks are invoked.
     """
     extras = {
-        'ip': ip_addr, # used in log_push/pull_action action_logger
+        'ip': ip_addr, # used in action_logger
         'username': username,
-        'action': action or 'push_local', # used in log_push_action_raw_ids action_logger
+        'action': action or 'push_local', # used in process_pushed_raw_ids action_logger
         'repository': repo_name,
-        'scm': repo_alias, # used to pick hack in log_push_action_raw_ids
+        'scm': repo_alias,
         'config': kallithea.CONFIG['__file__'], # used by git hook to read config
     }
     os.environ['KALLITHEA_EXTRAS'] = json.dumps(extras)

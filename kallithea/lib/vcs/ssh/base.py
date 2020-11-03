@@ -89,12 +89,12 @@ class BaseSshHandler(object):
         assert self.db_repo.repo_name == self.repo_name
 
         # Set global hook environment up for 'push' actions.
-        # If pull actions should be served, the actual hook invocation will be
-        # hardcoded to 'pull' when log_pull_action is invoked (directly on Git,
-        # or through the Mercurial 'outgoing' hook).
-        # For push actions, the action in global hook environment is used (in
-        # handle_git_post_receive when it is called as Git post-receive hook,
-        # or in log_push_action through the Mercurial 'changegroup' hook).
+        # For push actions, the action in global hook environment is used in
+        # process_pushed_raw_ids (which it is called as Git post-receive hook,
+        # or Mercurial 'changegroup' hook).
+        # For pull actions, the actual hook in log_pull_action (called directly
+        # on Git, or through the 'outgoing' Mercurial hook) is hardcoded to
+        # ignore the environment action and always use 'pull'.
         set_hook_environment(self.authuser.username, client_ip, self.repo_name, self.vcs_type, 'push')
         return self._serve()
 
