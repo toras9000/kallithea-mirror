@@ -335,6 +335,8 @@ def make_ui(repo_path=None):
     # push / pull hooks
     baseui.setconfig(b'hooks', b'changegroup.kallithea_log_push_action', b'python:kallithea.lib.hooks.log_push_action')
     baseui.setconfig(b'hooks', b'outgoing.kallithea_log_pull_action', b'python:kallithea.lib.hooks.log_pull_action')
+    if baseui.config(b'hooks', ascii_bytes(db.Ui.HOOK_REPO_SIZE)):  # ignore actual value
+        baseui.setconfig(b'hooks', ascii_bytes(db.Ui.HOOK_REPO_SIZE), b'python:kallithea.lib.hooks.repo_size')
 
     if repo_path is not None:
         # Note: MercurialRepository / mercurial.localrepo.instance will do this too, so it will always be possible to override db settings or what is hardcoded above

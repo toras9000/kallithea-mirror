@@ -245,7 +245,7 @@ class DbManage(object):
             ('paths', '/', repo_root_path, True),
             #('phases', 'publish', 'false', False)
             ('hooks', db.Ui.HOOK_UPDATE, 'hg update >&2', False),
-            ('hooks', db.Ui.HOOK_REPO_SIZE, 'python:kallithea.lib.hooks.repo_size', True),
+            ('hooks', db.Ui.HOOK_REPO_SIZE, 'python:', True),  # the actual value doesn't matter
             ('extensions', 'largefiles', '', True),
             ('largefiles', 'usercache', os.path.join(repo_root_path, '.cache', 'largefiles'), True),
             ('extensions', 'hggit', '', False),
