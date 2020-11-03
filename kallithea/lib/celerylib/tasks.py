@@ -317,7 +317,8 @@ def send_email(recipients, subject, body='', html_body='', headers=None, from_na
     msg['Date'] = email.utils.formatdate(time.time())
 
     for key, value in headers.items():
-        msg[key] = value
+        del msg[key]  # Delete key first to make sure add_header will replace header (if any), no matter the casing
+        msg.add_header(key, value)
 
     msg.attach(email.mime.text.MIMEText(body, 'plain'))
     msg.attach(email.mime.text.MIMEText(html_body, 'html'))
