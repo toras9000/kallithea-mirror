@@ -26,8 +26,7 @@ Original author and date, and relevant copyright and licensing information is be
 :license: GPLv3, see LICENSE.md for more details.
 """
 
-import email.mime.multipart
-import email.mime.text
+import email.message
 import email.utils
 import os
 import smtplib
@@ -310,7 +309,7 @@ def send_email(recipients, subject, body='', html_body='', headers=None, from_na
         log.warning(logmsg)
         return False
 
-    msg = email.mime.multipart.MIMEMultipart('alternative')
+    msg = email.message.EmailMessage()
     msg['Subject'] = subject
     msg['From'] = app_email_from  # fallback - might be overridden by a header
     msg['To'] = ', '.join(recipients)
@@ -320,8 +319,8 @@ def send_email(recipients, subject, body='', html_body='', headers=None, from_na
         del msg[key]  # Delete key first to make sure add_header will replace header (if any), no matter the casing
         msg.add_header(key, value)
 
-    msg.attach(email.mime.text.MIMEText(body, 'plain'))
-    msg.attach(email.mime.text.MIMEText(html_body, 'html'))
+    msg.set_content(body)
+    msg.add_alternative(html_body, subtype='html')
 
     try:
         if smtp_use_ssl:
