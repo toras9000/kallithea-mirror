@@ -30,6 +30,7 @@ import os
 import posixpath
 import re
 import sys
+import tempfile
 import traceback
 
 import pkg_resources
@@ -702,10 +703,12 @@ class ScmModel(object):
             else:
                 log.debug('writing %s hook file !', h_type)
                 try:
-                    with open(hook_file, 'wb') as f:
-                        f.write(tmpl.replace(b'_TMPL_', safe_bytes(kallithea.__version__)))
-                    os.chmod(hook_file, 0o755)
-                except IOError as e:
+                    fh, fn = tempfile.mkstemp(prefix=hook_file + '.tmp.')
+                    os.write(fh, tmpl.replace(b'_TMPL_', safe_bytes(kallithea.__version__)))
+                    os.close(fh)
+                    os.chmod(fn, 0o755)
+                    os.rename(fn, hook_file)
+                except (OSError, IOError) as e:
                     log.error('error writing hook %s: %s', hook_file, e)
 
 
