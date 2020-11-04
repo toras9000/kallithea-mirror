@@ -686,7 +686,10 @@ class ScmModel(object):
             hook_file = os.path.join(hooks_path, h_type)
             other_hook = False
             log.debug('Installing git hook in repo %s', repo)
-            if os.path.exists(hook_file):
+            if os.path.islink(hook_file):
+                log.debug("Found symlink hook at %s", hook_file)
+                other_hook = True
+            elif os.path.isfile(hook_file):
                 log.debug('hook exists, checking if it is from kallithea')
                 with open(hook_file, 'rb') as f:
                     data = f.read()
@@ -697,7 +700,9 @@ class ScmModel(object):
                     else:
                         log.debug('Found non-Kallithea hook at %s', hook_file)
                         other_hook = True
-
+            elif os.path.exists(hook_file):
+                log.debug("Found hook that isn't a regular file at %s", hook_file)
+                other_hook = True
             if other_hook and not force:
                 log.warning('skipping overwriting hook file %s', hook_file)
             else:
