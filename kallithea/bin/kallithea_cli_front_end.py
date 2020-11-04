@@ -57,7 +57,7 @@ def front_end_build(install_deps, generate):
                     '-f', 'html',
                     '-a', '.code-highlight'],
                     stdout=f)
-        lesscpath = os.path.join(front_end_dir, 'node_modules', '.bin', 'lessc')
+        lesscpath = os.path.join(front_end_dir, 'node_modules', 'less', 'bin', 'lessc')
         lesspath = os.path.join(front_end_dir, 'main.less')
         csspath = os.path.join(public_dir, 'css', 'style.css')
         subprocess.check_call([lesscpath, '--source-map',
@@ -91,7 +91,7 @@ def front_end_build(install_deps, generate):
         shutil.copytree(os.path.join(front_end_dir, 'node_modules', 'codemirror'), os.path.join(public_dir, 'codemirror'))
 
         click.echo("Generating LICENSES.txt")
-        license_checker_path = os.path.join(front_end_dir, 'node_modules', '.bin', 'license-checker')
+        license_checker_path = os.path.join(front_end_dir, 'node_modules', 'license-checker', 'bin', 'license-checker')
         check_licensing_json_path = os.path.join(tmp_dir, 'licensing.json')
         licensing_txt_path = os.path.join(public_dir, 'LICENSES.txt')
         subprocess.check_call([license_checker_path, '--json', '--out', check_licensing_json_path],
