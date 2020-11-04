@@ -11,7 +11,7 @@ hook will use.
 import os
 import sys
 
-import kallithea.lib.hooks
+import kallithea.bin.vcs_hooks
 
 
 # Set output mode on windows to binary for stderr.
@@ -30,7 +30,7 @@ os.environ['KALLITHEA_HOOK_VER'] = KALLITHEA_HOOK_VER
 def main():
     repo_path = os.path.abspath('.')
     git_stdin_lines = sys.stdin.readlines()
-    sys.exit(kallithea.lib.hooks.handle_git_post_receive(repo_path, git_stdin_lines))
+    sys.exit(kallithea.bin.vcs_hooks.post_receive(repo_path, git_stdin_lines))
 
 
 if __name__ == '__main__':

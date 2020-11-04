@@ -84,7 +84,7 @@ class SimpleGit(BaseVCSController):
             if (parsed_request.cmd == 'info/refs' and
                 parsed_request.service == 'git-upload-pack'
             ):
-                # Run hooks like Mercurial outgoing.kallithea_log_pull_action does
+                # Run hooks like Mercurial outgoing.kallithea_pull_action does
                 hooks.log_pull_action()
             # Note: push hooks are handled by post-receive hook
 

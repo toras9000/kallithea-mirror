@@ -103,6 +103,28 @@ def get_scms_for_path(path):
     return result
 
 
+def get_scm_size(alias, root_path):
+    if not alias.startswith('.'):
+        alias += '.'
+
+    size_scm, size_root = 0, 0
+    for path, dirs, files in os.walk(root_path):
+        if path.find(alias) != -1:
+            for f in files:
+                try:
+                    size_scm += os.path.getsize(os.path.join(path, f))
+                except OSError:
+                    pass
+        else:
+            for f in files:
+                try:
+                    size_root += os.path.getsize(os.path.join(path, f))
+                except OSError:
+                    pass
+
+    return size_scm, size_root
+
+
 def get_highlighted_code(name, code, type='terminal'):
     """
     If pygments are available on the system
