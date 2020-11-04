@@ -41,7 +41,7 @@ from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel, Ha
 from kallithea.lib.exceptions import IMCCommitError, NonRelativePathError
 from kallithea.lib.hooks import process_pushed_raw_ids
 from kallithea.lib.utils import action_logger, get_filesystem_repos, make_ui
-from kallithea.lib.utils2 import safe_bytes, safe_str, set_hook_environment
+from kallithea.lib.utils2 import safe_bytes, safe_str, set_hook_environment, umask
 from kallithea.lib.vcs import get_repo
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.exceptions import RepositoryError, VCSError
@@ -711,7 +711,7 @@ class ScmModel(object):
                     fh, fn = tempfile.mkstemp(prefix=hook_file + '.tmp.')
                     os.write(fh, tmpl.replace(b'_TMPL_', safe_bytes(kallithea.__version__)))
                     os.close(fh)
-                    os.chmod(fn, 0o755)
+                    os.chmod(fn, 0o777 & ~umask)
                     os.rename(fn, hook_file)
                 except (OSError, IOError) as e:
                     log.error('error writing hook %s: %s', hook_file, e)

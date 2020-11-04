@@ -80,6 +80,11 @@ assert safe_str
 assert LazyProperty
 
 
+# get current umask value without changing it
+umask = os.umask(0)
+os.umask(umask)
+
+
 def convert_line_endings(line, mode):
     """
     Converts a given line  "line end" according to given mode
