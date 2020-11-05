@@ -162,6 +162,42 @@ class ChangesetCommentsModel(object):
 
         return subj, body, recipients, notification_type, email_kwargs
 
+    def create_notification(self, repo, comment, author, comment_text,
+                                line_no=None, revision=None, pull_request=None,
+                                status_change=None, closing_pr=False):
+
+
+        (subj, body, recipients, notification_type, email_kwargs) = self._get_notification_data(
+            repo, comment, author,
+            comment_text=comment_text,
+            line_no=line_no,
+            revision=revision,
+            pull_request=pull_request,
+            status_change=status_change,
+            closing_pr=closing_pr,
+        )
+
+        email_kwargs['is_mention'] = False
+        # create notification objects, and emails
+        notification.NotificationModel().create(
+            created_by=author, subject=subj, body=body,
+            recipients=recipients, type_=notification_type,
+            email_kwargs=email_kwargs,
+        )
+
+        mention_recipients = extract_mentioned_users(body).difference(recipients)
+        if mention_recipients:
+            email_kwargs['is_mention'] = True
+            subj = _('[Mention]') + ' ' + subj
+            # FIXME: this subject is wrong and unused!
+            notification.NotificationModel().create(
+                created_by=author, subject=subj, body=body,
+                recipients=mention_recipients,
+                type_=notification_type,
+                email_kwargs=email_kwargs
+            )
+
+
     def create(self, text, repo, author, revision=None, pull_request=None,
                f_path=None, line_no=None, status_change=None, closing_pr=False,
                send_email=True):
@@ -196,34 +232,10 @@ class ChangesetCommentsModel(object):
         meta.Session().flush()
 
         if send_email:
-            (subj, body, recipients, notification_type,
-             email_kwargs) = self._get_notification_data(
-                                repo, comment, author,
-                                comment_text=text,
-                                line_no=line_no,
-                                revision=revision,
-                                pull_request=pull_request,
-                                status_change=status_change,
-                                closing_pr=closing_pr)
-            email_kwargs['is_mention'] = False
-            # create notification objects, and emails
-            notification.NotificationModel().create(
-                created_by=author, subject=subj, body=body,
-                recipients=recipients, type_=notification_type,
-                email_kwargs=email_kwargs,
+            self.create_notification(
+                repo, comment, author, text, line_no, revision, pull_request,
+                status_change, closing_pr
             )
-
-            mention_recipients = extract_mentioned_users(body).difference(recipients)
-            if mention_recipients:
-                email_kwargs['is_mention'] = True
-                subj = _('[Mention]') + ' ' + subj
-                # FIXME: this subject is wrong and unused!
-                notification.NotificationModel().create(
-                    created_by=author, subject=subj, body=body,
-                    recipients=mention_recipients,
-                    type_=notification_type,
-                    email_kwargs=email_kwargs
-                )
 
         return comment
 
