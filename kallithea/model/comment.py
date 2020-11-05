@@ -85,7 +85,6 @@ class ChangesetCommentsModel(object):
                 'cs_target_repo': webutils.canonical_url('summary_home', repo_name=repo.repo_name),
                 'cs_comment_url': comment_url,
                 'cs_url': webutils.canonical_url('changeset_home', repo_name=repo.repo_name, revision=revision),
-                'raw_id': revision,
                 'message': cs.message,
                 'message_short': shorter(cs.message, 50, firstline=True),
                 'cs_author': cs_author,
@@ -93,7 +92,6 @@ class ChangesetCommentsModel(object):
                 'repo_name': repo.repo_name,
                 'short_id': revision[:12],
                 'branch': cs.branch,
-                'comment_username': author.username,
                 'threading': threading,
             }
         # pull request
@@ -134,7 +132,6 @@ class ChangesetCommentsModel(object):
                 'pr_owner': pull_request.owner,
                 'pr_owner_username': pull_request.owner.username,
                 'repo_name': pull_request.other_repo.repo_name,
-                'comment_username': author.username,
                 'threading': threading,
             }
 
