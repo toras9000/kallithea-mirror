@@ -58,7 +58,6 @@ class ChangesetCommentsModel(object):
                                 line_no=None, revision=None, pull_request=None,
                                 status_change=None, closing_pr=False):
 
-        body = comment_text  # text of the comment
         line = ''
         if line_no:
             line = _('on line %s') % line_no
@@ -160,18 +159,18 @@ class ChangesetCommentsModel(object):
         email_kwargs['is_mention'] = False
         # create notification objects, and emails
         notification.NotificationModel().create(
-            created_by=author, subject=subj, body=body,
+            created_by=author, subject=subj, body=comment_text,
             recipients=recipients, type_=notification_type,
             email_kwargs=email_kwargs,
         )
 
-        mention_recipients = extract_mentioned_users(body).difference(recipients)
+        mention_recipients = extract_mentioned_users(comment_text).difference(recipients)
         if mention_recipients:
             email_kwargs['is_mention'] = True
             subj = _('[Mention]') + ' ' + subj
             # FIXME: this subject is wrong and unused!
             notification.NotificationModel().create(
-                created_by=author, subject=subj, body=body,
+                created_by=author, subject=subj, body=comment_text,
                 recipients=mention_recipients,
                 type_=notification_type,
                 email_kwargs=email_kwargs
