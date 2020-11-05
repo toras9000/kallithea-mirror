@@ -78,12 +78,6 @@ class PullRequestModel(object):
         threading = ['%s-pr-%s@%s' % (pr.other_repo.repo_name,
                                       pr.pull_request_id,
                                       webutils.canonical_hostname())]
-        subject = webutils.link_to(
-            _('%(user)s wants you to review pull request %(pr_nice_id)s: %(pr_title)s') %
-                {'user': user.username,
-                 'pr_title': pr.title,
-                 'pr_nice_id': pr.nice_id()},
-            pr_url)
         body = pr.description
         _org_ref_type, org_ref_name, _org_rev = pr.org_ref.split(':')
         _other_ref_type, other_ref_name, _other_rev = pr.other_ref.split(':')
@@ -112,16 +106,14 @@ class PullRequestModel(object):
             'is_mention': False,
             }
         if reviewers:
-            notification.NotificationModel().create(created_by=user, subject=subject, body=body,
+            notification.NotificationModel().create(created_by=user, body=body,
                                        recipients=reviewers,
                                        type_=notification.NotificationModel.TYPE_PULL_REQUEST,
                                        email_kwargs=email_kwargs)
 
         if mention_recipients:
             email_kwargs['is_mention'] = True
-            subject = _('[Mention]') + ' ' + subject
-            # FIXME: this subject is wrong and unused!
-            notification.NotificationModel().create(created_by=user, subject=subject, body=body,
+            notification.NotificationModel().create(created_by=user, body=body,
                                        recipients=mention_recipients,
                                        type_=notification.NotificationModel.TYPE_PULL_REQUEST,
                                        email_kwargs=email_kwargs)

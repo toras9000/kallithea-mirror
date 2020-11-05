@@ -50,7 +50,7 @@ class TestNotifications(base.TestController):
                 assert from_name == 'u1 u1'
             with mock.patch.object(kallithea.lib.celerylib.tasks, 'send_email', send_email):
                 NotificationModel().create(created_by=self.u1,
-                                                   subject='subj', body='hi there',
+                                                   body='hi there',
                                                    recipients=usrs)
 
     @mock.patch.object(h, 'canonical_url', (lambda arg, **kwargs: 'http://%s/?%s' % (arg, '&'.join('%s=%s' % (k, v) for (k, v) in sorted(kwargs.items())))))
@@ -149,7 +149,7 @@ class TestNotifications(base.TestController):
                     for desc, type_, body, kwargs in params:
                         # desc is used as "global" variable
                         NotificationModel().create(created_by=self.u1,
-                                                           subject='unused', body=body, email_kwargs=kwargs,
+                                                           body=body, email_kwargs=kwargs,
                                                            recipients=[self.u2], type_=type_)
 
                 # Email type TYPE_PASSWORD_RESET has no corresponding notification type - test it directly:

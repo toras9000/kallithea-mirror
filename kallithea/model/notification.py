@@ -49,7 +49,7 @@ class NotificationModel(object):
     TYPE_PULL_REQUEST = 'pull_request'
     TYPE_PULL_REQUEST_COMMENT = 'pull_request_comment'
 
-    def create(self, created_by, subject, body, recipients=None,
+    def create(self, created_by, body, recipients=None,
                type_=TYPE_MESSAGE, with_email=True,
                email_kwargs=None, repo_name=None):
         """
@@ -58,7 +58,6 @@ class NotificationModel(object):
 
         :param created_by: int, str or User instance. User who created this
             notification
-        :param subject:
         :param body:
         :param recipients: list of int, str or User objects, when None
             is given send to all admins
@@ -105,14 +104,12 @@ class NotificationModel(object):
         # this is passed into template
         created_on = fmt_date(datetime.datetime.now())
         html_kwargs = {
-                  'subject': subject,
                   'body': h.render_w_mentions(body, repo_name),
                   'when': created_on,
                   'user': created_by_obj.username,
                   }
 
         txt_kwargs = {
-                  'subject': subject,
                   'body': body,
                   'when': created_on,
                   'user': created_by_obj.username,

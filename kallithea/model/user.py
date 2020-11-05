@@ -170,7 +170,6 @@ class UserModel(object):
         new_user = self.create(form_data)
 
         # notification to admins
-        subject = _('New user registration')
         body = (
             'New user registration\n'
             '---------------------\n'
@@ -184,7 +183,7 @@ class UserModel(object):
             'new_username': new_user.username,
             'new_email': new_user.email,
             'new_full_name': new_user.full_name}
-        notification.NotificationModel().create(created_by=new_user, subject=subject,
+        notification.NotificationModel().create(created_by=new_user,
                                    body=body, recipients=None,
                                    type_=notification.NotificationModel.TYPE_REGISTRATION,
                                    email_kwargs=email_kwargs)

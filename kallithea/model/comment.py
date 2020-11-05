@@ -28,8 +28,6 @@ Original author and date, and relevant copyright and licensing information is be
 import logging
 from collections import defaultdict
 
-from tg.i18n import ugettext as _
-
 from kallithea.lib import webutils
 from kallithea.lib.utils import extract_mentioned_users
 from kallithea.lib.utils2 import shorter
@@ -58,15 +56,10 @@ class ChangesetCommentsModel(object):
                                 line_no=None, revision=None, pull_request=None,
                                 status_change=None, closing_pr=False):
 
-        line = ''
-        if line_no:
-            line = _('on line %s') % line_no
-
         # changeset
         if revision:
             notification_type = notification.NotificationModel.TYPE_CHANGESET_COMMENT
             cs = repo.scm_instance.get_changeset(revision)
-            desc = cs.short_id
 
             threading = ['%s-rev-%s@%s' % (repo.repo_name, revision, webutils.canonical_hostname())]
             if line_no: # TODO: url to file _and_ line number
@@ -76,10 +69,6 @@ class ChangesetCommentsModel(object):
                 repo_name=repo.repo_name,
                 revision=revision,
                 anchor='comment-%s' % comment.comment_id)
-            subj = webutils.link_to(
-                'Re changeset: %(desc)s %(line)s' %
-                          {'desc': desc, 'line': line},
-                 comment_url)
             # get the current participants of this changeset
             recipients = _list_changeset_commenters(revision)
             # add changeset author if it's known locally
@@ -110,7 +99,6 @@ class ChangesetCommentsModel(object):
         # pull request
         elif pull_request:
             notification_type = notification.NotificationModel.TYPE_PULL_REQUEST_COMMENT
-            desc = comment.pull_request.title
             _org_ref_type, org_ref_name, _org_rev = comment.pull_request.org_ref.split(':')
             _other_ref_type, other_ref_name, _other_rev = comment.pull_request.other_ref.split(':')
             threading = ['%s-pr-%s@%s' % (pull_request.other_repo.repo_name,
@@ -122,12 +110,6 @@ class ChangesetCommentsModel(object):
                                                           webutils.canonical_hostname()))
             comment_url = pull_request.url(canonical=True,
                 anchor='comment-%s' % comment.comment_id)
-            subj = webutils.link_to(
-                'Re pull request %(pr_nice_id)s: %(desc)s %(line)s' %
-                          {'desc': desc,
-                           'pr_nice_id': comment.pull_request.nice_id(),
-                           'line': line},
-                comment_url)
             # get the current participants of this pull request
             recipients = _list_pull_request_commenters(pull_request)
             recipients.append(pull_request.owner)
@@ -159,7 +141,7 @@ class ChangesetCommentsModel(object):
         email_kwargs['is_mention'] = False
         # create notification objects, and emails
         notification.NotificationModel().create(
-            created_by=author, subject=subj, body=comment_text,
+            created_by=author, body=comment_text,
             recipients=recipients, type_=notification_type,
             email_kwargs=email_kwargs,
         )
@@ -167,10 +149,8 @@ class ChangesetCommentsModel(object):
         mention_recipients = extract_mentioned_users(comment_text).difference(recipients)
         if mention_recipients:
             email_kwargs['is_mention'] = True
-            subj = _('[Mention]') + ' ' + subj
-            # FIXME: this subject is wrong and unused!
             notification.NotificationModel().create(
-                created_by=author, subject=subj, body=comment_text,
+                created_by=author, body=comment_text,
                 recipients=mention_recipients,
                 type_=notification_type,
                 email_kwargs=email_kwargs
