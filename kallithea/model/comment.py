@@ -54,13 +54,10 @@ def _list_pull_request_commenters(pull_request):
 
 class ChangesetCommentsModel(object):
 
-    def _get_notification_data(self, repo, comment, author, comment_text,
-                               line_no=None, revision=None, pull_request=None,
-                               status_change=None, closing_pr=False):
-        """
-        :returns: tuple (subj,body,recipients,notification_type,email_kwargs)
-        """
-        # make notification
+    def create_notification(self, repo, comment, author, comment_text,
+                                line_no=None, revision=None, pull_request=None,
+                                status_change=None, closing_pr=False):
+
         body = comment_text  # text of the comment
         line = ''
         if line_no:
@@ -159,23 +156,6 @@ class ChangesetCommentsModel(object):
                 'comment_username': author.username,
                 'threading': threading,
             }
-
-        return subj, body, recipients, notification_type, email_kwargs
-
-    def create_notification(self, repo, comment, author, comment_text,
-                                line_no=None, revision=None, pull_request=None,
-                                status_change=None, closing_pr=False):
-
-
-        (subj, body, recipients, notification_type, email_kwargs) = self._get_notification_data(
-            repo, comment, author,
-            comment_text=comment_text,
-            line_no=line_no,
-            revision=revision,
-            pull_request=pull_request,
-            status_change=status_change,
-            closing_pr=closing_pr,
-        )
 
         email_kwargs['is_mention'] = False
         # create notification objects, and emails
