@@ -26,27 +26,22 @@ class CeleryConfig(object):
     imports = ['kallithea.model.async_tasks']
     task_always_eager = False
 
-# map from Kallithea .ini Celery 3 config names to Celery 4 config names
-celery3_compat = {
-    'broker.url': 'broker_url',
-    'celery.accept.content': 'accept_content',
-    'celery.always.eager': 'task_always_eager',
-    'celery.amqp.task.result.expires': 'result_expires',
-    'celeryd.concurrency': 'worker_concurrency',
-    'celeryd.max.tasks.per.child': 'worker_max_tasks_per_child',
-    #'celery.imports' ends up unchanged
-    'celery.result.backend': 'result_backend',
-    'celery.result.serializer': 'result_serializer',
-    'celery.task.serializer': 'task_serializer',
-}
-
-list_config_names = """imports accept_content""".split()
+list_config_names = {'imports', 'accept_content'}
 
 
 desupported = set([
+    'broker.url',
+    'celery.accept.content',
+    'celery.always.eager',
+    'celery.amqp.task.result.expires',
+    'celeryd.concurrency',
+    'celeryd.max.tasks.per.child',
+    'celery.result.backend',  # Note: the .ini template used this instead of 'celery.result_backend' in 0.6
     'celery.result.dburi',
     'celery.result.serialier',
+    'celery.result.serializer',
     'celery.send.task.error.emails',
+    'celery.task.serializer',
 ])
 
 
@@ -61,11 +56,8 @@ def make_celery_config(config):
     for config_key, config_value in sorted(config.items()):
         if config_key in desupported and config_value:
             log.error('Celery configuration setting %r is no longer supported', config_key)
-        celery_key = celery3_compat.get(config_key)
         parts = config_key.split('.', 1)
-        if celery_key:  # explicit Celery 3 backwards compatibility
-            pass
-        elif parts[0] == 'celery' and len(parts) == 2:  # Celery 4 config key
+        if parts[0] == 'celery' and len(parts) == 2:  # Celery 4 config key
             celery_key = parts[1]
         else:
             continue
