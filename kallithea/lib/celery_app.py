@@ -19,8 +19,6 @@ import logging
 import celery
 import tg
 
-import kallithea
-
 
 class CeleryConfig(object):
     imports = ['kallithea.model.async_tasks']
@@ -79,6 +77,5 @@ def make_app():
     """Create celery app from the TurboGears configuration file"""
     app = celery.Celery()
     celery_config = make_celery_config(tg.config)
-    kallithea.CELERY_EAGER = celery_config.task_always_eager
     app.config_from_object(celery_config)
     return app

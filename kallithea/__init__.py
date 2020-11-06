@@ -41,7 +41,6 @@ BACKENDS = {
 }
 
 CELERY_APP = None  # set to Celery app instance if using Celery
-CELERY_EAGER = False
 
 CONFIG = {}
 

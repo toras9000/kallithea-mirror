@@ -127,7 +127,7 @@ def dbsession(func):
             ret = func(*fargs, **fkwargs)
             return ret
         finally:
-            if kallithea.CELERY_APP and not kallithea.CELERY_EAGER:
+            if kallithea.CELERY_APP and not kallithea.CELERY_APP.conf.task_always_eager:
                 meta.Session.remove()
 
     return decorator(__wrapper, func)
