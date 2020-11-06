@@ -158,7 +158,7 @@ def as_html(table_class='code-difftable', line_class='line',
 
 def wrap_to_table(html):
     """Given a string with html, return it wrapped in a table, similar to what
-    DiffProcessor returns."""
+    as_html returns."""
     return '''\
               <table class="code-difftable">
                 <tr class="line">
