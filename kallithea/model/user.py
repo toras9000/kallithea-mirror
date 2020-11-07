@@ -170,13 +170,6 @@ class UserModel(object):
         new_user = self.create(form_data)
 
         # notification to admins
-        body = (
-            'New user registration\n'
-            '---------------------\n'
-            '- Username: {user.username}\n'
-            '- Full Name: {user.full_name}\n'
-            '- Email: {user.email}\n'
-            ).format(user=new_user)
         edit_url = webutils.canonical_url('edit_user', id=new_user.user_id)
         email_kwargs = {
             'registered_user_url': edit_url,
@@ -184,7 +177,7 @@ class UserModel(object):
             'new_email': new_user.email,
             'new_full_name': new_user.full_name}
         notification.NotificationModel().create(created_by=new_user,
-                                   body=body, recipients=None,
+                                   body=None, recipients=None,
                                    type_=notification.NotificationModel.TYPE_REGISTRATION,
                                    email_kwargs=email_kwargs)
 
