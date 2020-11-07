@@ -33,7 +33,7 @@ from tg import FullStackApplicationConfigurator
 import kallithea.lib.locales
 import kallithea.model.base
 import kallithea.model.meta
-from kallithea.lib import celerypylons
+from kallithea.lib import celery_app
 from kallithea.lib.utils import load_extensions, set_app_settings, set_indexer_config, set_vcs_config
 from kallithea.lib.utils2 import asbool, check_git_version
 from kallithea.model import db
@@ -136,7 +136,7 @@ def setup_configuration(app):
     kallithea.DEFAULT_USER_ID = db.User.get_default_user().user_id
 
     if asbool(config.get('use_celery')):
-        kallithea.CELERY_APP = celerypylons.make_app()
+        kallithea.CELERY_APP = celery_app.make_celery_app()
     kallithea.CONFIG = config
 
     load_extensions(root_path=config['here'])
