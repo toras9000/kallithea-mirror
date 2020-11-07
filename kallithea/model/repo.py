@@ -321,8 +321,6 @@ class RepoModel(object):
         fork_of = db.Repository.guess_instance(fork_of)
         repo_group = db.RepoGroup.guess_instance(repo_group)
         try:
-            repo_name = repo_name
-            description = description
             # repo name is just a name of repository
             # while repo_name_full is a full qualified name that is combined
             # with name and path of group

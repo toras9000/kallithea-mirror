@@ -83,7 +83,6 @@ urllib.request.install_opener(o)
 def _get_repo(proj):
     if isinstance(proj, str):
         repo = vcs.get_repo(os.path.join(PROJECT_PATH, proj))
-        proj = proj
     else:
         repo = proj
         proj = repo.name

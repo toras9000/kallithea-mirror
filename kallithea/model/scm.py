@@ -451,7 +451,6 @@ class ScmModel(object):
                 content = content.read()
             processed_nodes.append((f_path, content))
 
-        message = message
         committer = user.full_contact
         if not author:
             author = committer
@@ -493,7 +492,6 @@ class ScmModel(object):
         user = db.User.guess_instance(user)
         scm_instance = repo.scm_instance_no_cache()
 
-        message = message
         committer = user.full_contact
         if not author:
             author = committer
@@ -572,7 +570,6 @@ class ScmModel(object):
             content = nodes[f_path].get('content')
             processed_nodes.append((f_path, content))
 
-        message = message
         committer = user.full_contact
         if not author:
             author = committer

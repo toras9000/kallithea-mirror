@@ -1143,7 +1143,6 @@ class ApiController(JSONRPCController):
             if not HasRepoPermissionLevel('read')(repo.repo_name):
                 raise JSONRPCError('repository `%s` does not exist' % (repoid,))
 
-        ret_type = ret_type
         _map = {}
         try:
             _d, _f = ScmModel().get_nodes(repo, revision, root_path,
