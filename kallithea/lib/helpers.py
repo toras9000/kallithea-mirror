@@ -143,30 +143,24 @@ def increase_context_link(GET, anchor=None):
         **{'data-toggle': 'tooltip'})
 
 
-class _FilesBreadCrumbs(object):
-
-    def __call__(self, repo_name, rev, paths):
-        url_l = [link_to(repo_name, url('files_home',
-                                        repo_name=repo_name,
-                                        revision=rev, f_path=''),
-                         class_='ypjax-link')]
-        paths_l = paths.split('/')
-        for cnt, p in enumerate(paths_l):
-            if p != '':
-                url_l.append(link_to(p,
-                                     url('files_home',
-                                         repo_name=repo_name,
-                                         revision=rev,
-                                         f_path='/'.join(paths_l[:cnt + 1])
-                                         ),
-                                     class_='ypjax-link'
-                                     )
-                             )
-
-        return literal('/'.join(url_l))
-
-
-files_breadcrumbs = _FilesBreadCrumbs()
+def files_breadcrumbs(repo_name, rev, paths):
+    url_l = [link_to(repo_name, url('files_home',
+                                    repo_name=repo_name,
+                                    revision=rev, f_path=''),
+                     class_='ypjax-link')]
+    paths_l = paths.split('/')
+    for cnt, p in enumerate(paths_l):
+        if p != '':
+            url_l.append(link_to(p,
+                                 url('files_home',
+                                     repo_name=repo_name,
+                                     revision=rev,
+                                     f_path='/'.join(paths_l[:cnt + 1])
+                                     ),
+                                 class_='ypjax-link'
+                                 )
+                         )
+    return literal('/'.join(url_l))
 
 
 class CodeHtmlFormatter(HtmlFormatter):
