@@ -131,7 +131,6 @@ conftest
 
 normal_modules = set('''
 kallithea
-kallithea.lib.celerylib.tasks
 kallithea.lib
 kallithea.lib.auth
 kallithea.lib.auth_modules
@@ -146,6 +145,7 @@ kallithea.lib.utils2
 kallithea.lib.vcs
 kallithea.lib.webutils
 kallithea.model
+kallithea.model.async_tasks
 kallithea.model.scm
 kallithea.templates.py
 '''.split())
@@ -158,10 +158,10 @@ known_violations = [
 ('kallithea.lib.utils', 'kallithea.model'),  # clean up utils
 ('kallithea.lib.utils', 'kallithea.model.db'),
 ('kallithea.lib.utils', 'kallithea.model.scm'),
-('kallithea.lib.celerylib.tasks', 'kallithea.lib.helpers'),
-('kallithea.lib.celerylib.tasks', 'kallithea.lib.hooks'),
-('kallithea.lib.celerylib.tasks', 'kallithea.lib.indexers'),
-('kallithea.lib.celerylib.tasks', 'kallithea.model'),
+('kallithea.model.async_tasks', 'kallithea.lib.helpers'),
+('kallithea.model.async_tasks', 'kallithea.lib.hooks'),
+('kallithea.model.async_tasks', 'kallithea.lib.indexers'),
+('kallithea.model.async_tasks', 'kallithea.model'),
 ('kallithea.model', 'kallithea.lib.auth'),  # auth.HasXXX
 ('kallithea.model', 'kallithea.lib.auth_modules'),  # validators
 ('kallithea.model', 'kallithea.lib.helpers'),

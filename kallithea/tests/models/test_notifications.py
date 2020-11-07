@@ -5,8 +5,8 @@ import mock
 from tg.util.webtest import test_context
 
 import kallithea.lib.celerylib
-import kallithea.lib.celerylib.tasks
 import kallithea.lib.helpers as h
+import kallithea.model.async_tasks
 from kallithea.model import db, meta
 from kallithea.model.notification import EmailNotificationModel, NotificationModel
 from kallithea.model.user import UserModel
@@ -48,7 +48,7 @@ class TestNotifications(base.TestController):
                 assert body == "hi there"
                 assert '>hi there<' in html_body
                 assert from_name == 'u1 u1'
-            with mock.patch.object(kallithea.lib.celerylib.tasks, 'send_email', send_email):
+            with mock.patch.object(kallithea.model.async_tasks, 'send_email', send_email):
                 NotificationModel().create(created_by=self.u1,
                                                    body='hi there',
                                                    recipients=usrs)
@@ -73,7 +73,7 @@ class TestNotifications(base.TestController):
             l.append('<hr/>\n')
 
         with test_context(self.app):
-            with mock.patch.object(kallithea.lib.celerylib.tasks, 'send_email', send_email):
+            with mock.patch.object(kallithea.model.async_tasks, 'send_email', send_email):
                 pr_kwargs = dict(
                     pr_nice_id='#7',
                     pr_title='The Title',
@@ -155,7 +155,7 @@ class TestNotifications(base.TestController):
                 # Email type TYPE_PASSWORD_RESET has no corresponding notification type - test it directly:
                 desc = 'TYPE_PASSWORD_RESET'
                 kwargs = dict(user='John Doe', reset_token='decbf64715098db5b0bd23eab44bd792670ab746', reset_url='http://reset.com/decbf64715098db5b0bd23eab44bd792670ab746')
-                kallithea.lib.celerylib.tasks.send_email(['john@doe.com'],
+                kallithea.model.async_tasks.send_email(['john@doe.com'],
                     "Password reset link",
                     EmailNotificationModel().get_email_tmpl(EmailNotificationModel.TYPE_PASSWORD_RESET, 'txt', **kwargs),
                     EmailNotificationModel().get_email_tmpl(EmailNotificationModel.TYPE_PASSWORD_RESET, 'html', **kwargs),

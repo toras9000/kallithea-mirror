@@ -298,8 +298,7 @@ class UserModel(object):
         allowing users to copy-paste or manually enter the token from the
         email.
         """
-        from kallithea.lib.celerylib import tasks
-        from kallithea.model import notification
+        from kallithea.model import async_tasks, notification
 
         user_email = data['email']
         user = db.User.get_by_email(user_email)
@@ -332,7 +331,7 @@ class UserModel(object):
                 reset_token=token,
                 reset_url=link)
             log.debug('sending email')
-            tasks.send_email([user_email], _("Password reset link"), body, html_body)
+            async_tasks.send_email([user_email], _("Password reset link"), body, html_body)
             log.info('send new password mail to %s', user_email)
         else:
             log.debug("password reset email %s not found", user_email)
@@ -365,7 +364,7 @@ class UserModel(object):
         return expected_token == token
 
     def reset_password(self, user_email, new_passwd):
-        from kallithea.lib.celerylib import tasks
+        from kallithea.model import async_tasks
         user = db.User.get_by_email(user_email)
         if user is not None:
             if not self.can_change_password(user):
@@ -376,7 +375,7 @@ class UserModel(object):
         if new_passwd is None:
             raise Exception('unable to set new password')
 
-        tasks.send_email([user_email],
+        async_tasks.send_email([user_email],
                  _('Password reset notification'),
                  _('The password to your account %s has been changed using password reset form.') % (user.username,))
         log.info('send password reset mail to %s', user_email)

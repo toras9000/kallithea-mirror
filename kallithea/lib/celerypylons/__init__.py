@@ -23,7 +23,7 @@ import kallithea
 
 
 class CeleryConfig(object):
-    imports = ['kallithea.lib.celerylib.tasks']
+    imports = ['kallithea.model.async_tasks']
     task_always_eager = False
 
 # map from Kallithea .ini Celery 3 config names to Celery 4 config names

@@ -41,7 +41,6 @@ from webob.exc import HTTPBadRequest
 from kallithea.lib import ext_json, webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.base import BaseRepoController, jsonify, render
-from kallithea.lib.celerylib.tasks import get_commits_stats
 from kallithea.lib.conf import ALL_EXTS, ALL_READMES, LANGUAGES_EXTENSIONS_MAP
 from kallithea.lib.markup_renderer import MarkupRenderer
 from kallithea.lib.page import Page
@@ -49,7 +48,7 @@ from kallithea.lib.utils2 import safe_int, safe_str
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.exceptions import ChangesetError, EmptyRepositoryError, NodeDoesNotExistError
 from kallithea.lib.vcs.nodes import FileNode
-from kallithea.model import db
+from kallithea.model import async_tasks, db
 
 
 log = logging.getLogger(__name__)
@@ -209,5 +208,5 @@ class SummaryController(BaseRepoController):
             c.trending_languages = []
 
         recurse_limit = 500  # don't recurse more than 500 times when parsing
-        get_commits_stats(c.db_repo.repo_name, ts_min_y, ts_max_y, recurse_limit)
+        async_tasks.get_commits_stats(c.db_repo.repo_name, ts_min_y, ts_max_y, recurse_limit)
         return render('summary/statistics.html')

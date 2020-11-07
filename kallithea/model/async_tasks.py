@@ -12,8 +12,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-kallithea.lib.celerylib.tasks
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+kallithea.model.async_tasks
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Kallithea task modules, containing all task that suppose to be run
 by celery daemon
@@ -45,8 +45,7 @@ from kallithea.lib import celerylib, conf, ext_json, hooks
 from kallithea.lib.indexers.daemon import WhooshIndexingDaemon
 from kallithea.lib.utils2 import asbool, ascii_bytes
 from kallithea.lib.vcs.utils import author_email
-from kallithea.model import db, userlog
-from kallithea.model.repo import RepoModel
+from kallithea.model import db, repo, userlog
 
 
 __all__ = ['whoosh_index', 'get_commits_stats', 'send_email']
@@ -87,12 +86,12 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
 
         co_day_auth_aggr = {}
         commits_by_day_aggregate = {}
-        repo = db.Repository.get_by_repo_name(repo_name)
-        if repo is None:
+        db_repo = db.Repository.get_by_repo_name(repo_name)
+        if db_repo is None:
             return True
 
-        repo = repo.scm_instance
-        repo_size = repo.count()
+        scm_repo = db_repo.scm_instance
+        repo_size = scm_repo.count()
         # return if repo have no revisions
         if repo_size < 1:
             lock.release()
@@ -112,7 +111,7 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
         if cur_stats is not None:
             last_rev = cur_stats.stat_on_revision
 
-        if last_rev == repo.get_changeset().revision and repo_size > 1:
+        if last_rev == scm_repo.get_changeset().revision and repo_size > 1:
             # pass silently without any work if we're not on first revision or
             # current state of parsing revision(from db marker) is the
             # last revision
@@ -130,7 +129,7 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
         log.debug('Getting revisions from %s to %s',
              last_rev, last_rev + parse_limit
         )
-        for cs in repo[last_rev:last_rev + parse_limit]:
+        for cs in scm_repo[last_rev:last_rev + parse_limit]:
             log.debug('parsing %s', cs)
             last_cs = cs  # remember last parsed changeset
             tt = cs.date.timetuple()
@@ -188,8 +187,8 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
                                key=itemgetter(0))
 
         if not co_day_auth_aggr:
-            co_day_auth_aggr[akc(repo.contact)] = {
-                "label": akc(repo.contact),
+            co_day_auth_aggr[akc(scm_repo.contact)] = {
+                "label": akc(scm_repo.contact),
                 "data": [0, 1],
                 "schema": ["commits"],
             }
@@ -199,7 +198,7 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
         stats.commit_activity_combined = ascii_bytes(ext_json.dumps(overview_data))
 
         log.debug('last revision %s', last_rev)
-        leftovers = len(repo.revisions[last_rev:])
+        leftovers = len(scm_repo.revisions[last_rev:])
         log.debug('revisions to parse %s', leftovers)
 
         if last_rev == 0 or leftovers < parse_limit:
@@ -221,7 +220,7 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
         lock.release()
 
         # execute another task if celery is enabled
-        if len(repo.revisions) > 1 and kallithea.CELERY_APP and recurse_limit > 0:
+        if len(scm_repo.revisions) > 1 and kallithea.CELERY_APP and recurse_limit > 0:
             get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit - 1)
         elif recurse_limit <= 0:
             log.debug('Not recursing - limit has been reached')
@@ -376,7 +375,7 @@ def create_repo(form_data, cur_user):
     enable_downloads = defs.get('repo_enable_downloads')
 
     try:
-        repo = RepoModel()._create_repo(
+        db_repo = repo.RepoModel()._create_repo(
             repo_name=repo_name_full,
             repo_type=repo_type,
             description=description,
@@ -398,30 +397,30 @@ def create_repo(form_data, cur_user):
 
         DBS.commit()
         # now create this repo on Filesystem
-        RepoModel()._create_filesystem_repo(
+        repo.RepoModel()._create_filesystem_repo(
             repo_name=repo_name,
             repo_type=repo_type,
             repo_group=db.RepoGroup.guess_instance(repo_group),
             clone_uri=clone_uri,
         )
-        repo = db.Repository.get_by_repo_name(repo_name_full)
-        hooks.log_create_repository(repo.get_dict(), created_by=owner.username)
+        db_repo = db.Repository.get_by_repo_name(repo_name_full)
+        hooks.log_create_repository(db_repo.get_dict(), created_by=owner.username)
 
         # update repo changeset caches initially
-        repo.update_changeset_cache()
+        db_repo.update_changeset_cache()
 
         # set new created state
-        repo.set_state(db.Repository.STATE_CREATED)
+        db_repo.set_state(db.Repository.STATE_CREATED)
         DBS.commit()
     except Exception as e:
         log.warning('Exception %s occurred when forking repository, '
                     'doing cleanup...' % e)
         # rollback things manually !
-        repo = db.Repository.get_by_repo_name(repo_name_full)
-        if repo:
-            db.Repository.delete(repo.repo_id)
+        db_repo = db.Repository.get_by_repo_name(repo_name_full)
+        if db_repo:
+            db.Repository.delete(db_repo.repo_id)
             DBS.commit()
-            RepoModel()._delete_filesystem_repo(repo)
+            repo.RepoModel()._delete_filesystem_repo(db_repo)
         raise
 
     return True
@@ -455,7 +454,7 @@ def create_repo_fork(form_data, cur_user):
     try:
         fork_of = db.Repository.guess_instance(form_data.get('fork_parent_id'))
 
-        RepoModel()._create_repo(
+        repo.RepoModel()._create_repo(
             repo_name=repo_name_full,
             repo_type=repo_type,
             description=form_data['description'],
@@ -474,39 +473,39 @@ def create_repo_fork(form_data, cur_user):
         source_repo_path = os.path.join(base_path, fork_of.repo_name)
 
         # now create this repo on Filesystem
-        RepoModel()._create_filesystem_repo(
+        repo.RepoModel()._create_filesystem_repo(
             repo_name=repo_name,
             repo_type=repo_type,
             repo_group=db.RepoGroup.guess_instance(repo_group),
             clone_uri=source_repo_path,
         )
-        repo = db.Repository.get_by_repo_name(repo_name_full)
-        hooks.log_create_repository(repo.get_dict(), created_by=owner.username)
+        db_repo = db.Repository.get_by_repo_name(repo_name_full)
+        hooks.log_create_repository(db_repo.get_dict(), created_by=owner.username)
 
         # update repo changeset caches initially
-        repo.update_changeset_cache()
+        db_repo.update_changeset_cache()
 
         # set new created state
-        repo.set_state(db.Repository.STATE_CREATED)
+        db_repo.set_state(db.Repository.STATE_CREATED)
         DBS.commit()
     except Exception as e:
         log.warning('Exception %s occurred when forking repository, '
                     'doing cleanup...' % e)
         # rollback things manually !
-        repo = db.Repository.get_by_repo_name(repo_name_full)
-        if repo:
-            db.Repository.delete(repo.repo_id)
+        db_repo = db.Repository.get_by_repo_name(repo_name_full)
+        if db_repo:
+            db.Repository.delete(db_repo.repo_id)
             DBS.commit()
-            RepoModel()._delete_filesystem_repo(repo)
+            repo.RepoModel()._delete_filesystem_repo(db_repo)
         raise
 
     return True
 
 
 def __get_codes_stats(repo_name):
-    repo = db.Repository.get_by_repo_name(repo_name).scm_instance
+    scm_repo = db.Repository.get_by_repo_name(repo_name).scm_instance
 
-    tip = repo.get_changeset()
+    tip = scm_repo.get_changeset()
     code_stats = {}
 
     for _topnode, _dirnodes, filenodes in tip.walk('/'):

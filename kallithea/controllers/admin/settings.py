@@ -39,12 +39,11 @@ import kallithea
 from kallithea.lib import webutils
 from kallithea.lib.auth import HasPermissionAnyDecorator, LoginRequired
 from kallithea.lib.base import BaseController, render
-from kallithea.lib.celerylib import tasks
 from kallithea.lib.utils import repo2db_mapper, set_app_settings
 from kallithea.lib.utils2 import safe_str
 from kallithea.lib.vcs import VCSError
 from kallithea.lib.webutils import url
-from kallithea.model import db, meta
+from kallithea.model import async_tasks, db, meta
 from kallithea.model.forms import ApplicationSettingsForm, ApplicationUiSettingsForm, ApplicationVisualisationForm
 from kallithea.model.notification import EmailNotificationModel
 from kallithea.model.scm import ScmModel
@@ -301,7 +300,7 @@ class SettingsController(BaseController):
 
             recipients = [test_email] if test_email else None
 
-            tasks.send_email(recipients, test_email_subj,
+            async_tasks.send_email(recipients, test_email_subj,
                              test_email_txt_body, test_email_html_body)
 
             webutils.flash(_('Send email task created'), category='success')
@@ -379,7 +378,7 @@ class SettingsController(BaseController):
         if request.POST:
             repo_location = self._get_hg_ui_settings()['paths_root_path']
             full_index = request.POST.get('full_index', False)
-            tasks.whoosh_index(repo_location, full_index)
+            async_tasks.whoosh_index(repo_location, full_index)
             webutils.flash(_('Whoosh reindex task scheduled'), category='success')
             raise HTTPFound(location=url('admin_settings_search'))
 

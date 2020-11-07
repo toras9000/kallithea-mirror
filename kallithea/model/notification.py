@@ -34,7 +34,7 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 
 from kallithea.lib.utils2 import fmt_date
-from kallithea.model import db
+from kallithea.model import async_tasks, db
 
 
 log = logging.getLogger(__name__)
@@ -66,7 +66,6 @@ class NotificationModel(object):
         :param email_kwargs: additional dict to pass as args to email template
         """
         import kallithea.lib.helpers as h
-        from kallithea.lib.celerylib import tasks
         email_kwargs = email_kwargs or {}
         if recipients and not getattr(recipients, '__iter__', False):
             raise Exception('recipients must be a list or iterable')
@@ -135,7 +134,7 @@ class NotificationModel(object):
 
         # send email with notification to participants
         for rec_mail in sorted(rec_mails):
-            tasks.send_email([rec_mail], email_subject, email_txt_body,
+            async_tasks.send_email([rec_mail], email_subject, email_txt_body,
                      email_html_body, headers,
                      from_name=created_by_obj.full_name_or_username)
 
