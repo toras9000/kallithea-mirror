@@ -28,7 +28,6 @@ Original author and date, and relevant copyright and licensing information is be
 import logging
 import traceback
 
-import celery.result
 import formencode
 from formencode import htmlfill
 from tg import request
@@ -172,7 +171,7 @@ class ReposController(BaseRepoController):
 
         if task_id and task_id not in ['None']:
             if kallithea.CELERY_APP:
-                task_result = celery.result.AsyncResult(task_id, app=kallithea.CELERY_APP)
+                task_result = kallithea.CELERY_APP.AsyncResult(task_id)
                 if task_result.failed():
                     raise HTTPInternalServerError(task_result.traceback)
 
