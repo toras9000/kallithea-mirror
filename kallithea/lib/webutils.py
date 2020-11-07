@@ -13,7 +13,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 kallithea.lib.webutils
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 Helper functions that may rely on the current WSGI request, exposed in the TG2
 thread-local "global" variables. It should have few dependencies so it can be

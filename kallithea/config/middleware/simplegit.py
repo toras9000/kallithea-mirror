@@ -12,8 +12,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-kallithea.lib.middleware.simplegit
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+kallithea.config.middleware.simplegit
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 SimpleGit middleware for handling Git protocol requests (push/clone etc.)
 It's implemented with basic auth function

@@ -13,7 +13,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 kallithea.bin.vcs_hooks
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 Entry points for Kallithea hooking into Mercurial and Git.
 

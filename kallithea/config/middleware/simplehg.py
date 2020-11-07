@@ -12,8 +12,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-kallithea.lib.middleware.simplehg
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+kallithea.config.middleware.simplehg
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 SimpleHg middleware for handling Mercurial protocol requests (push/clone etc.).
 It's implemented with basic auth function

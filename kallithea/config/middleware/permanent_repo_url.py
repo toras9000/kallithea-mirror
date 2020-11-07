@@ -12,8 +12,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-kallithea.lib.middleware.permanent_repo_url
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+kallithea.config.middleware.permanent_repo_url
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 middleware to handle permanent repo URLs, replacing PATH_INFO '/_123/yada' with
 '/name/of/repo/yada' after looking 123 up in the database.

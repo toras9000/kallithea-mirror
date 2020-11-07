@@ -8,6 +8,7 @@ set -x
 scripts/docs-headings.py
 scripts/generate-ini.py
 scripts/whitespacecleanup.sh
+hg files 'set:!binary()&grep("^#!.*python")' 'set:**.py' | xargs scripts/source_format.py
 
 hg files 'set:!binary()&grep("^#!.*python")' 'set:**.py' | xargs scripts/pyflakes
 echo "no blocking problems found by $0"
