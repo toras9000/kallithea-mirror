@@ -20,9 +20,9 @@ import kallithea.bin.kallithea_cli_base as cli_base
 from kallithea.lib.utils2 import asbool
 
 
-@cli_base.register_command(config_file_initialize_app=True)
+@cli_base.register_command(needs_config_file=True)
 @click.argument('celery_args', nargs=-1)
-def celery_run(celery_args):
+def celery_run(celery_args, config):
     """Start Celery worker(s) for asynchronous tasks.
 
     This commands starts the Celery daemon which will spawn workers to handle
@@ -33,9 +33,12 @@ def celery_run(celery_args):
     by this CLI command.
     """
 
-    if not asbool(kallithea.CONFIG.get('use_celery')):
+    if not asbool(config.get('use_celery')):
         raise Exception('Please set use_celery = true in .ini config '
                         'file before running this command')
+
+    # do as config_file_initialize_app
+    kallithea.config.application.make_app(config.global_conf, **config.local_conf)
 
     cmd = celery.bin.worker.worker(kallithea.CELERY_APP)
     return cmd.run_from_argv(None, command='celery-run -c CONFIG_FILE --', argv=list(celery_args))
