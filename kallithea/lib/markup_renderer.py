@@ -36,7 +36,7 @@ import markdown as markdown_mod
 from docutils.core import publish_parts
 from docutils.parsers.rst import directives
 
-from kallithea.lib.utils2 import MENTIONS_REGEX, safe_str
+from kallithea.lib.utils2 import MENTIONS_REGEX
 
 
 log = logging.getLogger(__name__)
@@ -156,7 +156,6 @@ class MarkupRenderer(object):
         >>> MarkupRenderer.plain('https://example.com/')
         '<br /><a href="https://example.com/">https://example.com/</a>'
         """
-        source = safe_str(source)
         if universal_newline:
             newline = '\n'
             source = newline.join(source.splitlines())
@@ -197,7 +196,6 @@ class MarkupRenderer(object):
         </pre></div>
         </td></tr></table>
         """
-        source = safe_str(source)
         try:
             if flavored:
                 source = cls._flavored_markdown(source)
@@ -215,7 +213,6 @@ class MarkupRenderer(object):
 
     @classmethod
     def rst(cls, source, safe=True):
-        source = safe_str(source)
         try:
             docutils_settings = dict([(alias, None) for alias in
                                 cls.RESTRUCTUREDTEXT_DISALLOWED_DIRECTIVES])

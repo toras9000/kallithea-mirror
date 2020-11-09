@@ -1052,8 +1052,7 @@ def render_w_mentions(source, repo_name=None):
     Render plain text with revision hashes and issue references urlified
     and with @mention highlighting.
     """
-    s = safe_str(source)
-    s = urlify_text(s, repo_name=repo_name)
+    s = urlify_text(source, repo_name=repo_name)
     return literal('<div class="formatted-fixed">%s</div>' % s)
 
 
