@@ -23,6 +23,7 @@ imported anywhere - just like the global variables can be used everywhere.
 import json
 import logging
 import random
+import re
 
 from tg import request, session
 from webhelpers2.html import HTML, escape, literal
@@ -306,3 +307,19 @@ def jshtml(val):
     better to escape too much than too little.
     """
     return js(escape(val))
+
+
+# Must match regexp in kallithea/public/js/base.js MentionsAutoComplete()
+# Check char before @ - it must not look like we are in an email addresses.
+# Matching is greedy so we don't have to look beyond the end.
+MENTIONS_REGEX = re.compile(r'(?:^|(?<=[^a-zA-Z0-9]))@([a-zA-Z0-9][-_.a-zA-Z0-9]*[a-zA-Z0-9])')
+
+
+def extract_mentioned_usernames(text):
+    r"""
+    Returns list of (possible) usernames @mentioned in given text.
+
+    >>> extract_mentioned_usernames('@1-2.a_X,@1234 not@not @ddd@not @n @ee @ff @gg, @gg;@hh @n\n@zz,')
+    ['1-2.a_X', '1234', 'ddd', 'ee', 'ff', 'gg', 'gg', 'hh', 'zz']
+    """
+    return MENTIONS_REGEX.findall(text)

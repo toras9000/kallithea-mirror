@@ -111,7 +111,7 @@ class TestLibs(base.TestController):
         assert asbool(str_bool) == expected
 
     def test_mention_extractor(self):
-        from kallithea.lib.utils2 import extract_mentioned_usernames
+        from kallithea.lib.webutils import extract_mentioned_usernames
         sample = (
             "@first hi there @world here's my email username@example.com "
             "@lukaszb check @one_more22 it pls @ ttwelve @D[] @one@two@three "

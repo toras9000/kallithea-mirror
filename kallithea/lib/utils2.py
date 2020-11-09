@@ -422,22 +422,6 @@ def time_to_datetime(tm):
         return datetime.datetime.fromtimestamp(tm)
 
 
-# Must match regexp in kallithea/public/js/base.js MentionsAutoComplete()
-# Check char before @ - it must not look like we are in an email addresses.
-# Matching is greedy so we don't have to look beyond the end.
-MENTIONS_REGEX = re.compile(r'(?:^|(?<=[^a-zA-Z0-9]))@([a-zA-Z0-9][-_.a-zA-Z0-9]*[a-zA-Z0-9])')
-
-
-def extract_mentioned_usernames(text):
-    r"""
-    Returns list of (possible) usernames @mentioned in given text.
-
-    >>> extract_mentioned_usernames('@1-2.a_X,@1234 not@not @ddd@not @n @ee @ff @gg, @gg;@hh @n\n@zz,')
-    ['1-2.a_X', '1234', 'ddd', 'ee', 'ff', 'gg', 'gg', 'hh', 'zz']
-    """
-    return MENTIONS_REGEX.findall(text)
-
-
 class AttributeDict(dict):
     def __getattr__(self, attr):
         return self.get(attr, None)

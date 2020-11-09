@@ -36,7 +36,7 @@ import markdown as markdown_mod
 from docutils.core import publish_parts
 from docutils.parsers.rst import directives
 
-from kallithea.lib.utils2 import MENTIONS_REGEX
+from kallithea.lib import webutils
 
 
 log = logging.getLogger(__name__)
@@ -242,5 +242,5 @@ class MarkupRenderer(object):
         def wrapp(match_obj):
             uname = match_obj.groups()[0]
             return r'\ **@%(uname)s**\ ' % {'uname': uname}
-        mention_hl = MENTIONS_REGEX.sub(wrapp, source).strip()
+        mention_hl = webutils.MENTIONS_REGEX.sub(wrapp, source).strip()
         return cls.rst(mention_hl)

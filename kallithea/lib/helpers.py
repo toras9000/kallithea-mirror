@@ -38,17 +38,17 @@ from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel, Ha
 from kallithea.lib.diffs import BIN_FILENODE, CHMOD_FILENODE, DEL_FILENODE, MOD_FILENODE, NEW_FILENODE, RENAMED_FILENODE
 from kallithea.lib.markup_renderer import url_re
 from kallithea.lib.pygmentsutils import get_custom_lexer
-from kallithea.lib.utils2 import (MENTIONS_REGEX, AttributeDict, age, asbool, credentials_filter, fmt_date, link_to_ref, safe_bytes, safe_int, safe_str,
-                                  shorter, time_to_datetime)
+from kallithea.lib.utils2 import (AttributeDict, age, asbool, credentials_filter, fmt_date, link_to_ref, safe_bytes, safe_int, safe_str, shorter,
+                                  time_to_datetime)
 from kallithea.lib.vcs.backends.base import BaseChangeset, EmptyChangeset
 from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError
 #==============================================================================
 # SCM FILTERS available via h.
 #==============================================================================
 from kallithea.lib.vcs.utils import author_email, author_name
-from kallithea.lib.webutils import (HTML, Option, canonical_url, checkbox, chop_at, end_form, escape, form, format_byte_size, hidden, html_escape, js, jshtml,
-                                    link_to, literal, password, pop_flash_messages, radio, reset, safeid, select, session_csrf_secret_name,
-                                    session_csrf_secret_token, submit, text, textarea, truncate, url, wrap_paragraphs)
+from kallithea.lib.webutils import (HTML, MENTIONS_REGEX, Option, canonical_url, checkbox, chop_at, end_form, escape, form, format_byte_size, hidden,
+                                    html_escape, js, jshtml, link_to, literal, password, pop_flash_messages, radio, reset, safeid, select,
+                                    session_csrf_secret_name, session_csrf_secret_token, submit, text, textarea, truncate, url, wrap_paragraphs)
 from kallithea.model import db
 from kallithea.model.changeset_status import ChangesetStatusModel
 
