@@ -81,11 +81,11 @@
   </ul>
 </%def>
 
-<%def name="repolabel(repo)">
-  %if h.is_hg(repo):
+<%def name="repolabel(repo_type)">
+  %if repo_type == 'hg':
     <span class="label label-repo" title="${_('Mercurial repository')}">hg</span>
   %endif
-  %if h.is_git(repo):
+  %if repo_type == 'git':
     <span class="label label-repo" title="${_('Git repository')}">git</span>
   %endif
 </%def>
@@ -97,7 +97,7 @@
     <div class="container-fluid">
     <div class="navbar-header">
       <div class="navbar-brand">
-        ${repolabel(c.db_repo)}
+        ${repolabel(c.db_repo.repo_type)}
 
         ## public/private
         %if c.db_repo.private:
