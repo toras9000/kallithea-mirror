@@ -45,9 +45,9 @@ from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError
 # SCM FILTERS available via h.
 #==============================================================================
 from kallithea.lib.vcs.utils import author_email, author_name
-from kallithea.lib.webutils import (HTML, MENTIONS_REGEX, Option, canonical_url, checkbox, chop_at, end_form, escape, form, format_byte_size, hidden,
-                                    html_escape, js, jshtml, link_to, literal, password, pop_flash_messages, radio, reset, safeid, select,
-                                    session_csrf_secret_name, session_csrf_secret_token, submit, text, textarea, truncate, url, url_re, wrap_paragraphs)
+from kallithea.lib.webutils import (HTML, Option, canonical_url, checkbox, chop_at, end_form, escape, form, format_byte_size, hidden, js, jshtml, link_to,
+                                    literal, password, pop_flash_messages, radio, render_w_mentions, reset, safeid, select, session_csrf_secret_name,
+                                    session_csrf_secret_token, submit, text, textarea, url, urlify_text, wrap_paragraphs)
 from kallithea.model import db
 from kallithea.model.changeset_status import ChangesetStatusModel
 
@@ -68,6 +68,7 @@ assert jshtml
 assert password
 assert pop_flash_messages
 assert radio
+assert render_w_mentions
 assert reset
 assert safeid
 assert select
@@ -76,6 +77,7 @@ assert session_csrf_secret_token
 assert submit
 assert text
 assert textarea
+assert urlify_text
 assert wrap_paragraphs
 # from kallithea.lib.auth
 assert HasPermissionAny
@@ -847,212 +849,6 @@ def fancy_file_stats(stats):
         d_p, d_v
     )
     return literal('<div class="progress" style="width:%spx">%s%s</div>' % (width, d_a, d_d))
-
-
-_URLIFY_RE = re.compile(r'''
-# URL markup
-(?P<url>%s) |
-# @mention markup
-(?P<mention>%s) |
-# Changeset hash markup
-(?<!\w|[-_])
-  (?P<hash>[0-9a-f]{12,40})
-(?!\w|[-_]) |
-# Markup of *bold text*
-(?:
-  (?:^|(?<=\s))
-  (?P<bold> [*] (?!\s) [^*\n]* (?<!\s) [*] )
-  (?![*\w])
-) |
-# "Stylize" markup
-\[see\ \=&gt;\ *(?P<seen>[a-zA-Z0-9\/\=\?\&\ \:\/\.\-]*)\] |
-\[license\ \=&gt;\ *(?P<license>[a-zA-Z0-9\/\=\?\&\ \:\/\.\-]*)\] |
-\[(?P<tagtype>requires|recommends|conflicts|base)\ \=&gt;\ *(?P<tagvalue>[a-zA-Z0-9\-\/]*)\] |
-\[(?:lang|language)\ \=&gt;\ *(?P<lang>[a-zA-Z\-\/\#\+]*)\] |
-\[(?P<tag>[a-z]+)\]
-''' % (url_re.pattern, MENTIONS_REGEX.pattern),
-    re.VERBOSE | re.MULTILINE | re.IGNORECASE)
-
-
-def urlify_text(s, repo_name=None, link_=None, truncate=None, stylize=False, truncatef=truncate):
-    """
-    Parses given text message and make literal html with markup.
-    The text will be truncated to the specified length.
-    Hashes are turned into changeset links to specified repository.
-    URLs links to what they say.
-    Issues are linked to given issue-server.
-    If link_ is provided, all text not already linking somewhere will link there.
-    >>> urlify_text("Urlify http://example.com/ and 'https://example.com' *and* <b>markup/b>")
-    literal('Urlify <a href="http://example.com/">http://example.com/</a> and &#39;<a href="https://example.com&apos">https://example.com&apos</a>; <b>*and*</b> &lt;b&gt;markup/b&gt;')
-    """
-
-    def _replace(match_obj):
-        match_url = match_obj.group('url')
-        if match_url is not None:
-            return '<a href="%(url)s">%(url)s</a>' % {'url': match_url}
-        mention = match_obj.group('mention')
-        if mention is not None:
-            return '<b>%s</b>' % mention
-        hash_ = match_obj.group('hash')
-        if hash_ is not None and repo_name is not None:
-            return '<a class="changeset_hash" href="%(url)s">%(hash)s</a>' % {
-                 'url': url('changeset_home', repo_name=repo_name, revision=hash_),
-                 'hash': hash_,
-                }
-        bold = match_obj.group('bold')
-        if bold is not None:
-            return '<b>*%s*</b>' % _urlify(bold[1:-1])
-        if stylize:
-            seen = match_obj.group('seen')
-            if seen:
-                return '<div class="label label-meta" data-tag="see">see =&gt; %s</div>' % seen
-            license = match_obj.group('license')
-            if license:
-                return '<div class="label label-meta" data-tag="license"><a href="http://www.opensource.org/licenses/%s">%s</a></div>' % (license, license)
-            tagtype = match_obj.group('tagtype')
-            if tagtype:
-                tagvalue = match_obj.group('tagvalue')
-                return '<div class="label label-meta" data-tag="%s">%s =&gt; <a href="/%s">%s</a></div>' % (tagtype, tagtype, tagvalue, tagvalue)
-            lang = match_obj.group('lang')
-            if lang:
-                return '<div class="label label-meta" data-tag="lang">%s</div>' % lang
-            tag = match_obj.group('tag')
-            if tag:
-                return '<div class="label label-meta" data-tag="%s">%s</div>' % (tag, tag)
-        return match_obj.group(0)
-
-    def _urlify(s):
-        """
-        Extract urls from text and make html links out of them
-        """
-        return _URLIFY_RE.sub(_replace, s)
-
-    if truncate is None:
-        s = s.rstrip()
-    else:
-        s = truncatef(s, truncate, whole_word=True)
-    s = html_escape(s)
-    s = _urlify(s)
-    if repo_name is not None:
-        s = urlify_issues(s, repo_name)
-    if link_ is not None:
-        # make href around everything that isn't a href already
-        s = linkify_others(s, link_)
-    s = s.replace('\r\n', '<br/>').replace('\n', '<br/>')
-    # Turn HTML5 into more valid HTML4 as required by some mail readers.
-    # (This is not done in one step in html_escape, because character codes like
-    # &#123; risk to be seen as an issue reference due to the presence of '#'.)
-    s = s.replace("&apos;", "&#39;")
-    return literal(s)
-
-
-def linkify_others(t, l):
-    """Add a default link to html with links.
-    HTML doesn't allow nesting of links, so the outer link must be broken up
-    in pieces and give space for other links.
-    """
-    urls = re.compile(r'(\<a.*?\<\/a\>)',)
-    links = []
-    for e in urls.split(t):
-        if e.strip() and not urls.match(e):
-            links.append('<a class="message-link" href="%s">%s</a>' % (l, e))
-        else:
-            links.append(e)
-
-    return ''.join(links)
-
-
-# Global variable that will hold the actual urlify_issues function body.
-# Will be set on first use when the global configuration has been read.
-_urlify_issues_f = None
-
-
-def urlify_issues(newtext, repo_name):
-    """Urlify issue references according to .ini configuration"""
-    global _urlify_issues_f
-    if _urlify_issues_f is None:
-        assert kallithea.CONFIG['sqlalchemy.url'] # make sure config has been loaded
-
-        # Build chain of urlify functions, starting with not doing any transformation
-        def tmp_urlify_issues_f(s):
-            return s
-
-        issue_pat_re = re.compile(r'issue_pat(.*)')
-        for k in kallithea.CONFIG:
-            # Find all issue_pat* settings that also have corresponding server_link and prefix configuration
-            m = issue_pat_re.match(k)
-            if m is None:
-                continue
-            suffix = m.group(1)
-            issue_pat = kallithea.CONFIG.get(k)
-            issue_server_link = kallithea.CONFIG.get('issue_server_link%s' % suffix)
-            issue_sub = kallithea.CONFIG.get('issue_sub%s' % suffix)
-            issue_prefix = kallithea.CONFIG.get('issue_prefix%s' % suffix)
-            if issue_prefix:
-                log.error('found unsupported issue_prefix%s = %r - use issue_sub%s instead', suffix, issue_prefix, suffix)
-            if not issue_pat:
-                log.error('skipping incomplete issue pattern %r: it needs a regexp', k)
-                continue
-            if not issue_server_link:
-                log.error('skipping incomplete issue pattern %r: it needs issue_server_link%s', k, suffix)
-                continue
-            if issue_sub is None: # issue_sub can be empty but should be present
-                log.error('skipping incomplete issue pattern %r: it needs (a potentially empty) issue_sub%s', k, suffix)
-                continue
-
-            # Wrap tmp_urlify_issues_f with substitution of this pattern, while making sure all loop variables (and compiled regexpes) are bound
-            try:
-                issue_re = re.compile(issue_pat)
-            except re.error as e:
-                log.error('skipping invalid issue pattern %r: %r -> %r %r. Error: %s', k, issue_pat, issue_server_link, issue_sub, str(e))
-                continue
-
-            log.debug('issue pattern %r: %r -> %r %r', k, issue_pat, issue_server_link, issue_sub)
-
-            def issues_replace(match_obj,
-                               issue_server_link=issue_server_link, issue_sub=issue_sub):
-                try:
-                    issue_url = match_obj.expand(issue_server_link)
-                except (IndexError, re.error) as e:
-                    log.error('invalid issue_url setting %r -> %r %r. Error: %s', issue_pat, issue_server_link, issue_sub, str(e))
-                    issue_url = issue_server_link
-                issue_url = issue_url.replace('{repo}', repo_name)
-                issue_url = issue_url.replace('{repo_name}', repo_name.split(kallithea.URL_SEP)[-1])
-                # if issue_sub is empty use the matched issue reference verbatim
-                if not issue_sub:
-                    issue_text = match_obj.group()
-                else:
-                    try:
-                        issue_text = match_obj.expand(issue_sub)
-                    except (IndexError, re.error) as e:
-                        log.error('invalid issue_sub setting %r -> %r %r. Error: %s', issue_pat, issue_server_link, issue_sub, str(e))
-                        issue_text = match_obj.group()
-
-                return (
-                    '<a class="issue-tracker-link" href="%(url)s">'
-                    '%(text)s'
-                    '</a>'
-                    ) % {
-                     'url': issue_url,
-                     'text': issue_text,
-                    }
-
-            def tmp_urlify_issues_f(s, issue_re=issue_re, issues_replace=issues_replace, chain_f=tmp_urlify_issues_f):
-                return issue_re.sub(issues_replace, chain_f(s))
-
-        # Set tmp function globally - atomically
-        _urlify_issues_f = tmp_urlify_issues_f
-
-    return _urlify_issues_f(newtext)
-
-
-def render_w_mentions(source, repo_name=None):
-    """
-    Render plain text with revision hashes and issue references urlified
-    and with @mention highlighting.
-    """
-    s = urlify_text(source, repo_name=repo_name)
-    return literal('<div class="formatted-fixed">%s</div>' % s)
 
 
 def changeset_status(repo, revision):

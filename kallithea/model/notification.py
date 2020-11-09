@@ -33,6 +33,7 @@ from tg import app_globals
 from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 
+from kallithea.lib import webutils
 from kallithea.lib.utils2 import fmt_date
 from kallithea.model import async_tasks, db
 
@@ -65,7 +66,6 @@ class NotificationModel(object):
         :param with_email: send email with this notification
         :param email_kwargs: additional dict to pass as args to email template
         """
-        import kallithea.lib.helpers as h
         email_kwargs = email_kwargs or {}
         if recipients and not getattr(recipients, '__iter__', False):
             raise Exception('recipients must be a list or iterable')
@@ -103,7 +103,7 @@ class NotificationModel(object):
         # this is passed into template
         created_on = fmt_date(datetime.datetime.now())
         html_kwargs = {
-                  'body': None if body is None else h.render_w_mentions(body, repo_name),
+                  'body': None if body is None else webutils.render_w_mentions(body, repo_name),
                   'when': created_on,
                   'user': created_by_obj.username,
                   }

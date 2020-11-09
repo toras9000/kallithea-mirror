@@ -140,8 +140,7 @@ class RepoModel(object):
                            cs_cache.get('message'))
 
         def desc(desc):
-            import kallithea.lib.helpers as h
-            return h.urlify_text(desc, truncate=80, stylize=c.visual.stylify_metalabels)
+            return webutils.urlify_text(desc, truncate=80, stylize=c.visual.stylify_metalabels)
 
         def state(repo_state):
             return _render("repo_state", repo_state)

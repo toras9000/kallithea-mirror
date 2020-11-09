@@ -111,7 +111,6 @@ class TestLibs(base.TestController):
         assert asbool(str_bool) == expected
 
     def test_mention_extractor(self):
-        from kallithea.lib.webutils import extract_mentioned_usernames
         sample = (
             "@first hi there @world here's my email username@example.com "
             "@lukaszb check @one_more22 it pls @ ttwelve @D[] @one@two@three "
@@ -123,7 +122,7 @@ class TestLibs(base.TestController):
         expected = set([
             '2one_more22', 'first', 'lukaszb', 'one', 'one_more22', 'UPPER', 'cAmEL', 'john',
             'marian.user', 'marco-polo', 'marco_polo', 'world'])
-        assert expected == set(extract_mentioned_usernames(sample))
+        assert expected == set(webutils.extract_mentioned_usernames(sample))
 
     @base.parametrize('age_args,expected', [
         (dict(), 'just now'),
@@ -197,7 +196,7 @@ class TestLibs(base.TestController):
             "[requires => url] [lang => python] [just a tag]"
             "[,d] [ => ULR ] [obsolete] [desc]]"
         )
-        res = h.urlify_text(sample, stylize=True)
+        res = webutils.urlify_text(sample, stylize=True)
         assert '<div class="label label-meta" data-tag="tag">tag</div>' in res
         assert '<div class="label label-meta" data-tag="obsolete">obsolete</div>' in res
         assert '<div class="label label-meta" data-tag="stale">stale</div>' in res
@@ -315,7 +314,7 @@ class TestLibs(base.TestController):
         with mock.patch('kallithea.lib.webutils.UrlGenerator.__call__',
             lambda self, name, **kwargs: dict(changeset_home='/%(repo_name)s/changeset/%(revision)s')[name] % kwargs,
         ):
-            assert h.urlify_text(sample, 'repo_name') == expected
+            assert webutils.urlify_text(sample, 'repo_name') == expected
 
     @base.parametrize('sample,expected,url_', [
       ("",
@@ -370,7 +369,7 @@ class TestLibs(base.TestController):
         with mock.patch('kallithea.lib.webutils.UrlGenerator.__call__',
             lambda self, name, **kwargs: dict(changeset_home='/%(repo_name)s/changeset/%(revision)s')[name] % kwargs,
         ):
-            assert h.urlify_text(sample, 'repo_name', stylize=True) == expected
+            assert webutils.urlify_text(sample, 'repo_name', stylize=True) == expected
 
     @base.parametrize('sample,expected', [
       ("deadbeefcafe @mention, and http://foo.bar/ yo",
@@ -383,7 +382,7 @@ class TestLibs(base.TestController):
         with mock.patch('kallithea.lib.webutils.UrlGenerator.__call__',
             lambda self, name, **kwargs: dict(changeset_home='/%(repo_name)s/changeset/%(revision)s')[name] % kwargs,
         ):
-            assert h.urlify_text(sample, 'repo_name', link_='#the-link') == expected
+            assert webutils.urlify_text(sample, 'repo_name', link_='#the-link') == expected
 
     @base.parametrize('issue_pat,issue_server,issue_sub,sample,expected', [
         (r'#(\d+)', 'http://foo/{repo}/issue/\\1', '#\\1',
@@ -471,9 +470,9 @@ class TestLibs(base.TestController):
             'issue_sub': issue_sub,
         }
         # force recreation of lazy function
-        with mock.patch('kallithea.lib.helpers._urlify_issues_f', None):
+        with mock.patch('kallithea.lib.webutils._urlify_issues_f', None):
             with mock.patch('kallithea.CONFIG', config_stub):
-                assert h.urlify_text(sample, 'repo_name') == expected
+                assert webutils.urlify_text(sample, 'repo_name') == expected
 
     @base.parametrize('sample,expected', [
         ('abc X5', 'abc <a class="issue-tracker-link" href="http://main/repo_name/main/5/">#5</a>'),
@@ -503,9 +502,9 @@ class TestLibs(base.TestController):
             'issue_server_link_absent_prefix': r'http://failmore/{repo}/\1',
         }
         # force recreation of lazy function
-        with mock.patch('kallithea.lib.helpers._urlify_issues_f', None):
+        with mock.patch('kallithea.lib.webutils._urlify_issues_f', None):
             with mock.patch('kallithea.CONFIG', config_stub):
-                assert h.urlify_text(sample, 'repo_name') == expected
+                assert webutils.urlify_text(sample, 'repo_name') == expected
 
     @base.parametrize('test,expected', [
       ("", None),
