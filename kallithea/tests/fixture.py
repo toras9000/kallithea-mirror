@@ -173,7 +173,7 @@ class Fixture(object):
         repo_to_fork = db.Repository.get_by_repo_name(repo_to_fork)
 
         form_data = self._get_repo_create_params(repo_name=fork_name,
-                                            fork_parent_id=repo_to_fork,
+                                            fork_parent_id=repo_to_fork.repo_id,
                                             repo_type=repo_to_fork.repo_type,
                                             **kwargs)
         # patch form dict so it can be used directly by model
