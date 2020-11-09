@@ -374,26 +374,6 @@ def show_id(cs):
         return raw_id
 
 
-def is_git(repository):
-    if hasattr(repository, 'alias'):
-        _type = repository.alias
-    elif hasattr(repository, 'repo_type'):
-        _type = repository.repo_type
-    else:
-        _type = repository
-    return _type == 'git'
-
-
-def is_hg(repository):
-    if hasattr(repository, 'alias'):
-        _type = repository.alias
-    elif hasattr(repository, 'repo_type'):
-        _type = repository.repo_type
-    else:
-        _type = repository
-    return _type == 'hg'
-
-
 @cache_region('long_term', 'user_attr_or_none')
 def user_attr_or_none(author, show_attr):
     """Try to match email part of VCS committer string with a local user and return show_attr

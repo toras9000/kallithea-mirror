@@ -79,7 +79,7 @@ ${self.repo_context_bar('changelog')}
                 %if len(cs.parents)>1:
                 <span class="label label-merge">${_('Merge')}</span>
                 %endif
-                %if h.is_hg(c.db_repo_scm_instance):
+                %if c.db_repo_scm_instance.alias == 'hg':
                   %for book in cs.bookmarks:
                   <span class="label label-bookmark" title="${_('Bookmark %s') % book}">
                      ${h.link_to(book,h.url('changeset_home',repo_name=c.cs_repo.repo_name,revision=cs.raw_id))}

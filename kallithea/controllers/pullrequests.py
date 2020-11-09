@@ -72,7 +72,7 @@ def _get_reviewer(user_id):
 class PullrequestsController(BaseRepoController):
 
     def _get_repo_refs(self, repo, rev=None, branch=None, branch_rev=None):
-        """return a structure with repo's interesting changesets, suitable for
+        """return a structure with scm repo's interesting changesets, suitable for
         the selectors in pullrequest.html
 
         rev: a revision that must be in the list somehow and selected by default
@@ -154,13 +154,14 @@ class PullrequestsController(BaseRepoController):
 
         # prio 4: tip revision
         if not selected:
-            if h.is_hg(repo):
+            if repo.alias == 'hg':
                 if tipbranch:
                     selected = 'branch:%s:%s' % (tipbranch, tiprev)
                 else:
                     selected = 'tag:null:' + repo.EMPTY_CHANGESET
                     tags.append((selected, 'null'))
             else:  # Git
+                assert repo.alias == 'git'
                 if not repo.branches:
                     selected = ''  # doesn't make sense, but better than nothing
                 elif 'master' in repo.branches:

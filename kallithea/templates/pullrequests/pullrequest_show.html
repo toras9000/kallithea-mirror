@@ -105,9 +105,9 @@ ${self.repo_context_bar('showpullrequest')}
             %if c.cs_ranges:
               <div>
                ## TODO: use cs_ranges[-1] or org_ref_parts[1] in both cases?
-               %if h.is_hg(c.pull_request.org_repo):
+               %if c.pull_request.org_repo.repo_type == 'hg':
                  <span>hg pull ${c.pull_request.org_repo.clone_url(clone_uri_tmpl=c.clone_uri_tmpl)} -r ${c.cs_ranges[-1].short_id}</span>
-               %elif h.is_git(c.pull_request.org_repo):
+               %elif c.pull_request.org_repo.repo_type == 'git':
                  <span>git pull ${c.pull_request.org_repo.clone_url(clone_uri_tmpl=c.clone_uri_tmpl)} ${c.pull_request.org_ref_parts[1]}</span>
                %endif
               </div>
