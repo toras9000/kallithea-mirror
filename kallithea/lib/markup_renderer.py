@@ -42,10 +42,6 @@ from kallithea.lib import webutils
 log = logging.getLogger(__name__)
 
 
-url_re = re.compile(r'''\bhttps?://(?:[\da-zA-Z0-9@:.-]+)'''
-                    r'''(?:[/a-zA-Z0-9_=@#~&+%.,:;?!*()-]*[/a-zA-Z0-9_=@#~])?''')
-
-
 class MarkupRenderer(object):
     RESTRUCTUREDTEXT_DISALLOWED_DIRECTIVES = ['include', 'meta', 'raw']
 
@@ -163,7 +159,7 @@ class MarkupRenderer(object):
         def url_func(match_obj):
             url_full = match_obj.group(0)
             return '<a href="%(url)s">%(url)s</a>' % ({'url': url_full})
-        source = url_re.sub(url_func, source)
+        source = webutils.url_re.sub(url_func, source)
         return '<br />' + source.replace("\n", '<br />')
 
     @classmethod

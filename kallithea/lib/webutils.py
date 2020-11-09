@@ -309,6 +309,10 @@ def jshtml(val):
     return js(escape(val))
 
 
+url_re = re.compile(r'''\bhttps?://(?:[\da-zA-Z0-9@:.-]+)'''
+                    r'''(?:[/a-zA-Z0-9_=@#~&+%.,:;?!*()-]*[/a-zA-Z0-9_=@#~])?''')
+
+
 # Must match regexp in kallithea/public/js/base.js MentionsAutoComplete()
 # Check char before @ - it must not look like we are in an email addresses.
 # Matching is greedy so we don't have to look beyond the end.
