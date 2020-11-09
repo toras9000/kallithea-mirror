@@ -103,7 +103,7 @@ class NotificationModel(object):
         # this is passed into template
         created_on = fmt_date(datetime.datetime.now())
         html_kwargs = {
-                  'body': h.render_w_mentions(body, repo_name),
+                  'body': None if body is None else h.render_w_mentions(body, repo_name),
                   'when': created_on,
                   'user': created_by_obj.username,
                   }
