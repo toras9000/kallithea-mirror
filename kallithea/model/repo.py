@@ -171,7 +171,7 @@ class RepoModel(object):
                 raw_name='\0' + gr.name, # sort before repositories
                 just_name=gr.name,
                 name=_render('group_name_html', group_name=gr.group_name, name=gr.name),
-                desc=gr.group_description))
+                desc=desc(gr.group_description)))
 
         for repo in repos_list:
             if not HasRepoPermissionLevel('read')(repo.repo_name, 'get_repos_as_dict check'):
