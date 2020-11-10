@@ -78,7 +78,7 @@ def _filter_proxy(ip):
     return ip
 
 
-def _get_ip_addr(environ):
+def get_ip_addr(environ):
     proxy_key = 'HTTP_X_REAL_IP'
     proxy_key2 = 'HTTP_X_FORWARDED_FOR'
     def_key = 'REMOTE_ADDR'
@@ -300,9 +300,6 @@ class BaseVCSController(object):
 
         return True
 
-    def _get_ip_addr(self, environ):
-        return _get_ip_addr(environ)
-
     def __call__(self, environ, start_response):
         try:
             # try parsing a request for this VCS - if it fails, call the wrapped app
@@ -324,7 +321,7 @@ class BaseVCSController(object):
             #======================================================================
             # CHECK PERMISSIONS
             #======================================================================
-            ip_addr = self._get_ip_addr(environ)
+            ip_addr = get_ip_addr(environ)
             user, response_app = self._authorize(environ, parsed_request.action, parsed_request.repo_name, ip_addr)
             if response_app is not None:
                 return response_app(environ, start_response)
@@ -488,7 +485,7 @@ class BaseController(TGController):
 
     def __call__(self, environ, context):
         try:
-            ip_addr = _get_ip_addr(environ)
+            ip_addr = get_ip_addr(environ)
             self._basic_security_checks()
 
             api_key = request.GET.get('api_key')

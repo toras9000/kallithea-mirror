@@ -29,7 +29,7 @@ Original author and date, and relevant copyright and licensing information is be
 import logging
 import time
 
-from kallithea.lib.base import _get_ip_addr, get_path_info
+from kallithea.lib.base import get_ip_addr, get_path_info
 
 
 log = logging.getLogger(__name__)
@@ -91,7 +91,7 @@ class RequestWrapper(object):
     def __call__(self, environ, start_response):
         meter = Meter(start_response)
         description = "Request from %s for %s" % (
-            _get_ip_addr(environ),
+            get_ip_addr(environ),
             get_path_info(environ),
         )
         log.info("%s received", description)

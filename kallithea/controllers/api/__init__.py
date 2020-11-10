@@ -37,8 +37,7 @@ from webob.exc import HTTPError, HTTPException
 
 from kallithea.lib import ext_json
 from kallithea.lib.auth import AuthUser
-from kallithea.lib.base import _get_ip_addr as _get_ip
-from kallithea.lib.base import get_path_info
+from kallithea.lib.base import get_ip_addr, get_path_info
 from kallithea.lib.utils2 import ascii_bytes
 from kallithea.model import db
 
@@ -83,9 +82,6 @@ class JSONRPCController(TGController):
 
      """
 
-    def _get_ip_addr(self, environ):
-        return _get_ip(environ)
-
     def _get_method_args(self):
         """
         Return `self._rpc_args` to dispatched controller method
@@ -103,7 +99,7 @@ class JSONRPCController(TGController):
 
         environ = state.request.environ
         start = time.time()
-        ip_addr = self._get_ip_addr(environ)
+        ip_addr = get_ip_addr(environ)
         self._req_id = None
         if 'CONTENT_LENGTH' not in environ:
             log.debug("No Content-Length")
@@ -208,7 +204,7 @@ class JSONRPCController(TGController):
         self._rpc_args['environ'] = environ
 
         log.info('IP: %s Request to %s time: %.3fs' % (
-            self._get_ip_addr(environ),
+            get_ip_addr(environ),
             get_path_info(environ), time.time() - start)
         )
 
