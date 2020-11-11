@@ -1407,9 +1407,10 @@ class RepoGroup(Base, BaseDbModel):
     def _generate_choice(cls, repo_group):
         """Return tuple with group_id and name as html literal"""
         from webhelpers2.html import literal
+        import kallithea.lib.helpers as h
         if repo_group is None:
             return (-1, '-- %s --' % _('top level'))
-        return repo_group.group_id, literal(cls.SEP.join(repo_group.full_path_splitted))
+        return repo_group.group_id, literal(cls.SEP.join(h.html_escape(x) for x in repo_group.full_path_splitted))
 
     @classmethod
     def groups_choices(cls, groups):
