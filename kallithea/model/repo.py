@@ -168,8 +168,8 @@ class RepoModel(object):
 
         for gr in repo_groups_list or []:
             repos_data.append(dict(
-                raw_name='\0' + gr.name, # sort before repositories
-                just_name=gr.name,
+                raw_name='\0' + h.html_escape(gr.name), # sort before repositories
+                just_name=h.html_escape(gr.name),
                 name=_render('group_name_html', group_name=gr.group_name, name=gr.name),
                 desc=desc(gr.group_description)))
 
@@ -178,8 +178,8 @@ class RepoModel(object):
                 continue
             cs_cache = repo.changeset_cache
             row = {
-                "raw_name": repo.repo_name,
-                "just_name": repo.just_name,
+                "raw_name": h.html_escape(repo.repo_name),
+                "just_name": h.html_escape(repo.just_name),
                 "name": repo_lnk(repo.repo_name, repo.repo_type,
                                  repo.repo_state, repo.private, repo.fork),
                 "following": following(

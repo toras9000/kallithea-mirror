@@ -117,7 +117,7 @@ class RepoGroupsController(BaseController):
             children_groups = [g.name for g in repo_gr.parents] + [repo_gr.name]
             repo_count = repo_gr.repositories.count()
             repo_groups_data.append({
-                "raw_name": repo_gr.group_name,
+                "raw_name": h.escape(repo_gr.group_name),
                 "group_name": repo_group_name(repo_gr.group_name, children_groups),
                 "desc": h.escape(repo_gr.group_description),
                 "repos": repo_count,
