@@ -28,9 +28,7 @@ Original author and date, and relevant copyright and licensing information is be
 
 import logging
 import os
-import sys
 import traceback
-from os.path import dirname
 from shutil import rmtree
 from time import mktime
 
@@ -43,13 +41,6 @@ from kallithea.lib.utils2 import safe_str
 from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError, ChangesetError, NodeDoesNotExistError, RepositoryError
 from kallithea.model import db
 from kallithea.model.scm import ScmModel
-
-
-# Add location of top level folder to sys.path
-project_path = dirname(dirname(dirname(dirname(os.path.realpath(__file__)))))
-sys.path.append(project_path)
-
-
 
 
 log = logging.getLogger('whoosh_indexer')
