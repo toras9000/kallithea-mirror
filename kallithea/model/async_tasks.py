@@ -66,11 +66,6 @@ def whoosh_index(repo_location, full_index):
                          .run(full_index=full_index)
 
 
-# for js data compatibility cleans the key for person from '
-def akc(k):
-    return h.person(k).replace('"', '')
-
-
 @celerylib.task
 @celerylib.dbsession
 def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
@@ -135,17 +130,18 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
             tt = cs.date.timetuple()
             k = mktime(tt[:3] + (0, 0, 0, 0, 0, 0))
 
-            if akc(cs.author) in co_day_auth_aggr:
+            username = h.person(cs.author)
+            if username in co_day_auth_aggr:
                 try:
                     l = [timegetter(x) for x in
-                         co_day_auth_aggr[akc(cs.author)]['data']]
+                         co_day_auth_aggr[username]['data']]
                     time_pos = l.index(k)
                 except ValueError:
                     time_pos = None
 
                 if time_pos is not None and time_pos >= 0:
                     datadict = \
-                        co_day_auth_aggr[akc(cs.author)]['data'][time_pos]
+                        co_day_auth_aggr[username]['data'][time_pos]
 
                     datadict["commits"] += 1
                     datadict["added"] += len(cs.added)
@@ -161,13 +157,13 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
                                     "changed": len(cs.changed),
                                     "removed": len(cs.removed),
                                    }
-                        co_day_auth_aggr[akc(cs.author)]['data'] \
+                        co_day_auth_aggr[username]['data'] \
                             .append(datadict)
 
             else:
                 if k >= ts_min_y and k <= ts_max_y or skip_date_limit:
-                    co_day_auth_aggr[akc(cs.author)] = {
-                                        "label": akc(cs.author),
+                    co_day_auth_aggr[username] = {
+                                        "label": username,
                                         "data": [{"time": k,
                                                  "commits": 1,
                                                  "added": len(cs.added),
