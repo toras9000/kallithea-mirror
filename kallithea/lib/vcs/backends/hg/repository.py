@@ -413,11 +413,6 @@ class MercurialRepository(BaseRepository):
         return safe_str(_desc or b'unknown')
 
     @LazyProperty
-    def contact(self):
-        return safe_str(mercurial.hgweb.common.get_contact(self._repo.ui.config)
-                            or b'Unknown')
-
-    @LazyProperty
     def last_change(self):
         """
         Returns last change made on this repository as datetime object

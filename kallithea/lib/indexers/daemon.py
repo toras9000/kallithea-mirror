@@ -195,7 +195,6 @@ class WhooshIndexingDaemon(object):
 
         writer.add_document(
             fileid=path,
-            owner=repo.contact,
             repository_rawname=repo_name,
             repository=repo_name,
             path=path,
@@ -234,7 +233,6 @@ class WhooshIndexingDaemon(object):
             log.debug('    >> %s %s/%s', cs, indexed, total)
             writer.add_document(
                 raw_id=cs.raw_id,
-                owner=repo.contact,
                 date=cs._timestamp,
                 repository_rawname=repo_name,
                 repository=repo_name,

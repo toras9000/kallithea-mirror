@@ -186,13 +186,6 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
         overview_data = sorted(commits_by_day_aggregate.items(),
                                key=itemgetter(0))
 
-        if not co_day_auth_aggr:
-            co_day_auth_aggr[akc(scm_repo.contact)] = {
-                "label": akc(scm_repo.contact),
-                "data": [0, 1],
-                "schema": ["commits"],
-            }
-
         stats = cur_stats if cur_stats else db.Statistics()
         stats.commit_activity = ascii_bytes(ext_json.dumps(co_day_auth_aggr))
         stats.commit_activity_combined = ascii_bytes(ext_json.dumps(overview_data))

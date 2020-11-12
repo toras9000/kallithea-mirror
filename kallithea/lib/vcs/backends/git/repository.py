@@ -388,11 +388,6 @@ class GitRepository(BaseRepository):
     def description(self):
         return safe_str(self._repo.get_description() or b'unknown')
 
-    @LazyProperty
-    def contact(self):
-        undefined_contact = 'Unknown'
-        return undefined_contact
-
     @property
     def branches(self):
         if not self.revisions:
