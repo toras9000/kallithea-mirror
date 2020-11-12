@@ -116,8 +116,6 @@ class RepoModel(object):
         from tg import request
         from tg import tmpl_context as c
 
-        import kallithea.lib.helpers as h
-
         def repo_lnk(name, rtype, rstate, private, fork_of):
             return _render('repo_name', name, rtype, rstate, private, fork_of,
                            short_name=short_name)
@@ -178,7 +176,7 @@ class RepoModel(object):
                 "last_changeset": last_rev(repo.repo_name, cs_cache),
                 "last_rev_raw": cs_cache.get('revision'),
                 "desc": desc(repo.description),
-                "owner": h.person(repo.owner),
+                "owner": repo.owner.username,
                 "state": state(repo.repo_state),
                 "rss": rss_lnk(repo.repo_name),
                 "atom": atom_lnk(repo.repo_name),
@@ -186,8 +184,7 @@ class RepoModel(object):
             if admin:
                 row.update({
                     "action": repo_actions(repo.repo_name),
-                    "owner": owner_actions(repo.owner_id,
-                                           h.person(repo.owner))
+                    "owner": owner_actions(repo.owner_id, repo.owner.username)
                 })
             repos_data.append(row)
 

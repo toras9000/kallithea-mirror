@@ -404,12 +404,8 @@ def email_or_none(author):
 
 
 def person(author, show_attr="username"):
-    """Find the user identified by 'author', return one of the users attributes,
+    """Find the user identified by 'author' string, return one of the users attributes,
     default to the username attribute, None if there is no user"""
-    # if author is already an instance use it for extraction
-    if isinstance(author, db.User):
-        return getattr(author, show_attr)
-
     value = user_attr_or_none(author, show_attr)
     if value is not None:
         return value

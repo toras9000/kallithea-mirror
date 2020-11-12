@@ -103,7 +103,7 @@ class UserGroupsController(BaseController):
                 "desc": webutils.escape(user_gr.user_group_description),
                 "members": len(user_gr.members),
                 "active": h.boolicon(user_gr.users_group_active),
-                "owner": h.person(user_gr.owner.username),
+                "owner": user_gr.owner.username,
                 "action": user_group_actions(user_gr.users_group_id, user_gr.users_group_name)
             })
 
