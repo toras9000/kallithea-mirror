@@ -15,7 +15,7 @@
 
     ##REMOTE
     %if c.db_repo.clone_uri:
-       - <i class="icon-fork"></i>${_('Clone from')} "<a href="${h.url(str(h.hide_credentials(c.db_repo.clone_uri)))}">${h.hide_credentials(c.db_repo.clone_uri)}</a>"
+       - <i class="icon-fork"></i>${_('Clone from')} "<a href="${h.url(str(h.credentials_filter(c.db_repo.clone_uri)))}">${h.credentials_filter(c.db_repo.clone_uri)}</a>"
     %endif
 </%def>
 

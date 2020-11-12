@@ -85,6 +85,7 @@ assert HasRepoGroupPermissionLevel
 assert HasRepoPermissionLevel
 # from utils2
 assert age
+assert credentials_filter
 assert fmt_date
 assert link_to_ref
 assert shorter
@@ -353,9 +354,6 @@ def capitalize(x):
 
 def short_id(x):
     return x[:12]
-
-def hide_credentials(x):
-    return ''.join(credentials_filter(x))
 
 
 def show_id(cs):
