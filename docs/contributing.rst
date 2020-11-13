@@ -72,6 +72,94 @@ review and inclusion, via the mailing list (via ``hg email``).
 .. _contributing-tests:
 
 
+Internal dependencies
+---------------------
+
+We try to keep the code base clean and modular and avoid circular dependencies.
+Code should only invoke code in layers below itself.
+
+Imports should import whole modules ``from`` their parent module, perhaps
+``as`` a shortened name. Avoid imports ``from`` modules.
+
+To avoid cycles and partially initialized modules, ``__init__.py`` should *not*
+contain any non-trivial imports. The top level of a module should *not* be a
+facade for the module functionality.
+
+Common code for a module is often in ``base.py``.
+
+The important part of the dependency graph is approximately linear. In the
+following list, modules may only depend on modules below them:
+
+``tests``
+  Just get the job done - anything goes.
+
+``bin/`` & ``config/`` & ``alembic/``
+  The main entry points, defined in ``setup.py``. Note: The TurboGears template
+  use ``config`` for the high WSGI application - this is not for low level
+  configuration.
+
+``controllers/``
+  The top level web application, with TurboGears using the ``root`` controller
+  as entry point, and ``routing`` dispatching to other controllers.
+
+``templates/**.html``
+  The "view", rendering to HTML. Invoked by controllers which can pass them
+  anything from lower layers - especially ``helpers`` available as ``h`` will
+  cut through all layers, and ``c`` gives access to global variables.
+
+``lib/helpers.py``
+  High level helpers, exposing everything to templates as ``h``. It depends on
+  everything and has a huge dependency chain, so it should not be used for
+  anything else. TODO.
+
+``controlles/base.py``
+  The base class of controllers, with lots of model knowledge.
+
+``lib/auth.py``
+  All things related to authentication. TODO.
+
+``lib/utils.py``
+  High level utils with lots of model knowledge. TODO.
+
+``lib/hooks.py``
+  Hooks into "everything" to give centralized logging to database, cache
+  invalidation, and extension handling. TODO.
+
+``model/``
+  Convenience business logic wrappers around database models.
+
+``model/db.py``
+  Defines the database schema and provides some additional logic.
+
+``model/scm.py``
+  All things related to anything. TODO.
+
+SQLAlchemy
+  Database session and transaction in thread-local variables.
+
+``lib/utils2.py``
+  Low level utils specific to Kallithea.
+
+``lib/webutils.py``
+  Low level generic utils with awareness of the TurboGears environment.
+
+TurboGears
+  Request, response and state like i18n gettext in thread-local variables.
+  External dependency with global state - usage should be minimized.
+
+``lib/vcs/``
+  Previously an independent library. No awareness of web, database, or state.
+
+``lib/*``
+  Various "pure" functionality not depending on anything else.
+
+``__init__``
+  Very basic Kallithea constants - some of them are set very early based on ``.ini``.
+
+This is not exactly how it is right now, but we aim for something like that.
+Especially the areas marked as TODO have some problems that need untangling.
+
+
 Running tests
 -------------
 

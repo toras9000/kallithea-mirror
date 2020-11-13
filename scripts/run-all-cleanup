@@ -5,6 +5,9 @@
 set -e
 set -x
 
+hg files 'set:!binary()&grep("^#!.*python")' 'set:**.py' | xargs scripts/deps.py
+dot -Tsvg deps.dot > deps.svg
+
 scripts/docs-headings.py
 scripts/generate-ini.py
 scripts/whitespacecleanup.sh

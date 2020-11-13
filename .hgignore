@@ -53,3 +53,6 @@ syntax: regexp
 ^\.pytest_cache$
 ^venv$
 /__pycache__$
+^deps\.dot$
+^deps\.svg$
+^deps\.txt$
