@@ -32,8 +32,8 @@ import logging
 import re
 
 from kallithea.config.middleware.pygrack import make_wsgi_app
+from kallithea.controllers import base
 from kallithea.lib import hooks
-from kallithea.lib.base import BaseVCSController, get_path_info
 
 
 log = logging.getLogger(__name__)
@@ -48,13 +48,13 @@ cmd_mapping = {
 }
 
 
-class SimpleGit(BaseVCSController):
+class SimpleGit(base.BaseVCSController):
 
     scm_alias = 'git'
 
     @classmethod
     def parse_request(cls, environ):
-        path_info = get_path_info(environ)
+        path_info = base.get_path_info(environ)
         m = GIT_PROTO_PAT.match(path_info)
         if m is None:
             return None

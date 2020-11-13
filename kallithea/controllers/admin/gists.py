@@ -35,9 +35,9 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPForbidden, HTTPFound, HTTPNotFound
 
+from kallithea.controllers import base
 from kallithea.lib import auth, webutils
 from kallithea.lib.auth import LoginRequired
-from kallithea.lib.base import BaseController, jsonify, render
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import safe_int, safe_str, time_to_datetime
 from kallithea.lib.vcs.exceptions import NodeNotChangedError, VCSError
@@ -50,7 +50,7 @@ from kallithea.model.gist import GistModel
 log = logging.getLogger(__name__)
 
 
-class GistsController(BaseController):
+class GistsController(base.BaseController):
 
     def __load_defaults(self, extra_values=None):
         c.lifetime_values = [
@@ -102,7 +102,7 @@ class GistsController(BaseController):
         p = safe_int(request.GET.get('page'), 1)
         c.gists_pager = Page(c.gists, page=p, items_per_page=10,
                              **url_params)
-        return render('admin/gists/index.html')
+        return base.render('admin/gists/index.html')
 
     @LoginRequired()
     def create(self):
@@ -134,7 +134,7 @@ class GistsController(BaseController):
             defaults = errors.value
 
             return formencode.htmlfill.render(
-                render('admin/gists/new.html'),
+                base.render('admin/gists/new.html'),
                 defaults=defaults,
                 errors=errors.error_dict or {},
                 prefix_error=False,
@@ -150,7 +150,7 @@ class GistsController(BaseController):
     @LoginRequired()
     def new(self, format='html'):
         self.__load_defaults()
-        return render('admin/gists/new.html')
+        return base.render('admin/gists/new.html')
 
     @LoginRequired()
     def delete(self, gist_id):
@@ -186,7 +186,7 @@ class GistsController(BaseController):
             )
             response.content_type = 'text/plain'
             return content
-        return render('admin/gists/show.html')
+        return base.render('admin/gists/show.html')
 
     @LoginRequired()
     def edit(self, gist_id, format='html'):
@@ -203,7 +203,7 @@ class GistsController(BaseController):
             raise HTTPNotFound()
 
         self.__load_defaults(extra_values=('0', _('Unmodified')))
-        rendered = render('admin/gists/edit.html')
+        rendered = base.render('admin/gists/edit.html')
 
         if request.POST:
             rpost = request.POST
@@ -248,7 +248,7 @@ class GistsController(BaseController):
         return rendered
 
     @LoginRequired()
-    @jsonify
+    @base.jsonify
     def check_revision(self, gist_id):
         c.gist = db.Gist.get_or_404(gist_id)
         last_rev = c.gist.scm_instance.get_changeset()

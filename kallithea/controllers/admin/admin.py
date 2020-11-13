@@ -36,8 +36,8 @@ from whoosh import query
 from whoosh.qparser.dateparse import DateParserPlugin
 from whoosh.qparser.default import QueryParser
 
+from kallithea.controllers import base
 from kallithea.lib.auth import HasPermissionAnyDecorator, LoginRequired
-from kallithea.lib.base import BaseController, render
 from kallithea.lib.indexers import JOURNAL_SCHEMA
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import remove_prefix, remove_suffix, safe_int
@@ -118,7 +118,7 @@ def _journal_filter(user_log, search_term):
     return user_log
 
 
-class AdminController(BaseController):
+class AdminController(base.BaseController):
 
     @LoginRequired(allow_default_user=True)
     def _before(self, *args, **kwargs):
@@ -142,6 +142,6 @@ class AdminController(BaseController):
                            filter=c.search_term)
 
         if request.environ.get('HTTP_X_PARTIAL_XHR'):
-            return render('admin/admin_log.html')
+            return base.render('admin/admin_log.html')
 
-        return render('admin/admin.html')
+        return base.render('admin/admin.html')

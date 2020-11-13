@@ -36,9 +36,9 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest, HTTPForbidden, HTTPNotFound
 
 import kallithea.lib.helpers as h
+from kallithea.controllers import base
 from kallithea.lib import auth, diffs, webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
-from kallithea.lib.base import BaseRepoController, jsonify, render
 from kallithea.lib.graphmod import graph_data
 from kallithea.lib.utils2 import ascii_str, safe_str
 from kallithea.lib.vcs.backends.base import EmptyChangeset
@@ -148,7 +148,7 @@ def create_cs_pr_comment(repo_name, revision=None, pull_request=None, allowed_to
         c.comment = comment
         data.update(comment.get_dict())
         data.update({'rendered_text':
-                     render('changeset/changeset_comment_block.html')})
+                     base.render('changeset/changeset_comment_block.html')})
 
     return data
 
@@ -170,7 +170,7 @@ def delete_cs_pr_comment(repo_name, comment_id):
     else:
         raise HTTPForbidden()
 
-class ChangesetController(BaseRepoController):
+class ChangesetController(base.BaseRepoController):
 
     def _before(self, *args, **kwargs):
         super(ChangesetController, self)._before(*args, **kwargs)
@@ -285,19 +285,19 @@ class ChangesetController(BaseRepoController):
         elif method == 'patch':
             response.content_type = 'text/plain'
             c.diff = safe_str(raw_diff)
-            return render('changeset/patch_changeset.html')
+            return base.render('changeset/patch_changeset.html')
         elif method == 'raw':
             response.content_type = 'text/plain'
             return raw_diff
         elif method == 'show':
             if len(c.cs_ranges) == 1:
-                return render('changeset/changeset.html')
+                return base.render('changeset/changeset.html')
             else:
                 c.cs_ranges_org = None
                 c.cs_comments = {}
                 revs = [ctx.revision for ctx in reversed(c.cs_ranges)]
                 c.jsdata = graph_data(c.db_repo_scm_instance, revs)
-                return render('changeset/changeset_range.html')
+                return base.render('changeset/changeset_range.html')
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
@@ -321,19 +321,19 @@ class ChangesetController(BaseRepoController):
 
     @LoginRequired()
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def comment(self, repo_name, revision):
         return create_cs_pr_comment(repo_name, revision=revision)
 
     @LoginRequired()
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def delete_comment(self, repo_name, comment_id):
         return delete_cs_pr_comment(repo_name, comment_id)
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def changeset_info(self, repo_name, revision):
         if request.is_xhr:
             try:
@@ -345,7 +345,7 @@ class ChangesetController(BaseRepoController):
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def changeset_children(self, repo_name, revision):
         if request.is_xhr:
             changeset = c.db_repo_scm_instance.get_changeset(revision)
@@ -358,7 +358,7 @@ class ChangesetController(BaseRepoController):
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def changeset_parents(self, repo_name, revision):
         if request.is_xhr:
             changeset = c.db_repo_scm_instance.get_changeset(revision)

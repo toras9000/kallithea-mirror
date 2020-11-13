@@ -36,9 +36,9 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest, HTTPFound
 
+from kallithea.controllers import base
 from kallithea.lib import webutils
 from kallithea.lib.auth import AuthUser, HasPermissionAnyDecorator
-from kallithea.lib.base import BaseController, log_in_user, render
 from kallithea.lib.exceptions import UserCreationError
 from kallithea.lib.recaptcha import submit
 from kallithea.lib.webutils import url
@@ -50,7 +50,7 @@ from kallithea.model.user import UserModel
 log = logging.getLogger(__name__)
 
 
-class LoginController(BaseController):
+class LoginController(base.BaseController):
 
     def _validate_came_from(self, came_from,
             _re=re.compile(r"/(?!/)[-!#$%&'()*+,./:;=?@_~0-9A-Za-z]*$")):
@@ -89,7 +89,7 @@ class LoginController(BaseController):
                 # remove password from filling in form again
                 defaults.pop('password', None)
                 return htmlfill.render(
-                    render('/login.html'),
+                    base.render('/login.html'),
                     defaults=errors.value,
                     errors=errors.error_dict or {},
                     prefix_error=False,
@@ -103,7 +103,7 @@ class LoginController(BaseController):
                 webutils.flash(e, 'error')
             else:
                 # login_form already validated the password - now set the session cookie accordingly
-                auth_user = log_in_user(user, c.form_result['remember'], is_external_auth=False, ip_addr=request.ip_addr)
+                auth_user = base.log_in_user(user, c.form_result['remember'], is_external_auth=False, ip_addr=request.ip_addr)
                 if auth_user:
                     raise HTTPFound(location=c.came_from)
                 webutils.flash(_('Authentication failed.'), 'error')
@@ -113,7 +113,7 @@ class LoginController(BaseController):
                 raise HTTPFound(location=c.came_from)
             # continue to show login to default user
 
-        return render('/login.html')
+        return base.render('/login.html')
 
     @HasPermissionAnyDecorator('hg.admin', 'hg.register.auto_activate',
                                'hg.register.manual_activate')
@@ -151,7 +151,7 @@ class LoginController(BaseController):
 
             except formencode.Invalid as errors:
                 return htmlfill.render(
-                    render('/register.html'),
+                    base.render('/register.html'),
                     defaults=errors.value,
                     errors=errors.error_dict or {},
                     prefix_error=False,
@@ -164,7 +164,7 @@ class LoginController(BaseController):
                 # Exception itself
                 webutils.flash(e, 'error')
 
-        return render('/register.html')
+        return base.render('/register.html')
 
     def password_reset(self):
         settings = db.Setting.get_app_settings()
@@ -193,14 +193,14 @@ class LoginController(BaseController):
 
             except formencode.Invalid as errors:
                 return htmlfill.render(
-                    render('/password_reset.html'),
+                    base.render('/password_reset.html'),
                     defaults=errors.value,
                     errors=errors.error_dict or {},
                     prefix_error=False,
                     encoding="UTF-8",
                     force_defaults=False)
 
-        return render('/password_reset.html')
+        return base.render('/password_reset.html')
 
     def password_reset_confirmation(self):
         # This controller handles both GET and POST requests, though we
@@ -213,14 +213,14 @@ class LoginController(BaseController):
         c.timestamp = request.params.get('timestamp') or ''
         c.token = request.params.get('token') or ''
         if not request.POST:
-            return render('/password_reset_confirmation.html')
+            return base.render('/password_reset_confirmation.html')
 
         form = PasswordResetConfirmationForm()()
         try:
             form_result = form.to_python(dict(request.POST))
         except formencode.Invalid as errors:
             return htmlfill.render(
-                render('/password_reset_confirmation.html'),
+                base.render('/password_reset_confirmation.html'),
                 defaults=errors.value,
                 errors=errors.error_dict or {},
                 prefix_error=False,
@@ -232,7 +232,7 @@ class LoginController(BaseController):
             form_result['token'],
         ):
             return htmlfill.render(
-                render('/password_reset_confirmation.html'),
+                base.render('/password_reset_confirmation.html'),
                 defaults=form_result,
                 errors={'token': _('Invalid password reset token')},
                 prefix_error=False,

@@ -36,9 +36,9 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPFound, HTTPNotFound
 
 import kallithea
+from kallithea.controllers import base
 from kallithea.lib import webutils
 from kallithea.lib.auth import HasPermissionAnyDecorator, HasRepoPermissionLevel, HasRepoPermissionLevelDecorator, LoginRequired
-from kallithea.lib.base import BaseRepoController, render
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import safe_int
 from kallithea.model import db
@@ -50,7 +50,7 @@ from kallithea.model.scm import AvailableRepoGroupChoices, ScmModel
 log = logging.getLogger(__name__)
 
 
-class ForksController(BaseRepoController):
+class ForksController(base.BaseRepoController):
 
     def __load_defaults(self):
         c.repo_groups = AvailableRepoGroupChoices('write')
@@ -113,9 +113,9 @@ class ForksController(BaseRepoController):
         c.forks_pager = Page(d, page=p, items_per_page=20)
 
         if request.environ.get('HTTP_X_PARTIAL_XHR'):
-            return render('/forks/forks_data.html')
+            return base.render('/forks/forks_data.html')
 
-        return render('/forks/forks.html')
+        return base.render('/forks/forks.html')
 
     @LoginRequired()
     @HasPermissionAnyDecorator('hg.admin', 'hg.fork.repository')
@@ -128,7 +128,7 @@ class ForksController(BaseRepoController):
         defaults = self.__load_data()
 
         return htmlfill.render(
-            render('forks/fork.html'),
+            base.render('forks/fork.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -157,7 +157,7 @@ class ForksController(BaseRepoController):
             task_id = task.task_id
         except formencode.Invalid as errors:
             return htmlfill.render(
-                render('forks/fork.html'),
+                base.render('forks/fork.html'),
                 defaults=errors.value,
                 errors=errors.error_dict or {},
                 prefix_error=False,

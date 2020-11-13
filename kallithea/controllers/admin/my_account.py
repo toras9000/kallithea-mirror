@@ -35,9 +35,9 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPFound
 
+from kallithea.controllers import base
 from kallithea.lib import auth_modules, webutils
 from kallithea.lib.auth import AuthUser, LoginRequired
-from kallithea.lib.base import BaseController, IfSshEnabled, render
 from kallithea.lib.utils2 import generate_api_key, safe_int
 from kallithea.lib.webutils import url
 from kallithea.model import db, meta
@@ -51,7 +51,7 @@ from kallithea.model.user import UserModel
 log = logging.getLogger(__name__)
 
 
-class MyAccountController(BaseController):
+class MyAccountController(base.BaseController):
 
     @LoginRequired()
     def _before(self, *args, **kwargs):
@@ -116,7 +116,7 @@ class MyAccountController(BaseController):
 
             except formencode.Invalid as errors:
                 return htmlfill.render(
-                    render('admin/my_account/my_account.html'),
+                    base.render('admin/my_account/my_account.html'),
                     defaults=errors.value,
                     errors=errors.error_dict or {},
                     prefix_error=False,
@@ -129,7 +129,7 @@ class MyAccountController(BaseController):
         if update:
             raise HTTPFound(location='my_account')
         return htmlfill.render(
-            render('admin/my_account/my_account.html'),
+            base.render('admin/my_account/my_account.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -150,7 +150,7 @@ class MyAccountController(BaseController):
                 webutils.flash(_("Successfully updated password"), category='success')
             except formencode.Invalid as errors:
                 return htmlfill.render(
-                    render('admin/my_account/my_account.html'),
+                    base.render('admin/my_account/my_account.html'),
                     defaults=errors.value,
                     errors=errors.error_dict or {},
                     prefix_error=False,
@@ -160,7 +160,7 @@ class MyAccountController(BaseController):
                 log.error(traceback.format_exc())
                 webutils.flash(_('Error occurred during update of user password'),
                         category='error')
-        return render('admin/my_account/my_account.html')
+        return base.render('admin/my_account/my_account.html')
 
     def my_account_repos(self):
         c.active = 'repos'
@@ -168,7 +168,7 @@ class MyAccountController(BaseController):
 
         # data used to render the grid
         c.data = self._load_my_repos_data()
-        return render('admin/my_account/my_account.html')
+        return base.render('admin/my_account/my_account.html')
 
     def my_account_watched(self):
         c.active = 'watched'
@@ -176,14 +176,14 @@ class MyAccountController(BaseController):
 
         # data used to render the grid
         c.data = self._load_my_repos_data(watched=True)
-        return render('admin/my_account/my_account.html')
+        return base.render('admin/my_account/my_account.html')
 
     def my_account_perms(self):
         c.active = 'perms'
         self.__load_data()
         c.perm_user = AuthUser(user_id=request.authuser.user_id)
 
-        return render('admin/my_account/my_account.html')
+        return base.render('admin/my_account/my_account.html')
 
     def my_account_emails(self):
         c.active = 'emails'
@@ -191,7 +191,7 @@ class MyAccountController(BaseController):
 
         c.user_email_map = db.UserEmailMap.query() \
             .filter(db.UserEmailMap.user == c.user).all()
-        return render('admin/my_account/my_account.html')
+        return base.render('admin/my_account/my_account.html')
 
     def my_account_emails_add(self):
         email = request.POST.get('new_email')
@@ -231,7 +231,7 @@ class MyAccountController(BaseController):
         c.lifetime_options = [(c.lifetime_values, _("Lifetime"))]
         c.user_api_keys = ApiKeyModel().get_api_keys(request.authuser.user_id,
                                                      show_expired=show_expired)
-        return render('admin/my_account/my_account.html')
+        return base.render('admin/my_account/my_account.html')
 
     def my_account_api_keys_add(self):
         lifetime = safe_int(request.POST.get('lifetime'), -1)
@@ -255,14 +255,14 @@ class MyAccountController(BaseController):
 
         raise HTTPFound(location=url('my_account_api_keys'))
 
-    @IfSshEnabled
+    @base.IfSshEnabled
     def my_account_ssh_keys(self):
         c.active = 'ssh_keys'
         self.__load_data()
         c.user_ssh_keys = SshKeyModel().get_ssh_keys(request.authuser.user_id)
-        return render('admin/my_account/my_account.html')
+        return base.render('admin/my_account/my_account.html')
 
-    @IfSshEnabled
+    @base.IfSshEnabled
     def my_account_ssh_keys_add(self):
         description = request.POST.get('description')
         public_key = request.POST.get('public_key')
@@ -276,7 +276,7 @@ class MyAccountController(BaseController):
             webutils.flash(e.args[0], category='error')
         raise HTTPFound(location=url('my_account_ssh_keys'))
 
-    @IfSshEnabled
+    @base.IfSshEnabled
     def my_account_ssh_keys_delete(self):
         fingerprint = request.POST.get('del_public_key_fingerprint')
         try:

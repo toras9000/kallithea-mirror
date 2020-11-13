@@ -34,9 +34,9 @@ from tg import request
 from tg.i18n import ugettext as _
 from webob.exc import HTTPFound
 
+from kallithea.controllers import base
 from kallithea.lib import webutils
 from kallithea.lib.auth import HasPermissionAnyDecorator, LoginRequired
-from kallithea.lib.base import BaseController, render
 from kallithea.lib.webutils import url
 from kallithea.model import db, meta
 from kallithea.model.forms import DefaultsForm
@@ -45,7 +45,7 @@ from kallithea.model.forms import DefaultsForm
 log = logging.getLogger(__name__)
 
 
-class DefaultsController(BaseController):
+class DefaultsController(base.BaseController):
 
     @LoginRequired()
     @HasPermissionAnyDecorator('hg.admin')
@@ -56,7 +56,7 @@ class DefaultsController(BaseController):
         defaults = db.Setting.get_default_repo_settings()
 
         return htmlfill.render(
-            render('admin/defaults/defaults.html'),
+            base.render('admin/defaults/defaults.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False
@@ -77,7 +77,7 @@ class DefaultsController(BaseController):
             defaults = errors.value
 
             return htmlfill.render(
-                render('admin/defaults/defaults.html'),
+                base.render('admin/defaults/defaults.html'),
                 defaults=defaults,
                 errors=errors.error_dict or {},
                 prefix_error=False,

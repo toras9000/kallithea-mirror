@@ -38,9 +38,9 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest
 
+from kallithea.controllers import base
 from kallithea.lib import ext_json, webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
-from kallithea.lib.base import BaseRepoController, jsonify, render
 from kallithea.lib.conf import ALL_EXTS, ALL_READMES, LANGUAGES_EXTENSIONS_MAP
 from kallithea.lib.markup_renderer import MarkupRenderer
 from kallithea.lib.page import Page
@@ -58,7 +58,7 @@ README_FILES = [''.join([x[0][0], x[1][0]]) for x in
                            key=lambda y:y[0][1] + y[1][1])]
 
 
-class SummaryController(BaseRepoController):
+class SummaryController(base.BaseRepoController):
 
     def __get_readme_data(self, db_repo):
         repo_name = db_repo.repo_name
@@ -148,11 +148,11 @@ class SummaryController(BaseRepoController):
         c.enable_downloads = c.db_repo.enable_downloads
         c.readme_data, c.readme_file = \
             self.__get_readme_data(c.db_repo)
-        return render('summary/summary.html')
+        return base.render('summary/summary.html')
 
     @LoginRequired()
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def repo_size(self, repo_name):
         if request.is_xhr:
             return c.db_repo._repo_size()
@@ -209,4 +209,4 @@ class SummaryController(BaseRepoController):
 
         recurse_limit = 500  # don't recurse more than 500 times when parsing
         async_tasks.get_commits_stats(c.db_repo.repo_name, ts_min_y, ts_max_y, recurse_limit)
-        return render('summary/statistics.html')
+        return base.render('summary/statistics.html')

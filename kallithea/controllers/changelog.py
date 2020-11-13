@@ -33,9 +33,9 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest, HTTPFound, HTTPNotFound
 
+from kallithea.controllers import base
 from kallithea.lib import webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
-from kallithea.lib.base import BaseRepoController, render
 from kallithea.lib.graphmod import graph_data
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import safe_int
@@ -46,7 +46,7 @@ from kallithea.lib.webutils import url
 log = logging.getLogger(__name__)
 
 
-class ChangelogController(BaseRepoController):
+class ChangelogController(base.BaseRepoController):
 
     def _before(self, *args, **kwargs):
         super(ChangelogController, self)._before(*args, **kwargs)
@@ -146,12 +146,12 @@ class ChangelogController(BaseRepoController):
 
         c.revision = revision # requested revision ref
         c.first_revision = c.cs_pagination[0] # pagination is never empty here!
-        return render('changelog/changelog.html')
+        return base.render('changelog/changelog.html')
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
     def changelog_details(self, cs):
         if request.environ.get('HTTP_X_PARTIAL_XHR'):
             c.cs = c.db_repo_scm_instance.get_changeset(cs)
-            return render('changelog/changelog_details.html')
+            return base.render('changelog/changelog_details.html')
         raise HTTPNotFound()

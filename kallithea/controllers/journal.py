@@ -37,10 +37,10 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest
 
 import kallithea.lib.helpers as h
+from kallithea.controllers import base
 from kallithea.controllers.admin.admin import _journal_filter
 from kallithea.lib import feeds, webutils
 from kallithea.lib.auth import LoginRequired
-from kallithea.lib.base import BaseController, render
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import AttributeDict, safe_int
 from kallithea.model import db, meta
@@ -55,7 +55,7 @@ ttl = "5"
 feed_nr = 20
 
 
-class JournalController(BaseController):
+class JournalController(base.BaseController):
 
     def _before(self, *args, **kwargs):
         super(JournalController, self)._before(*args, **kwargs)
@@ -178,7 +178,7 @@ class JournalController(BaseController):
         c.journal_day_aggregate = self._get_daily_aggregate(c.journal_pager)
 
         if request.environ.get('HTTP_X_PARTIAL_XHR'):
-            return render('journal/journal_data.html')
+            return base.render('journal/journal_data.html')
 
         repos_list = db.Repository.query(sorted=True) \
             .filter_by(owner_id=request.authuser.user_id).all()
@@ -187,7 +187,7 @@ class JournalController(BaseController):
         # data used to render the grid
         c.data = repos_data
 
-        return render('journal/journal.html')
+        return base.render('journal/journal.html')
 
     @LoginRequired()
     def journal_atom(self):
@@ -250,9 +250,9 @@ class JournalController(BaseController):
         c.journal_day_aggregate = self._get_daily_aggregate(c.journal_pager)
 
         if request.environ.get('HTTP_X_PARTIAL_XHR'):
-            return render('journal/journal_data.html')
+            return base.render('journal/journal_data.html')
 
-        return render('journal/public_journal.html')
+        return base.render('journal/public_journal.html')
 
     @LoginRequired(allow_default_user=True)
     def public_journal_atom(self):

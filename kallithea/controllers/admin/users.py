@@ -38,9 +38,9 @@ from webob.exc import HTTPFound, HTTPNotFound
 
 import kallithea
 import kallithea.lib.helpers as h
+from kallithea.controllers import base
 from kallithea.lib import auth_modules, webutils
 from kallithea.lib.auth import AuthUser, HasPermissionAnyDecorator, LoginRequired
-from kallithea.lib.base import BaseController, IfSshEnabled, render
 from kallithea.lib.exceptions import DefaultUserException, UserCreationError, UserOwnsReposException
 from kallithea.lib.utils2 import datetime_to_time, fmt_date, generate_api_key, safe_int
 from kallithea.lib.webutils import url
@@ -54,7 +54,7 @@ from kallithea.model.user import UserModel
 log = logging.getLogger(__name__)
 
 
-class UsersController(BaseController):
+class UsersController(base.BaseController):
 
     @LoginRequired()
     @HasPermissionAnyDecorator('hg.admin')
@@ -103,7 +103,7 @@ class UsersController(BaseController):
             "records": users_data
         }
 
-        return render('admin/users/users.html')
+        return base.render('admin/users/users.html')
 
     def create(self):
         c.default_extern_type = db.User.DEFAULT_AUTH_TYPE
@@ -120,7 +120,7 @@ class UsersController(BaseController):
             meta.Session().commit()
         except formencode.Invalid as errors:
             return htmlfill.render(
-                render('admin/users/user_add.html'),
+                base.render('admin/users/user_add.html'),
                 defaults=errors.value,
                 errors=errors.error_dict or {},
                 prefix_error=False,
@@ -137,7 +137,7 @@ class UsersController(BaseController):
     def new(self, format='html'):
         c.default_extern_type = db.User.DEFAULT_AUTH_TYPE
         c.default_extern_name = ''
-        return render('admin/users/user_add.html')
+        return base.render('admin/users/user_add.html')
 
     def update(self, id):
         user_model = UserModel()
@@ -208,7 +208,7 @@ class UsersController(BaseController):
         c.perm_user = AuthUser(dbuser=user)
         managed_fields = auth_modules.get_managed_fields(user)
         c.readonly = lambda n: 'readonly' if n in managed_fields else None
-        return render('admin/users/user_edit.html')
+        return base.render('admin/users/user_edit.html')
 
     def edit(self, id, format='html'):
         user = self._get_user_or_raise_if_default(id)
@@ -234,7 +234,7 @@ class UsersController(BaseController):
             'fork_repo_perm': umodel.has_perm(c.user, 'hg.fork.repository'),
         })
         return htmlfill.render(
-            render('admin/users/user_edit.html'),
+            base.render('admin/users/user_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -255,7 +255,7 @@ class UsersController(BaseController):
                                                      show_expired=show_expired)
         defaults = c.user.get_dict()
         return htmlfill.render(
-            render('admin/users/user_edit.html'),
+            base.render('admin/users/user_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -302,7 +302,7 @@ class UsersController(BaseController):
             'fork_repo_perm': umodel.has_perm(c.user, 'hg.fork.repository'),
         })
         return htmlfill.render(
-            render('admin/users/user_edit.html'),
+            base.render('admin/users/user_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -350,7 +350,7 @@ class UsersController(BaseController):
 
         defaults = c.user.get_dict()
         return htmlfill.render(
-            render('admin/users/user_edit.html'),
+            base.render('admin/users/user_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -393,7 +393,7 @@ class UsersController(BaseController):
 
         defaults = c.user.get_dict()
         return htmlfill.render(
-            render('admin/users/user_edit.html'),
+            base.render('admin/users/user_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -429,19 +429,19 @@ class UsersController(BaseController):
             raise HTTPFound(location=url('admin_permissions_ips'))
         raise HTTPFound(location=url('edit_user_ips', id=id))
 
-    @IfSshEnabled
+    @base.IfSshEnabled
     def edit_ssh_keys(self, id):
         c.user = self._get_user_or_raise_if_default(id)
         c.active = 'ssh_keys'
         c.user_ssh_keys = SshKeyModel().get_ssh_keys(c.user.user_id)
         defaults = c.user.get_dict()
         return htmlfill.render(
-            render('admin/users/user_edit.html'),
+            base.render('admin/users/user_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
 
-    @IfSshEnabled
+    @base.IfSshEnabled
     def ssh_keys_add(self, id):
         c.user = self._get_user_or_raise_if_default(id)
 
@@ -457,7 +457,7 @@ class UsersController(BaseController):
             webutils.flash(e.args[0], category='error')
         raise HTTPFound(location=url('edit_user_ssh_keys', id=c.user.user_id))
 
-    @IfSshEnabled
+    @base.IfSshEnabled
     def ssh_keys_delete(self, id):
         c.user = self._get_user_or_raise_if_default(id)
 

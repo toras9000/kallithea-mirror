@@ -35,8 +35,8 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest
 
 import kallithea.lib.helpers as h
+from kallithea.controllers import base
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
-from kallithea.lib.base import BaseController, jsonify, render
 from kallithea.lib.utils2 import safe_str
 from kallithea.model import db
 from kallithea.model.repo import RepoModel
@@ -46,10 +46,10 @@ from kallithea.model.scm import UserGroupList
 log = logging.getLogger(__name__)
 
 
-class HomeController(BaseController):
+class HomeController(base.BaseController):
 
     def about(self):
-        return render('/about.html')
+        return base.render('/about.html')
 
     @LoginRequired(allow_default_user=True)
     def index(self):
@@ -62,10 +62,10 @@ class HomeController(BaseController):
                                                repo_groups_list=repo_groups_list,
                                                short_name=True)
 
-        return render('/index.html')
+        return base.render('/index.html')
 
     @LoginRequired(allow_default_user=True)
-    @jsonify
+    @base.jsonify
     def repo_switcher_data(self):
         if request.is_xhr:
             all_repos = db.Repository.query(sorted=True).all()
@@ -109,7 +109,7 @@ class HomeController(BaseController):
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def repo_refs_data(self, repo_name):
         repo = db.Repository.get_by_repo_name(repo_name).scm_instance
         res = []
@@ -144,7 +144,7 @@ class HomeController(BaseController):
         return data
 
     @LoginRequired()
-    @jsonify
+    @base.jsonify
     def users_and_groups_data(self):
         """
         Returns 'results' with a list of users and user groups.

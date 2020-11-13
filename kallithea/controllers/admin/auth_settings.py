@@ -32,9 +32,9 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPFound
 
+from kallithea.controllers import base
 from kallithea.lib import auth_modules, webutils
 from kallithea.lib.auth import HasPermissionAnyDecorator, LoginRequired
-from kallithea.lib.base import BaseController, render
 from kallithea.lib.webutils import url
 from kallithea.model import db, meta
 from kallithea.model.forms import AuthSettingsForm
@@ -43,7 +43,7 @@ from kallithea.model.forms import AuthSettingsForm
 log = logging.getLogger(__name__)
 
 
-class AuthSettingsController(BaseController):
+class AuthSettingsController(base.BaseController):
 
     @LoginRequired()
     @HasPermissionAnyDecorator('hg.admin')
@@ -86,7 +86,7 @@ class AuthSettingsController(BaseController):
 
         log.debug('defaults: %s', defaults)
         return formencode.htmlfill.render(
-            render('admin/auth/auth_settings.html'),
+            base.render('admin/auth/auth_settings.html'),
             defaults=c.defaults,
             errors=errors,
             prefix_error=False,

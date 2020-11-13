@@ -36,9 +36,9 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPForbidden, HTTPFound, HTTPInternalServerError, HTTPNotFound
 
 import kallithea
+from kallithea.controllers import base
 from kallithea.lib import webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired, NotAnonymous
-from kallithea.lib.base import BaseRepoController, jsonify, render
 from kallithea.lib.exceptions import AttachedForksError
 from kallithea.lib.utils2 import safe_int
 from kallithea.lib.vcs import RepositoryError
@@ -52,7 +52,7 @@ from kallithea.model.scm import AvailableRepoGroupChoices, RepoList, ScmModel
 log = logging.getLogger(__name__)
 
 
-class ReposController(BaseRepoController):
+class ReposController(base.BaseRepoController):
 
     @LoginRequired(allow_default_user=True)
     def _before(self, *args, **kwargs):
@@ -93,7 +93,7 @@ class ReposController(BaseRepoController):
         # data used to render the grid
         c.data = repos_data
 
-        return render('admin/repos/repos.html')
+        return base.render('admin/repos/repos.html')
 
     @NotAnonymous()
     def create(self):
@@ -106,7 +106,7 @@ class ReposController(BaseRepoController):
         except formencode.Invalid as errors:
             log.info(errors)
             return htmlfill.render(
-                render('admin/repos/repo_add.html'),
+                base.render('admin/repos/repo_add.html'),
                 defaults=errors.value,
                 errors=errors.error_dict or {},
                 prefix_error=False,
@@ -148,7 +148,7 @@ class ReposController(BaseRepoController):
         defaults.update({'repo_group': parent_group})
 
         return htmlfill.render(
-            render('admin/repos/repo_add.html'),
+            base.render('admin/repos/repo_add.html'),
             defaults=defaults,
             errors={},
             prefix_error=False,
@@ -161,10 +161,10 @@ class ReposController(BaseRepoController):
         c.task_id = request.GET.get('task_id')
         if not c.repo:
             raise HTTPNotFound()
-        return render('admin/repos/repo_creating.html')
+        return base.render('admin/repos/repo_creating.html')
 
     @LoginRequired()
-    @jsonify
+    @base.jsonify
     def repo_check(self, repo_name):
         c.repo = repo_name
         task_id = request.GET.get('task_id')
@@ -230,7 +230,7 @@ class ReposController(BaseRepoController):
             defaults = self.__load_data()
             defaults.update(errors.value)
             return htmlfill.render(
-                render('admin/repos/repo_edit.html'),
+                base.render('admin/repos/repo_edit.html'),
                 defaults=defaults,
                 errors=errors.error_dict or {},
                 prefix_error=False,
@@ -286,7 +286,7 @@ class ReposController(BaseRepoController):
             .filter(db.RepositoryField.repository == c.repo_info).all()
         c.active = 'settings'
         return htmlfill.render(
-            render('admin/repos/repo_edit.html'),
+            base.render('admin/repos/repo_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -298,7 +298,7 @@ class ReposController(BaseRepoController):
         defaults = RepoModel()._get_defaults(repo_name)
 
         return htmlfill.render(
-            render('admin/repos/repo_edit.html'),
+            base.render('admin/repos/repo_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -355,7 +355,7 @@ class ReposController(BaseRepoController):
         if request.POST:
 
             raise HTTPFound(location=url('repo_edit_fields'))
-        return render('admin/repos/repo_edit.html')
+        return base.render('admin/repos/repo_edit.html')
 
     @HasRepoPermissionLevelDecorator('admin')
     def create_repo_field(self, repo_name):
@@ -413,7 +413,7 @@ class ReposController(BaseRepoController):
         if request.POST:
             raise HTTPFound(location=url('repo_edit_advanced'))
         return htmlfill.render(
-            render('admin/repos/repo_edit.html'),
+            base.render('admin/repos/repo_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -478,7 +478,7 @@ class ReposController(BaseRepoController):
                 webutils.flash(_('An error occurred during pull from remote location'),
                         category='error')
             raise HTTPFound(location=url('edit_repo_remote', repo_name=c.repo_name))
-        return render('admin/repos/repo_edit.html')
+        return base.render('admin/repos/repo_edit.html')
 
     @HasRepoPermissionLevelDecorator('admin')
     def edit_statistics(self, repo_name):
@@ -510,4 +510,4 @@ class ReposController(BaseRepoController):
                         category='error')
             raise HTTPFound(location=url('edit_repo_statistics', repo_name=c.repo_name))
 
-        return render('admin/repos/repo_edit.html')
+        return base.render('admin/repos/repo_edit.html')

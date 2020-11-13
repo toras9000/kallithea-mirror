@@ -38,9 +38,9 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPFound, HTTPInternalServerError
 
 import kallithea.lib.helpers as h
+from kallithea.controllers import base
 from kallithea.lib import webutils
 from kallithea.lib.auth import HasPermissionAnyDecorator, HasUserGroupPermissionLevelDecorator, LoginRequired
-from kallithea.lib.base import BaseController, render
 from kallithea.lib.exceptions import RepoGroupAssignmentError, UserGroupsAssignedException
 from kallithea.lib.utils2 import safe_int, safe_str
 from kallithea.lib.webutils import url
@@ -53,7 +53,7 @@ from kallithea.model.user_group import UserGroupModel
 log = logging.getLogger(__name__)
 
 
-class UserGroupsController(BaseController):
+class UserGroupsController(base.BaseController):
 
     @LoginRequired(allow_default_user=True)
     def _before(self, *args, **kwargs):
@@ -113,7 +113,7 @@ class UserGroupsController(BaseController):
             "records": user_groups_data
         }
 
-        return render('admin/user_groups/user_groups.html')
+        return base.render('admin/user_groups/user_groups.html')
 
     @HasPermissionAnyDecorator('hg.admin', 'hg.usergroup.create.true')
     def create(self):
@@ -134,7 +134,7 @@ class UserGroupsController(BaseController):
             meta.Session().commit()
         except formencode.Invalid as errors:
             return htmlfill.render(
-                render('admin/user_groups/user_group_add.html'),
+                base.render('admin/user_groups/user_group_add.html'),
                 defaults=errors.value,
                 errors=errors.error_dict or {},
                 prefix_error=False,
@@ -149,7 +149,7 @@ class UserGroupsController(BaseController):
 
     @HasPermissionAnyDecorator('hg.admin', 'hg.usergroup.create.true')
     def new(self, format='html'):
-        return render('admin/user_groups/user_group_add.html')
+        return base.render('admin/user_groups/user_group_add.html')
 
     @HasUserGroupPermissionLevelDecorator('admin')
     def update(self, id):
@@ -184,7 +184,7 @@ class UserGroupsController(BaseController):
             })
 
             return htmlfill.render(
-                render('admin/user_groups/user_group_edit.html'),
+                base.render('admin/user_groups/user_group_edit.html'),
                 defaults=defaults,
                 errors=e,
                 prefix_error=False,
@@ -221,7 +221,7 @@ class UserGroupsController(BaseController):
         defaults = self.__load_defaults(id)
 
         return htmlfill.render(
-            render('admin/user_groups/user_group_edit.html'),
+            base.render('admin/user_groups/user_group_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False
@@ -243,7 +243,7 @@ class UserGroupsController(BaseController):
                              p.permission.permission_name})
 
         return htmlfill.render(
-            render('admin/user_groups/user_group_edit.html'),
+            base.render('admin/user_groups/user_group_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False
@@ -344,7 +344,7 @@ class UserGroupsController(BaseController):
         })
 
         return htmlfill.render(
-            render('admin/user_groups/user_group_edit.html'),
+            base.render('admin/user_groups/user_group_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False
@@ -394,7 +394,7 @@ class UserGroupsController(BaseController):
         c.active = 'advanced'
         c.group_members_obj = sorted((x.user for x in c.user_group.members),
                                      key=lambda u: u.username.lower())
-        return render('admin/user_groups/user_group_edit.html')
+        return base.render('admin/user_groups/user_group_edit.html')
 
     @HasUserGroupPermissionLevelDecorator('admin')
     def edit_members(self, id):
@@ -404,4 +404,4 @@ class UserGroupsController(BaseController):
                                      key=lambda u: u.username.lower())
 
         c.group_members = [(x.user_id, x.username) for x in c.group_members_obj]
-        return render('admin/user_groups/user_group_edit.html')
+        return base.render('admin/user_groups/user_group_edit.html')

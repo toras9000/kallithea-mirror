@@ -131,10 +131,10 @@ conftest
 
 normal_modules = set('''
 kallithea
+kallithea.controllers.base
 kallithea.lib
 kallithea.lib.auth
 kallithea.lib.auth_modules
-kallithea.lib.base
 kallithea.lib.celerylib
 kallithea.lib.db_manage
 kallithea.lib.helpers

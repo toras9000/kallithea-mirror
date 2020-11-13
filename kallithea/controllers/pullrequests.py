@@ -36,10 +36,10 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest, HTTPForbidden, HTTPFound, HTTPNotFound
 
 import kallithea.lib.helpers as h
+from kallithea.controllers import base
 from kallithea.controllers.changeset import create_cs_pr_comment, delete_cs_pr_comment
 from kallithea.lib import auth, diffs, webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
-from kallithea.lib.base import BaseRepoController, jsonify, render
 from kallithea.lib.graphmod import graph_data
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import ascii_bytes, safe_bytes, safe_int
@@ -69,7 +69,7 @@ def _get_reviewer(user_id):
     return user
 
 
-class PullrequestsController(BaseRepoController):
+class PullrequestsController(base.BaseRepoController):
 
     def _get_repo_refs(self, repo, rev=None, branch=None, branch_rev=None):
         """return a structure with scm repo's interesting changesets, suitable for
@@ -211,7 +211,7 @@ class PullrequestsController(BaseRepoController):
 
         c.pullrequests_pager = Page(c.pull_requests, page=p, items_per_page=100, **url_params)
 
-        return render('/pullrequests/pullrequest_show_all.html')
+        return base.render('/pullrequests/pullrequest_show_all.html')
 
     @LoginRequired()
     def show_my(self):
@@ -236,7 +236,7 @@ class PullrequestsController(BaseRepoController):
             else:
                 c.participate_in_pull_requests_todo.append(pr)
 
-        return render('/pullrequests/pullrequest_show_my.html')
+        return base.render('/pullrequests/pullrequest_show_my.html')
 
     @LoginRequired()
     @HasRepoPermissionLevelDecorator('read')
@@ -291,11 +291,11 @@ class PullrequestsController(BaseRepoController):
         for fork in org_repo.forks:
             c.a_repos.append((fork.repo_name, fork.repo_name))
 
-        return render('/pullrequests/pullrequest.html')
+        return base.render('/pullrequests/pullrequest.html')
 
     @LoginRequired()
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def repo_info(self, repo_name):
         repo = c.db_repo
         refs, selected_ref = self._get_repo_refs(repo.scm_instance)
@@ -432,7 +432,7 @@ class PullrequestsController(BaseRepoController):
 
     @LoginRequired()
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def delete(self, repo_name, pull_request_id):
         pull_request = db.PullRequest.get_or_404(pull_request_id)
         # only owner can delete it !
@@ -620,11 +620,11 @@ class PullrequestsController(BaseRepoController):
 
         c.is_ajax_preview = False
         c.ancestors = None # [c.a_rev] ... but that is shown in an other way
-        return render('/pullrequests/pullrequest_show.html')
+        return base.render('/pullrequests/pullrequest_show.html')
 
     @LoginRequired()
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def comment(self, repo_name, pull_request_id):
         pull_request = db.PullRequest.get_or_404(pull_request_id)
         allowed_to_change_status = self._is_allowed_to_change_status(pull_request)
@@ -633,6 +633,6 @@ class PullrequestsController(BaseRepoController):
 
     @LoginRequired()
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def delete_comment(self, repo_name, comment_id):
         return delete_cs_pr_comment(repo_name, comment_id)

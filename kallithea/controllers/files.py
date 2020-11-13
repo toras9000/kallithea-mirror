@@ -40,9 +40,9 @@ from webob.exc import HTTPFound, HTTPNotFound
 
 import kallithea
 import kallithea.lib.helpers as h
+from kallithea.controllers import base
 from kallithea.lib import diffs, webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
-from kallithea.lib.base import BaseRepoController, jsonify, render
 from kallithea.lib.exceptions import NonRelativePathError
 from kallithea.lib.utils2 import asbool, convert_line_endings, detect_mode, safe_str
 from kallithea.lib.vcs.backends.base import EmptyChangeset
@@ -60,7 +60,7 @@ from kallithea.model.scm import ScmModel
 log = logging.getLogger(__name__)
 
 
-class FilesController(BaseRepoController):
+class FilesController(base.BaseRepoController):
 
     def _before(self, *args, **kwargs):
         super(FilesController, self)._before(*args, **kwargs)
@@ -179,7 +179,7 @@ class FilesController(BaseRepoController):
             raise HTTPNotFound()
 
         if request.environ.get('HTTP_X_PARTIAL_XHR'):
-            return render('files/files_ypjax.html')
+            return base.render('files/files_ypjax.html')
 
         # TODO: tags and bookmarks?
         c.revision_options = [(c.changeset.raw_id,
@@ -190,11 +190,11 @@ class FilesController(BaseRepoController):
             c.revision_options += [('-', '-')] + \
                 [(n, prefix + b) for b, n in c.db_repo_scm_instance.closed_branches.items()]
 
-        return render('files/files.html')
+        return base.render('files/files.html')
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def history(self, repo_name, revision, f_path):
         changeset = self.__get_cs(revision)
         _file = changeset.get_node(f_path)
@@ -224,7 +224,7 @@ class FilesController(BaseRepoController):
             c.authors = []
             for a in set([x.author for x in _hist]):
                 c.authors.append((author_email(a), h.person(a)))
-            return render('files/files_history_box.html')
+            return base.render('files/files_history_box.html')
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
@@ -335,7 +335,7 @@ class FilesController(BaseRepoController):
             raise HTTPFound(location=url('changeset_home',
                                 repo_name=c.repo_name, revision='tip'))
 
-        return render('files/files_delete.html')
+        return base.render('files/files_delete.html')
 
     @LoginRequired()
     @HasRepoPermissionLevelDecorator('write')
@@ -393,7 +393,7 @@ class FilesController(BaseRepoController):
             raise HTTPFound(location=url('changeset_home',
                                 repo_name=c.repo_name, revision='tip'))
 
-        return render('files/files_edit.html')
+        return base.render('files/files_edit.html')
 
     @LoginRequired()
     @HasRepoPermissionLevelDecorator('write')
@@ -468,7 +468,7 @@ class FilesController(BaseRepoController):
             raise HTTPFound(location=url('changeset_home',
                                 repo_name=c.repo_name, revision='tip'))
 
-        return render('files/files_add.html')
+        return base.render('files/files_add.html')
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
@@ -645,7 +645,7 @@ class FilesController(BaseRepoController):
                                          ignore_whitespace=ignore_whitespace_diff,
                                          line_context=diff_context_size)
             c.file_diff_data = [(fid, fid, op, a_path, node2.path, diff, st)]
-            return render('files/file_diff.html')
+            return base.render('files/file_diff.html')
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
@@ -693,7 +693,7 @@ class FilesController(BaseRepoController):
         c.cs1 = c.changeset_1
         c.cs2 = c.changeset_2
 
-        return render('files/diff_2way.html')
+        return base.render('files/diff_2way.html')
 
     def _get_node_history(self, cs, f_path, changesets=None):
         """
@@ -736,7 +736,7 @@ class FilesController(BaseRepoController):
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def nodelist(self, repo_name, revision, f_path):
         if request.environ.get('HTTP_X_PARTIAL_XHR'):
             cs = self.__get_cs(revision)

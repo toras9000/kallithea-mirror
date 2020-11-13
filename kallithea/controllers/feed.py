@@ -35,9 +35,9 @@ from tg.i18n import ugettext as _
 
 import kallithea
 import kallithea.lib.helpers as h
+from kallithea.controllers import base
 from kallithea.lib import feeds, webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
-from kallithea.lib.base import BaseRepoController
 from kallithea.lib.diffs import DiffProcessor
 from kallithea.lib.utils2 import asbool, fmt_date, safe_int, safe_str, shorter
 
@@ -45,7 +45,7 @@ from kallithea.lib.utils2 import asbool, fmt_date, safe_int, safe_str, shorter
 log = logging.getLogger(__name__)
 
 
-class FeedController(BaseRepoController):
+class FeedController(base.BaseRepoController):
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')

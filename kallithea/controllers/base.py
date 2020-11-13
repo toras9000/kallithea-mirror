@@ -13,8 +13,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-kallithea.lib.base
-~~~~~~~~~~~~~~~~~~
+kallithea.controllers.base
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The base Controller API
 Provides the BaseController class for subclassing. And usage in different

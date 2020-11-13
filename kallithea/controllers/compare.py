@@ -35,9 +35,9 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest, HTTPFound, HTTPNotFound
 
 import kallithea.lib.helpers as h
+from kallithea.controllers import base
 from kallithea.lib import diffs, webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
-from kallithea.lib.base import BaseRepoController, render
 from kallithea.lib.graphmod import graph_data
 from kallithea.lib.webutils import url
 from kallithea.model import db
@@ -46,7 +46,7 @@ from kallithea.model import db
 log = logging.getLogger(__name__)
 
 
-class CompareController(BaseRepoController):
+class CompareController(base.BaseRepoController):
 
     def _before(self, *args, **kwargs):
         super(CompareController, self)._before(*args, **kwargs)
@@ -76,7 +76,7 @@ class CompareController(BaseRepoController):
     def index(self, repo_name):
         c.compare_home = True
         c.a_ref_name = c.cs_ref_name = None
-        return render('compare/compare_diff.html')
+        return base.render('compare/compare_diff.html')
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
@@ -129,7 +129,7 @@ class CompareController(BaseRepoController):
         c.jsdata = graph_data(c.cs_repo.scm_instance, revs)
 
         if partial:
-            return render('compare/compare_cs.html')
+            return base.render('compare/compare_cs.html')
 
         org_repo = c.a_repo
         other_repo = c.cs_repo
@@ -185,4 +185,4 @@ class CompareController(BaseRepoController):
             html_diff = diffs.as_html(parsed_lines=[f])
             c.file_diff_data.append((fid, None, f['operation'], f['old_filename'], filename, html_diff, st))
 
-        return render('compare/compare_diff.html')
+        return base.render('compare/compare_diff.html')

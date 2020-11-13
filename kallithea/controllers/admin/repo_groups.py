@@ -37,9 +37,9 @@ from tg.i18n import ungettext
 from webob.exc import HTTPForbidden, HTTPFound, HTTPInternalServerError, HTTPNotFound
 
 import kallithea.lib.helpers as h
+from kallithea.controllers import base
 from kallithea.lib import webutils
 from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel, HasRepoGroupPermissionLevelDecorator, LoginRequired
-from kallithea.lib.base import BaseController, render
 from kallithea.lib.utils2 import safe_int
 from kallithea.lib.webutils import url
 from kallithea.model import db, meta
@@ -52,7 +52,7 @@ from kallithea.model.scm import AvailableRepoGroupChoices, RepoGroupList
 log = logging.getLogger(__name__)
 
 
-class RepoGroupsController(BaseController):
+class RepoGroupsController(base.BaseController):
 
     @LoginRequired(allow_default_user=True)
     def _before(self, *args, **kwargs):
@@ -132,7 +132,7 @@ class RepoGroupsController(BaseController):
             "records": repo_groups_data
         }
 
-        return render('admin/repo_groups/repo_groups.html')
+        return base.render('admin/repo_groups/repo_groups.html')
 
     def create(self):
         self.__load_defaults()
@@ -154,7 +154,7 @@ class RepoGroupsController(BaseController):
             # TODO: in future action_logger(, '', '', '')
         except formencode.Invalid as errors:
             return htmlfill.render(
-                render('admin/repo_groups/repo_group_add.html'),
+                base.render('admin/repo_groups/repo_group_add.html'),
                 defaults=errors.value,
                 errors=errors.error_dict or {},
                 prefix_error=False,
@@ -190,7 +190,7 @@ class RepoGroupsController(BaseController):
 
         self.__load_defaults()
         return htmlfill.render(
-            render('admin/repo_groups/repo_group_add.html'),
+            base.render('admin/repo_groups/repo_group_add.html'),
             defaults={'parent_group_id': parent_group_id},
             errors={},
             prefix_error=False,
@@ -230,7 +230,7 @@ class RepoGroupsController(BaseController):
         except formencode.Invalid as errors:
             c.active = 'settings'
             return htmlfill.render(
-                render('admin/repo_groups/repo_group_edit.html'),
+                base.render('admin/repo_groups/repo_group_edit.html'),
                 defaults=errors.value,
                 errors=errors.error_dict or {},
                 prefix_error=False,
@@ -298,7 +298,7 @@ class RepoGroupsController(BaseController):
                                                repo_groups_list=repo_groups_list,
                                                short_name=True)
 
-        return render('admin/repo_groups/repo_group_show.html')
+        return base.render('admin/repo_groups/repo_group_show.html')
 
     @HasRepoGroupPermissionLevelDecorator('admin')
     def edit(self, group_name):
@@ -310,7 +310,7 @@ class RepoGroupsController(BaseController):
         defaults = self.__load_data(c.repo_group.group_id)
 
         return htmlfill.render(
-            render('admin/repo_groups/repo_group_edit.html'),
+            base.render('admin/repo_groups/repo_group_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False
@@ -321,7 +321,7 @@ class RepoGroupsController(BaseController):
         c.active = 'advanced'
         c.repo_group = db.RepoGroup.guess_instance(group_name)
 
-        return render('admin/repo_groups/repo_group_edit.html')
+        return base.render('admin/repo_groups/repo_group_edit.html')
 
     @HasRepoGroupPermissionLevelDecorator('admin')
     def edit_repo_group_perms(self, group_name):
@@ -331,7 +331,7 @@ class RepoGroupsController(BaseController):
         defaults = self.__load_data(c.repo_group.group_id)
 
         return htmlfill.render(
-            render('admin/repo_groups/repo_group_edit.html'),
+            base.render('admin/repo_groups/repo_group_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False

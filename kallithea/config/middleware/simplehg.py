@@ -34,7 +34,7 @@ import urllib.parse
 
 import mercurial.hgweb
 
-from kallithea.lib.base import BaseVCSController, get_path_info
+from kallithea.controllers import base
 from kallithea.lib.utils import make_ui
 from kallithea.lib.utils2 import safe_bytes
 
@@ -91,7 +91,7 @@ cmd_mapping = {
     }
 
 
-class SimpleHg(BaseVCSController):
+class SimpleHg(base.BaseVCSController):
 
     scm_alias = 'hg'
 
@@ -100,7 +100,7 @@ class SimpleHg(BaseVCSController):
         http_accept = environ.get('HTTP_ACCEPT', '')
         if not http_accept.startswith('application/mercurial'):
             return None
-        path_info = get_path_info(environ)
+        path_info = base.get_path_info(environ)
         if not path_info.startswith('/'): # it must!
             return None
 

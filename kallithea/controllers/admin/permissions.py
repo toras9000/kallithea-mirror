@@ -36,9 +36,9 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPFound
 
+from kallithea.controllers import base
 from kallithea.lib import webutils
 from kallithea.lib.auth import AuthUser, HasPermissionAnyDecorator, LoginRequired
-from kallithea.lib.base import BaseController, render
 from kallithea.lib.webutils import url
 from kallithea.model import db, meta
 from kallithea.model.forms import DefaultPermissionsForm
@@ -48,7 +48,7 @@ from kallithea.model.permission import PermissionModel
 log = logging.getLogger(__name__)
 
 
-class PermissionsController(BaseController):
+class PermissionsController(base.BaseController):
 
     @LoginRequired()
     @HasPermissionAnyDecorator('hg.admin')
@@ -120,7 +120,7 @@ class PermissionsController(BaseController):
                 defaults = errors.value
 
                 return htmlfill.render(
-                    render('admin/permissions/permissions.html'),
+                    base.render('admin/permissions/permissions.html'),
                     defaults=defaults,
                     errors=errors.error_dict or {},
                     prefix_error=False,
@@ -162,7 +162,7 @@ class PermissionsController(BaseController):
                 defaults['default_fork'] = p.permission.permission_name
 
         return htmlfill.render(
-            render('admin/permissions/permissions.html'),
+            base.render('admin/permissions/permissions.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -173,10 +173,10 @@ class PermissionsController(BaseController):
         c.user_ip_map = db.UserIpMap.query() \
                         .filter(db.UserIpMap.user == c.user).all()
 
-        return render('admin/permissions/permissions.html')
+        return base.render('admin/permissions/permissions.html')
 
     def permission_perms(self):
         c.active = 'perms'
         c.user = db.User.get_default_user()
         c.perm_user = AuthUser(dbuser=c.user)
-        return render('admin/permissions/permissions.html')
+        return base.render('admin/permissions/permissions.html')

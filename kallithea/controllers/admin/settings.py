@@ -36,9 +36,9 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPFound
 
 import kallithea
+from kallithea.controllers import base
 from kallithea.lib import webutils
 from kallithea.lib.auth import HasPermissionAnyDecorator, LoginRequired
-from kallithea.lib.base import BaseController, render
 from kallithea.lib.utils import repo2db_mapper, set_app_settings
 from kallithea.lib.utils2 import safe_str
 from kallithea.lib.vcs import VCSError
@@ -52,7 +52,7 @@ from kallithea.model.scm import ScmModel
 log = logging.getLogger(__name__)
 
 
-class SettingsController(BaseController):
+class SettingsController(base.BaseController):
 
     @LoginRequired(allow_default_user=True)
     def _before(self, *args, **kwargs):
@@ -85,7 +85,7 @@ class SettingsController(BaseController):
                 form_result = application_form.to_python(dict(request.POST))
             except formencode.Invalid as errors:
                 return htmlfill.render(
-                     render('admin/settings/settings.html'),
+                     base.render('admin/settings/settings.html'),
                      defaults=errors.value,
                      errors=errors.error_dict or {},
                      prefix_error=False,
@@ -124,7 +124,7 @@ class SettingsController(BaseController):
         defaults.update(self._get_hg_ui_settings())
 
         return htmlfill.render(
-            render('admin/settings/settings.html'),
+            base.render('admin/settings/settings.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -172,7 +172,7 @@ class SettingsController(BaseController):
         defaults.update(self._get_hg_ui_settings())
 
         return htmlfill.render(
-            render('admin/settings/settings.html'),
+            base.render('admin/settings/settings.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -186,7 +186,7 @@ class SettingsController(BaseController):
                 form_result = application_form.to_python(dict(request.POST))
             except formencode.Invalid as errors:
                 return htmlfill.render(
-                    render('admin/settings/settings.html'),
+                    base.render('admin/settings/settings.html'),
                     defaults=errors.value,
                     errors=errors.error_dict or {},
                     prefix_error=False,
@@ -219,7 +219,7 @@ class SettingsController(BaseController):
         defaults.update(self._get_hg_ui_settings())
 
         return htmlfill.render(
-            render('admin/settings/settings.html'),
+            base.render('admin/settings/settings.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -233,7 +233,7 @@ class SettingsController(BaseController):
                 form_result = application_form.to_python(dict(request.POST))
             except formencode.Invalid as errors:
                 return htmlfill.render(
-                    render('admin/settings/settings.html'),
+                    base.render('admin/settings/settings.html'),
                     defaults=errors.value,
                     errors=errors.error_dict or {},
                     prefix_error=False,
@@ -274,7 +274,7 @@ class SettingsController(BaseController):
         defaults.update(self._get_hg_ui_settings())
 
         return htmlfill.render(
-            render('admin/settings/settings.html'),
+            base.render('admin/settings/settings.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -312,7 +312,7 @@ class SettingsController(BaseController):
         c.ini = kallithea.CONFIG
 
         return htmlfill.render(
-            render('admin/settings/settings.html'),
+            base.render('admin/settings/settings.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -367,7 +367,7 @@ class SettingsController(BaseController):
         c.custom_hooks = db.Ui.get_custom_hooks()
 
         return htmlfill.render(
-            render('admin/settings/settings.html'),
+            base.render('admin/settings/settings.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -386,7 +386,7 @@ class SettingsController(BaseController):
         defaults.update(self._get_hg_ui_settings())
 
         return htmlfill.render(
-            render('admin/settings/settings.html'),
+            base.render('admin/settings/settings.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -404,7 +404,7 @@ class SettingsController(BaseController):
             setattr(c, key, val)
 
         return htmlfill.render(
-            render('admin/settings/settings.html'),
+            base.render('admin/settings/settings.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)

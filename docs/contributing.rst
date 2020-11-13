@@ -112,7 +112,7 @@ following list, modules may only depend on modules below them:
   everything and has a huge dependency chain, so it should not be used for
   anything else. TODO.
 
-``controlles/base.py``
+``controllers/base.py``
   The base class of controllers, with lots of model knowledge.
 
 ``lib/auth.py``
