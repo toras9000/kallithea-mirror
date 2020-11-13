@@ -42,8 +42,8 @@ from kallithea.controllers import base
 from kallithea.lib import auth_modules, webutils
 from kallithea.lib.auth import AuthUser, HasPermissionAnyDecorator, LoginRequired
 from kallithea.lib.exceptions import DefaultUserException, UserCreationError, UserOwnsReposException
-from kallithea.lib.utils2 import datetime_to_time, fmt_date, generate_api_key, safe_int
-from kallithea.lib.webutils import url
+from kallithea.lib.utils2 import datetime_to_time, generate_api_key, safe_int
+from kallithea.lib.webutils import fmt_date, url
 from kallithea.model import db, meta, userlog
 from kallithea.model.api_key import ApiKeyModel
 from kallithea.model.forms import CustomDefaultPermissionsForm, UserForm

@@ -34,7 +34,6 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 
 from kallithea.lib import webutils
-from kallithea.lib.utils2 import fmt_date
 from kallithea.model import async_tasks, db
 
 
@@ -101,7 +100,7 @@ class NotificationModel(object):
             headers['References'] = ' '.join('<%s>' % x for x in email_kwargs['threading'])
 
         # this is passed into template
-        created_on = fmt_date(datetime.datetime.now())
+        created_on = webutils.fmt_date(datetime.datetime.now())
         html_kwargs = {
                   'body': None if body is None else webutils.render_w_mentions(body, repo_name),
                   'when': created_on,

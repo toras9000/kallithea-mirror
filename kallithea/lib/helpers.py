@@ -34,14 +34,13 @@ from kallithea.lib.annotate import annotate_highlight
 from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel, HasRepoPermissionLevel
 from kallithea.lib.diffs import BIN_FILENODE, CHMOD_FILENODE, DEL_FILENODE, MOD_FILENODE, NEW_FILENODE, RENAMED_FILENODE
 from kallithea.lib.pygmentsutils import get_custom_lexer
-from kallithea.lib.utils2 import (AttributeDict, age, asbool, credentials_filter, fmt_date, link_to_ref, safe_bytes, safe_int, safe_str, shorter,
-                                  time_to_datetime)
+from kallithea.lib.utils2 import AttributeDict, asbool, credentials_filter, link_to_ref, safe_bytes, safe_int, safe_str, time_to_datetime
 from kallithea.lib.vcs.backends.base import BaseChangeset, EmptyChangeset
 from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError
 from kallithea.lib.vcs.utils import author_email, author_name
-from kallithea.lib.webutils import (HTML, Option, canonical_url, checkbox, chop_at, end_form, escape, form, format_byte_size, hidden, js, jshtml, link_to,
-                                    literal, password, pop_flash_messages, radio, render_w_mentions, reset, safeid, select, session_csrf_secret_name,
-                                    session_csrf_secret_token, submit, text, textarea, url, urlify_text, wrap_paragraphs)
+from kallithea.lib.webutils import (HTML, Option, age, canonical_url, checkbox, chop_at, end_form, escape, fmt_date, form, format_byte_size, hidden, js, jshtml,
+                                    link_to, literal, password, pop_flash_messages, radio, render_w_mentions, reset, safeid, select, session_csrf_secret_name,
+                                    session_csrf_secret_token, shorter, submit, text, textarea, url, urlify_text, wrap_paragraphs)
 from kallithea.model import db
 from kallithea.model.changeset_status import ChangesetStatusModel
 
@@ -49,10 +48,12 @@ from kallithea.model.changeset_status import ChangesetStatusModel
 # mute pyflakes "imported but unused"
 # from webutils
 assert Option
+assert age
 assert canonical_url
 assert checkbox
 assert chop_at
 assert end_form
+assert fmt_date
 assert form
 assert format_byte_size
 assert hidden
@@ -67,6 +68,7 @@ assert safeid
 assert select
 assert session_csrf_secret_name
 assert session_csrf_secret_token
+assert shorter
 assert submit
 assert text
 assert textarea
@@ -77,11 +79,8 @@ assert HasPermissionAny
 assert HasRepoGroupPermissionLevel
 assert HasRepoPermissionLevel
 # from utils2
-assert age
 assert credentials_filter
-assert fmt_date
 assert link_to_ref
-assert shorter
 assert time_to_datetime
 # from vcs
 assert EmptyChangeset

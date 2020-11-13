@@ -20,12 +20,16 @@ thread-local "global" variables. It should have few dependencies so it can be
 imported anywhere - just like the global variables can be used everywhere.
 """
 
+import datetime
 import json
 import logging
 import random
 import re
 
+from dateutil import relativedelta
 from tg import request, session
+from tg.i18n import ugettext as _
+from tg.i18n import ungettext
 from webhelpers2.html import HTML, escape, literal
 from webhelpers2.html.tags import NotGiven, Option, Options, _input
 from webhelpers2.html.tags import _make_safe_id_component as safeid
@@ -532,3 +536,133 @@ def render_w_mentions(source, repo_name=None):
     """
     s = urlify_text(source, repo_name=repo_name)
     return literal('<div class="formatted-fixed">%s</div>' % s)
+
+
+#
+# Simple filters
+#
+
+def shorter(s, size=20, firstline=False, postfix='...'):
+    """Truncate s to size, including the postfix string if truncating.
+    If firstline, truncate at newline.
+    """
+    if firstline:
+        s = s.split('\n', 1)[0].rstrip()
+    if len(s) > size:
+        return s[:size - len(postfix)] + postfix
+    return s
+
+
+def age(prevdate, show_short_version=False, now=None):
+    """
+    turns a datetime into an age string.
+    If show_short_version is True, then it will generate a not so accurate but shorter string,
+    example: 2days ago, instead of 2 days and 23 hours ago.
+
+    :param prevdate: datetime object
+    :param show_short_version: if it should approximate the date and return a shorter string
+    :rtype: str
+    :returns: str words describing age
+    """
+    now = now or datetime.datetime.now()
+    order = ['year', 'month', 'day', 'hour', 'minute', 'second']
+    deltas = {}
+    future = False
+
+    if prevdate > now:
+        now, prevdate = prevdate, now
+        future = True
+    if future:
+        prevdate = prevdate.replace(microsecond=0)
+    # Get date parts deltas
+    for part in order:
+        d = relativedelta.relativedelta(now, prevdate)
+        deltas[part] = getattr(d, part + 's')
+
+    # Fix negative offsets (there is 1 second between 10:59:59 and 11:00:00,
+    # not 1 hour, -59 minutes and -59 seconds)
+    for num, length in [(5, 60), (4, 60), (3, 24)]:  # seconds, minutes, hours
+        part = order[num]
+        carry_part = order[num - 1]
+
+        if deltas[part] < 0:
+            deltas[part] += length
+            deltas[carry_part] -= 1
+
+    # Same thing for days except that the increment depends on the (variable)
+    # number of days in the month
+    month_lengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    if deltas['day'] < 0:
+        if prevdate.month == 2 and (prevdate.year % 4 == 0 and
+            (prevdate.year % 100 != 0 or prevdate.year % 400 == 0)
+        ):
+            deltas['day'] += 29
+        else:
+            deltas['day'] += month_lengths[prevdate.month - 1]
+
+        deltas['month'] -= 1
+
+    if deltas['month'] < 0:
+        deltas['month'] += 12
+        deltas['year'] -= 1
+
+    # In short version, we want nicer handling of ages of more than a year
+    if show_short_version:
+        if deltas['year'] == 1:
+            # ages between 1 and 2 years: show as months
+            deltas['month'] += 12
+            deltas['year'] = 0
+        if deltas['year'] >= 2:
+            # ages 2+ years: round
+            if deltas['month'] > 6:
+                deltas['year'] += 1
+                deltas['month'] = 0
+
+    # Format the result
+    fmt_funcs = {
+        'year': lambda d: ungettext('%d year', '%d years', d) % d,
+        'month': lambda d: ungettext('%d month', '%d months', d) % d,
+        'day': lambda d: ungettext('%d day', '%d days', d) % d,
+        'hour': lambda d: ungettext('%d hour', '%d hours', d) % d,
+        'minute': lambda d: ungettext('%d minute', '%d minutes', d) % d,
+        'second': lambda d: ungettext('%d second', '%d seconds', d) % d,
+    }
+
+    for i, part in enumerate(order):
+        value = deltas[part]
+        if value == 0:
+            continue
+
+        if i < 5:
+            sub_part = order[i + 1]
+            sub_value = deltas[sub_part]
+        else:
+            sub_value = 0
+
+        if sub_value == 0 or show_short_version:
+            if future:
+                return _('in %s') % fmt_funcs[part](value)
+            else:
+                return _('%s ago') % fmt_funcs[part](value)
+        if future:
+            return _('in %s and %s') % (fmt_funcs[part](value),
+                fmt_funcs[sub_part](sub_value))
+        else:
+            return _('%s and %s ago') % (fmt_funcs[part](value),
+                fmt_funcs[sub_part](sub_value))
+
+    return _('just now')
+
+
+def fmt_date(date):
+    if date:
+        return date.strftime("%Y-%m-%d %H:%M:%S")
+    return ""
+
+
+def capitalize(x):
+    return x.capitalize()
+
+
+def short_id(x):
+    return x[:12]

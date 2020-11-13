@@ -34,7 +34,7 @@ from tg.i18n import ugettext as _
 
 from kallithea.lib import auth, hooks, webutils
 from kallithea.lib.utils import extract_mentioned_users
-from kallithea.lib.utils2 import ascii_bytes, short_ref_name, shorter
+from kallithea.lib.utils2 import ascii_bytes, short_ref_name
 from kallithea.model import changeset_status, comment, db, meta, notification
 
 
@@ -85,7 +85,7 @@ class PullRequestModel(object):
                          for x in map(pr.org_repo.get_changeset, pr.revisions)]
         email_kwargs = {
             'pr_title': pr.title,
-            'pr_title_short': shorter(pr.title, 50),
+            'pr_title_short': webutils.shorter(pr.title, 50),
             'pr_user_created': user.full_name_and_username,
             'pr_repo_url': webutils.canonical_url('summary_home', repo_name=pr.other_repo.repo_name),
             'pr_url': pr_url,
@@ -345,7 +345,7 @@ class CreatePullRequestIterationAction(object):
             for r in reversed(revisions):
                 if r in new_revisions:
                     rev_desc = org_repo.get_changeset(r).message.split('\n')[0]
-                    infos.append('  %s %s' % (r[:12], shorter(rev_desc, 80)))
+                    infos.append('  %s %s' % (r[:12], webutils.shorter(rev_desc, 80)))
 
             if self.create_action.other_ref == old_pull_request.other_ref:
                 infos.append(_("Ancestor didn't change - diff since previous iteration:"))

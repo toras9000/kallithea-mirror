@@ -39,7 +39,7 @@ from kallithea.controllers import base
 from kallithea.lib import feeds, webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.diffs import DiffProcessor
-from kallithea.lib.utils2 import asbool, fmt_date, safe_int, safe_str, shorter
+from kallithea.lib.utils2 import asbool, safe_int, safe_str
 
 
 log = logging.getLogger(__name__)
@@ -53,11 +53,11 @@ class FeedController(base.BaseRepoController):
         super(FeedController, self)._before(*args, **kwargs)
 
     def _get_title(self, cs):
-        return shorter(cs.message, 160)
+        return webutils.shorter(cs.message, 160)
 
     def __get_desc(self, cs):
         desc_msg = [(_('%s committed on %s')
-                     % (h.person(cs.author), fmt_date(cs.date))) + '<br/>']
+                     % (h.person(cs.author), webutils.fmt_date(cs.date))) + '<br/>']
         # branches, tags, bookmarks
         for branch in cs.branches:
             desc_msg.append('branch: %s<br/>' % branch)

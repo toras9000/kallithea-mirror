@@ -141,7 +141,7 @@ class TestLibs(base.TestController):
         (dict(years= -3, months= -2), '3 years and 2 months ago'),
     ])
     def test_age(self, age_args, expected):
-        from kallithea.lib.utils2 import age
+        from kallithea.lib.webutils import age
         with test_context(self.app):
             n = datetime.datetime(year=2012, month=5, day=17)
             delt = lambda *args, **kwargs: relativedelta.relativedelta(*args, **kwargs)
@@ -165,7 +165,7 @@ class TestLibs(base.TestController):
         (dict(years= -4, months= -8), '5 years ago'),
     ])
     def test_age_short(self, age_args, expected):
-        from kallithea.lib.utils2 import age
+        from kallithea.lib.webutils import age
         with test_context(self.app):
             n = datetime.datetime(year=2012, month=5, day=17)
             delt = lambda *args, **kwargs: relativedelta.relativedelta(*args, **kwargs)
@@ -183,7 +183,7 @@ class TestLibs(base.TestController):
         (dict(years=1, months=1), 'in 1 year and 1 month')
     ])
     def test_age_in_future(self, age_args, expected):
-        from kallithea.lib.utils2 import age
+        from kallithea.lib.webutils import age
         with test_context(self.app):
             n = datetime.datetime(year=2012, month=5, day=17)
             delt = lambda *args, **kwargs: relativedelta.relativedelta(*args, **kwargs)
