@@ -549,6 +549,19 @@ _hg_header_re = re.compile(br"""
 _header_next_check = re.compile(br'''(?!@)(?!literal )(?!delta )''')
 
 
+_git_bs_escape_re = re.compile(r'\\(?:([^0-9])|([0-9]{3}))')
+
+
+_git_bs_escape_dict = {'\\': '\\', '"': '"', 'r': '\r', 'n': '\n', 't': '\t'}
+
+
+def _git_bs_unescape_m(m):
+    c = m.group(1)
+    if c is not None:
+        return _git_bs_escape_dict.get(c) or ('\\' + c)
+    return chr(int(m.group(2), 8))
+
+
 def _get_header(vcs, diff_chunk):
     """
     Parses a Git diff for a single file (header and chunks) and returns a tuple with:
@@ -569,6 +582,11 @@ def _get_header(vcs, diff_chunk):
     if match is None:
         raise Exception('diff not recognized as valid %s diff: %r' % (vcs, safe_str(bytes(diff_chunk[:1000]))))
     meta_info = {k: None if v is None else safe_str(v) for k, v in match.groupdict().items()}
+    if vcs == 'git':
+        for k in ['a_path', 'b_path', 'a_file', 'b_file']:
+            v = meta_info.get(k)
+            if v:
+                meta_info[k] = _git_bs_escape_re.sub(_git_bs_unescape_m, v)
     rest = diff_chunk[match.end():]
     if rest:
         if _header_next_check.match(rest):

@@ -269,7 +269,7 @@ DIFF_FIXTURES = {
           'ops': {RENAMED_FILENODE: 'file renamed from oh no to oh yes'}}),
     ],
     'git_diff_quoting.diff': [
-        (r'\"foo\"',  # TODO: quotes should not be escaped
+        ('"foo"',
          'added',
          {'added': 1,
           'binary': False,
@@ -281,19 +281,19 @@ DIFF_FIXTURES = {
           'binary': False,
           'deleted': 0,
           'ops': {1: 'new file 100644'}}),
-        ("'foo'" r'\"foo\"',  # TODO: quotes should not be escaped
+        ("'foo'" '"foo"',
          'added',
          {'added': 1,
           'binary': False,
           'deleted': 0,
           'ops': {1: 'new file 100644'}}),
-        (r'a\r\nb',  # TODO: escaped
+        ('a\r\nb',  # Note: will be parsed correctly, but other parts of Kallithea can't handle it
          'added',
          {'added': 1,
           'binary': False,
           'deleted': 0,
           'ops': {1: 'new file 100644'}}),
-        (r'foo\rfoo',  # TODO: escaped
+        ('foo\rfoo',  # Note: will be parsed correctly, but other parts of Kallithea can't handle it
          'added',
         {'added': 0,
          'binary': True,
@@ -311,13 +311,13 @@ DIFF_FIXTURES = {
           'binary': False,
           'deleted': 0,
           'ops': {1: 'new file 100644'}}),
-        (r'esc\033foo',  # TODO: escaped
+        ('esc\033foo',  # Note: will be parsed and handled correctly, but without good UI
          'added',
          {'added': 0,
           'binary': True,
           'deleted': 0,
           'ops': {1: 'new file 100644'}}),
-        (r'tab\tfoo',  # TODO: escaped
+        ('tab\tfoo',  # Note: will be parsed and handled correctly, but without good UI
          'added',
          {'added': 0,
           'binary': True,
