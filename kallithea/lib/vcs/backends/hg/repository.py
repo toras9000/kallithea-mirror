@@ -281,13 +281,13 @@ class MercurialRepository(BaseRepository):
                                         ignorews=ignore_whitespace,
                                         context=context)))
 
-    @classmethod
-    def _check_url(cls, url, repoui=None):
-        """
-        Function will check given url and try to verify if it's a valid
-        link. Sometimes it may happened that mercurial will issue basic
-        auth request that can cause whole API to hang when used from python
-        or other external calls.
+    @staticmethod
+    def _check_url(url, repoui=None):
+        r"""
+        Raise URLError if url doesn't seem like a valid safe Hg URL. We
+        only allow http, https, ssh, and hg-git URLs.
+
+        For http, https and git URLs, make a connection and probe to see if it is valid.
 
         On failures it'll raise urllib2.HTTPError, exception is also thrown
         when the return code is non 200
@@ -295,13 +295,13 @@ class MercurialRepository(BaseRepository):
         # check first if it's not an local url
         url = safe_bytes(url)
         if os.path.isdir(url) or url.startswith(b'file:'):
-            return True
+            return
 
         if url.startswith(b'ssh:'):
             # in case of invalid uri or authentication issues, sshpeer will
             # throw an exception.
             mercurial.sshpeer.instance(repoui or mercurial.ui.ui(), url, False).lookup(b'tip')
-            return True
+            return
 
         url_prefix = None
         if b'+' in url[:url.find(b'://')]:
@@ -342,8 +342,6 @@ class MercurialRepository(BaseRepository):
                 raise urllib.error.URLError(
                     "url [%s] does not look like an hg repo org_exc: %s"
                     % (cleaned_uri, e))
-
-        return True
 
     def _get_repo(self, create, src_url=None, update_after_clone=False):
         """

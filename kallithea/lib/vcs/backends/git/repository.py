@@ -147,20 +147,17 @@ class GitRepository(BaseRepository):
         stdout, _stderr = self._run_git_command(cmd, cwd=cwd)
         return safe_str(stdout)
 
-    @classmethod
-    def _check_url(cls, url):
+    @staticmethod
+    def _check_url(url):
         """
-        Function will check given url and try to verify if it's a valid
-        link. Sometimes it may happened that git will issue basic
-        auth request that can cause whole API to hang when used from python
-        or other external calls.
+        Raise URLError if url doesn't seem like a valid safe Git URL. We
+        only allow http, https, git, and ssh URLs.
 
-        On failures it'll raise urllib2.HTTPError, exception is also thrown
-        when the return code is non 200
+        For http and https URLs, make a connection and probe to see if it is valid.
         """
         # check first if it's not an local url
         if os.path.isabs(url) and os.path.isdir(url):
-            return True
+            return
 
         if url.startswith('git://'):
             try:
@@ -175,7 +172,7 @@ class GitRepository(BaseRepository):
                     raise urllib.error.URLError("Invalid escape character in path: '%s'" % c)
                 if c.isspace() and c != ' ':
                     raise urllib.error.URLError("Invalid whitespace character in path: %r" % c)
-            return True
+            return
 
         if not url.startswith('http://') and not url.startswith('https://'):
             raise urllib.error.URLError("Unsupported protocol in URL %s" % url)
@@ -210,8 +207,6 @@ class GitRepository(BaseRepository):
         if b'service=git-upload-pack' not in gitdata:
             raise urllib.error.URLError(
                 "url [%s] does not look like an git" % cleaned_uri)
-
-        return True
 
     def _get_repo(self, create, src_url=None, update_after_clone=False,
                   bare=False):
