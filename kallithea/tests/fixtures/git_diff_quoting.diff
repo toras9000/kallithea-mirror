@@ -1,0 +1,53 @@
+diff --git "a/\"foo\"" "b/\"foo\""
+new file mode 100644
+index 0000000..8b13789
+--- /dev/null
++++ "b/\"foo\""
+@@ -0,0 +1 @@
++
+diff --git a/'foo' b/'foo'
+new file mode 100644
+index 0000000..8b13789
+--- /dev/null
++++ b/'foo'
+@@ -0,0 +1 @@
++
+diff --git "a/'foo'\"foo\"" "b/'foo'\"foo\""
+new file mode 100644
+index 0000000..8b13789
+--- /dev/null
++++ "b/'foo'\"foo\""
+@@ -0,0 +1 @@
++
+diff --git "a/a\r\nb" "b/a\r\nb"
+new file mode 100644
+index 0000000..30d74d2
+--- /dev/null
++++ "b/a\r\nb"
+@@ -0,0 +1 @@
++test
+\ No newline at end of file
+diff --git "a/foo\rfoo" "b/foo\rfoo"
+new file mode 100644
+index 0000000..e69de29
+diff --git a/foo bar b/foo bar
+new file mode 100644
+index 0000000..219ea2b
+--- /dev/null
++++ b/foo bar	
+@@ -0,0 +1 @@
++foo  bar
+\ No newline at end of file
+diff --git a/test b/test
+new file mode 100644
+index 0000000..9daeafb
+--- /dev/null
++++ b/test
+@@ -0,0 +1 @@
++test
+diff --git "a/esc\033foo" "b/esc\033foo"
+new file mode 100644
+index 0000000..e69de29
+diff --git "a/tab\tfoo" "b/tab\tfoo"
+new file mode 100644
+index 0000000..e69de29

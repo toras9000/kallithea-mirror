@@ -511,7 +511,7 @@ def _escaper(diff_line):
 
 
 _git_header_re = re.compile(br"""
-    ^diff[ ]--git[ ]a/(?P<a_path>.+?)[ ]b/(?P<b_path>.+?)\n
+    ^diff[ ]--git[ ](?P<a_path_quote>"?)a/(?P<a_path>.+?)(?P=a_path_quote)[ ](?P<b_path_quote>"?)b/(?P<b_path>.+?)(?P=a_path_quote)\n
     (?:^old[ ]mode[ ](?P<old_mode>\d+)\n
        ^new[ ]mode[ ](?P<new_mode>\d+)(?:\n|$))?
     (?:^similarity[ ]index[ ](?P<similarity_index>\d+)%\n
@@ -522,8 +522,8 @@ _git_header_re = re.compile(br"""
     (?:^index[ ](?P<a_blob_id>[0-9A-Fa-f]+)
         \.\.(?P<b_blob_id>[0-9A-Fa-f]+)[ ]?(?P<b_mode>.+)?(?:\n|$))?
     (?:^(?P<bin_patch>GIT[ ]binary[ ]patch)(?:\n|$))?
-    (?:^---[ ](a/(?P<a_file>.+?)|/dev/null)\t?(?:\n|$))?
-    (?:^\+\+\+[ ](b/(?P<b_file>.+?)|/dev/null)\t?(?:\n|$))?
+    (?:^---[ ](?P<a_file_quote>"?)(a/(?P<a_file>.+?)(?P=a_file_quote)|/dev/null)\t?(?:\n|$))?
+    (?:^\+\+\+[ ](?P<b_file_quote>"?)(b/(?P<b_file>.+?)(?P=b_file_quote)|/dev/null)\t?(?:\n|$))?
 """, re.VERBOSE | re.MULTILINE)
 
 
