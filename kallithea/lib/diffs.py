@@ -567,7 +567,7 @@ def _get_header(vcs, diff_chunk):
     elif vcs == 'hg':
         match = _hg_header_re.match(diff_chunk)
     if match is None:
-        raise Exception('diff not recognized as valid %s diff' % vcs)
+        raise Exception('diff not recognized as valid %s diff: %r' % (vcs, safe_str(bytes(diff_chunk[:1000]))))
     meta_info = {k: None if v is None else safe_str(v) for k, v in match.groupdict().items()}
     rest = diff_chunk[match.end():]
     if rest:
