@@ -355,12 +355,12 @@ class MercurialRepository(BaseRepository):
         """
         try:
             if src_url:
-                url = safe_bytes(self._get_url(src_url))
+                url = self._get_url(src_url)
                 opts = {}
                 if not update_after_clone:
                     opts.update({'noupdate': True})
                 MercurialRepository._check_url(url, self.baseui)
-                mercurial.commands.clone(self.baseui, url, safe_bytes(self.path), **opts)
+                mercurial.commands.clone(self.baseui, safe_bytes(url), safe_bytes(self.path), **opts)
 
                 # Don't try to create if we've already cloned repo
                 create = False
