@@ -41,7 +41,7 @@
             <div class="form-group">
                 <label class="control-label" for="parent_group_id">${_('Group parent')}:</label>
                 <div>
-                    ${h.select('parent_group_id',request.GET.get('parent_group'),c.repo_groups,class_='form-control')}
+                    ${h.select('parent_group_id',None,c.repo_groups,class_='form-control')}
                 </div>
             </div>
 
