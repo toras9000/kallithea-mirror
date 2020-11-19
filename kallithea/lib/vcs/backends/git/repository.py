@@ -163,6 +163,18 @@ class GitRepository(BaseRepository):
             return True
 
         if url.startswith('git://'):
+            try:
+                _git_colon, _empty, _host, path = url.split('/', 3)
+            except ValueError:
+                raise urllib.error.URLError("Invalid URL: %r" % url)
+            # Mitigate problems elsewhere with incorrect handling of encoded paths.
+            # Don't trust urllib.parse.unquote but be prepared for more flexible implementations elsewhere.
+            # Space is the only allowed whitespace character - directly or % encoded. No other % or \ is allowed.
+            for c in path.replace('%20', ' '):
+                if c in '%\\':
+                    raise urllib.error.URLError("Invalid escape character in path: '%s'" % c)
+                if c.isspace() and c != ' ':
+                    raise urllib.error.URLError("Invalid whitespace character in path: %r" % c)
             return True
 
         if not url.startswith('http://') and not url.startswith('https://'):
