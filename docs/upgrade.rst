@@ -232,7 +232,11 @@ It is possible that an upgrade involves changes to the Git hooks installed by
 Kallithea. As these hooks are created inside the repositories on the server
 filesystem, they are not updated automatically when upgrading Kallithea itself.
 
-To update the hooks of your Git repositories:
+To update the hooks of your Git repositories, run::
+
+    kallithea-cli repo-scan -c my.ini --install-git-hooks
+
+Or:
 
 * Go to *Admin > Settings > Remap and Rescan*
 * Select the checkbox *Install Git hooks*
