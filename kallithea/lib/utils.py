@@ -413,17 +413,22 @@ def repo2db_mapper(initial_repo_dict, remove_obsolete=False,
                     if repo.description != 'unknown'
                     else '%s repository' % name)
 
-            new_repo = repo_model._create_repo(
-                repo_name=name,
-                repo_type=repo.alias,
-                description=desc,
-                repo_group=getattr(group, 'group_id', None),
-                owner=user,
-                enable_downloads=enable_downloads,
-                enable_statistics=enable_statistics,
-                private=private,
-                state=db.Repository.STATE_CREATED
-            )
+            try:
+                new_repo = repo_model._create_repo(
+                    repo_name=name,
+                    repo_type=repo.alias,
+                    description=desc,
+                    repo_group=getattr(group, 'group_id', None),
+                    owner=user,
+                    enable_downloads=enable_downloads,
+                    enable_statistics=enable_statistics,
+                    private=private,
+                    state=db.Repository.STATE_CREATED
+                )
+            except Exception as e:
+                log.error('error creating %r: %s: %s', name, type(e).__name__, e)
+                sa.rollback()
+                continue
             sa.commit()
             # we added that repo just now, and make sure it has githook
             # installed, and updated server info
