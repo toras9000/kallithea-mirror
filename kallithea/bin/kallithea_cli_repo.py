@@ -37,7 +37,11 @@ from kallithea.model.scm import ScmModel
 @cli_base.register_command(config_file_initialize_app=True)
 @click.option('--remove-missing', is_flag=True,
         help='Remove missing repositories from the Kallithea database.')
-def repo_scan(remove_missing):
+@click.option('--install-git-hooks', is_flag=True,
+        help='(Re)install Kallithea Git hooks without overwriting other hooks.')
+@click.option('--overwrite-git-hooks', is_flag=True,
+        help='(Re)install Kallithea Git hooks, overwriting other hooks.')
+def repo_scan(remove_missing, install_git_hooks, overwrite_git_hooks):
     """Scan filesystem for repositories.
 
     Search the configured repository root for new repositories and add them
@@ -48,7 +52,9 @@ def repo_scan(remove_missing):
     """
     click.echo('Now scanning root location for new repos ...')
     added, removed = repo2db_mapper(ScmModel().repo_scan(),
-                                    remove_obsolete=remove_missing)
+                                    remove_obsolete=remove_missing,
+                                    install_git_hooks=install_git_hooks,
+                                    overwrite_git_hooks=overwrite_git_hooks)
     click.echo('Scan completed.')
     if added:
         click.echo('Added: %s' % ', '.join(added))
