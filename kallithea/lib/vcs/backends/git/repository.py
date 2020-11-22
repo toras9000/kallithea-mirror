@@ -159,14 +159,14 @@ class GitRepository(BaseRepository):
         when the return code is non 200
         """
         # check first if it's not an local url
-        if os.path.isdir(url) or url.startswith('file:'):
+        if os.path.isabs(url) and os.path.isdir(url):
             return True
 
         if url.startswith('git://'):
             return True
 
-        if '+' in url[:url.find('://')]:
-            url = url[url.find('+') + 1:]
+        if not url.startswith('http://') and not url.startswith('https://'):
+            raise urllib.error.URLError("Unsupported protocol in URL %s" % url)
 
         url_obj = mercurial.util.url(safe_bytes(url))
         test_uri, handlers = get_urllib_request_handlers(url_obj)
