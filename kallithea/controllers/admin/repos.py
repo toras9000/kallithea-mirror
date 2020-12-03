@@ -144,7 +144,9 @@ class ReposController(BaseRepoController):
             if prg is None or not any(rgc[0] == prg.group_id
                                       for rgc in c.repo_groups):
                 raise HTTPForbidden
-            defaults.update({'repo_group': parent_group})
+        else:
+            parent_group = '-1'
+        defaults.update({'repo_group': parent_group})
 
         return htmlfill.render(
             render('admin/repos/repo_add.html'),

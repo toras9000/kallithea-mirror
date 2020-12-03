@@ -159,14 +159,26 @@ class GitRepository(BaseRepository):
         when the return code is non 200
         """
         # check first if it's not an local url
-        if os.path.isdir(url) or url.startswith('file:'):
+        if os.path.isabs(url) and os.path.isdir(url):
             return True
 
         if url.startswith('git://'):
+            try:
+                _git_colon, _empty, _host, path = url.split('/', 3)
+            except ValueError:
+                raise urllib.error.URLError("Invalid URL: %r" % url)
+            # Mitigate problems elsewhere with incorrect handling of encoded paths.
+            # Don't trust urllib.parse.unquote but be prepared for more flexible implementations elsewhere.
+            # Space is the only allowed whitespace character - directly or % encoded. No other % or \ is allowed.
+            for c in path.replace('%20', ' '):
+                if c in '%\\':
+                    raise urllib.error.URLError("Invalid escape character in path: '%s'" % c)
+                if c.isspace() and c != ' ':
+                    raise urllib.error.URLError("Invalid whitespace character in path: %r" % c)
             return True
 
-        if '+' in url[:url.find('://')]:
-            url = url[url.find('+') + 1:]
+        if not url.startswith('http://') and not url.startswith('https://'):
+            raise urllib.error.URLError("Unsupported protocol in URL %s" % url)
 
         url_obj = mercurial.util.url(safe_bytes(url))
         test_uri, handlers = get_urllib_request_handlers(url_obj)

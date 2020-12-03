@@ -1388,7 +1388,7 @@ class RepoGroup(meta.Base, BaseDbModel):
         """Return tuple with group_id and name as html literal"""
         if repo_group is None:
             return (-1, '-- %s --' % _('top level'))
-        return repo_group.group_id, webutils.literal(cls.SEP.join(repo_group.full_path_splitted))
+        return repo_group.group_id, webutils.literal(cls.SEP.join(webutils.html_escape(x) for x in repo_group.full_path_splitted))
 
     @classmethod
     def groups_choices(cls, groups):

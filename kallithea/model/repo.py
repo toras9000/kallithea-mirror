@@ -33,7 +33,7 @@ import traceback
 from datetime import datetime
 
 import kallithea.lib.utils2
-from kallithea.lib import hooks
+from kallithea.lib import hooks, webutils
 from kallithea.lib.auth import HasRepoPermissionLevel, HasUserGroupPermissionLevel
 from kallithea.lib.exceptions import AttachedForksError
 from kallithea.lib.utils import is_valid_repo_uri, make_ui
@@ -156,18 +156,18 @@ class RepoModel(object):
 
         for gr in repo_groups_list or []:
             repos_data.append(dict(
-                raw_name='\0' + gr.name, # sort before repositories
-                just_name=gr.name,
+                raw_name='\0' + webutils.html_escape(gr.name),  # sort before repositories
+                just_name=webutils.html_escape(gr.name),
                 name=_render('group_name_html', group_name=gr.group_name, name=gr.name),
-                desc=gr.group_description))
+                desc=desc(gr.group_description)))
 
         for repo in repos_list:
             if not HasRepoPermissionLevel('read')(repo.repo_name, 'get_repos_as_dict check'):
                 continue
             cs_cache = repo.changeset_cache
             row = {
-                "raw_name": repo.repo_name,
-                "just_name": repo.just_name,
+                "raw_name": webutils.html_escape(repo.repo_name),
+                "just_name": webutils.html_escape(repo.just_name),
                 "name": repo_lnk(repo.repo_name, repo.repo_type,
                                  repo.repo_state, repo.private, repo.fork),
                 "following": following(

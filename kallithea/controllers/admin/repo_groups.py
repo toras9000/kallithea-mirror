@@ -117,7 +117,7 @@ class RepoGroupsController(BaseController):
             children_groups = [g.name for g in repo_gr.parents] + [repo_gr.name]
             repo_count = repo_gr.repositories.count()
             repo_groups_data.append({
-                "raw_name": repo_gr.group_name,
+                "raw_name": webutils.escape(repo_gr.group_name),
                 "group_name": repo_group_name(repo_gr.group_name, children_groups),
                 "desc": webutils.escape(repo_gr.group_description),
                 "repos": repo_count,
@@ -174,14 +174,14 @@ class RepoGroupsController(BaseController):
         raise HTTPFound(location=url('repos_group_home', group_name=gr.group_name))
 
     def new(self):
+        parent_group_id = safe_int(request.GET.get('parent_group') or '-1')
         if HasPermissionAny('hg.admin')('group create'):
             # we're global admin, we're ok and we can create TOP level groups
             pass
         else:
             # we pass in parent group into creation form, thus we know
             # what would be the group, we can check perms here !
-            group_id = safe_int(request.GET.get('parent_group'))
-            group = db.RepoGroup.get(group_id) if group_id else None
+            group = db.RepoGroup.get(parent_group_id) if parent_group_id else None
             group_name = group.group_name if group else None
             if HasRepoGroupPermissionLevel('admin')(group_name, 'group create'):
                 pass
@@ -189,7 +189,13 @@ class RepoGroupsController(BaseController):
                 raise HTTPForbidden()
 
         self.__load_defaults()
-        return render('admin/repo_groups/repo_group_add.html')
+        return htmlfill.render(
+            render('admin/repo_groups/repo_group_add.html'),
+            defaults={'parent_group_id': parent_group_id},
+            errors={},
+            prefix_error=False,
+            encoding="UTF-8",
+            force_defaults=False)
 
     @HasRepoGroupPermissionLevelDecorator('admin')
     def update(self, group_name):
