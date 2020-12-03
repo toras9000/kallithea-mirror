@@ -298,6 +298,18 @@ class MercurialRepository(BaseRepository):
         Traceback (most recent call last):
         ...
         urllib.error.URLError: <urlopen error Error parsing URL: 'http://example.com:65537/repo'>
+        >>> MercurialRepository._check_url('foo')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Unsupported protocol in URL 'foo'>
+        >>> MercurialRepository._check_url('git+ssh://example.com/my%20fine repo')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Unsupported protocol in URL 'git+ssh://example.com/my%20fine repo'>
+        >>> MercurialRepository._check_url('svn+http://example.com/repo')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Unsupported protocol in URL 'svn+http://example.com/repo'>
         """
         try:
             parsed_url = urllib.parse.urlparse(url)
@@ -306,9 +318,12 @@ class MercurialRepository(BaseRepository):
             raise urllib.error.URLError("Error parsing URL: %r" % url)
 
         # check first if it's not an local url
-        if os.path.isdir(url) or parsed_url.scheme == 'file':
+        if os.path.isabs(url) and os.path.isdir(url) or parsed_url.scheme == 'file':
             # When creating repos, _get_url will use file protocol for local paths
             return
+
+        if parsed_url.scheme not in ['http', 'https', 'ssh', 'git+http', 'git+https']:
+            raise urllib.error.URLError("Unsupported protocol in URL %r" % url)
 
         url = safe_bytes(url)
 
@@ -318,9 +333,8 @@ class MercurialRepository(BaseRepository):
             mercurial.sshpeer.instance(repoui or mercurial.ui.ui(), url, False).lookup(b'tip')
             return
 
-        url_prefix = None
-        if '+' in parsed_url.scheme:
-            url_prefix, url = url.split(b'+', 1)
+        if '+' in parsed_url.scheme:  # strip 'git+' for hg-git URLs
+            url = url.split(b'+', 1)[1]
 
         url_obj = mercurial.util.url(url)
         test_uri, handlers = get_urllib_request_handlers(url_obj)
@@ -349,7 +363,7 @@ class MercurialRepository(BaseRepository):
             # means it cannot be cloned
             raise urllib.error.URLError("[%s] org_exc: %s" % (cleaned_uri, e))
 
-        if not url_prefix: # skip git+http://... etc
+        if parsed_url.scheme in ['http', 'https']:  # skip git+http://... etc
             # now check if it's a proper hg repo
             try:
                 mercurial.httppeer.instance(repoui or mercurial.ui.ui(), url, False).lookup(b'tip')
