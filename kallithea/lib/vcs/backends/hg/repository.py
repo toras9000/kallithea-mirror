@@ -291,20 +291,35 @@ class MercurialRepository(BaseRepository):
 
         On failures it'll raise urllib2.HTTPError, exception is also thrown
         when the return code is non 200
+
+        >>> MercurialRepository._check_url('file:///repo')
+
+        >>> MercurialRepository._check_url('http://example.com:65537/repo')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Error parsing URL: 'http://example.com:65537/repo'>
         """
+        try:
+            parsed_url = urllib.parse.urlparse(url)
+            parsed_url.port  # trigger netloc parsing which might raise ValueError
+        except ValueError:
+            raise urllib.error.URLError("Error parsing URL: %r" % url)
+
         # check first if it's not an local url
-        url = safe_bytes(url)
-        if os.path.isdir(url) or url.startswith(b'file:'):
+        if os.path.isdir(url) or parsed_url.scheme == 'file':
+            # When creating repos, _get_url will use file protocol for local paths
             return
 
-        if url.startswith(b'ssh:'):
+        url = safe_bytes(url)
+
+        if parsed_url.scheme == 'ssh':
             # in case of invalid uri or authentication issues, sshpeer will
             # throw an exception.
             mercurial.sshpeer.instance(repoui or mercurial.ui.ui(), url, False).lookup(b'tip')
             return
 
         url_prefix = None
-        if b'+' in url[:url.find(b'://')]:
+        if '+' in parsed_url.scheme:
             url_prefix, url = url.split(b'+', 1)
 
         url_obj = mercurial.util.url(url)

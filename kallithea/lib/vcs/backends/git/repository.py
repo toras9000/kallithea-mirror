@@ -157,6 +157,10 @@ class GitRepository(BaseRepository):
 
         >>> GitRepository._check_url('git://example.com/my%20fine repo')
 
+        >>> GitRepository._check_url('http://example.com:65537/repo')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Error parsing URL: 'http://example.com:65537/repo'>
         >>> GitRepository._check_url('foo')
         Traceback (most recent call last):
         ...
@@ -190,26 +194,28 @@ class GitRepository(BaseRepository):
         ...
         urllib.error.URLError: <urlopen error Invalid whitespace character in path: '\t'>
         """
+        try:
+            parsed_url = urllib.parse.urlparse(url)
+            parsed_url.port  # trigger netloc parsing which might raise ValueError
+        except ValueError:
+            raise urllib.error.URLError("Error parsing URL: %r" % url)
+
         # check first if it's not an local url
         if os.path.isabs(url) and os.path.isdir(url):
             return
 
-        if url.startswith('git://'):
-            try:
-                _git_colon, _empty, _host, path = url.split('/', 3)
-            except ValueError:
-                raise urllib.error.URLError("Invalid URL: %r" % url)
+        if parsed_url.scheme == 'git':
             # Mitigate problems elsewhere with incorrect handling of encoded paths.
             # Don't trust urllib.parse.unquote but be prepared for more flexible implementations elsewhere.
             # Space is the only allowed whitespace character - directly or % encoded. No other % or \ is allowed.
-            for c in path.replace('%20', ' '):
+            for c in parsed_url.path.replace('%20', ' '):
                 if c in '%\\':
                     raise urllib.error.URLError("Invalid escape character in path: '%s'" % c)
                 if c.isspace() and c != ' ':
                     raise urllib.error.URLError("Invalid whitespace character in path: %r" % c)
             return
 
-        if not url.startswith('http://') and not url.startswith('https://'):
+        if parsed_url.scheme not in ['http', 'https']:
             raise urllib.error.URLError("Unsupported protocol in URL %r" % url)
 
         url_obj = mercurial.util.url(safe_bytes(url))
