@@ -149,11 +149,46 @@ class GitRepository(BaseRepository):
 
     @staticmethod
     def _check_url(url):
-        """
+        r"""
         Raise URLError if url doesn't seem like a valid safe Git URL. We
         only allow http, https, git, and ssh URLs.
 
         For http and https URLs, make a connection and probe to see if it is valid.
+
+        >>> GitRepository._check_url('git://example.com/my%20fine repo')
+
+        >>> GitRepository._check_url('foo')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Unsupported protocol in URL 'foo'>
+        >>> GitRepository._check_url('file:///repo')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Unsupported protocol in URL 'file:///repo'>
+        >>> GitRepository._check_url('git+http://example.com/repo')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Unsupported protocol in URL 'git+http://example.com/repo'>
+        >>> GitRepository._check_url('git://example.com/%09')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Invalid escape character in path: '%'>
+        >>> GitRepository._check_url('git://example.com/%x00')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Invalid escape character in path: '%'>
+        >>> GitRepository._check_url(r'git://example.com/\u0009')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Invalid escape character in path: '\'>
+        >>> GitRepository._check_url(r'git://example.com/\t')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Invalid escape character in path: '\'>
+        >>> GitRepository._check_url('git://example.com/\t')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Invalid whitespace character in path: '\t'>
         """
         # check first if it's not an local url
         if os.path.isabs(url) and os.path.isdir(url):
@@ -175,7 +210,7 @@ class GitRepository(BaseRepository):
             return
 
         if not url.startswith('http://') and not url.startswith('https://'):
-            raise urllib.error.URLError("Unsupported protocol in URL %s" % url)
+            raise urllib.error.URLError("Unsupported protocol in URL %r" % url)
 
         url_obj = mercurial.util.url(safe_bytes(url))
         test_uri, handlers = get_urllib_request_handlers(url_obj)
