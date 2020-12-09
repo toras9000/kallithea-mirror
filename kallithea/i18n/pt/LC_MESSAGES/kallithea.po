@@ -150,7 +150,7 @@ msgid "Invalid search query. Try quoting it."
 msgstr "Consulta de busca inválida. Tente usar aspas."
 
 msgid "Statistics are disabled for this repository"
-msgstr "As estatísticas estão desabillitadas para este repositório"
+msgstr "As estatísticas estão desativadas para este repositório"
 
 msgid "Default settings updated successfully"
 msgstr "Configurações predefinidas atualizadas com sucesso"
