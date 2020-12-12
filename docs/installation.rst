@@ -66,7 +66,7 @@ repository, use the following commands in your bash shell::
    updated to other revisions unless you want to upgrade. Edits in the source
    tree will have immediate impact (possibly after a restart of the service).
 
-You can now proceed to :ref:`install-front-end`.
+You can now proceed to :ref:`prepare-front-end-files`.
 
 .. _installation-virtualenv:
 
@@ -123,7 +123,9 @@ An additional benefit of virtualenv is that it doesn't require root privileges.
 - This will install Kallithea together with all other required
   Python libraries into the activated virtualenv.
 
-You can now proceed to :ref:`install-front-end`.
+You can now proceed to :ref:`prepare-front-end-files`.
+
+.. _prepare-front-end-files:
 
 
 Prepare front-end files
