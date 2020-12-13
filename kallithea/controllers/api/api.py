@@ -1256,7 +1256,6 @@ class ApiController(JSONRPCController):
                 repo_name_full=repo_name,
                 repo_type=repo_type,
                 repo_description=description,
-                owner=owner,
                 repo_private=private,
                 clone_uri=clone_uri,
                 repo_group=repo_group,
