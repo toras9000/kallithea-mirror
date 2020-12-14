@@ -31,9 +31,6 @@ from tg.i18n import ugettext as _
 
 import kallithea
 from kallithea.lib.annotate import annotate_highlight
-#==============================================================================
-# PERMS
-#==============================================================================
 from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel, HasRepoPermissionLevel
 from kallithea.lib.diffs import BIN_FILENODE, CHMOD_FILENODE, DEL_FILENODE, MOD_FILENODE, NEW_FILENODE, RENAMED_FILENODE
 from kallithea.lib.pygmentsutils import get_custom_lexer
@@ -41,9 +38,6 @@ from kallithea.lib.utils2 import (AttributeDict, age, asbool, credentials_filter
                                   time_to_datetime)
 from kallithea.lib.vcs.backends.base import BaseChangeset, EmptyChangeset
 from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError
-#==============================================================================
-# SCM FILTERS available via h.
-#==============================================================================
 from kallithea.lib.vcs.utils import author_email, author_name
 from kallithea.lib.webutils import (HTML, Option, canonical_url, checkbox, chop_at, end_form, escape, form, format_byte_size, hidden, js, jshtml, link_to,
                                     literal, password, pop_flash_messages, radio, render_w_mentions, reset, safeid, select, session_csrf_secret_name,
