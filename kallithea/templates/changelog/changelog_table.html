@@ -55,7 +55,7 @@
         <td class="date">
           <div data-toggle="tooltip" title="${h.fmt_date(cs.date)}">${h.age(cs.date,True)}</div>
         </td>
-        <% message_lines = cs.message.splitlines() %>
+        <% message_lines = cs.message.strip().splitlines() or [_("(No commit message)")] %>
         %if len(message_lines) > 1:
         <td class="expand_commit" title="${_('Expand commit message')}">
           <i class="icon-align-left"></i>
