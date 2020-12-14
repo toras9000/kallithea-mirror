@@ -151,7 +151,7 @@ class Fixture(object):
 
         return defs
 
-    def create_repo(self, name, repo_group=None, **kwargs):
+    def create_repo(self, name, repo_group=None, cur_user=TEST_USER_ADMIN_LOGIN, **kwargs):
         if 'skip_if_exists' in kwargs:
             del kwargs['skip_if_exists']
             r = db.Repository.get_by_repo_name(name)
@@ -163,13 +163,12 @@ class Fixture(object):
 
         form_data = self._get_repo_create_params(repo_name=name, **kwargs)
         form_data['repo_group'] = repo_group # patch form dict so it can be used directly by model
-        cur_user = kwargs.get('cur_user', TEST_USER_ADMIN_LOGIN)
-        RepoModel().create(form_data, cur_user)
+        RepoModel().create(form_data, cur_user=cur_user)
         meta.Session().commit()
         ScmModel().mark_for_invalidation(name)
         return db.Repository.get_by_repo_name(name)
 
-    def create_fork(self, repo_to_fork, fork_name, **kwargs):
+    def create_fork(self, repo_to_fork, fork_name, cur_user=TEST_USER_ADMIN_LOGIN, **kwargs):
         repo_to_fork = db.Repository.get_by_repo_name(repo_to_fork)
 
         form_data = self._get_repo_create_params(repo_name=fork_name,
@@ -181,8 +180,7 @@ class Fixture(object):
         form_data['private'] = form_data['repo_private']
         form_data['landing_rev'] = form_data['repo_landing_rev']
 
-        owner = kwargs.get('cur_user', TEST_USER_ADMIN_LOGIN)
-        RepoModel().create_fork(form_data, cur_user=owner)
+        RepoModel().create_fork(form_data, cur_user=cur_user)
         meta.Session().commit()
         ScmModel().mark_for_invalidation(fork_name)
         r = db.Repository.get_by_repo_name(fork_name)
@@ -193,7 +191,7 @@ class Fixture(object):
         RepoModel().delete(repo_name, **kwargs)
         meta.Session().commit()
 
-    def create_repo_group(self, name, parent_group_id=None, **kwargs):
+    def create_repo_group(self, name, parent_group_id=None, cur_user=TEST_USER_ADMIN_LOGIN, **kwargs):
         assert '/' not in name, (name, kwargs) # use group_parent_id to make nested groups
         if 'skip_if_exists' in kwargs:
             del kwargs['skip_if_exists']
@@ -205,7 +203,7 @@ class Fixture(object):
             group_name=form_data['group_name'],
             group_description=form_data['group_name'],
             parent=parent_group_id,
-            owner=kwargs.get('cur_user', TEST_USER_ADMIN_LOGIN),
+            owner=cur_user,
             )
         meta.Session().commit()
         gr = db.RepoGroup.get_by_group_name(gr.group_name)
@@ -231,18 +229,18 @@ class Fixture(object):
         UserModel().delete(userid)
         meta.Session().commit()
 
-    def create_user_group(self, name, **kwargs):
+    def create_user_group(self, name, cur_user=TEST_USER_ADMIN_LOGIN, **kwargs):
         if 'skip_if_exists' in kwargs:
             del kwargs['skip_if_exists']
             gr = db.UserGroup.get_by_group_name(group_name=name)
             if gr:
                 return gr
         form_data = self._get_user_group_create_params(name, **kwargs)
-        owner = kwargs.get('cur_user', TEST_USER_ADMIN_LOGIN)
         user_group = UserGroupModel().create(
             name=form_data['users_group_name'],
             description=form_data['user_group_description'],
-            owner=owner, active=form_data['users_group_active'],
+            owner=cur_user,
+            active=form_data['users_group_active'],
             group_data=form_data['user_group_data'])
         meta.Session().commit()
         user_group = db.UserGroup.get_by_group_name(user_group.users_group_name)
