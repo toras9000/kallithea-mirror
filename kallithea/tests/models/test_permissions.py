@@ -196,7 +196,7 @@ class TestPermissions(base.TestController):
         self.test_repo = fixture.create_repo(name=name,
                                              repo_type='hg',
                                              repo_group=self.g1,
-                                             cur_user=self.u1,)
+                                             cur_user=self.u1.username)
 
         u1_auth = AuthUser(user_id=self.u1.user_id)
         assert u1_auth.repository_group_permissions.get('group1') == 'group.none'
@@ -434,7 +434,7 @@ class TestPermissions(base.TestController):
         # admin permissions
         self.test_repo = fixture.create_repo(name='myownrepo',
                                              repo_type='hg',
-                                             cur_user=self.u2)
+                                             cur_user=self.u2.username)
 
         # enable admin access for user group on repo
         RepoModel().grant_user_group_permission(self.test_repo,
@@ -458,7 +458,7 @@ class TestPermissions(base.TestController):
         # admin permissions
         self.test_repo = fixture.create_repo(name='myownrepo',
                                              repo_type='hg',
-                                             cur_user=self.u2)
+                                             cur_user=self.u2.username)
 
         # enable only write access for user group on repo
         RepoModel().grant_user_group_permission(self.test_repo,
@@ -558,7 +558,7 @@ class TestPermissions(base.TestController):
         # create repo as USER,
         self.test_repo = fixture.create_repo(name='myownrepo',
                                              repo_type='hg',
-                                             cur_user=self.u1)
+                                             cur_user=self.u1.username)
 
         # he has permissions of admin as owner
         u1_auth = AuthUser(user_id=self.u1.user_id)
@@ -578,7 +578,7 @@ class TestPermissions(base.TestController):
         # create repo as USER,
         self.test_repo = fixture.create_repo(name='myownrepo',
                                              repo_type='hg',
-                                             cur_user=self.u1)
+                                             cur_user=self.u1.username)
 
         # he has permissions of admin as owner
         u1_auth = AuthUser(user_id=self.u1.user_id)
