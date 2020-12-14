@@ -747,7 +747,7 @@ class GitRepository(BaseRepository):
         url = self._get_url(url)
         so = self.run_git_command(['ls-remote', '-h', url])
         cmd = ['fetch', url, '--']
-        for line in (x for x in so.splitlines()):
+        for line in so.splitlines():
             sha, ref = line.split('\t')
             cmd.append('+%s:%s' % (ref, ref))
         self.run_git_command(cmd)
