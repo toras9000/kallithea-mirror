@@ -20,9 +20,8 @@ at ``test_hg`` module.
 """
 
 import os
-import shutil
 
-from kallithea.tests.base import GIT_REMOTE_REPO, HG_REMOTE_REPO, TEST_GIT_REPO, TEST_HG_REPO, TESTS_TMP_PATH
+from kallithea.tests.base import GIT_REMOTE_REPO, HG_REMOTE_REPO, TEST_GIT_REPO, TEST_HG_REPO
 from kallithea.tests.vcs.utils import SCMFetcher
 
 
@@ -30,7 +29,7 @@ from kallithea.tests.vcs.utils import SCMFetcher
 VCS_TEST_MODULE_BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 # Path to user configuration file used during tests.
-TEST_USER_CONFIG_FILE = os.path.join(TESTS_TMP_PATH, 'aconfig')
+TEST_USER_CONFIG_FILE = os.path.join(VCS_TEST_MODULE_BASE_DIR, 'aconfig')
 
 
 def setup_package():
@@ -56,7 +55,3 @@ def setup_package():
     for scm, fetcher_info in fetchers.items():
         fetcher = SCMFetcher(**fetcher_info)
         fetcher.setup()
-
-    # Copy the test user configuration file to location where
-    # temporary test data is stored at.
-    shutil.copy(os.path.join(VCS_TEST_MODULE_BASE_DIR, 'aconfig'), TEST_USER_CONFIG_FILE)
