@@ -43,7 +43,6 @@ from kallithea.model.user_group import UserGroupModel
 from kallithea.tests.base import (GIT_REPO, HG_REPO, IP_ADDR, TEST_USER_ADMIN_EMAIL, TEST_USER_ADMIN_LOGIN, TEST_USER_ADMIN_PASS, TEST_USER_REGULAR2_EMAIL,
                                   TEST_USER_REGULAR2_LOGIN, TEST_USER_REGULAR2_PASS, TEST_USER_REGULAR_EMAIL, TEST_USER_REGULAR_LOGIN, TEST_USER_REGULAR_PASS,
                                   TESTS_TMP_PATH, invalidate_all_caches)
-from kallithea.tests.vcs import setup_package
 
 
 log = logging.getLogger(__name__)
@@ -403,9 +402,6 @@ def create_test_env(repos_test_path, config, reuse_database):
     tar = tarfile.open(os.path.join(FIXTURES, 'vcs_test_git.tar.gz'))
     tar.extractall(os.path.join(TESTS_TMP_PATH, GIT_REPO))
     tar.close()
-
-    # LOAD VCS test stuff
-    setup_package()
 
 
 def create_test_index(repo_location, config, full_index):
