@@ -158,7 +158,6 @@ known_violations = [
 ('kallithea.lib.utils', 'kallithea.model'),  # clean up utils
 ('kallithea.lib.utils', 'kallithea.model.db'),
 ('kallithea.lib.utils', 'kallithea.model.scm'),
-('kallithea.model.async_tasks', 'kallithea.lib.helpers'),
 ('kallithea.model.async_tasks', 'kallithea.lib.hooks'),
 ('kallithea.model.async_tasks', 'kallithea.lib.indexers'),
 ('kallithea.model.async_tasks', 'kallithea.model'),

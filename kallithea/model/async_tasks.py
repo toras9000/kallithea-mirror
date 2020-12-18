@@ -40,11 +40,10 @@ import celery.utils.log
 from tg import config
 
 import kallithea
-import kallithea.lib.helpers as h
 from kallithea.lib import celerylib, conf, ext_json, hooks
 from kallithea.lib.indexers.daemon import WhooshIndexingDaemon
 from kallithea.lib.utils2 import asbool, ascii_bytes
-from kallithea.lib.vcs.utils import author_email
+from kallithea.lib.vcs.utils import author_email, author_name
 from kallithea.model import db, repo, userlog
 
 
@@ -64,6 +63,19 @@ def whoosh_index(repo_location, full_index):
     WhooshIndexingDaemon(index_location=index_location,
                          repo_location=repo_location) \
                          .run(full_index=full_index)
+
+
+def _author_username(author):
+    """Return the username of the user identified by the email part of the 'author' string,
+    default to the name or email.
+    Kind of similar to h.person() ."""
+    email = author_email(author)
+    if email:
+        user = db.User.get_by_email(email)
+        if user is not None:
+            return user.username
+    # Still nothing?  Just pass back the author name if any, else the email
+    return author_name(author) or email
 
 
 @celerylib.task
@@ -124,13 +136,19 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
         log.debug('Getting revisions from %s to %s',
              last_rev, last_rev + parse_limit
         )
+        usernames_cache = {}
         for cs in scm_repo[last_rev:last_rev + parse_limit]:
             log.debug('parsing %s', cs)
             last_cs = cs  # remember last parsed changeset
             tt = cs.date.timetuple()
             k = mktime(tt[:3] + (0, 0, 0, 0, 0, 0))
 
-            username = h.person(cs.author)
+            # get username from author - similar to what h.person does
+            username = usernames_cache.get(cs.author)
+            if username is None:
+                username = _author_username(cs.author)
+                usernames_cache[cs.author] = username
+
             if username in co_day_auth_aggr:
                 try:
                     l = [timegetter(x) for x in
