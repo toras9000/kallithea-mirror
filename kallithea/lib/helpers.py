@@ -48,7 +48,6 @@ from kallithea.model.changeset_status import ChangesetStatusModel
 
 # mute pyflakes "imported but unused"
 # from webutils
-assert HTML
 assert Option
 assert canonical_url
 assert checkbox
