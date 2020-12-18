@@ -199,13 +199,11 @@ class EmailNotificationModel(object):
         """
         return generated template for email based on given type
         """
-        import kallithea.lib.helpers as h
-
         base = 'email/' + self.email_types.get(type_, self.email_types[self.TYPE_DEFAULT]) + '.' + content_type
         email_template = self._tmpl_lookup.get_template(base)
         # translator and helpers inject
         _kwargs = {'_': _,
-                   'h': h,
+                   'webutils': webutils,
                    'c': c}
         _kwargs.update(kwargs)
         if content_type == 'html':

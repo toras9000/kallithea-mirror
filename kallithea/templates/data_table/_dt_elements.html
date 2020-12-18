@@ -14,7 +14,7 @@
     %>
   <div class="dt_repo ${'dt_repo_pending' if rstate == 'repo_state_pending' else ''}">
     ${base.repolabel(rtype)}
-    <a href="${h.url('summary_home', repo_name=name)}">
+    <a href="${webutils.url('summary_home', repo_name=name)}">
         ${get_name(name)}
     </a>
     %if private and c.visual.show_private_icon:
@@ -23,7 +23,7 @@
       <i class="icon-globe" title="${_('Public repository')}"></i>
     %endif
     %if fork_of:
-      <a href="${h.url('summary_home',repo_name=fork_of.repo_name)}"><i class="icon-fork"></i></a>
+      <a href="${webutils.url('summary_home',repo_name=fork_of.repo_name)}"><i class="icon-fork"></i></a>
     %endif
     %if rstate == 'repo_state_pending':
       <i class="icon-wrench" title="${_('Repository creation in progress...')}"></i>
@@ -38,12 +38,12 @@
 </%def>
 
 <%def name="last_change(last_change)">
-  <span data-toggle="tooltip" title="${h.fmt_date(last_change)}" date="${last_change}">${h.age(last_change)}</span>
+  <span data-toggle="tooltip" title="${webutils.fmt_date(last_change)}" date="${last_change}">${webutils.age(last_change)}</span>
 </%def>
 
 <%def name="revision(name,rev,tip,author,last_msg)">
   %if rev >= 0:
-      <a data-toggle="popover" title="${author | entity}" data-content="${last_msg | entity}" class="changeset_hash" href="${h.url('changeset_home',repo_name=name,revision=tip)}">${'r%s:%s' % (rev,h.short_id(tip))}</a>
+      <a data-toggle="popover" title="${author | entity}" data-content="${last_msg | entity}" class="changeset_hash" href="${webutils.url('changeset_home',repo_name=name,revision=tip)}">${'r%s:%s' % (rev,webutils.short_id(tip))}</a>
   %else:
       ${_('No changesets yet')}
   %endif
@@ -51,30 +51,30 @@
 
 <%def name="rss(name)">
   %if request.authuser.username != 'default':
-    <a title="${_('Subscribe to %s rss feed')% name}" href="${h.url('rss_feed_home',repo_name=name,api_key=request.authuser.api_key)}"><i class="icon-rss-squared"></i></a>
+    <a title="${_('Subscribe to %s rss feed')% name}" href="${webutils.url('rss_feed_home',repo_name=name,api_key=request.authuser.api_key)}"><i class="icon-rss-squared"></i></a>
   %else:
-    <a title="${_('Subscribe to %s rss feed')% name}" href="${h.url('rss_feed_home',repo_name=name)}"><i class="icon-rss-squared"></i></a>
+    <a title="${_('Subscribe to %s rss feed')% name}" href="${webutils.url('rss_feed_home',repo_name=name)}"><i class="icon-rss-squared"></i></a>
   %endif
 </%def>
 
 <%def name="atom(name)">
   %if request.authuser.username != 'default':
-    <a title="${_('Subscribe to %s atom feed')% name}" href="${h.url('atom_feed_home',repo_name=name,api_key=request.authuser.api_key)}"><i class="icon-rss-squared"></i></a>
+    <a title="${_('Subscribe to %s atom feed')% name}" href="${webutils.url('atom_feed_home',repo_name=name,api_key=request.authuser.api_key)}"><i class="icon-rss-squared"></i></a>
   %else:
-    <a title="${_('Subscribe to %s atom feed')% name}" href="${h.url('atom_feed_home',repo_name=name)}"><i class="icon-rss-squared"></i></a>
+    <a title="${_('Subscribe to %s atom feed')% name}" href="${webutils.url('atom_feed_home',repo_name=name)}"><i class="icon-rss-squared"></i></a>
   %endif
 </%def>
 
 <%def name="repo_actions(repo_name)">
-      <a href="${h.url('edit_repo',repo_name=repo_name)}" title="${_('Edit')}" class="btn btn-default btn-xs">
+      <a href="${webutils.url('edit_repo',repo_name=repo_name)}" title="${_('Edit')}" class="btn btn-default btn-xs">
         <i class="icon-pencil"></i>${_('Edit')}
       </a>
-      ${h.form(h.url('delete_repo', repo_name=repo_name))}
+      ${webutils.form(webutils.url('delete_repo', repo_name=repo_name))}
         <button name="${'remove_%s' % repo_name}" class="btn btn-default btn-xs"
             onclick="return confirm('${_('Confirm to delete this repository: %s') % repo_name}');">
           <i class="icon-trashcan"></i>${_('Delete')}
         </button>
-      ${h.end_form()}
+      ${webutils.end_form()}
 </%def>
 
 <%def name="repo_state(repo_state)">
@@ -88,62 +88,62 @@
 </%def>
 
 <%def name="user_actions(user_id, username)">
-   <a href="${h.url('edit_user',id=user_id)}" title="${_('Edit')}" class="btn btn-default btn-xs">
+   <a href="${webutils.url('edit_user',id=user_id)}" title="${_('Edit')}" class="btn btn-default btn-xs">
      <i class="icon-pencil"></i>${_('Edit')}
    </a>
-  ${h.form(h.url('delete_user', id=user_id))}
+  ${webutils.form(webutils.url('delete_user', id=user_id))}
     <button id="${'remove_user_%s' % user_id}" name="${'remove_user_%s' % repo_name}" class="btn btn-default btn-xs" title="${_('Delete')}"
         onclick="return confirm('${_('Confirm to delete this user: %s') % username}');">
       <i class="icon-trashcan"></i>${_('Delete')}
     </button>
-  ${h.end_form()}
+  ${webutils.end_form()}
 </%def>
 
 <%def name="user_group_actions(user_group_id, user_group_name)">
-    <a href="${h.url('edit_users_group', id=user_group_id)}" title="${_('Edit')}" class="btn btn-default btn-xs">
+    <a href="${webutils.url('edit_users_group', id=user_group_id)}" title="${_('Edit')}" class="btn btn-default btn-xs">
       <i class="icon-pencil"></i>${_('Edit')}
     </a>
-    ${h.form(h.url('delete_users_group', id=user_group_id))}
+    ${webutils.form(webutils.url('delete_users_group', id=user_group_id))}
       <button id="${'remove_group_%s' % user_group_id}" name="${'remove_user_%s' % repo_name}" class="btn btn-default btn-xs" title="${_('Delete')}"
           onclick="return confirm('${_('Confirm to delete this user group: %s') % user_group_name}');">
         <i class="icon-trashcan"></i>${_('Delete')}
       </button>
-    ${h.end_form()}
+    ${webutils.end_form()}
 </%def>
 
 <%def name="group_name_html(group_name,name)">
   <div class="dt_repo">
     <i class="icon-folder"></i>
-    <a href="${h.url('repos_group_home',group_name=group_name)}">${name}</a>
+    <a href="${webutils.url('repos_group_home',group_name=group_name)}">${name}</a>
   </div>
 </%def>
 
 <%def name="repo_group_actions(repo_group_id, repo_group_name, gr_count)">
-    <a href="${h.url('edit_repo_group',group_name=repo_group_name)}" title="${_('Edit')}" class="btn btn-default btn-xs">
+    <a href="${webutils.url('edit_repo_group',group_name=repo_group_name)}" title="${_('Edit')}" class="btn btn-default btn-xs">
       <i class="icon-pencil"></i>${_('Edit')}
     </a>
-    ${h.form(h.url('delete_repo_group', group_name=repo_group_name))}
+    ${webutils.form(webutils.url('delete_repo_group', group_name=repo_group_name))}
       <button id="${'remove_%s' % repo_group_name}" name="${'remove_%s' % repo_group_name}" class="btn btn-default btn-xs" title="${_('Delete')}"
           onclick="return confirm('${ungettext('Confirm to delete this group: %s with %s repository','Confirm to delete this group: %s with %s repositories',gr_count) % (repo_group_name, gr_count)}')">
         <i class="icon-trashcan"></i>${_('Delete')}
       </button>
-    ${h.end_form()}
+    ${webutils.end_form()}
 </%def>
 
 <%def name="user_name(user_id, username)">
-    ${h.link_to(username,h.url('edit_user', id=user_id))}
+    ${webutils.link_to(username,webutils.url('edit_user', id=user_id))}
 </%def>
 
 <%def name="repo_group_name(repo_group_name, children_groups)">
   <div class="text-nowrap">
-  <a href="${h.url('repos_group_home',group_name=repo_group_name)}">
-    <i class="icon-folder" title="${_('Repository group')}"></i>${h.literal(' &raquo; ').join(children_groups)}</a>
+  <a href="${webutils.url('repos_group_home',group_name=repo_group_name)}">
+    <i class="icon-folder" title="${_('Repository group')}"></i>${webutils.literal(' &raquo; ').join(children_groups)}</a>
   </div>
 </%def>
 
 <%def name="user_group_name(user_group_id, user_group_name)">
   <div class="text-nowrap">
-  <a href="${h.url('edit_users_group', id=user_group_id)}">
+  <a href="${webutils.url('edit_users_group', id=user_group_id)}">
     <i class="icon-users" title="${_('User group')}"></i>${user_group_name}</a>
   </div>
 </%def>

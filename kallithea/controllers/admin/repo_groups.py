@@ -36,7 +36,6 @@ from tg.i18n import ugettext as _
 from tg.i18n import ungettext
 from webob.exc import HTTPForbidden, HTTPFound, HTTPInternalServerError, HTTPNotFound
 
-import kallithea.lib.helpers as h
 from kallithea.controllers import base
 from kallithea.lib import webutils
 from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel, HasRepoGroupPermissionLevelDecorator, LoginRequired
@@ -106,11 +105,11 @@ class RepoGroupsController(base.BaseController):
 
         def repo_group_name(repo_group_name, children_groups):
             return template.get_def("repo_group_name") \
-                .render_unicode(repo_group_name, children_groups, _=_, h=h, c=c)
+                .render_unicode(repo_group_name, children_groups, _=_, webutils=webutils, c=c)
 
         def repo_group_actions(repo_group_id, repo_group_name, gr_count):
             return template.get_def("repo_group_actions") \
-                .render_unicode(repo_group_id, repo_group_name, gr_count, _=_, h=h, c=c,
+                .render_unicode(repo_group_id, repo_group_name, gr_count, _=_, webutils=webutils, c=c,
                         ungettext=ungettext)
 
         for repo_gr in group_iter:

@@ -26,7 +26,7 @@ ${body|n,unicode}
 ${_('Changesets')|n,unicode}:
 
 %for revision, desc in pr_revisions:
-${h.shorter(desc, 80, firstline=True)|n,unicode}
+${webutils.shorter(desc, 80, firstline=True)|n,unicode}
 %endfor
 
 <% title = _('View Pull Request') %>\

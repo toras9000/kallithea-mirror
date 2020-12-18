@@ -75,11 +75,11 @@ class UsersController(base.BaseController):
 
         def username(user_id, username):
             return template.get_def("user_name") \
-                .render_unicode(user_id, username, _=_, h=h, c=c)
+                .render_unicode(user_id, username, _=_, webutils=webutils, c=c)
 
         def user_actions(user_id, username):
             return template.get_def("user_actions") \
-                .render_unicode(user_id, username, _=_, h=h, c=c)
+                .render_unicode(user_id, username, _=_, webutils=webutils, c=c)
 
         for user in c.users_list:
             users_data.append({

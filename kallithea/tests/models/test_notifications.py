@@ -5,8 +5,8 @@ import mock
 from tg.util.webtest import test_context
 
 import kallithea.lib.celerylib
-import kallithea.lib.helpers as h
 import kallithea.model.async_tasks
+from kallithea.lib import webutils
 from kallithea.model import db, meta
 from kallithea.model.notification import EmailNotificationModel, NotificationModel
 from kallithea.model.user import UserModel
@@ -53,7 +53,7 @@ class TestNotifications(base.TestController):
                                                    body='hi there',
                                                    recipients=usrs)
 
-    @mock.patch.object(h, 'canonical_url', (lambda arg, **kwargs: 'http://%s/?%s' % (arg, '&'.join('%s=%s' % (k, v) for (k, v) in sorted(kwargs.items())))))
+    @mock.patch.object(webutils, 'canonical_url', (lambda arg, **kwargs: 'http://%s/?%s' % (arg, '&'.join('%s=%s' % (k, v) for (k, v) in sorted(kwargs.items())))))
     def test_dump_html_mails(self):
         # Exercise all notification types and dump them to one big html file
         l = []

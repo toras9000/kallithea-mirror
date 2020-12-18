@@ -72,8 +72,8 @@
                 %for revision, desc in pr_revisions:
                     <li style="mso-special-format:bullet">
                         <a style="${link_style}"
-                           href="${h.canonical_url('changeset_home', repo_name=org_repo_name, revision=revision)}">
-                            ${h.shorter(desc, 80, firstline=True)}
+                           href="${webutils.canonical_url('changeset_home', repo_name=org_repo_name, revision=revision)}">
+                            ${webutils.shorter(desc, 80, firstline=True)}
                         </a>
                     </li>
                 %endfor

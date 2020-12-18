@@ -89,11 +89,11 @@ class UserGroupsController(base.BaseController):
 
         def user_group_name(user_group_id, user_group_name):
             return template.get_def("user_group_name") \
-                .render_unicode(user_group_id, user_group_name, _=_, h=h, c=c)
+                .render_unicode(user_group_id, user_group_name, _=_, webutils=webutils, c=c)
 
         def user_group_actions(user_group_id, user_group_name):
             return template.get_def("user_group_actions") \
-                .render_unicode(user_group_id, user_group_name, _=_, h=h, c=c)
+                .render_unicode(user_group_id, user_group_name, _=_, webutils=webutils, c=c)
 
         for user_gr in group_iter:
             user_groups_data.append({

@@ -164,7 +164,6 @@ known_violations = [
 ('kallithea.model.async_tasks', 'kallithea.model'),
 ('kallithea.model', 'kallithea.lib.auth'),  # auth.HasXXX
 ('kallithea.model', 'kallithea.lib.auth_modules'),  # validators
-('kallithea.model', 'kallithea.lib.helpers'),
 ('kallithea.model', 'kallithea.lib.hooks'),  # clean up hooks
 ('kallithea.model', 'kallithea.model.scm'),
 ('kallithea.model.scm', 'kallithea.lib.hooks'),

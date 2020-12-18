@@ -95,14 +95,17 @@ class RepoModel(object):
         from tg import tmpl_context as c
         from tg.i18n import ugettext as _
 
-        import kallithea.lib.helpers as h
-
         _tmpl_lookup = app_globals.mako_lookup
         template = _tmpl_lookup.get_template('data_table/_dt_elements.html')
 
         tmpl = template.get_def(tmpl)
-        kwargs.update(dict(_=_, h=h, c=c, request=request))
-        return tmpl.render_unicode(*args, **kwargs)
+        return tmpl.render_unicode(
+            *args,
+            _=_,
+            webutils=webutils,
+            c=c,
+            request=request,
+            **kwargs)
 
     def get_repos_as_dict(self, repos_list, repo_groups_list=None,
                           admin=False,
