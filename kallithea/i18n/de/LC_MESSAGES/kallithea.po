@@ -1130,7 +1130,7 @@ msgid "Stay logged in after browser restart"
 msgstr "Nach dem Neustart des Browsers eingeloggt bleiben"
 
 msgid "Forgot your password ?"
-msgstr "Passowrt Vergessen?"
+msgstr "Passwort vergessen?"
 
 msgid "Don't have an account ?"
 msgstr "Kein Account?"
@@ -2335,6 +2335,9 @@ msgstr "Meine Pull Requests"
 
 msgid "Not Logged In"
 msgstr "Nicht eingeloggt"
+
+msgid "Forgot password?"
+msgstr "Passwort vergessen?"
 
 msgid "Permission"
 msgstr "Rechte"
