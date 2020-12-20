@@ -392,7 +392,7 @@ class SubprocessIOChunker(object):
 
     def close(self):
         try:
-            getattr(self.output, 'terminate', lambda: None)()
+            getattr(self.process, 'terminate', lambda: None)()
         except:
             pass
         try:
