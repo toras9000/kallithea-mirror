@@ -1759,7 +1759,7 @@ msgid "Build from scratch"
 msgstr "一度削除してから再度インデックスを作成"
 
 msgid ""
-"This option completely reindexeses all of the repositories for proper "
+"This option completely reindexes all of the repositories for proper "
 "fulltext search capabilities."
 msgstr ""
 "このオプションを使うと、全文検索の機能が正しく発揮されるよう、 Kallithea "

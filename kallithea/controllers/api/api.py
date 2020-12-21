@@ -1266,7 +1266,7 @@ class ApiController(JSONRPCController):
                 repo_copy_permissions=copy_permissions,
             )
 
-            task = RepoModel().create(form_data=data, cur_user=owner)
+            task = RepoModel().create(form_data=data, cur_user=owner.username)
             task_id = task.task_id
             # no commit, it's done in RepoModel, or async via celery
             return dict(
@@ -1440,7 +1440,7 @@ class ApiController(JSONRPCController):
                 update_after_clone=False,
                 fork_parent_id=repo.repo_id,
             )
-            task = RepoModel().create_fork(form_data, cur_user=owner)
+            task = RepoModel().create_fork(form_data, cur_user=owner.username)
             # no commit, it's done in RepoModel, or async via celery
             task_id = task.task_id
             return dict(
