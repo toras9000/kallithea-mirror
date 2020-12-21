@@ -2058,7 +2058,7 @@ msgid "Build from scratch"
 msgstr "Von Grund auf neu bauen"
 
 msgid ""
-"This option completely reindexeses all of the repositories for proper "
+"This option completely reindexes all of the repositories for proper "
 "fulltext search capabilities."
 msgstr ""
 "Diese Option führt zu einer vollständigen Neuindizierung aller "

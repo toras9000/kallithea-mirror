@@ -2215,7 +2215,7 @@ msgid "Build from scratch"
 msgstr "Κατασκευή από το μηδέν"
 
 msgid ""
-"This option completely reindexeses all of the repositories for proper "
+"This option completely reindexes all of the repositories for proper "
 "fulltext search capabilities."
 msgstr ""
 "Αυτή η επιλογή ξαναδημιουργεί πλήρως τα ευρετήρια σε όλα τα αποθετήρια "

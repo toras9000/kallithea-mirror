@@ -2345,7 +2345,7 @@ msgid "Build from scratch"
 msgstr "Construire ex nihilo"
 
 msgid ""
-"This option completely reindexeses all of the repositories for proper "
+"This option completely reindexes all of the repositories for proper "
 "fulltext search capabilities."
 msgstr ""
 "Cette option ré-indexe complètement tous les dépôts pour pouvoir faire "
