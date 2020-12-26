@@ -82,7 +82,7 @@ def register_command(needs_config_file=False, config_file_initialize_app=False, 
                     kallithea.config.application.make_app(config.global_conf, **config.local_conf)
                 else:
                     kallithea.CONFIG = dict(config)  # config is a dict subclass
-                return annotated(*args, **kwargs)
+                annotated(*args, **kwargs)
             return cli_command(runtime_wrapper)
         return annotator
     return cli_command
