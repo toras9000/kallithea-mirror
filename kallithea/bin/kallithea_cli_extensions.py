@@ -24,20 +24,19 @@ import os
 import click
 import pkg_resources
 
-import kallithea
 import kallithea.bin.kallithea_cli_base as cli_base
 from kallithea.lib.utils2 import ask_ok
 
 
 @cli_base.register_command(needs_config_file=True)
-def extensions_create():
+def extensions_create(config):
     """Write template file for extending Kallithea in Python.
 
     Create a template `extensions.py` file next to the ini file. Local
     customizations in that file will survive upgrades. The file contains
     instructions on how it can be customized.
     """
-    here = kallithea.CONFIG['here']
+    here = config['here']
     content = pkg_resources.resource_string(
         'kallithea', os.path.join('templates', 'py', 'extensions.py')
     )

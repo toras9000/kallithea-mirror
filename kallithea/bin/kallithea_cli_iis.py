@@ -16,7 +16,6 @@ import sys
 
 import click
 
-import kallithea
 import kallithea.bin.kallithea_cli_base as cli_base
 
 
@@ -60,10 +59,10 @@ if __name__=='__main__':
 @cli_base.register_command(needs_config_file=True)
 @click.option('--virtualdir', default='/',
         help='The virtual folder to install into on IIS.')
-def iis_install(virtualdir):
+def iis_install(virtualdir, config):
     """Install into IIS using isapi-wsgi."""
 
-    config_file_abs = kallithea.CONFIG['__file__']
+    config_file_abs = config['__file__']
 
     try:
         import isapi_wsgi

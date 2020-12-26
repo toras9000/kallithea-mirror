@@ -42,7 +42,7 @@ BACKENDS = {
 
 CELERY_APP = None  # set to Celery app instance if using Celery
 
-CONFIG = {}
+CONFIG = {}  # set to tg.config when TG app is initialized and calls app_cfg
 
 # URL prefix for non repository related links - must start with `/`
 ADMIN_PREFIX = '/_admin'
