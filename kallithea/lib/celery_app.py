@@ -39,6 +39,7 @@ desupported = set([
     'celery.result.serialier',
     'celery.result.serializer',
     'celery.send.task.error.emails',
+    'celery.task_always_eager',  # still a valid configuration in celery, but not supported in Kallithea
     'celery.task.serializer',
 ])
 

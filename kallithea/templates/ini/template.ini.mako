@@ -341,9 +341,6 @@ celery.result_backend = db+sqlite:///celery-results.db
 celery.worker_concurrency = 2
 celery.worker_max_tasks_per_child = 100
 
-<%text>##</%text> If true, tasks will never be sent to the queue, but executed locally instead.
-celery.task_always_eager = false
-
 <%text>##</%text>##################################
 <%text>##</%text>          BEAKER CACHE          ##
 <%text>##</%text>##################################
