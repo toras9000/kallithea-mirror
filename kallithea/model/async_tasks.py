@@ -55,7 +55,6 @@ log = celery.utils.log.get_task_logger(__name__)
 
 @celerylib.task
 @celerylib.locked_task
-@celerylib.dbsession
 def whoosh_index(repo_location, full_index):
     index_location = config['index_dir']
     WhooshIndexingDaemon(index_location=index_location,
@@ -77,7 +76,6 @@ def _author_username(author):
 
 
 @celerylib.task
-@celerylib.dbsession
 def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
     lockkey = celerylib.__get_lockkey('get_commits_stats', repo_name, ts_min_y,
                             ts_max_y)
@@ -233,7 +231,6 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
 
 
 @celerylib.task
-@celerylib.dbsession
 def send_email(recipients, subject, body='', html_body='', headers=None, from_name=None):
     """
     Sends an email with defined parameters from the .ini files.
@@ -350,7 +347,6 @@ def send_email(recipients, subject, body='', html_body='', headers=None, from_na
 
 
 @celerylib.task
-@celerylib.dbsession
 def create_repo(form_data, cur_user):
     cur_user = db.User.guess_instance(cur_user)
 
@@ -426,7 +422,6 @@ def create_repo(form_data, cur_user):
 
 
 @celerylib.task
-@celerylib.dbsession
 def create_repo_fork(form_data, cur_user):
     """
     Creates a fork of repository using interval VCS methods

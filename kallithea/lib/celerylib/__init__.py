@@ -66,6 +66,7 @@ def task(f_org):
             try:
                 f_org(*args, **kwargs)
             finally:
+                meta.Session.remove()  # prevent reuse of auto created db sessions
                 log.info('executed %s task', f_org.__name__)
         runner = kallithea.CELERY_APP.task(name=f_org.__name__, ignore_result=True)(f_async)
 
@@ -109,17 +110,5 @@ def locked_task(func):
         except LockHeld:
             log.info('LockHeld')
             return 'Task with key %s already running' % lockkey
-
-    return decorator(__wrapper, func)
-
-
-def dbsession(func):
-    def __wrapper(func, *fargs, **fkwargs):
-        try:
-            ret = func(*fargs, **fkwargs)
-            return ret
-        finally:
-            if kallithea.CELERY_APP and not kallithea.CELERY_APP.conf.task_always_eager:
-                meta.Session.remove()
 
     return decorator(__wrapper, func)
