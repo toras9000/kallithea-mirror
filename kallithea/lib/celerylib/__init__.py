@@ -101,11 +101,9 @@ def __get_lockkey(func, *fargs, **fkwargs):
 def locked_task(func):
     def __wrapper(func, *fargs, **fkwargs):
         lockkey = __get_lockkey(func, *fargs, **fkwargs)
-        lockkey_path = config.get('cache_dir') or config['app_conf']['cache_dir']  # Backward compatibility for TurboGears < 2.4
-
         log.info('running task with lockkey %s', lockkey)
         try:
-            l = DaemonLock(os.path.join(lockkey_path, lockkey))
+            l = DaemonLock(os.path.join(config['cache_dir'], lockkey))
             ret = func(*fargs, **fkwargs)
             l.release()
             return ret

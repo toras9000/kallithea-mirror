@@ -84,12 +84,9 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
     DBS = celerylib.get_session()
     lockkey = celerylib.__get_lockkey('get_commits_stats', repo_name, ts_min_y,
                             ts_max_y)
-    lockkey_path = config.get('cache_dir') or config['app_conf']['cache_dir']  # Backward compatibility for TurboGears < 2.4
-
     log.info('running task with lockkey %s', lockkey)
-
     try:
-        lock = celerylib.DaemonLock(os.path.join(lockkey_path, lockkey))
+        lock = celerylib.DaemonLock(os.path.join(config['cache_dir'], lockkey))
 
         co_day_auth_aggr = {}
         commits_by_day_aggregate = {}
