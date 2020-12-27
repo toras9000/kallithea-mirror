@@ -44,7 +44,7 @@ from kallithea.lib import celerylib, conf, ext_json, hooks
 from kallithea.lib.indexers.daemon import WhooshIndexingDaemon
 from kallithea.lib.utils2 import asbool, ascii_bytes
 from kallithea.lib.vcs.utils import author_email, author_name
-from kallithea.model import db, repo, userlog
+from kallithea.model import db, meta, repo, userlog
 
 
 __all__ = ['whoosh_index', 'get_commits_stats', 'send_email']
@@ -57,8 +57,6 @@ log = celery.utils.log.get_task_logger(__name__)
 @celerylib.locked_task
 @celerylib.dbsession
 def whoosh_index(repo_location, full_index):
-    celerylib.get_session() # initialize database connection
-
     index_location = config['index_dir']
     WhooshIndexingDaemon(index_location=index_location,
                          repo_location=repo_location) \
@@ -81,7 +79,6 @@ def _author_username(author):
 @celerylib.task
 @celerylib.dbsession
 def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
-    DBS = celerylib.get_session()
     lockkey = celerylib.__get_lockkey('get_commits_stats', repo_name, ts_min_y,
                             ts_max_y)
     log.info('running task with lockkey %s', lockkey)
@@ -107,9 +104,9 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
         last_cs = None
         timegetter = itemgetter('time')
 
-        dbrepo = DBS.query(db.Repository) \
+        dbrepo = db.Repository.query() \
             .filter(db.Repository.repo_name == repo_name).scalar()
-        cur_stats = DBS.query(db.Statistics) \
+        cur_stats = db.Statistics.query() \
             .filter(db.Statistics.repository == dbrepo).scalar()
 
         if cur_stats is not None:
@@ -212,11 +209,11 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
         try:
             stats.repository = dbrepo
             stats.stat_on_revision = last_cs.revision if last_cs else 0
-            DBS.add(stats)
-            DBS.commit()
+            meta.Session().add(stats)
+            meta.Session().commit()
         except:
             log.error(traceback.format_exc())
-            DBS.rollback()
+            meta.Session().rollback()
             lock.release()
             return False
 
@@ -355,8 +352,6 @@ def send_email(recipients, subject, body='', html_body='', headers=None, from_na
 @celerylib.task
 @celerylib.dbsession
 def create_repo(form_data, cur_user):
-    DBS = celerylib.get_session()
-
     cur_user = db.User.guess_instance(cur_user)
 
     owner = cur_user
@@ -399,7 +394,7 @@ def create_repo(form_data, cur_user):
         userlog.action_logger(cur_user, 'user_created_repo',
                       form_data['repo_name_full'], '')
 
-        DBS.commit()
+        meta.Session().commit()
         # now create this repo on Filesystem
         repo.RepoModel()._create_filesystem_repo(
             repo_name=repo_name,
@@ -415,7 +410,7 @@ def create_repo(form_data, cur_user):
 
         # set new created state
         db_repo.set_state(db.Repository.STATE_CREATED)
-        DBS.commit()
+        meta.Session().commit()
     except Exception as e:
         log.warning('Exception %s occurred when forking repository, '
                     'doing cleanup...' % e)
@@ -423,7 +418,7 @@ def create_repo(form_data, cur_user):
         db_repo = db.Repository.get_by_repo_name(repo_name_full)
         if db_repo:
             db.Repository.delete(db_repo.repo_id)
-            DBS.commit()
+            meta.Session().commit()
             repo.RepoModel()._delete_filesystem_repo(db_repo)
         raise
 
@@ -439,8 +434,6 @@ def create_repo_fork(form_data, cur_user):
     :param form_data:
     :param cur_user:
     """
-    DBS = celerylib.get_session()
-
     base_path = kallithea.CONFIG['base_path']
     cur_user = db.User.guess_instance(cur_user)
 
@@ -472,7 +465,7 @@ def create_repo_fork(form_data, cur_user):
         )
         userlog.action_logger(cur_user, 'user_forked_repo:%s' % repo_name_full,
                       fork_of.repo_name, '')
-        DBS.commit()
+        meta.Session().commit()
 
         source_repo_path = os.path.join(base_path, fork_of.repo_name)
 
@@ -491,7 +484,7 @@ def create_repo_fork(form_data, cur_user):
 
         # set new created state
         db_repo.set_state(db.Repository.STATE_CREATED)
-        DBS.commit()
+        meta.Session().commit()
     except Exception as e:
         log.warning('Exception %s occurred when forking repository, '
                     'doing cleanup...' % e)
@@ -499,7 +492,7 @@ def create_repo_fork(form_data, cur_user):
         db_repo = db.Repository.get_by_repo_name(repo_name_full)
         if db_repo:
             db.Repository.delete(db_repo.repo_id)
-            DBS.commit()
+            meta.Session().commit()
             repo.RepoModel()._delete_filesystem_repo(db_repo)
         raise
 

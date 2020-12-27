@@ -113,11 +113,6 @@ def locked_task(func):
     return decorator(__wrapper, func)
 
 
-def get_session():
-    sa = meta.Session()
-    return sa
-
-
 def dbsession(func):
     def __wrapper(func, *fargs, **fkwargs):
         try:
