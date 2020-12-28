@@ -196,6 +196,9 @@ msgstr "Δημόσιο Ημερολόγιο"
 msgid "Journal"
 msgstr "Ημερολόγιο"
 
+msgid "Authentication failed."
+msgstr "Ο έλεγχος ταυτότητας απέτυχε."
+
 msgid "Bad captcha"
 msgstr "Λάθος captcha"
 
@@ -3046,6 +3049,12 @@ msgstr "Αλλαγή κατάστασης:"
 msgid "The pull request has been closed."
 msgstr "Το αίτημα έλξης έχει κλείσει."
 
+msgid "Message"
+msgstr "Μήνυμα"
+
+msgid "Password Reset Request"
+msgstr "Αίτημα επαναφοράς κωδικού"
+
 msgid "Hello %s"
 msgstr "Γεια σας %s"
 
@@ -3095,6 +3104,9 @@ msgstr "από"
 msgid "to"
 msgstr "προς"
 
+msgid "View Pull Request"
+msgstr "Προβολή Αιτήματος Έλξης"
+
 msgid "Mention in Comment on Pull Request %s \"%s\""
 msgstr "Αναφορά στο σχόλιο για το αίτημα έλξης %s \"%s\""
 
@@ -3103,6 +3115,9 @@ msgstr "Το αίτημα έλξης %s \"%s\" είναι Κλειστό"
 
 msgid "Comment on Pull Request %s \"%s\""
 msgstr "Σχόλιο στην αίτηση έλξης %s \"%s\""
+
+msgid "New User Registration"
+msgstr "Εγγραφή Νέου Χρήστη"
 
 msgid "Full Name"
 msgstr "Ονοματεπώνυμο"
