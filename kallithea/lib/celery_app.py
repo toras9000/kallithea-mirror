@@ -21,6 +21,7 @@ class CeleryConfig(object):
     imports = [
         'kallithea.lib.indexers.daemon',
         'kallithea.model.async_tasks',
+        'kallithea.model.repo',
     ]
     task_always_eager = False
 

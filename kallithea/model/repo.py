@@ -33,13 +33,13 @@ import traceback
 from datetime import datetime
 
 import kallithea.lib.utils2
-from kallithea.lib import hooks, webutils
+from kallithea.lib import celerylib, hooks, webutils
 from kallithea.lib.auth import HasRepoPermissionLevel, HasUserGroupPermissionLevel
 from kallithea.lib.exceptions import AttachedForksError
 from kallithea.lib.utils import is_valid_repo_uri, make_ui
 from kallithea.lib.utils2 import LazyProperty, get_current_authuser, obfuscate_url_pw, remove_prefix
 from kallithea.lib.vcs.backends import get_backend
-from kallithea.model import db, meta, scm
+from kallithea.model import db, meta, scm, userlog
 
 
 log = logging.getLogger(__name__)
@@ -404,8 +404,7 @@ class RepoModel(object):
         :param form_data:
         :param cur_user:
         """
-        from kallithea.model import async_tasks
-        return async_tasks.create_repo(form_data, cur_user)
+        return create_repo(form_data, cur_user)
 
     def _update_permissions(self, repo, perms_new=None, perms_updates=None,
                             check_perms=True):
@@ -447,8 +446,7 @@ class RepoModel(object):
         :param form_data:
         :param cur_user:
         """
-        from kallithea.model import async_tasks
-        return async_tasks.create_repo_fork(form_data, cur_user)
+        return create_repo_fork(form_data, cur_user)
 
     def delete(self, repo, forks=None, fs_remove=True, cur_user=None):
         """
@@ -695,3 +693,147 @@ class RepoModel(object):
             shutil.move(rm_path, os.path.join(self.repos_path, _d))
         else:
             log.error("Can't find repo to delete in %r", rm_path)
+
+
+@celerylib.task
+def create_repo(form_data, cur_user):
+    cur_user = db.User.guess_instance(cur_user)
+
+    owner = cur_user
+    repo_name = form_data['repo_name']
+    repo_name_full = form_data['repo_name_full']
+    repo_type = form_data['repo_type']
+    description = form_data['repo_description']
+    private = form_data['repo_private']
+    clone_uri = form_data.get('clone_uri')
+    repo_group = form_data['repo_group']
+    landing_rev = form_data['repo_landing_rev']
+    copy_fork_permissions = form_data.get('copy_permissions')
+    copy_group_permissions = form_data.get('repo_copy_permissions')
+    fork_of = form_data.get('fork_parent_id')
+    state = form_data.get('repo_state', db.Repository.STATE_PENDING)
+
+    # repo creation defaults, private and repo_type are filled in form
+    defs = db.Setting.get_default_repo_settings(strip_prefix=True)
+    enable_statistics = defs.get('repo_enable_statistics')
+    enable_downloads = defs.get('repo_enable_downloads')
+
+    try:
+        db_repo = RepoModel()._create_repo(
+            repo_name=repo_name_full,
+            repo_type=repo_type,
+            description=description,
+            owner=owner,
+            private=private,
+            clone_uri=clone_uri,
+            repo_group=repo_group,
+            landing_rev=landing_rev,
+            fork_of=fork_of,
+            copy_fork_permissions=copy_fork_permissions,
+            copy_group_permissions=copy_group_permissions,
+            enable_statistics=enable_statistics,
+            enable_downloads=enable_downloads,
+            state=state
+        )
+
+        userlog.action_logger(cur_user, 'user_created_repo',
+                      form_data['repo_name_full'], '')
+
+        meta.Session().commit()
+        # now create this repo on Filesystem
+        RepoModel()._create_filesystem_repo(
+            repo_name=repo_name,
+            repo_type=repo_type,
+            repo_group=db.RepoGroup.guess_instance(repo_group),
+            clone_uri=clone_uri,
+        )
+        db_repo = db.Repository.get_by_repo_name(repo_name_full)
+        hooks.log_create_repository(db_repo.get_dict(), created_by=owner.username)
+
+        # update repo changeset caches initially
+        db_repo.update_changeset_cache()
+
+        # set new created state
+        db_repo.set_state(db.Repository.STATE_CREATED)
+        meta.Session().commit()
+    except Exception as e:
+        log.warning('Exception %s occurred when forking repository, '
+                    'doing cleanup...' % e)
+        # rollback things manually !
+        db_repo = db.Repository.get_by_repo_name(repo_name_full)
+        if db_repo:
+            db.Repository.delete(db_repo.repo_id)
+            meta.Session().commit()
+            RepoModel()._delete_filesystem_repo(db_repo)
+        raise
+
+
+@celerylib.task
+def create_repo_fork(form_data, cur_user):
+    """
+    Creates a fork of repository using interval VCS methods
+
+    :param form_data:
+    :param cur_user:
+    """
+    base_path = kallithea.CONFIG['base_path']
+    cur_user = db.User.guess_instance(cur_user)
+
+    repo_name = form_data['repo_name']  # fork in this case
+    repo_name_full = form_data['repo_name_full']
+
+    repo_type = form_data['repo_type']
+    owner = cur_user
+    private = form_data['private']
+    clone_uri = form_data.get('clone_uri')
+    repo_group = form_data['repo_group']
+    landing_rev = form_data['landing_rev']
+    copy_fork_permissions = form_data.get('copy_permissions')
+
+    try:
+        fork_of = db.Repository.guess_instance(form_data.get('fork_parent_id'))
+
+        RepoModel()._create_repo(
+            repo_name=repo_name_full,
+            repo_type=repo_type,
+            description=form_data['description'],
+            owner=owner,
+            private=private,
+            clone_uri=clone_uri,
+            repo_group=repo_group,
+            landing_rev=landing_rev,
+            fork_of=fork_of,
+            copy_fork_permissions=copy_fork_permissions
+        )
+        userlog.action_logger(cur_user, 'user_forked_repo:%s' % repo_name_full,
+                      fork_of.repo_name, '')
+        meta.Session().commit()
+
+        source_repo_path = os.path.join(base_path, fork_of.repo_name)
+
+        # now create this repo on Filesystem
+        RepoModel()._create_filesystem_repo(
+            repo_name=repo_name,
+            repo_type=repo_type,
+            repo_group=db.RepoGroup.guess_instance(repo_group),
+            clone_uri=source_repo_path,
+        )
+        db_repo = db.Repository.get_by_repo_name(repo_name_full)
+        hooks.log_create_repository(db_repo.get_dict(), created_by=owner.username)
+
+        # update repo changeset caches initially
+        db_repo.update_changeset_cache()
+
+        # set new created state
+        db_repo.set_state(db.Repository.STATE_CREATED)
+        meta.Session().commit()
+    except Exception as e:
+        log.warning('Exception %s occurred when forking repository, '
+                    'doing cleanup...' % e)
+        # rollback things manually !
+        db_repo = db.Repository.get_by_repo_name(repo_name_full)
+        if db_repo:
+            db.Repository.delete(db_repo.repo_id)
+            meta.Session().commit()
+            RepoModel()._delete_filesystem_repo(db_repo)
+        raise
