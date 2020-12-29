@@ -1266,13 +1266,11 @@ class ApiController(JSONRPCController):
             )
 
             task = RepoModel().create(form_data=data, cur_user=owner.username)
-            task_id = task.task_id
             # no commit, it's done in RepoModel, or async via celery
             return dict(
                 msg="Created new repository `%s`" % (repo_name,),
                 success=True,  # cannot return the repo data here since fork
                                # can be done async
-                task=task_id
             )
         except Exception:
             log.error(traceback.format_exc())
@@ -1441,13 +1439,11 @@ class ApiController(JSONRPCController):
             )
             task = RepoModel().create_fork(form_data, cur_user=owner.username)
             # no commit, it's done in RepoModel, or async via celery
-            task_id = task.task_id
             return dict(
                 msg='Created fork of `%s` as `%s`' % (repo.repo_name,
                                                       fork_name),
                 success=True,  # cannot return the repo data here since fork
                                # can be done async
-                task=task_id
             )
         except Exception:
             log.error(traceback.format_exc())

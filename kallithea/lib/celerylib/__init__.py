@@ -53,8 +53,6 @@ class FakeTask(object):
 
     traceback = None # if failed
 
-    task_id = None
-
 
 def task(f_org):
     """Wrapper of celery.task.task, running async if CELERY_APP

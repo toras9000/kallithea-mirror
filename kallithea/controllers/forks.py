@@ -143,7 +143,6 @@ class ForksController(base.BaseRepoController):
                              repo_groups=c.repo_groups,
                              landing_revs=c.landing_revs_choices)()
         form_result = {}
-        task_id = None
         try:
             form_result = _form.to_python(dict(request.POST))
 
@@ -154,7 +153,6 @@ class ForksController(base.BaseRepoController):
             # create fork is done sometimes async on celery, db transaction
             # management is handled there.
             task = RepoModel().create_fork(form_result, request.authuser.user_id)
-            task_id = task.task_id
         except formencode.Invalid as errors:
             return htmlfill.render(
                 base.render('forks/fork.html'),
@@ -170,4 +168,4 @@ class ForksController(base.BaseRepoController):
 
         raise HTTPFound(location=webutils.url('repo_creating_home',
                               repo_name=form_result['repo_name_full'],
-                              task_id=task_id))
+                              ))

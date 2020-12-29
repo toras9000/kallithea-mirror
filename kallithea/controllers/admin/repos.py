@@ -117,7 +117,6 @@ class ReposController(base.BaseRepoController):
             # create is done sometimes async on celery, db transaction
             # management is handled there.
             task = RepoModel().create(form_result, request.authuser.user_id)
-            task_id = task.task_id
         except Exception:
             log.error(traceback.format_exc())
             msg = (_('Error creating repository %s')
@@ -127,7 +126,7 @@ class ReposController(base.BaseRepoController):
 
         raise HTTPFound(location=webutils.url('repo_creating_home',
                               repo_name=form_result['repo_name_full'],
-                              task_id=task_id))
+                              ))
 
     @NotAnonymous()
     def create_repository(self):
@@ -158,7 +157,6 @@ class ReposController(base.BaseRepoController):
     @LoginRequired()
     def repo_creating(self, repo_name):
         c.repo = repo_name
-        c.task_id = request.GET.get('task_id')
         if not c.repo:
             raise HTTPNotFound()
         return base.render('admin/repos/repo_creating.html')
@@ -167,14 +165,6 @@ class ReposController(base.BaseRepoController):
     @base.jsonify
     def repo_check(self, repo_name):
         c.repo = repo_name
-        task_id = request.GET.get('task_id')
-
-        if task_id and task_id not in ['None']:
-            if kallithea.CELERY_APP:
-                task_result = kallithea.CELERY_APP.AsyncResult(task_id)
-                if task_result.failed():
-                    raise HTTPInternalServerError(task_result.traceback)
-
         repo = db.Repository.get_by_repo_name(repo_name)
         if repo and repo.repo_state == db.Repository.STATE_CREATED:
             if repo.clone_uri:

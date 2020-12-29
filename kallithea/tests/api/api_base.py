@@ -789,7 +789,6 @@ class _BaseTestApi(object):
         ret = {
             'msg': 'Created new repository `%s`' % repo_name,
             'success': True,
-            'task': None,
         }
         expected = ret
         self._compare_ok(id_, expected, given=response.body)
@@ -860,7 +859,6 @@ class _BaseTestApi(object):
         expected = {
             'msg': 'Created new repository `%s`' % repo_name,
             'success': True,
-            'task': None,
         }
         self._compare_ok(id_, expected, given=response.body)
         repo = RepoModel().get_by_repo_name(repo_name)
@@ -893,7 +891,6 @@ class _BaseTestApi(object):
         ret = {
             'msg': 'Created new repository `%s`' % repo_name,
             'success': True,
-            'task': None,
         }
         expected = ret
         self._compare_ok(id_, expected, given=response.body)
@@ -931,7 +928,6 @@ class _BaseTestApi(object):
         ret = {
             'msg': 'Created new repository `%s`' % repo_name,
             'success': True,
-            'task': None,
         }
         expected = ret
         self._compare_ok(id_, expected, given=response.body)
@@ -951,7 +947,6 @@ class _BaseTestApi(object):
         ret = {
             'msg': 'Created new repository `%s`' % repo_name,
             'success': True,
-            'task': None,
         }
         expected = ret
         self._compare_ok(id_, expected, given=response.body)
@@ -1260,7 +1255,6 @@ class _BaseTestApi(object):
             'msg': 'Created fork of `%s` as `%s`' % (self.REPO,
                                                      fork_name),
             'success': True,
-            'task': None,
         }
         expected = ret
         self._compare_ok(id_, expected, given=response.body)
@@ -1281,7 +1275,6 @@ class _BaseTestApi(object):
             'msg': 'Created fork of `%s` as `%s`' % (self.REPO,
                                                      fork_name),
             'success': True,
-            'task': None,
         }
         expected = ret
         self._compare_ok(id_, expected, given=response.body)
