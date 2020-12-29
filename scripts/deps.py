@@ -153,7 +153,7 @@ kallithea.templates.py
 shown_modules = normal_modules | top_modules
 
 # break the chains somehow - this is a cleanup TODO list
-known_violations = [
+known_violations = set([
 ('kallithea.lib.auth_modules', 'kallithea.lib.auth'),  # needs base&facade
 ('kallithea.lib.utils', 'kallithea.model'),  # clean up utils
 ('kallithea.lib.utils', 'kallithea.model.db'),
@@ -166,7 +166,7 @@ known_violations = [
 ('kallithea.model', 'kallithea.lib.hooks'),  # clean up hooks
 ('kallithea.model', 'kallithea.model.scm'),
 ('kallithea.model.scm', 'kallithea.lib.hooks'),
-]
+])
 
 extra_edges = [
 ('kallithea.config', 'kallithea.controllers'),  # through TG
@@ -271,6 +271,8 @@ Usage:
 
     # verify dependencies by untangling dependency chain bottom-up:
     todo = set(normalized_dep_edges)
+    unseen_violations = known_violations.difference(todo)
+    assert not unseen_violations, unseen_violations
     for x in known_violations:
         todo.remove(x)
 
