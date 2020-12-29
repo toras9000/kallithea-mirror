@@ -32,9 +32,11 @@ import traceback
 from shutil import rmtree
 from time import mktime
 
+from tg import config
 from whoosh.index import create_in, exists_in, open_dir
 from whoosh.qparser import QueryParser
 
+from kallithea.lib import celerylib
 from kallithea.lib.conf import INDEX_EXTENSIONS, INDEX_FILENAMES
 from kallithea.lib.indexers import CHGSET_IDX_NAME, CHGSETS_SCHEMA, IDX_NAME, SCHEMA
 from kallithea.lib.utils2 import safe_str
@@ -444,3 +446,12 @@ class WhooshIndexingDaemon(object):
             self.build_indexes()
         else:
             self.update_indexes()
+
+
+@celerylib.task
+@celerylib.locked_task
+def whoosh_index(repo_location, full_index):
+    index_location = config['index_dir']
+    WhooshIndexingDaemon(index_location=index_location,
+                         repo_location=repo_location) \
+                         .run(full_index=full_index)

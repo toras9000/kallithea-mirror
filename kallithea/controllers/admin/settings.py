@@ -36,6 +36,7 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPFound
 
 import kallithea
+import kallithea.lib.indexers.daemon
 from kallithea.controllers import base
 from kallithea.lib import webutils
 from kallithea.lib.auth import HasPermissionAnyDecorator, LoginRequired
@@ -378,7 +379,7 @@ class SettingsController(base.BaseController):
         if request.POST:
             repo_location = self._get_hg_ui_settings()['paths_root_path']
             full_index = request.POST.get('full_index', False)
-            async_tasks.whoosh_index(repo_location, full_index)
+            kallithea.lib.indexers.daemon.whoosh_index(repo_location, full_index)
             webutils.flash(_('Whoosh reindex task scheduled'), category='success')
             raise HTTPFound(location=url('admin_settings_search'))
 

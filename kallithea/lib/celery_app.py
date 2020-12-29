@@ -18,7 +18,10 @@ import logging
 
 
 class CeleryConfig(object):
-    imports = ['kallithea.model.async_tasks']
+    imports = [
+        'kallithea.lib.indexers.daemon',
+        'kallithea.model.async_tasks',
+    ]
     task_always_eager = False
 
 list_config_names = {'imports', 'accept_content'}

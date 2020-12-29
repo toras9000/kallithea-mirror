@@ -41,25 +41,15 @@ from tg import config
 
 import kallithea
 from kallithea.lib import celerylib, conf, ext_json, hooks
-from kallithea.lib.indexers.daemon import WhooshIndexingDaemon
 from kallithea.lib.utils2 import asbool, ascii_bytes
 from kallithea.lib.vcs.utils import author_email, author_name
 from kallithea.model import db, meta, repo, userlog
 
 
-__all__ = ['whoosh_index', 'get_commits_stats', 'send_email']
+__all__ = ['get_commits_stats', 'send_email']
 
 
 log = celery.utils.log.get_task_logger(__name__)
-
-
-@celerylib.task
-@celerylib.locked_task
-def whoosh_index(repo_location, full_index):
-    index_location = config['index_dir']
-    WhooshIndexingDaemon(index_location=index_location,
-                         repo_location=repo_location) \
-                         .run(full_index=full_index)
 
 
 def _author_username(author):
