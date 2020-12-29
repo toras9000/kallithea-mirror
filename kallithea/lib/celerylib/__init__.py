@@ -78,11 +78,11 @@ def task(f_org):
         def f_wrapped(*args, **kwargs):
             log.info('executing task %s in sync', f_org.__name__)
             try:
-                result = f_org(*args, **kwargs)
+                f_org(*args, **kwargs)
             except Exception as e:
                 log.error('exception executing sync task %s in sync: %r', f_org.__name__, e)
                 raise # TODO: return this in FakeTask as with async tasks?
-            return FakeTask(result)
+            return FakeTask(None)
 
     return f_wrapped
 

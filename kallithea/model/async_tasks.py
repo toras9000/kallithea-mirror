@@ -87,14 +87,14 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
         commits_by_day_aggregate = {}
         db_repo = db.Repository.get_by_repo_name(repo_name)
         if db_repo is None:
-            return True
+            return
 
         scm_repo = db_repo.scm_instance
         repo_size = scm_repo.count()
         # return if repo have no revisions
         if repo_size < 1:
             lock.release()
-            return True
+            return
 
         skip_date_limit = True
         parse_limit = int(config.get('commit_parse_limit'))
@@ -115,7 +115,7 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
             # current state of parsing revision(from db marker) is the
             # last revision
             lock.release()
-            return True
+            return
 
         if cur_stats:
             commits_by_day_aggregate = OrderedDict(ext_json.loads(
@@ -213,7 +213,7 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
             log.error(traceback.format_exc())
             meta.Session().rollback()
             lock.release()
-            return False
+            return
 
         # final release
         lock.release()
@@ -227,7 +227,6 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
             log.debug('Not recursing')
     except celerylib.LockHeld:
         log.info('Task with key %s already running', lockkey)
-        return 'Task with key %s already running' % lockkey
 
 
 @celerylib.task
@@ -267,7 +266,7 @@ def send_email(recipients, subject, body='', html_body='', headers=None, from_na
         # configured in email_to, so return.
         if not recipients:
             log.error("No recipients specified and no fallback available.")
-            return False
+            return
 
         log.warning("No recipients specified for '%s' - sending to admins %s", subject, ' '.join(recipients))
 
@@ -304,7 +303,7 @@ def send_email(recipients, subject, body='', html_body='', headers=None, from_na
     else:
         log.error("SMTP mail server not configured - cannot send e-mail.")
         log.warning(logmsg)
-        return False
+        return
 
     msg = email.message.EmailMessage()
     msg['Subject'] = subject
@@ -342,8 +341,6 @@ def send_email(recipients, subject, body='', html_body='', headers=None, from_na
     except:
         log.error('Mail sending failed')
         log.error(traceback.format_exc())
-        return False
-    return True
 
 
 @celerylib.task
@@ -418,8 +415,6 @@ def create_repo(form_data, cur_user):
             repo.RepoModel()._delete_filesystem_repo(db_repo)
         raise
 
-    return True
-
 
 @celerylib.task
 def create_repo_fork(form_data, cur_user):
@@ -490,8 +485,6 @@ def create_repo_fork(form_data, cur_user):
             meta.Session().commit()
             repo.RepoModel()._delete_filesystem_repo(db_repo)
         raise
-
-    return True
 
 
 def __get_codes_stats(repo_name):
