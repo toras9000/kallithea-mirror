@@ -152,7 +152,7 @@ class ForksController(base.BaseRepoController):
 
             # create fork is done sometimes async on celery, db transaction
             # management is handled there.
-            task = RepoModel().create_fork(form_result, request.authuser.user_id)
+            RepoModel().create_fork(form_result, request.authuser.user_id)
         except formencode.Invalid as errors:
             return htmlfill.render(
                 base.render('forks/fork.html'),

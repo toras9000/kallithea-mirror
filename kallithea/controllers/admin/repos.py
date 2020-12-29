@@ -116,7 +116,7 @@ class ReposController(base.BaseRepoController):
         try:
             # create is done sometimes async on celery, db transaction
             # management is handled there.
-            task = RepoModel().create(form_result, request.authuser.user_id)
+            RepoModel().create(form_result, request.authuser.user_id)
         except Exception:
             log.error(traceback.format_exc())
             msg = (_('Error creating repository %s')

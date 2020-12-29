@@ -42,18 +42,6 @@ from kallithea.model import meta
 log = logging.getLogger(__name__)
 
 
-class FakeTask(object):
-    """Fake a sync result to make it look like a finished task"""
-
-    def __init__(self, result):
-        self.result = result
-
-    def failed(self):
-        return False
-
-    traceback = None # if failed
-
-
 def task(f_org):
     """Wrapper of celery.task.task, running async if CELERY_APP
     """
@@ -71,7 +59,6 @@ def task(f_org):
         def f_wrapped(*args, **kwargs):
             t = runner.apply_async(args=args, kwargs=kwargs)
             log.info('executing task %s in async mode - id %s', f_org, t.task_id)
-            return t
     else:
         def f_wrapped(*args, **kwargs):
             log.info('executing task %s in sync', f_org.__name__)
@@ -79,8 +66,7 @@ def task(f_org):
                 f_org(*args, **kwargs)
             except Exception as e:
                 log.error('exception executing sync task %s in sync: %r', f_org.__name__, e)
-                raise # TODO: return this in FakeTask as with async tasks?
-            return FakeTask(None)
+                raise # TODO: report errors differently ... and consistently between sync and async
 
     return f_wrapped
 
