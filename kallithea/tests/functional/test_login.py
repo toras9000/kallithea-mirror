@@ -6,7 +6,7 @@ import urllib.parse
 import mock
 from tg.util.webtest import test_context
 
-import kallithea.model.async_tasks
+import kallithea.model.notification
 from kallithea.lib import webutils
 from kallithea.lib.utils2 import check_password, generate_api_key
 from kallithea.model import db, meta, validators
@@ -410,7 +410,7 @@ class TestLoginController(base.TestController):
         def mock_send_email(recipients, subject, body='', html_body='', headers=None, from_name=None):
             collected.append((recipients, subject, body, html_body))
 
-        with mock.patch.object(kallithea.model.async_tasks, 'send_email', mock_send_email), \
+        with mock.patch.object(kallithea.model.notification, 'send_email', mock_send_email), \
                 mock.patch.object(time, 'time', lambda: timestamp):
             response = self.app.post(base.url(controller='login',
                                          action='password_reset'),

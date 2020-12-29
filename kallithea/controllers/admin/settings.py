@@ -44,7 +44,7 @@ from kallithea.lib.utils import repo2db_mapper, set_app_settings
 from kallithea.lib.utils2 import safe_str
 from kallithea.lib.vcs import VCSError
 from kallithea.lib.webutils import url
-from kallithea.model import async_tasks, db, meta
+from kallithea.model import db, meta, notification
 from kallithea.model.forms import ApplicationSettingsForm, ApplicationUiSettingsForm, ApplicationVisualisationForm
 from kallithea.model.notification import EmailNotificationModel
 from kallithea.model.scm import ScmModel
@@ -301,7 +301,7 @@ class SettingsController(base.BaseController):
 
             recipients = [test_email] if test_email else None
 
-            async_tasks.send_email(recipients, test_email_subj,
+            notification.send_email(recipients, test_email_subj,
                              test_email_txt_body, test_email_html_body)
 
             webutils.flash(_('Send email task created'), category='success')

@@ -26,11 +26,7 @@ Original author and date, and relevant copyright and licensing information is be
 :license: GPLv3, see LICENSE.md for more details.
 """
 
-import email.message
-import email.utils
 import os
-import smtplib
-import time
 import traceback
 from collections import OrderedDict
 from operator import itemgetter
@@ -46,7 +42,7 @@ from kallithea.lib.vcs.utils import author_email, author_name
 from kallithea.model import db, meta
 
 
-__all__ = ['get_commits_stats', 'send_email']
+__all__ = ['get_commits_stats']
 
 
 log = celery.utils.log.get_task_logger(__name__)
@@ -217,120 +213,6 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
             log.debug('Not recursing')
     except celerylib.LockHeld:
         log.info('Task with key %s already running', lockkey)
-
-
-@celerylib.task
-def send_email(recipients, subject, body='', html_body='', headers=None, from_name=None):
-    """
-    Sends an email with defined parameters from the .ini files.
-
-    :param recipients: list of recipients, if this is None, the defined email
-        address from field 'email_to' and all admins is used instead
-    :param subject: subject of the mail
-    :param body: plain text body of the mail
-    :param html_body: html version of body
-    :param headers: dictionary of prepopulated e-mail headers
-    :param from_name: full name to be used as sender of this mail - often a
-    .full_name_or_username value
-    """
-    assert isinstance(recipients, list), recipients
-    if headers is None:
-        headers = {}
-    else:
-        # do not modify the original headers object passed by the caller
-        headers = headers.copy()
-
-    email_config = config
-    email_prefix = email_config.get('email_prefix', '')
-    if email_prefix:
-        subject = "%s %s" % (email_prefix, subject)
-
-    if not recipients:
-        # if recipients are not defined we send to email_config + all admins
-        recipients = [u.email for u in db.User.query()
-                      .filter(db.User.admin == True).all()]
-        if email_config.get('email_to') is not None:
-            recipients += email_config.get('email_to').split(',')
-
-        # If there are still no recipients, there are no admins and no address
-        # configured in email_to, so return.
-        if not recipients:
-            log.error("No recipients specified and no fallback available.")
-            return
-
-        log.warning("No recipients specified for '%s' - sending to admins %s", subject, ' '.join(recipients))
-
-    # SMTP sender
-    app_email_from = email_config.get('app_email_from', 'Kallithea')
-    # 'From' header
-    if from_name is not None:
-        # set From header based on from_name but with a generic e-mail address
-        # In case app_email_from is in "Some Name <e-mail>" format, we first
-        # extract the e-mail address.
-        envelope_addr = author_email(app_email_from)
-        headers['From'] = '"%s" <%s>' % (
-            email.utils.quote('%s (no-reply)' % from_name),
-            envelope_addr)
-
-    smtp_server = email_config.get('smtp_server')
-    smtp_port = email_config.get('smtp_port')
-    smtp_use_tls = asbool(email_config.get('smtp_use_tls'))
-    smtp_use_ssl = asbool(email_config.get('smtp_use_ssl'))
-    smtp_auth = email_config.get('smtp_auth')  # undocumented - overrule automatic choice of auth mechanism
-    smtp_username = email_config.get('smtp_username')
-    smtp_password = email_config.get('smtp_password')
-
-    logmsg = ("Mail details:\n"
-              "recipients: %s\n"
-              "headers: %s\n"
-              "subject: %s\n"
-              "body:\n%s\n"
-              "html:\n%s\n"
-              % (' '.join(recipients), headers, subject, body, html_body))
-
-    if smtp_server:
-        log.debug("Sending e-mail. " + logmsg)
-    else:
-        log.error("SMTP mail server not configured - cannot send e-mail.")
-        log.warning(logmsg)
-        return
-
-    msg = email.message.EmailMessage()
-    msg['Subject'] = subject
-    msg['From'] = app_email_from  # fallback - might be overridden by a header
-    msg['To'] = ', '.join(recipients)
-    msg['Date'] = email.utils.formatdate(time.time())
-
-    for key, value in headers.items():
-        del msg[key]  # Delete key first to make sure add_header will replace header (if any), no matter the casing
-        msg.add_header(key, value)
-
-    msg.set_content(body)
-    msg.add_alternative(html_body, subtype='html')
-
-    try:
-        if smtp_use_ssl:
-            smtp_serv = smtplib.SMTP_SSL(smtp_server, smtp_port)
-        else:
-            smtp_serv = smtplib.SMTP(smtp_server, smtp_port)
-
-        if smtp_use_tls:
-            smtp_serv.starttls()
-
-        if smtp_auth:
-            smtp_serv.ehlo()  # populate esmtp_features
-            smtp_serv.esmtp_features["auth"] = smtp_auth
-
-        if smtp_username and smtp_password is not None:
-            smtp_serv.login(smtp_username, smtp_password)
-
-        smtp_serv.sendmail(app_email_from, recipients, msg.as_string())
-        smtp_serv.quit()
-
-        log.info('Mail was sent to: %s' % recipients)
-    except:
-        log.error('Mail sending failed')
-        log.error(traceback.format_exc())
 
 
 def __get_codes_stats(repo_name):

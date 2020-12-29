@@ -25,7 +25,7 @@ class smtplib_mock(object):
         smtplib_mock.lastmsg = msg
 
 
-@mock.patch('kallithea.model.async_tasks.smtplib', smtplib_mock)
+@mock.patch('kallithea.model.notification.smtplib', smtplib_mock)
 class TestMail(base.TestController):
 
     def test_send_mail_trivial(self):
@@ -40,8 +40,8 @@ class TestMail(base.TestController):
             'smtp_server': mailserver,
             'app_email_from': envelope_from,
         }
-        with mock.patch('kallithea.model.async_tasks.config', config_mock):
-            kallithea.model.async_tasks.send_email(recipients, subject, body, html_body)
+        with mock.patch('kallithea.model.notification.config', config_mock):
+            kallithea.model.notification.send_email(recipients, subject, body, html_body)
 
         assert smtplib_mock.lastdest == set(recipients)
         assert smtplib_mock.lastsender == envelope_from
@@ -64,8 +64,8 @@ class TestMail(base.TestController):
             'app_email_from': envelope_from,
             'email_to': email_to,
         }
-        with mock.patch('kallithea.model.async_tasks.config', config_mock):
-            kallithea.model.async_tasks.send_email(recipients, subject, body, html_body)
+        with mock.patch('kallithea.model.notification.config', config_mock):
+            kallithea.model.notification.send_email(recipients, subject, body, html_body)
 
         assert smtplib_mock.lastdest == set([base.TEST_USER_ADMIN_EMAIL, email_to])
         assert smtplib_mock.lastsender == envelope_from
@@ -88,8 +88,8 @@ class TestMail(base.TestController):
             'app_email_from': envelope_from,
             'email_to': email_to,
         }
-        with mock.patch('kallithea.model.async_tasks.config', config_mock):
-            kallithea.model.async_tasks.send_email(recipients, subject, body, html_body)
+        with mock.patch('kallithea.model.notification.config', config_mock):
+            kallithea.model.notification.send_email(recipients, subject, body, html_body)
 
         assert smtplib_mock.lastdest == set([base.TEST_USER_ADMIN_EMAIL] + email_to.split(','))
         assert smtplib_mock.lastsender == envelope_from
@@ -110,8 +110,8 @@ class TestMail(base.TestController):
             'smtp_server': mailserver,
             'app_email_from': envelope_from,
         }
-        with mock.patch('kallithea.model.async_tasks.config', config_mock):
-            kallithea.model.async_tasks.send_email(recipients, subject, body, html_body)
+        with mock.patch('kallithea.model.notification.config', config_mock):
+            kallithea.model.notification.send_email(recipients, subject, body, html_body)
 
         assert smtplib_mock.lastdest == set([base.TEST_USER_ADMIN_EMAIL])
         assert smtplib_mock.lastsender == envelope_from
@@ -133,8 +133,8 @@ class TestMail(base.TestController):
             'smtp_server': mailserver,
             'app_email_from': envelope_from,
         }
-        with mock.patch('kallithea.model.async_tasks.config', config_mock):
-            kallithea.model.async_tasks.send_email(recipients, subject, body, html_body, from_name=author.full_name_or_username)
+        with mock.patch('kallithea.model.notification.config', config_mock):
+            kallithea.model.notification.send_email(recipients, subject, body, html_body, from_name=author.full_name_or_username)
 
         assert smtplib_mock.lastdest == set(recipients)
         assert smtplib_mock.lastsender == envelope_from
@@ -157,8 +157,8 @@ class TestMail(base.TestController):
             'smtp_server': mailserver,
             'app_email_from': envelope_from,
         }
-        with mock.patch('kallithea.model.async_tasks.config', config_mock):
-            kallithea.model.async_tasks.send_email(recipients, subject, body, html_body, from_name=author.full_name_or_username)
+        with mock.patch('kallithea.model.notification.config', config_mock):
+            kallithea.model.notification.send_email(recipients, subject, body, html_body, from_name=author.full_name_or_username)
 
         assert smtplib_mock.lastdest == set(recipients)
         assert smtplib_mock.lastsender == envelope_from
@@ -181,8 +181,8 @@ class TestMail(base.TestController):
             'smtp_server': mailserver,
             'app_email_from': envelope_from,
         }
-        with mock.patch('kallithea.model.async_tasks.config', config_mock):
-            kallithea.model.async_tasks.send_email(recipients, subject, body, html_body,
+        with mock.patch('kallithea.model.notification.config', config_mock):
+            kallithea.model.notification.send_email(recipients, subject, body, html_body,
                                                      from_name=author.full_name_or_username, headers=headers)
 
         assert smtplib_mock.lastdest == set(recipients)
