@@ -135,7 +135,7 @@ def setup_configuration(app):
     # store some globals into kallithea
     kallithea.DEFAULT_USER_ID = db.User.get_default_user().user_id
 
-    if asbool(config.get('use_celery')):
+    if asbool(config.get('use_celery')) and not kallithea.CELERY_APP.finalized:
         kallithea.CELERY_APP.config_from_object(celery_app.make_celery_config(config))
     kallithea.CONFIG = config
 
