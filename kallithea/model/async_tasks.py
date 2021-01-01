@@ -219,7 +219,7 @@ def get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit=100):
         lock.release()
 
         # execute another task if celery is enabled
-        if len(scm_repo.revisions) > 1 and kallithea.CELERY_APP and recurse_limit > 0:
+        if len(scm_repo.revisions) > 1 and asbool(kallithea.CONFIG.get('use_celery')) and recurse_limit > 0:
             get_commits_stats(repo_name, ts_min_y, ts_max_y, recurse_limit - 1)
         elif recurse_limit <= 0:
             log.debug('Not recursing - limit has been reached')

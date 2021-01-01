@@ -17,6 +17,7 @@ import click
 
 import kallithea
 import kallithea.bin.kallithea_cli_base as cli_base
+from kallithea.lib.utils2 import asbool
 
 
 @cli_base.register_command(config_file_initialize_app=True)
@@ -32,7 +33,7 @@ def celery_run(celery_args):
     by this CLI command.
     """
 
-    if not kallithea.CELERY_APP:
+    if not asbool(kallithea.CONFIG.get('use_celery')):
         raise Exception('Please set use_celery = true in .ini config '
                         'file before running this command')
 

@@ -35,7 +35,7 @@ from tg import config
 
 import kallithea
 from kallithea.lib.pidlock import DaemonLock, LockHeld
-from kallithea.lib.utils2 import safe_bytes
+from kallithea.lib.utils2 import asbool, safe_bytes
 from kallithea.model import meta
 
 
@@ -46,7 +46,7 @@ def task(f_org):
     """Wrapper of celery.task.task, running async if CELERY_APP
     """
 
-    if kallithea.CELERY_APP:
+    if asbool(kallithea.CONFIG.get('use_celery')):
         def f_async(*args, **kwargs):
             log.info('executing %s task', f_org.__name__)
             try:
