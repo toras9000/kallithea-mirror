@@ -136,7 +136,7 @@ def setup_configuration(app):
     kallithea.DEFAULT_USER_ID = db.User.get_default_user().user_id
 
     if asbool(config.get('use_celery')):
-        kallithea.CELERY_APP = celery_app.make_app()
+        kallithea.CELERY_APP.config_from_object(celery_app.make_celery_config(config))
     kallithea.CONFIG = config
 
     load_extensions(root_path=config['here'])

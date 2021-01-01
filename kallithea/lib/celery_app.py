@@ -16,9 +16,6 @@ mandatory settings.
 
 import logging
 
-import celery
-import tg
-
 
 class CeleryConfig(object):
     imports = ['kallithea.model.async_tasks']
@@ -72,11 +69,3 @@ def make_celery_config(config):
             celery_value = config_value
         setattr(celery_config, celery_key, celery_value)
     return celery_config
-
-
-def make_app():
-    """Create celery app from the TurboGears configuration file"""
-    app = celery.Celery()
-    celery_config = make_celery_config(tg.config)
-    app.config_from_object(celery_config)
-    return app

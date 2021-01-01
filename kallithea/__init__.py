@@ -30,6 +30,8 @@ Original author and date, and relevant copyright and licensing information is be
 import platform
 import sys
 
+import celery
+
 
 if sys.version_info < (3, 6):
     raise Exception('Kallithea requires python 3.6 or later')
@@ -40,7 +42,7 @@ BACKENDS = {
     'git': 'Git repository',
 }
 
-CELERY_APP = None  # set to Celery app instance if using Celery
+CELERY_APP = celery.Celery()  # needed at import time but is lazy and can be configured later
 
 CONFIG = {}  # set to tg.config when TG app is initialized and calls app_cfg
 
