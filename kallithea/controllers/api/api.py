@@ -1255,7 +1255,7 @@ class ApiController(JSONRPCController):
 
         try:
             repo_name_parts = repo_name.split('/')
-            repo_group = None
+            group_name = None
             if len(repo_name_parts) > 1:
                 group_name = '/'.join(repo_name_parts[:-1])
                 repo_group = RepoGroup.get_by_group_name(group_name)
@@ -1269,7 +1269,7 @@ class ApiController(JSONRPCController):
                 owner=owner,
                 repo_private=private,
                 clone_uri=clone_uri,
-                repo_group=repo_group,
+                repo_group=group_name,
                 repo_landing_rev=landing_rev,
                 enable_statistics=enable_statistics,
                 enable_downloads=enable_downloads,
@@ -1431,7 +1431,7 @@ class ApiController(JSONRPCController):
 
         try:
             fork_name_parts = fork_name.split('/')
-            repo_group = None
+            group_name = None
             if len(fork_name_parts) > 1:
                 group_name = '/'.join(fork_name_parts[:-1])
                 repo_group = RepoGroup.get_by_group_name(group_name)
@@ -1441,7 +1441,7 @@ class ApiController(JSONRPCController):
             form_data = dict(
                 repo_name=fork_name_parts[-1],
                 repo_name_full=fork_name,
-                repo_group=repo_group,
+                repo_group=group_name,
                 repo_type=repo.repo_type,
                 description=Optional.extract(description),
                 private=Optional.extract(private),
