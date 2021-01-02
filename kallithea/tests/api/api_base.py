@@ -916,20 +916,11 @@ class _BaseTestApi(object):
         )
         response = api_call(self, params)
 
-        # Current result when API access control is different from Web:
-        ret = {
-            'msg': 'Created new repository `%s`' % repo_name,
-            'success': True,
-            'task': None,
-        }
-        expected = ret
-        self._compare_ok(id_, expected, given=response.body)
+        # API access control match Web access control:
+        expected = 'no permission to create repo in test_repo_group/api-repo-repo'
+        self._compare_error(id_, expected, given=response.body)
+
         fixture.destroy_repo(repo_name)
-
-        # Expected and arguably more correct result:
-        #expected = 'failed to create repository `%s`' % repo_name
-        #self._compare_error(id_, expected, given=response.body)
-
         fixture.destroy_repo_group(repo_group_name)
 
     def test_api_create_repo_unknown_owner(self):
@@ -1298,6 +1289,9 @@ class _BaseTestApi(object):
         '%s/api-repo-fork' % TEST_REPO_GROUP,
     ])
     def test_api_fork_repo_non_admin(self, fork_name):
+        RepoGroupModel().grant_user_permission(TEST_REPO_GROUP,
+                                               self.TEST_USER_LOGIN,
+                                               'group.write')
         id_, params = _build_data(self.apikey_regular, 'fork_repo',
                                   repoid=self.REPO,
                                   fork_name=fork_name,
@@ -1364,7 +1358,7 @@ class _BaseTestApi(object):
                                   fork_name=fork_name,
         )
         response = api_call(self, params)
-        expected = 'no permission to create repositories'
+        expected = 'no permission to create top level repo'
         self._compare_error(id_, expected, given=response.body)
         fixture.destroy_repo(fork_name)
 
