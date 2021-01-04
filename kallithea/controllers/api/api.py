@@ -1476,6 +1476,9 @@ class ApiController(JSONRPCController):
                           description=None,
                           owner=None,
                           parent=None):
+        """
+        TODO
+        """
         repo_group = get_repo_group_or_error(repogroupid)
         parent_repo_group_id = None if parent is None else get_repo_group_or_error(parent).group_id
 
@@ -1824,6 +1827,9 @@ class ApiController(JSONRPCController):
     # permission check inside
     def get_changesets(self, repoid, start=None, end=None, start_date=None,
                        end_date=None, branch_name=None, reverse=False, with_file_list=False, max_revisions=None):
+        """
+        TODO
+        """
         repo = get_repo_or_error(repoid)
         if not HasRepoPermissionLevel('read')(repo.repo_name):
             raise JSONRPCError('Access denied to repo %s' % repo.repo_name)
@@ -1842,6 +1848,9 @@ class ApiController(JSONRPCController):
 
     # permission check inside
     def get_changeset(self, repoid, raw_id, with_reviews=False):
+        """
+        TODO
+        """
         repo = get_repo_or_error(repoid)
         if not HasRepoPermissionLevel('read')(repo.repo_name):
             raise JSONRPCError('Access denied to repo %s' % repo.repo_name)
