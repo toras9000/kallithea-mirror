@@ -1144,7 +1144,7 @@ class _BaseTestApi(object):
         finally:
             fixture.destroy_repo(repo_name)
 
-    def test_api_update_repo_regular_user_change_repo_name(self):
+    def test_api_update_repo_regular_user_change_top_level_repo_name(self):
         repo_name = 'admin_owned'
         new_repo_name = 'new_repo_name'
         fixture.create_repo(repo_name, repo_type=self.REPO_TYPE)
@@ -1158,7 +1158,7 @@ class _BaseTestApi(object):
                                   repoid=repo_name, **updates)
         response = api_call(self, params)
         try:
-            expected = 'no permission to create (or move) repositories'
+            expected = 'no permission to create (or move) top level repositories'
             self._compare_error(id_, expected, given=response.body)
         finally:
             fixture.destroy_repo(repo_name)

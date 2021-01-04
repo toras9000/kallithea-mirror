@@ -1325,10 +1325,10 @@ class ApiController(JSONRPCController):
             if not HasRepoPermissionLevel('admin')(repo.repo_name):
                 raise JSONRPCError('repository `%s` does not exist' % (repoid,))
 
-            if (name != repo.repo_name and
+            if (name != repo.repo_name and repo.group_id is None and
                 not HasPermissionAny('hg.create.repository')()
             ):
-                raise JSONRPCError('no permission to create (or move) repositories')
+                raise JSONRPCError('no permission to create (or move) top level repositories')
 
             if not isinstance(owner, Optional):
                 # forbid setting owner for non-admins
@@ -1339,7 +1339,7 @@ class ApiController(JSONRPCController):
         updates = {}
         repo_group = group
         if not isinstance(repo_group, Optional):
-            repo_group = get_repo_group_or_error(repo_group)
+            repo_group = get_repo_group_or_error(repo_group)  # TODO: repos can thus currently not be moved to root
             if repo_group.group_id != repo.group_id:
                 if not(HasPermissionAny('hg.admin')() or HasRepoGroupPermissionLevel('write')(repo_group.group_name)):
                     raise JSONRPCError("no permission to create (or move) repo in %s" % repo_group.group_name)
