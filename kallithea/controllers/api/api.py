@@ -65,8 +65,6 @@ def store_update(updates, attr, name):
 def get_user_or_error(userid):
     """
     Get user by id or name or return JsonRPCError if not found
-
-    :param userid:
     """
     user = UserModel().get_user(userid)
     if user is None:
@@ -77,8 +75,6 @@ def get_user_or_error(userid):
 def get_repo_or_error(repoid):
     """
     Get repo by id or name or return JsonRPCError if not found
-
-    :param repoid:
     """
     repo = RepoModel().get_repo(repoid)
     if repo is None:
@@ -89,8 +85,6 @@ def get_repo_or_error(repoid):
 def get_repo_group_or_error(repogroupid):
     """
     Get repo group by id or name or return JsonRPCError if not found
-
-    :param repogroupid:
     """
     repo_group = db.RepoGroup.guess_instance(repogroupid)
     if repo_group is None:
@@ -102,8 +96,6 @@ def get_repo_group_or_error(repogroupid):
 def get_user_group_or_error(usergroupid):
     """
     Get user group by id or name or return JsonRPCError if not found
-
-    :param usergroupid:
     """
     user_group = UserGroupModel().get_group(usergroupid)
     if user_group is None:
@@ -114,8 +106,6 @@ def get_user_group_or_error(usergroupid):
 def get_perm_or_error(permid, prefix=None):
     """
     Get permission by id or name or return JsonRPCError if not found
-
-    :param permid:
     """
     perm = db.Permission.get_by_key(permid)
     if perm is None:
@@ -130,8 +120,6 @@ def get_perm_or_error(permid, prefix=None):
 def get_gist_or_error(gistid):
     """
     Get gist by id or gist_access_id or return JsonRPCError if not found
-
-    :param gistid:
     """
     gist = GistModel().get_gist(gistid)
     if gist is None:
@@ -164,11 +152,6 @@ class ApiController(JSONRPCController):
         Triggers a pull from remote location on given repo. Can be used to
         automatically keep remote repos up to date. This command can be executed
         only using api_key belonging to user with admin rights
-
-        :param repoid: repository name or repository id
-        :type repoid: str or int
-        :param clone_uri: repository URI to pull from (optional)
-        :type clone_uri: str
 
         OUTPUT::
 
@@ -212,10 +195,6 @@ class ApiController(JSONRPCController):
         aka "clean zombies". This command can be executed only using api_key
         belonging to user with admin rights.
 
-        :param remove_obsolete: deletes repositories from
-            database that are not found on the filesystem
-        :type remove_obsolete: Optional(bool)
-
         OUTPUT::
 
             id : <id_given_in_input>
@@ -249,9 +228,6 @@ class ApiController(JSONRPCController):
         Invalidate cache for repository.
         This command can be executed only using api_key belonging to user with admin
         rights or regular user that have write or admin or write access to repository.
-
-        :param repoid: repository name or repository id
-        :type repoid: str or int
 
         OUTPUT::
 
@@ -295,9 +271,6 @@ class ApiController(JSONRPCController):
         returned for user who's calling this function.
         This command can be executed only using api_key belonging to user with
         admin rights.
-
-        :param userid: username to show ips for
-        :type userid: Optional(str or int)
 
         OUTPUT::
 
@@ -353,9 +326,6 @@ class ApiController(JSONRPCController):
         calling this method. This command can be executed only using api_key
         belonging to user with admin rights, or regular users that cannot
         specify different userid than theirs
-
-        :param userid: user to get data for
-        :type userid: Optional(str or int)
 
         OUTPUT::
 
@@ -426,25 +396,6 @@ class ApiController(JSONRPCController):
         Creates new user. Returns new user object. This command can
         be executed only using api_key belonging to user with admin rights.
 
-        :param username: new username
-        :type username: str or int
-        :param email: email
-        :type email: str
-        :param password: password
-        :type password: Optional(str)
-        :param firstname: firstname
-        :type firstname: str
-        :param lastname: lastname
-        :type lastname: str
-        :param active: active
-        :type active: Optional(bool)
-        :param admin: admin
-        :type admin: Optional(bool)
-        :param extern_name: name of extern
-        :type extern_name: Optional(str)
-        :param extern_type: extern_type
-        :type extern_type: Optional(str)
-
         OUTPUT::
 
             id : <id_given_in_input>
@@ -503,27 +454,6 @@ class ApiController(JSONRPCController):
         updates given user if such user exists. This command can
         be executed only using api_key belonging to user with admin rights.
 
-        :param userid: userid to update
-        :type userid: str or int
-        :param username: new username
-        :type username: Optional(str or int)
-        :param email: email
-        :type email: Optional(str)
-        :param password: password
-        :type password: Optional(str)
-        :param firstname: firstname
-        :type firstname: Optional(str)
-        :param lastname: lastname
-        :type lastname: Optional(str)
-        :param active: active
-        :type active: Optional(bool)
-        :param admin: admin
-        :type admin: Optional(bool)
-        :param extern_name:
-        :type extern_name: Optional(str)
-        :param extern_type:
-        :type extern_type: Optional(str)
-
         OUTPUT::
 
             id : <id_given_in_input>
@@ -577,9 +507,6 @@ class ApiController(JSONRPCController):
         deletes given user if such user exists. This command can
         be executed only using api_key belonging to user with admin rights.
 
-        :param userid: user to delete
-        :type userid: str or int
-
         OUTPUT::
 
             id : <id_given_in_input>
@@ -618,9 +545,6 @@ class ApiController(JSONRPCController):
         Gets an existing user group. This command can be executed only using api_key
         belonging to user with admin rights or user who has at least
         read access to user group.
-
-        :param usergroupid: id of user_group to edit
-        :type usergroupid: str or int
 
         OUTPUT::
 
@@ -670,15 +594,6 @@ class ApiController(JSONRPCController):
         belonging to user with admin rights or an user who has create user group
         permission
 
-        :param group_name: name of new user group
-        :type group_name: str
-        :param description: group description
-        :type description: Optional(str)
-        :param owner: owner of group. If not passed apiuser is the owner
-        :type owner: Optional(str or int)
-        :param active: group is active
-        :type active: Optional(bool)
-
         OUTPUT::
 
             id : <id_given_in_input>
@@ -724,17 +639,6 @@ class ApiController(JSONRPCController):
         """
         Updates given usergroup.  This command can be executed only using api_key
         belonging to user with admin rights or an admin of given user group
-
-        :param usergroupid: id of user group to update
-        :type usergroupid: str or int
-        :param group_name: name of new user group
-        :type group_name: str
-        :param description: group description
-        :type description: str
-        :param owner: owner of group.
-        :type owner: Optional(str or int)
-        :param active: group is active
-        :type active: Optional(bool)
 
         OUTPUT::
 
@@ -785,9 +689,6 @@ class ApiController(JSONRPCController):
         This command can be executed only using api_key
         belonging to user with admin rights or an admin of given user group
 
-        :param usergroupid:
-        :type usergroupid: str or int
-
         OUTPUT::
 
           id : <id_given_in_input>
@@ -835,11 +736,6 @@ class ApiController(JSONRPCController):
         Adds a user to a user group. If user exists in that group success will be
         `false`. This command can be executed only using api_key
         belonging to user with admin rights or an admin of a given user group
-
-        :param usergroupid:
-        :type usergroupid: str or int
-        :param userid:
-        :type userid: str or int
 
         OUTPUT::
 
@@ -893,9 +789,6 @@ class ApiController(JSONRPCController):
         be `false`. This command can be executed only
         using api_key belonging to user with admin rights or an admin of given user group
 
-        :param usergroupid:
-        :param userid:
-
         OUTPUT::
 
             id : <id_given_in_input>
@@ -937,9 +830,6 @@ class ApiController(JSONRPCController):
         either users_group or user associated to that repository. This command can be
         executed only using api_key belonging to user with admin
         rights or regular user that have at least read access to repository.
-
-        :param repoid: repository name or repository id
-        :type repoid: str or int
 
         OUTPUT::
 
@@ -1082,15 +972,6 @@ class ApiController(JSONRPCController):
         `dirs`.  This command can be executed only using api_key belonging to
         user with admin rights or regular user that have at least read access to repository.
 
-        :param repoid: repository name or repository id
-        :type repoid: str or int
-        :param revision: revision for which listing should be done
-        :type revision: str
-        :param root_path: path from which start displaying
-        :type root_path: str
-        :param ret_type: return type 'all|files|dirs' nodes
-        :type ret_type: Optional(str)
-
         OUTPUT::
 
             id : <id_given_in_input>
@@ -1143,28 +1024,6 @@ class ApiController(JSONRPCController):
         "bar" as group. This command can be executed only using api_key
         belonging to user with admin rights or regular user that have create
         repository permission. Regular users cannot specify owner parameter
-
-        :param repo_name: repository name
-        :type repo_name: str
-        :param owner: user_id or username
-        :type owner: Optional(str)
-        :param repo_type: 'hg' or 'git'
-        :type repo_type: Optional(str)
-        :param description: repository description
-        :type description: Optional(str)
-        :param private:
-        :type private: bool
-        :param clone_uri:
-        :type clone_uri: str
-        :param landing_rev: <rev_type>:<rev>
-        :type landing_rev: str
-        :param enable_downloads:
-        :type enable_downloads: bool
-        :param enable_statistics:
-        :type enable_statistics: bool
-        :param copy_permissions: Copy permission from group that repository is
-            being created.
-        :type copy_permissions: bool
 
         OUTPUT::
 
@@ -1257,18 +1116,6 @@ class ApiController(JSONRPCController):
                     enable_downloads=None):
         """
         Updates repo
-
-        :param repoid: repository name or repository id
-        :type repoid: str or int
-        :param name:
-        :param owner:
-        :param group:
-        :param description:
-        :param private:
-        :param clone_uri:
-        :param landing_rev:
-        :param enable_statistics:
-        :param enable_downloads:
         """
         repo = get_repo_or_error(repoid)
         if not HasPermissionAny('hg.admin')():
@@ -1327,15 +1174,6 @@ class ApiController(JSONRPCController):
         asynchronous. This command can be executed only using api_key belonging to
         user with admin rights or regular user that have fork permission, and at least
         read access to forking repository. Regular users cannot specify owner parameter.
-
-        :param repoid: repository name or repository id
-        :type repoid: str or int
-        :param fork_name:
-        :param owner:
-        :param description:
-        :param copy_permissions:
-        :param private:
-        :param landing_rev:
 
         INPUT::
 
@@ -1434,11 +1272,6 @@ class ApiController(JSONRPCController):
         When `forks` param is set it's possible to detach or delete forks of deleting
         repository
 
-        :param repoid: repository name or repository id
-        :type repoid: str or int
-        :param forks: `detach` or `delete`, what do do with attached forks for repo
-        :type forks: Optional(str)
-
         OUTPUT::
 
             id : <id_given_in_input>
@@ -1487,12 +1320,6 @@ class ApiController(JSONRPCController):
         if found. This command can be executed only using api_key belonging to user
         with admin rights.
 
-        :param repoid: repository name or repository id
-        :type repoid: str or int
-        :param userid:
-        :param perm: (repository.(none|read|write|admin))
-        :type perm: str
-
         OUTPUT::
 
             id : <id_given_in_input>
@@ -1531,10 +1358,6 @@ class ApiController(JSONRPCController):
         Revoke permission for user on given repository. This command can be executed
         only using api_key belonging to user with admin rights.
 
-        :param repoid: repository name or repository id
-        :type repoid: str or int
-        :param userid:
-
         OUTPUT::
 
             id : <id_given_in_input>
@@ -1569,13 +1392,6 @@ class ApiController(JSONRPCController):
         Grant permission for user group on given repository, or update
         existing one if found. This command can be executed only using
         api_key belonging to user with admin rights.
-
-        :param repoid: repository name or repository id
-        :type repoid: str or int
-        :param usergroupid: id of usergroup
-        :type usergroupid: str or int
-        :param perm: (repository.(none|read|write|admin))
-        :type perm: str
 
         OUTPUT::
 
@@ -1632,10 +1448,6 @@ class ApiController(JSONRPCController):
         Revoke permission for user group on given repository. This command can be
         executed only using api_key belonging to user with admin rights.
 
-        :param repoid: repository name or repository id
-        :type repoid: str or int
-        :param usergroupid:
-
         OUTPUT::
 
             id : <id_given_in_input>
@@ -1679,9 +1491,6 @@ class ApiController(JSONRPCController):
         """
         Returns given repo group together with permissions, and repositories
         inside the group
-
-        :param repogroupid: id/name of repository group
-        :type repogroupid: str or int
         """
         repo_group = get_repo_group_or_error(repogroupid)
 
@@ -1728,17 +1537,6 @@ class ApiController(JSONRPCController):
         """
         Creates a repository group. This command can be executed only using
         api_key belonging to user with admin rights.
-
-        :param group_name:
-        :type group_name:
-        :param description:
-        :type description:
-        :param owner:
-        :type owner:
-        :param parent:
-        :type parent:
-        :param copy_permissions:
-        :type copy_permissions:
 
         OUTPUT::
 
@@ -1814,9 +1612,6 @@ class ApiController(JSONRPCController):
     @HasPermissionAnyDecorator('hg.admin')
     def delete_repo_group(self, repogroupid):
         """
-        :param repogroupid: name or id of repository group
-        :type repogroupid: str or int
-
         OUTPUT::
 
           id : <id_given_in_input>
@@ -1858,14 +1653,6 @@ class ApiController(JSONRPCController):
         one if found. This command can be executed only using api_key belonging
         to user with admin rights, or user who has admin right to given repository
         group.
-
-        :param repogroupid: name or id of repository group
-        :type repogroupid: str or int
-        :param userid:
-        :param perm: (group.(none|read|write|admin))
-        :type perm: str
-        :param apply_to_children: 'none', 'repos', 'groups', 'all'
-        :type apply_to_children: str
 
         OUTPUT::
 
@@ -1920,13 +1707,6 @@ class ApiController(JSONRPCController):
         be executed only using api_key belonging to user with admin rights, or
         user who has admin right to given repository group.
 
-        :param repogroupid: name or id of repository group
-        :type repogroupid: str or int
-        :param userid:
-        :type userid:
-        :param apply_to_children: 'none', 'repos', 'groups', 'all'
-        :type apply_to_children: str
-
         OUTPUT::
 
             id : <id_given_in_input>
@@ -1980,15 +1760,6 @@ class ApiController(JSONRPCController):
         existing one if found. This command can be executed only using
         api_key belonging to user with admin rights, or user who has admin
         right to given repository group.
-
-        :param repogroupid: name or id of repository group
-        :type repogroupid: str or int
-        :param usergroupid: id of usergroup
-        :type usergroupid: str or int
-        :param perm: (group.(none|read|write|admin))
-        :type perm: str
-        :param apply_to_children: 'none', 'repos', 'groups', 'all'
-        :type apply_to_children: str
 
         OUTPUT::
 
@@ -2051,12 +1822,6 @@ class ApiController(JSONRPCController):
         executed only using api_key belonging to user with admin rights, or
         user who has admin right to given repository group.
 
-        :param repogroupid: name or id of repository group
-        :type repogroupid: str or int
-        :param usergroupid:
-        :param apply_to_children: 'none', 'repos', 'groups', 'all'
-        :type apply_to_children: str
-
         OUTPUT::
 
             id : <id_given_in_input>
@@ -2108,9 +1873,6 @@ class ApiController(JSONRPCController):
     def get_gist(self, gistid):
         """
         Get given gist by id
-
-        :param gistid: id of private or public gist
-        :type gistid: str
         """
         gist = get_gist_or_error(gistid)
         if not HasPermissionAny('hg.admin')():
@@ -2122,9 +1884,6 @@ class ApiController(JSONRPCController):
         """
         Get all gists for given user. If userid is empty returned gists
         are for user who called the api
-
-        :param userid: user to get gists for
-        :type userid: Optional(str or int)
         """
         if not HasPermissionAny('hg.admin')():
             # make sure normal user does not pass someone else userid,
@@ -2152,19 +1911,6 @@ class ApiController(JSONRPCController):
                     description=''):
         """
         Creates new Gist
-
-        :param files: files to be added to gist
-            {'filename': {'content':'...', 'lexer': null},
-             'filename2': {'content':'...', 'lexer': null}}
-        :type files: dict
-        :param owner: gist owner, defaults to api method caller
-        :type owner: Optional(str or int)
-        :param gist_type: type of gist 'public' or 'private'
-        :type gist_type: Optional(str)
-        :param lifetime: time in minutes of gist lifetime
-        :type lifetime: Optional(int)
-        :param description: gist description
-        :type description: str
 
         OUTPUT::
 
@@ -2208,9 +1954,6 @@ class ApiController(JSONRPCController):
     def delete_gist(self, gistid):
         """
         Deletes existing gist
-
-        :param gistid: id of gist to delete
-        :type gistid: str
 
         OUTPUT::
 
