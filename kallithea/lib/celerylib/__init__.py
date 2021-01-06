@@ -67,8 +67,7 @@ def task(f_org):
                 f_org(*args, **kwargs)
             finally:
                 log.info('executed %s task', f_org.__name__)
-        f_async.__name__ = f_org.__name__
-        runner = kallithea.CELERY_APP.task(ignore_result=True)(f_async)
+        runner = kallithea.CELERY_APP.task(name=f_org.__name__, ignore_result=True)(f_async)
 
         def f_wrapped(*args, **kwargs):
             t = runner.apply_async(args=args, kwargs=kwargs)
