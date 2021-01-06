@@ -191,7 +191,6 @@ OUTPUT::
                                 ...
                              ]
              }
-
     error :  null
 
 get_user
@@ -892,7 +891,6 @@ INPUT::
                 "copy_permissions": "<bool>",
                 "private":          "<bool>",
                 "landing_rev":      "<landing_rev>"
-
               }
 
 OUTPUT::
