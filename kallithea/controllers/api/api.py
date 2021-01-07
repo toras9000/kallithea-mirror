@@ -1162,7 +1162,7 @@ class ApiController(JSONRPCController):
                 'failed to get repo: `%s` nodes' % repo.repo_name
             )
 
-    @HasPermissionAnyDecorator('hg.admin', 'hg.create.repository')
+    # permission check inside
     def create_repo(self, repo_name, owner=None,
                     repo_type=None, description='',
                     private=False, clone_uri=None,
@@ -1219,6 +1219,19 @@ class ApiController(JSONRPCController):
           }
 
         """
+        group_name = None
+        repo_name_parts = repo_name.split('/')
+        if len(repo_name_parts) > 1:
+            group_name = '/'.join(repo_name_parts[:-1])
+            repo_group = db.RepoGroup.get_by_group_name(group_name)
+            if repo_group is None:
+                raise JSONRPCError("repo group `%s` not found" % group_name)
+            if not(HasPermissionAny('hg.admin')() or HasRepoGroupPermissionLevel('write')(group_name)):
+                raise JSONRPCError("no permission to create repo in %s" % group_name)
+        else:
+            if not HasPermissionAny('hg.admin', 'hg.create.repository')():
+                raise JSONRPCError("no permission to create top level repo")
+
         if not HasPermissionAny('hg.admin')():
             if owner is not None:
                 # forbid setting owner for non-admins
@@ -1244,13 +1257,6 @@ class ApiController(JSONRPCController):
             enable_downloads = defs.get('repo_enable_downloads')
 
         try:
-            repo_name_parts = repo_name.split('/')
-            repo_group = None
-            if len(repo_name_parts) > 1:
-                group_name = '/'.join(repo_name_parts[:-1])
-                repo_group = db.RepoGroup.get_by_group_name(group_name)
-                if repo_group is None:
-                    raise JSONRPCError("repo group `%s` not found" % group_name)
             data = dict(
                 repo_name=repo_name_parts[-1],
                 repo_name_full=repo_name,
@@ -1258,7 +1264,7 @@ class ApiController(JSONRPCController):
                 repo_description=description,
                 repo_private=private,
                 clone_uri=clone_uri,
-                repo_group=repo_group,
+                repo_group=group_name,
                 repo_landing_rev=landing_rev,
                 enable_statistics=enable_statistics,
                 enable_downloads=enable_downloads,
@@ -1306,10 +1312,10 @@ class ApiController(JSONRPCController):
             if not HasRepoPermissionLevel('admin')(repo.repo_name):
                 raise JSONRPCError('repository `%s` does not exist' % (repoid,))
 
-            if (name != repo.repo_name and
+            if (name != repo.repo_name and repo.group_id is None and
                 not HasPermissionAny('hg.create.repository')()
             ):
-                raise JSONRPCError('no permission to create (or move) repositories')
+                raise JSONRPCError('no permission to create (or move) top level repositories')
 
             if owner is not None:
                 # forbid setting owner for non-admins
@@ -1320,7 +1326,10 @@ class ApiController(JSONRPCController):
         updates = {}
         repo_group = group
         if repo_group is not None:
-            repo_group = get_repo_group_or_error(repo_group)
+            repo_group = get_repo_group_or_error(repo_group)  # TODO: repos can thus currently not be moved to root
+            if repo_group.group_id != repo.group_id:
+                if not(HasPermissionAny('hg.admin')() or HasRepoGroupPermissionLevel('write')(repo_group.group_name)):
+                    raise JSONRPCError("no permission to create (or move) repo in %s" % repo_group.group_name)
             repo_group = repo_group.group_id
         try:
             store_update(updates, name, 'repo_name')
@@ -1343,6 +1352,7 @@ class ApiController(JSONRPCController):
             log.error(traceback.format_exc())
             raise JSONRPCError('failed to update repo `%s`' % repoid)
 
+    # permission check inside
     @HasPermissionAnyDecorator('hg.admin', 'hg.fork.repository')
     def fork_repo(self, repoid, fork_name,
                   owner=None,
@@ -1397,6 +1407,19 @@ class ApiController(JSONRPCController):
             type_ = 'fork' if _repo.fork else 'repo'
             raise JSONRPCError("%s `%s` already exist" % (type_, fork_name))
 
+        group_name = None
+        fork_name_parts = fork_name.split('/')
+        if len(fork_name_parts) > 1:
+            group_name = '/'.join(fork_name_parts[:-1])
+            repo_group = db.RepoGroup.get_by_group_name(group_name)
+            if repo_group is None:
+                raise JSONRPCError("repo group `%s` not found" % group_name)
+            if not(HasPermissionAny('hg.admin')() or HasRepoGroupPermissionLevel('write')(group_name)):
+                raise JSONRPCError("no permission to create repo in %s" % group_name)
+        else:
+            if not HasPermissionAny('hg.admin', 'hg.create.repository')():
+                raise JSONRPCError("no permission to create top level repo")
+
         if HasPermissionAny('hg.admin')():
             pass
         elif HasRepoPermissionLevel('read')(repo.repo_name):
@@ -1405,9 +1428,6 @@ class ApiController(JSONRPCController):
                 raise JSONRPCError(
                     'Only Kallithea admin can specify `owner` param'
                 )
-
-            if not HasPermissionAny('hg.create.repository')():
-                raise JSONRPCError('no permission to create repositories')
         else:
             raise JSONRPCError('repository `%s` does not exist' % (repoid,))
 
@@ -1417,18 +1437,10 @@ class ApiController(JSONRPCController):
         owner = get_user_or_error(owner)
 
         try:
-            fork_name_parts = fork_name.split('/')
-            repo_group = None
-            if len(fork_name_parts) > 1:
-                group_name = '/'.join(fork_name_parts[:-1])
-                repo_group = db.RepoGroup.get_by_group_name(group_name)
-                if repo_group is None:
-                    raise JSONRPCError("repo group `%s` not found" % group_name)
-
             form_data = dict(
                 repo_name=fork_name_parts[-1],
                 repo_name_full=fork_name,
-                repo_group=repo_group,
+                repo_group=group_name,
                 repo_type=repo.repo_type,
                 description=description,
                 private=private,
