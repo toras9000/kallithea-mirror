@@ -12,8 +12,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import celery.bin.worker
 import click
+from celery.bin.celery import celery as celery_command
 
 import kallithea
 import kallithea.bin.kallithea_cli_base as cli_base
@@ -42,5 +42,12 @@ def celery_run(celery_args, config):
 
     kallithea.CELERY_APP.loader.on_worker_process_init = lambda: kallithea.config.application.make_app(config.global_conf, **config.local_conf)
 
-    cmd = celery.bin.worker.worker(kallithea.CELERY_APP)
-    return cmd.run_from_argv(None, command='celery-run -c CONFIG_FILE --', argv=list(celery_args))
+    args = list(celery_args)
+    # args[0] is generally ignored when prog_name is specified, but -h *needs* it to be 'worker' ... but will also suggest that users specify 'worker' explicitly
+    if not args or args[0] != 'worker':
+        args.insert(0, 'worker')
+
+    # inline kallithea.CELERY_APP.start in order to allow specifying prog_name
+    assert celery_command.params[0].name == 'app'
+    celery_command.params[0].default = kallithea.CELERY_APP
+    celery_command.main(args=args, prog_name='kallithea-cli celery-run -c CONFIG_FILE --')

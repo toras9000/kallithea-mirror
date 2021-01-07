@@ -55,7 +55,7 @@ requirements = [
     "Mako >= 0.9.1, < 1.2",
     "Pygments >= 2.2.0, < 2.7",
     "Whoosh >= 2.7.1, < 2.8",
-    "celery >= 4.3, < 4.5, != 4.4.4", # 4.4.4 is broken due to unexpressed dependency on 'future', see https://github.com/celery/celery/pull/6146
+    "celery >= 5, < 5.1",
     "Babel >= 1.3, < 2.9",
     "python-dateutil >= 2.1.0, < 2.9",
     "Markdown >= 2.2.1, < 3.2",
