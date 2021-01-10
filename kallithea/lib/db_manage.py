@@ -244,8 +244,8 @@ class DbManage(object):
         ui_config = [
             ('paths', '/', repo_root_path, True),
             #('phases', 'publish', 'false', False)
-            ('hooks', db.Ui.HOOK_UPDATE, 'hg update >&2', False),
-            ('hooks', db.Ui.HOOK_REPO_SIZE, 'python:', True),  # the actual value doesn't matter
+            ('hooks', db.Ui.HOOK_UPDATE, 'python:', False),  # the actual value in db doesn't matter
+            ('hooks', db.Ui.HOOK_REPO_SIZE, 'python:', True),  # the actual value in db doesn't matter
             ('extensions', 'largefiles', '', True),
             ('largefiles', 'usercache', os.path.join(repo_root_path, '.cache', 'largefiles'), True),
             ('extensions', 'hggit', '', False),

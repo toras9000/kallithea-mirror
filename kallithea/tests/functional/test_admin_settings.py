@@ -98,7 +98,6 @@ class TestAdminSettingsController(base.TestController):
         self.checkSessionFlash(response, 'Builtin hooks are read-only')
         response = response.follow()
         response.mustcontain('changegroup.update')
-        response.mustcontain('hg update &gt;&amp;2')
 
     def test_index_search(self):
         self.log_user()

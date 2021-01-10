@@ -25,9 +25,11 @@ Original author and date, and relevant copyright and licensing information is be
 :license: GPLv3, see LICENSE.md for more details.
 """
 
+import logging
 import os
 import sys
 
+import mercurial.hg
 import mercurial.scmutil
 import paste.deploy
 
@@ -38,6 +40,9 @@ from kallithea.lib.utils2 import HookEnvironmentError, ascii_str, get_hook_envir
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.utils.helpers import get_scm_size
 from kallithea.model import db
+
+
+log = logging.getLogger(__name__)
 
 
 def repo_size(ui, repo, hooktype=None, **kwargs):
@@ -58,6 +63,21 @@ def repo_size(ui, repo, hooktype=None, **kwargs):
         ascii_str(last_cs.hex())[:12],
     )
     ui.status(safe_bytes(msg))
+
+
+def update(ui, repo, hooktype=None, **kwargs):
+    """Update repo after push. The equivalent to 'hg update' but using the same
+    Mercurial as everything else.
+
+    Called as Mercurial hook changegroup.update after push.
+    """
+    try:
+        ui.pushbuffer(error=True, subproc=True)
+        rev = brev = None
+        mercurial.hg.updatetotally(ui, repo, rev, brev)
+    finally:
+        s = ui.popbuffer()  # usually just "x files updated, x files merged, x files removed, x files unresolved"
+        log.info('%s update hook output: %s', safe_str(repo.root), safe_str(s).rstrip())
 
 
 def pull_action(ui, repo, **kwargs):
