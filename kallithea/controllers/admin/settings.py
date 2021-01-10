@@ -332,8 +332,8 @@ class SettingsController(base.BaseController):
                     ui_key = ui_key and ui_key.strip()
                     if ui_key in (x.ui_key for x in db.Ui.get_custom_hooks()):
                         webutils.flash(_('Hook already exists'), category='error')
-                    elif ui_key in (x.ui_key for x in db.Ui.get_builtin_hooks()):
-                        webutils.flash(_('Builtin hooks are read-only. Please use another hook name.'), category='error')
+                    elif ui_key and '.kallithea_' in ui_key:
+                        webutils.flash(_('Hook names with ".kallithea_" are reserved for internal use. Please use another hook name.'), category='error')
                     elif ui_value and ui_key:
                         db.Ui.create_or_update_hook(ui_key, ui_value)
                         webutils.flash(_('Added new hook'), category='success')

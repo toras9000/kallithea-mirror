@@ -95,7 +95,7 @@ class TestAdminSettingsController(base.TestController):
                                             new_hook_ui_value='attempted_new_value',
                                             _session_csrf_secret_token=self.session_csrf_secret_token()))
 
-        self.checkSessionFlash(response, 'Builtin hooks are read-only')
+        self.checkSessionFlash(response, 'reserved for internal use')
         response = response.follow()
         response.mustcontain('changegroup.kallithea_update')
 
