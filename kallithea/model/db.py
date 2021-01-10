@@ -330,8 +330,8 @@ class Ui(meta.Base, BaseDbModel):
         _table_args_default_dict,
     )
 
-    HOOK_UPDATE = 'changegroup.update'
-    HOOK_REPO_SIZE = 'changegroup.repo_size'
+    HOOK_UPDATE = 'changegroup.kallithea_update'
+    HOOK_REPO_SIZE = 'changegroup.kallithea_repo_size'
 
     ui_id = Column(Integer(), primary_key=True)
     ui_section = Column(String(255), nullable=False)

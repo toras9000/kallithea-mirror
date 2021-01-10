@@ -384,8 +384,8 @@ def ApplicationUiSettingsForm():
             v.ValidPath(),
             v.UnicodeString(strip=True, min=1, not_empty=True)
         )
-        hooks_changegroup_update = v.StringBoolean(if_missing=False)
-        hooks_changegroup_repo_size = v.StringBoolean(if_missing=False)
+        hooks_changegroup_kallithea_update = v.StringBoolean(if_missing=False)
+        hooks_changegroup_kallithea_repo_size = v.StringBoolean(if_missing=False)
 
         extensions_largefiles = v.StringBoolean(if_missing=False)
         extensions_hggit = v.StringBoolean(if_missing=False)

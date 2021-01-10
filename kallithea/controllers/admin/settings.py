@@ -100,10 +100,10 @@ class SettingsController(base.BaseController):
 
                 # HOOKS
                 sett = db.Ui.get_by_key('hooks', db.Ui.HOOK_UPDATE)
-                sett.ui_active = form_result['hooks_changegroup_update']
+                sett.ui_active = form_result['hooks_changegroup_kallithea_update']
 
                 sett = db.Ui.get_by_key('hooks', db.Ui.HOOK_REPO_SIZE)
-                sett.ui_active = form_result['hooks_changegroup_repo_size']
+                sett.ui_active = form_result['hooks_changegroup_kallithea_repo_size']
 
                 ## EXTENSIONS
                 sett = db.Ui.get_or_create('extensions', 'largefiles')

@@ -5,13 +5,13 @@ ${h.form(url('admin_settings'), method='post')}
                 <div>
                     <div class="checkbox">
                         <label>
-                            ${h.checkbox('hooks_changegroup_repo_size','True')}
+                            ${h.checkbox('hooks_changegroup_kallithea_repo_size','True')}
                             ${_('Show repository size after push')}
                         </label>
                     </div>
                     <div class="checkbox">
                         <label>
-                            ${h.checkbox('hooks_changegroup_update','True')}
+                            ${h.checkbox('hooks_changegroup_kallithea_update','True')}
                             ${_('Update repository after push (hg update)')}
                         </label>
                     </div>

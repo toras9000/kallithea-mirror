@@ -91,13 +91,13 @@ class TestAdminSettingsController(base.TestController):
     def test_add_existing_builtin_hook(self):
         self.log_user()
         response = self.app.post(base.url('admin_settings_hooks'),
-                                params=dict(new_hook_ui_key='changegroup.update',
+                                params=dict(new_hook_ui_key='changegroup.kallithea_update',
                                             new_hook_ui_value='attempted_new_value',
                                             _session_csrf_secret_token=self.session_csrf_secret_token()))
 
         self.checkSessionFlash(response, 'Builtin hooks are read-only')
         response = response.follow()
-        response.mustcontain('changegroup.update')
+        response.mustcontain('changegroup.kallithea_update')
 
     def test_index_search(self):
         self.log_user()

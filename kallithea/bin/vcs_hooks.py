@@ -48,7 +48,7 @@ log = logging.getLogger(__name__)
 def repo_size(ui, repo, hooktype=None, **kwargs):
     """Show size of Mercurial repository.
 
-    Called as Mercurial hook changegroup.repo_size after push.
+    Called as Mercurial hook changegroup.kallithea_repo_size after push.
     """
     size_hg, size_root = get_scm_size('.hg', safe_str(repo.root))
 
@@ -69,7 +69,7 @@ def update(ui, repo, hooktype=None, **kwargs):
     """Update repo after push. The equivalent to 'hg update' but using the same
     Mercurial as everything else.
 
-    Called as Mercurial hook changegroup.update after push.
+    Called as Mercurial hook changegroup.kallithea_update after push.
     """
     try:
         ui.pushbuffer(error=True, subproc=True)
