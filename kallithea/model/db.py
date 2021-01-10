@@ -356,8 +356,9 @@ class Ui(meta.Base, BaseDbModel):
     @classmethod
     def get_custom_hooks(cls):
         q = cls.query()
-        q = q.filter(~cls.ui_key.in_([cls.HOOK_UPDATE, cls.HOOK_REPO_SIZE]))
         q = q.filter(cls.ui_section == 'hooks')
+        q = q.filter(~cls.ui_key.in_([cls.HOOK_UPDATE, cls.HOOK_REPO_SIZE]))
+        q = q.filter(cls.ui_active)
         q = q.order_by(cls.ui_section, cls.ui_key)
         return q.all()
 
