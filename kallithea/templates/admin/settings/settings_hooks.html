@@ -1,16 +1,3 @@
-<div class="form">
-      <div class="form-group">
-      <h4>${_('Built-in Mercurial Hooks (Read-Only)')}</h4>
-      % for hook in c.hooks:
-        <% input_id = hook.ui_key.replace('.', '_') %>
-            <label class="control-label" for="${input_id}" title="${hook.ui_key}">${hook.ui_key}</label>
-            <div>
-              ${h.text(hook.ui_key,hook.ui_value,id=input_id,size=60,readonly="readonly",class_='form-control')}
-            </div>
-      % endfor
-      </div>
-</div>
-
 % if c.visual.allow_custom_hooks_settings:
 ${h.form(url('admin_settings_hooks'), method='post')}
 <div class="form">

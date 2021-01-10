@@ -364,7 +364,6 @@ class SettingsController(base.BaseController):
         defaults = db.Setting.get_app_settings()
         defaults.update(self._get_hg_ui_settings())
 
-        c.hooks = db.Ui.get_builtin_hooks()
         c.custom_hooks = db.Ui.get_custom_hooks()
 
         return htmlfill.render(

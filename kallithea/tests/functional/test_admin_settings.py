@@ -33,6 +33,7 @@ class TestAdminSettingsController(base.TestController):
     def test_index_hooks(self):
         self.log_user()
         response = self.app.get(base.url('admin_settings_hooks'))
+        response.mustcontain(no='.kallithea_')
 
     def test_create_custom_hook(self):
         self.log_user()
@@ -96,8 +97,6 @@ class TestAdminSettingsController(base.TestController):
                                             _session_csrf_secret_token=self.session_csrf_secret_token()))
 
         self.checkSessionFlash(response, 'reserved for internal use')
-        response = response.follow()
-        response.mustcontain('changegroup.kallithea_update')
 
     def test_index_search(self):
         self.log_user()
