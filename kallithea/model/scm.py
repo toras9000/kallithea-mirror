@@ -704,6 +704,10 @@ class ScmModel(object):
                 log.warning('skipping overwriting hook file %s', hook_file)
             else:
                 log.debug('writing hook file %s', hook_file)
+                if other_hook:
+                    backup_file = hook_file + '.bak'
+                    log.warning('moving existing hook to %s', backup_file)
+                    os.rename(hook_file, backup_file)
                 try:
                     fh, fn = tempfile.mkstemp(prefix=hook_file + '.tmp.')
                     os.write(fh, tmpl.replace(b'_TMPL_', safe_bytes(kallithea.__version__)))
