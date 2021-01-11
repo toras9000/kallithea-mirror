@@ -682,12 +682,12 @@ class ScmModel(object):
         for h_type, tmpl in [('pre-receive', tmpl_pre), ('post-receive', tmpl_post)]:
             hook_file = os.path.join(hooks_path, h_type)
             other_hook = False
-            log.debug('Installing git hook in repo %s', repo)
+            log.debug('Installing git hook %s in repo %s', h_type, repo.path)
             if os.path.islink(hook_file):
                 log.debug("Found symlink hook at %s", hook_file)
                 other_hook = True
             elif os.path.isfile(hook_file):
-                log.debug('hook exists, checking if it is from kallithea')
+                log.debug('hook file %s exists, checking if it is from kallithea', hook_file)
                 with open(hook_file, 'rb') as f:
                     data = f.read()
                     matches = re.search(br'^KALLITHEA_HOOK_VER\s*=\s*(.*)$', data, flags=re.MULTILINE)
@@ -703,7 +703,7 @@ class ScmModel(object):
             if other_hook and not force:
                 log.warning('skipping overwriting hook file %s', hook_file)
             else:
-                log.debug('writing %s hook file !', h_type)
+                log.debug('writing hook file %s', hook_file)
                 try:
                     fh, fn = tempfile.mkstemp(prefix=hook_file + '.tmp.')
                     os.write(fh, tmpl.replace(b'_TMPL_', safe_bytes(kallithea.__version__)))
