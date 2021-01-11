@@ -674,12 +674,8 @@ class ScmModel(object):
         tmpl_post += pkg_resources.resource_string(
             'kallithea', os.path.join('templates', 'py', 'git_post_receive_hook.py')
         )
-        tmpl_pre = b"#!%s\n" % safe_bytes(self._get_git_hook_interpreter())
-        tmpl_pre += pkg_resources.resource_string(
-            'kallithea', os.path.join('templates', 'py', 'git_pre_receive_hook.py')
-        )
 
-        for h_type, tmpl in [('pre-receive', tmpl_pre), ('post-receive', tmpl_post)]:
+        for h_type, tmpl in [('pre-receive', None), ('post-receive', tmpl_post)]:
             hook_file = os.path.join(hooks_path, h_type)
             other_hook = False
             log.debug('Installing git hook %s in repo %s', h_type, repo.path)
@@ -702,7 +698,7 @@ class ScmModel(object):
                 other_hook = True
             if other_hook and not force:
                 log.warning('skipping overwriting hook file %s', hook_file)
-            else:
+            elif h_type == 'post-receive':
                 log.debug('writing hook file %s', hook_file)
                 if other_hook:
                     backup_file = hook_file + '.bak'
@@ -716,6 +712,9 @@ class ScmModel(object):
                     os.rename(fn, hook_file)
                 except (OSError, IOError) as e:
                     log.error('error writing hook %s: %s', hook_file, e)
+            elif h_type == 'pre-receive':  # no longer used, so just remove any existing Kallithea hook
+                if os.path.lexists(hook_file) and not other_hook:
+                    os.remove(hook_file)
 
 
 def AvailableRepoGroupChoices(repo_group_perm_level, extras=()):

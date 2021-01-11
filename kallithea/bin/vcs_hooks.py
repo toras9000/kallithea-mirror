@@ -129,14 +129,6 @@ def _git_hook_environment(repo_path):
     return repo
 
 
-def pre_receive(repo_path, git_stdin_lines):
-    """Called from Git pre-receive hook.
-    The returned value is used as hook exit code and must be 0.
-    """
-    # Currently unused. TODO: remove?
-    return 0
-
-
 def post_receive(repo_path, git_stdin_lines):
     """Called from Git post-receive hook.
     The returned value is used as hook exit code and must be 0.
