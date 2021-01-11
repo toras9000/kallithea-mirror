@@ -338,14 +338,18 @@ the supported syntax in ``issue_pat``, ``issue_server_link`` and ``issue_sub``.
 Hook management
 ---------------
 
-Hooks can be managed in similar way to that used in ``.hgrc`` files.
+Custom Mercurial hooks can be managed in a similar way to that used in ``.hgrc`` files.
 To manage hooks, choose *Admin > Settings > Hooks*.
-
-The built-in hooks cannot be modified, though they can be enabled or disabled in the *VCS* section.
 
 To add another custom hook simply fill in the first textbox with
 ``<name>.<hook_type>`` and the second with the hook path. Example hooks
 can be found in ``kallithea.lib.hooks``.
+
+Kallithea will also use some hooks internally. They cannot be modified, but
+some of them can be enabled or disabled in the *VCS* section.
+
+Kallithea has no support for custom Git hooks. Kallithea will install and use
+Git hooks internally, and they might collide with manually installed hooks.
 
 
 Changing default encoding

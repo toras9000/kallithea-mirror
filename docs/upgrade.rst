@@ -225,8 +225,8 @@ clear out your log file so that new errors are readily apparent.
     upgrade.
 
 
-10. Update Git repository hooks
--------------------------------
+10. Reinstall internal Git repository hooks
+-------------------------------------------
 
 It is possible that an upgrade involves changes to the Git hooks installed by
 Kallithea. As these hooks are created inside the repositories on the server

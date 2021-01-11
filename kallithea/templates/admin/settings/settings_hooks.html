@@ -2,7 +2,7 @@
 ${h.form(url('admin_settings_hooks'), method='post')}
 <div class="form">
       <div class="form-group">
-        <h4>${_('Custom Hooks')}</h4>
+        <h4>${_('Custom Global Mercurial Hooks')}</h4>
         <span class="help-block">${_('Hooks can be used to trigger actions on certain events such as push / pull. They can trigger Python functions or external applications.')}</span>
         %for hook in c.custom_hooks:
             <div class="form-group form-inline" id="${'id%s' % hook.ui_id }">
@@ -37,6 +37,15 @@ ${h.form(url('admin_settings_hooks'), method='post')}
       </div>
 </div>
 ${h.end_form()}
+
+<div class="form">
+      <div class="form-group">
+      <h4>${_('Git Hooks')}</h4>
+      <span class="help-block">${h.HTML(_('Kallithea has no support for custom Git hooks. Kallithea will use Git post-receive hooks internally. Installation of these hooks is managed in %s.')) % (h.literal('''<a href="%s">%s</a>''') % (h.url('admin_settings_mapping'), _('Remap and Rescan')))}</span>
+</div>
+
+% else:
+      <h4>${_('Custom Hooks are not enabled')}</h4>
 % endif
 
 <script>
