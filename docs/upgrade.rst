@@ -236,6 +236,9 @@ To update the hooks of your Git repositories, run::
 
     kallithea-cli repo-scan -c my.ini --install-git-hooks
 
+Watch out for warnings like ``skipping overwriting hook file X``, then fix it
+and rerun, or consider using ``--overwrite-git-hooks`` instead.
+
 Or:
 
 * Go to *Admin > Settings > Remap and Rescan*

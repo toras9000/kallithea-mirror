@@ -348,8 +348,10 @@ can be found in ``kallithea.lib.hooks``.
 Kallithea will also use some hooks internally. They cannot be modified, but
 some of them can be enabled or disabled in the *VCS* section.
 
-Kallithea has no support for custom Git hooks. Kallithea will install and use
-Git hooks internally, and they might collide with manually installed hooks.
+Kallithea does not actively support custom Git hooks, but hooks can be installed
+manually in the file system. Kallithea will install and use the
+``post-receive`` Git hook internally, but it will then invoke
+``post-receive-custom`` if present.
 
 
 Changing default encoding

@@ -52,6 +52,7 @@ Troubleshooting
     Note that Kallithea uses the ``post-receive`` hook internally.
     Kallithea will not work properly if another post-receive hook is installed instead.
     You might also accidentally overwrite your own post-receive hook with the Kallithea hook.
+    Instead, put your post-receive hook in ``post-receive-custom``, and the Kallithea hook will invoke it.
 
     You can also use Kallithea-extensions to connect to callback hooks,
     for both Git and Mercurial.
