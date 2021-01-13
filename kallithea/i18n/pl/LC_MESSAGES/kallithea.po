@@ -155,6 +155,9 @@ msgstr "Dziennik Publiczny"
 msgid "Journal"
 msgstr "Dziennik"
 
+msgid "Authentication failed."
+msgstr "Uwierzytelnienie nie powiodło się."
+
 msgid "You have successfully registered with %s"
 msgstr "Udało Ci się zarejestrować w %s"
 
@@ -166,6 +169,9 @@ msgstr "Nieprawidłowy token resetowania hasła"
 
 msgid "Successfully updated password"
 msgstr "Pomyślnie zaktualizowano hasło"
+
+msgid "Invalid reviewer \"%s\" specified"
+msgstr "Podano nieprawidłowego recenzenta \"%\""
 
 msgid "%s (closed)"
 msgstr "%s (zamknięty)"
@@ -188,6 +194,12 @@ msgstr "Wystąpił błąd podczas prośby o połączenie gałęzi"
 msgid "Successfully opened new pull request"
 msgstr "Prośba o wykonanie połączenia gałęzi została wykonana prawidłowo"
 
+msgid "Meanwhile, the following reviewers have been added: %s"
+msgstr "Tymczasem, dodano następujących recenzentów: %s"
+
+msgid "Meanwhile, the following reviewers have been removed: %s"
+msgstr "Tymczasem, usunięto następujących recenzentów: %s"
+
 msgid "No description"
 msgstr "Brak opisu"
 
@@ -196,6 +208,9 @@ msgstr "Połączone gałęzie zaktualizowane"
 
 msgid "Successfully deleted pull request"
 msgstr "Prośba o skasowanie połączenia gałęzi została wykonana prawidłowo"
+
+msgid "Revision %s not found in %s"
+msgstr "Wersja %s nie została znaleziona w %s"
 
 msgid "Invalid search query. Try quoting it."
 msgstr "Nieprawidłowe zapytanie. Spróbuj zacytować je."
@@ -270,6 +285,21 @@ msgstr "Wystąpił błąd podczas zapisywania e-maila"
 
 msgid "Removed email from user"
 msgstr "Usunięto e-mail użytkownikowi"
+
+msgid "API key successfully created"
+msgstr "Klucz API został pomyślnie utworzony"
+
+msgid "API key successfully reset"
+msgstr "Klucz API został pomyślnie zresetowany"
+
+msgid "API key successfully deleted"
+msgstr "Klucz API został pomyślnie usunięty"
+
+msgid "SSH key %s successfully added"
+msgstr "Klucz SSH %s został pomyślnie dodany"
+
+msgid "SSH key successfully deleted"
+msgstr "Klucz SSH został pomyślnie usunięty"
 
 msgid "Read"
 msgstr "Odczyt"
@@ -374,6 +404,9 @@ msgstr "Wystąpił błąd podczas usuwania %s"
 msgid "Repository permissions updated"
 msgstr "Uprawnienia repozytorium zostały zaktualizowane"
 
+msgid "Field validation error: %s"
+msgstr "Błąd walidacji pola: %s"
+
 msgid "An error occurred during creation of field: %r"
 msgstr "Wystąpił błąd podczas tworzenia pola: %r"
 
@@ -410,6 +443,12 @@ msgstr "Wystąpił błąd podczas usuwania z repozytorium statystyk"
 
 msgid "Updated VCS settings"
 msgstr "Aktualizacja ustawień VCS"
+
+msgid ""
+"Unable to activate hgsubversion support. The \"hgsubversion\" library is "
+"missing"
+msgstr ""
+"Nie można włączyć obsługi hgsubversion. Brak biblioteki „hgsubversion”"
 
 msgid "Error occurred while updating application settings"
 msgstr "Wystąpił błąd podczas aktualizacji ustawień aplikacji"
@@ -494,6 +533,9 @@ msgstr "Użytkownik został usunięty"
 msgid "An error occurred during deletion of user"
 msgstr "Wystąpił błąd podczas usuwania użytkownika"
 
+msgid "The default user cannot be edited"
+msgstr "Domyślny użytkownik nie może być edytowany"
+
 msgid "Added IP address %s to user whitelist"
 msgstr "Dodano ip %s do listy dozwolonych adresów użytkownika"
 
@@ -508,6 +550,18 @@ msgstr "Musisz być zarejestrowanym użytkownikiem, żeby wykonać to działanie
 
 msgid "You need to be signed in to view this page"
 msgstr "Musisz być zalogowany, żeby oglądać stronę"
+
+msgid ""
+"CSRF token leak has been detected - all form tokens have been expired"
+msgstr ""
+"Wykryto wyciek tokenu CSRF — wszystkie tokeny formularza zostały "
+"unieważnione"
+
+msgid "Changeset for %s %s not found in %s"
+msgstr "Zmiany dla %s %s nie zostały znalezione w %s"
+
+msgid "SSH access is disabled."
+msgstr "Dostęp SSH jest wyłączony."
 
 msgid "Binary file"
 msgstr "Plik binarny"
@@ -638,6 +692,32 @@ msgstr ""
 "zmienione z systemie plików proszę uruchomić aplikację ponownie, aby "
 "ponownie przeskanować repozytoria"
 
+msgid "SSH key is missing"
+msgstr "Brak klucza SSH"
+
+msgid ""
+"Incorrect SSH key - it must have both a key type and a base64 part, like "
+"'ssh-rsa ASRNeaZu4FA...xlJp='"
+msgstr ""
+"Nieprawidłowy klucz SSH - musi mieć zarówno typ, jak i część kodowaną "
+"base64, na przykład „ssh-rsa ASRNeaZu4FA ... xlJp=”"
+
+msgid "Incorrect SSH key - it must start with 'ssh-(rsa|dss|ed25519)'"
+msgstr ""
+"Nieprawidłowy klucz SSH - musi zaczynać się od 'ssh-(rsa | dss | ed25519)'"
+
+msgid "Incorrect SSH key - unexpected characters in base64 part %r"
+msgstr ""
+"Nieprawidłowy klucz SSH - nieoczekiwane znaki w części kodowanej base64 %r"
+
+msgid "Incorrect SSH key - failed to decode base64 part %r"
+msgstr "Nieprawidłowy klucz SSH - nie udało się zdekodować części base64 %r"
+
+msgid "Incorrect SSH key - base64 part is not %r as claimed but %r"
+msgstr ""
+"Nieprawidłowy klucz SSH - część kodowana base64 nie jest %r jak podano, "
+"ale %r"
+
 msgid "%d year"
 msgid_plural "%d years"
 msgstr[0] "%d rok"
@@ -701,11 +781,68 @@ msgstr "najwyższy poziom"
 msgid "Kallithea Administrator"
 msgstr "Administrator Kallithea"
 
+msgid "Default user has no access to new repositories"
+msgstr "Domyślny użytkownik nie ma dostępu do nowych repozytoriów"
+
 msgid "Default user has read access to new repositories"
 msgstr "Użytkownik domyślny ma dostęp do odczytu nowych repozytoriów"
 
 msgid "Default user has write access to new repositories"
 msgstr "Użytkownik domyślny ma dostęp do zapisu nowych repozytoriów"
+
+msgid "Default user has admin access to new repositories"
+msgstr ""
+"Domyślny użytkownik ma dostęp administracyjny do nowych repozytoriów"
+
+msgid "Default user has no access to new repository groups"
+msgstr "Domyślny użytkownik nie ma dostępu do nowych grup repozytoriów"
+
+msgid "Default user has read access to new repository groups"
+msgstr ""
+"Domyślny użytkownik ma dostęp do odczytu do nowych grup repozytoriów"
+
+msgid "Default user has write access to new repository groups"
+msgstr "Domyślny użytkownik ma dostęp do zapisu do nowych grup repozytoriów"
+
+msgid "Default user has admin access to new repository groups"
+msgstr ""
+"Domyślny użytkownik ma dostęp administracyjny do nowych grup repozytoriów"
+
+msgid "Default user has no access to new user groups"
+msgstr "Domyślny użytkownik nie ma dostępu do nowych grup użytkowników"
+
+msgid "Default user has read access to new user groups"
+msgstr ""
+"Domyślny użytkownik ma dostęp do odczytu do nowych grup użytkowników"
+
+msgid "Default user has write access to new user groups"
+msgstr "Domyślny użytkownik ma dostęp do zapisu do nowych grup użytkowników"
+
+msgid "Default user has admin access to new user groups"
+msgstr ""
+"Domyślny użytkownik ma dostęp administracyjny do nowych grup użytkowników"
+
+msgid "Only admins can create repository groups"
+msgstr "Tylko administratorzy mogą tworzyć grupy repozytoriów"
+
+msgid "Non-admins can create repository groups"
+msgstr ""
+"Użytkownicy bez uprawnień administratora mogą tworzyć grupy repozytoriów"
+
+msgid "Only admins can create user groups"
+msgstr "Tylko administratorzy mogą tworzyć grupy użytkowników"
+
+msgid "Non-admins can create user groups"
+msgstr ""
+"Użytkownicy bez uprawnień administratora mogą tworzyć grupy użytkowników"
+
+msgid "Only admins can create top level repositories"
+msgstr "Tylko administratorzy mogą tworzyć repozytoria najwyższego poziomu"
+
+msgid "Non-admins can create top level repositories"
+msgstr ""
+"Osoby niebędące administratorami mogą tworzyć repozytoria najwyższego "
+"poziomu"
 
 msgid "Registration disabled"
 msgstr "Rejestracja wyłączona"
@@ -722,6 +859,9 @@ msgstr "Brak Korekty"
 msgid "Under review"
 msgstr "Objęty Przeglądem"
 
+msgid "Not approved"
+msgstr "Niezaakceptowano"
+
 msgid "Approved"
 msgstr "Zaakceptowano"
 
@@ -737,11 +877,30 @@ msgstr "Wpisz hasło"
 msgid "Enter %(min)i characters or more"
 msgstr "Wpisz %(min)i lub więcej znaków"
 
+msgid "Name must not contain only digits"
+msgstr "Nazwa nie może zawierać samych cyfr"
+
+msgid ""
+"[Comment] %(repo_name)s changeset %(short_id)s \"%(message_short)s\" on "
+"%(branch)s"
+msgstr ""
+"[Komentarz] %(repo_name)s zmiana %(short_id)s \"%(message_short)s\" w "
+"%(branch)s"
+
 msgid "New user %(new_username)s registered"
 msgstr "Użytkownik %(new_username)s zarejestrował się"
 
 msgid "latest tip"
 msgstr "ostatni tip"
+
+msgid "SSH key %r is invalid: %s"
+msgstr "Klucz SSH %r jest nieprawidłowy: %s"
+
+msgid "SSH key %s is already used by %s"
+msgstr "Klucz SSH %s jest już używany przez %s"
+
+msgid "SSH key with fingerprint %r found"
+msgstr "Znaleziono klucz SSH z odciskiem palca %r"
 
 msgid "New user registration"
 msgstr "nowy użytkownik się zarejestrował"
@@ -755,11 +914,28 @@ msgstr ""
 msgid "Password reset link"
 msgstr "łącze resetowania hasła"
 
+msgid "Password reset notification"
+msgstr "Powiadomienie o zresetowaniu hasła"
+
 msgid "Value cannot be an empty list"
 msgstr "Wartość listy nie może być pusta"
 
 msgid "Username \"%(username)s\" already exists"
 msgstr "Użytkownik \"%(username)s\" już istnieje"
+
+msgid "Username \"%(username)s\" cannot be used"
+msgstr "Nazwa użytkownika \"%(username)s\" nie może być użyta"
+
+msgid ""
+"Username may only contain alphanumeric characters underscores, periods or "
+"dashes and must begin with an alphanumeric character or underscore"
+msgstr ""
+"Nazwa użytkownika może zawierać tylko znaki alfanumeryczne, podkreślenia, "
+"kropki lub myślniki i musi zaczynać się znakiem alfanumerycznym lub "
+"podkreśleniem"
+
+msgid "The input is not valid"
+msgstr "Dane wejściowe są nieprawidłowe"
 
 msgid "Username %(username)s is not valid"
 msgstr "Nazwa użytkownika %(username)s jest nieprawidłowa"
@@ -789,8 +965,17 @@ msgstr "Repozytorium o nazwie \"%(group_name)s\" już istnieje"
 msgid "Invalid characters (non-ascii) in password"
 msgstr "Nieprawidłowe znaki (nie-ascii) w haśle"
 
+msgid "Invalid old password"
+msgstr "Nieprawidłowe stare hasło"
+
 msgid "Passwords do not match"
 msgstr "Hasła różnią się"
+
+msgid "Invalid username or password"
+msgstr "Nieprawidłowa nazwa użytkownika lub hasło"
+
+msgid "Repository name %(repo)s is not allowed"
+msgstr "Nazwa repozytorium  %(repo)s jest zabroniona"
 
 msgid "Repository named %(repo)s already exists"
 msgstr "Repozytorium o nazwie %(repo)s już istnieje"
@@ -800,6 +985,16 @@ msgstr "Repozytorium  \"%(repo)s\" już istnieje w grupie \"%(group)s\""
 
 msgid "Repository group with name \"%(repo)s\" already exists"
 msgstr "Grupa repozytoriów z nazwą \"%(repo)s\" już istnieje"
+
+msgid "Invalid repository URL"
+msgstr "Nieprawidłowy adres URL repozytorium"
+
+msgid ""
+"Invalid repository URL. It must be a valid http, https, ssh, svn+http or "
+"svn+https URL"
+msgstr ""
+"Nieprawidłowy adres URL repozytorium. Musi to być prawidłowy adres URL "
+"typu http, https, ssh, svn + http lub svn + https"
 
 msgid "Fork has to be the same type as parent"
 msgstr "Fork musi być tego samego typu, jak rodzic"
@@ -848,6 +1043,9 @@ msgstr ""
 msgid "Filename cannot be inside a directory"
 msgstr "Nazwa pliku nie może znajdować się w katalogu"
 
+msgid "Plugins %(loaded)s and %(next_to_load)s both export the same name"
+msgstr "Wtyczki %(loaded)s i %(next_to_load)s eksportują tę samą nazwę"
+
 msgid "Add Repository"
 msgstr "Dodaj Repozytorium"
 
@@ -887,6 +1085,9 @@ msgstr "Nazwa użytkownika"
 msgid "Password"
 msgstr "Hasło"
 
+msgid "Stay logged in after browser restart"
+msgstr "Pozostań zalogowany po ponownym uruchomieniu przeglądarki"
+
 msgid "Forgot your password ?"
 msgstr "Zapomniałeś hasła?"
 
@@ -911,14 +1112,40 @@ msgstr "Adres Email"
 msgid "Send Password Reset Email"
 msgstr "Wyślij email z resetowaniem hasła"
 
+msgid ""
+"A password reset link will be sent to the specified email address if it "
+"is registered in the system."
+msgstr ""
+"Link do zresetowania hasła zostanie wysłany na adres e-mail znajdujący "
+"się w systemie."
+
+msgid "You are about to set a new password for the email address %s."
+msgstr "Zamierzasz ustawić nowe hasło dla adresu e-mail %s."
+
+msgid ""
+"Note that you must use the same browser session for this as the one used "
+"to request the password reset."
+msgstr ""
+"Zapamiętaj, że należy użyć do tego tej samej sesji przeglądarki, co użyta "
+"do żądania zresetowania hasła."
+
+msgid "Code you received in the email"
+msgstr "Kod otrzymany w wiadomości e-mail"
+
 msgid "New Password"
 msgstr "Nowe hasło"
 
 msgid "Confirm New Password"
 msgstr "Potwierdź nowe hasło"
 
+msgid "Confirm"
+msgstr "Potwierdź"
+
 msgid "Sign Up"
 msgstr "Zarejestruj się"
+
+msgid "Sign Up to %s"
+msgstr "Zarejestruj się w %s"
 
 msgid "Re-enter password"
 msgstr "Ponownie wprowadź hasło"
@@ -931,6 +1158,13 @@ msgstr "Nazwisko"
 
 msgid "Email"
 msgstr "E-mail"
+
+msgid "Registered accounts are ready to use and need no further action."
+msgstr ""
+"Zarejestrowane konta są gotowe do użycia i nie wymagają dalszych działań."
+
+msgid "Please wait for an administrator to activate your account."
+msgstr "Poczekaj, aż administrator aktywuje Twoje konto."
 
 msgid "Admin Journal"
 msgstr "Dziennik administratora"
@@ -971,6 +1205,16 @@ msgstr "Wtyczki Autentykacji"
 msgid "Enabled Plugins"
 msgstr "Włączone Wtyczki"
 
+msgid ""
+"Comma-separated list of plugins; Kallithea will try user authentication "
+"in plugin order"
+msgstr ""
+"Lista wtyczek oddzielonych przecinkami; Kallithea spróbuje uwierzytelnić "
+"użytkownika wg kolejności ich podania"
+
+msgid "Available built-in plugins"
+msgstr "Dostępne wbudowane wtyczki"
+
 msgid "Plugin"
 msgstr "Wtyczka"
 
@@ -1007,6 +1251,9 @@ msgstr "Włącz menu pobierania na stronie podsumowania."
 
 msgid "Edit Gist"
 msgstr "Edytuj Gist"
+
+msgid "here"
+msgstr "tutaj"
 
 msgid "Gist description ..."
 msgstr "Opis Gist ..."
@@ -1092,20 +1339,64 @@ msgstr "Profil"
 msgid "Email Addresses"
 msgstr "Adresy e-mail"
 
+msgid "SSH Keys"
+msgstr "Klucze SSH"
+
+msgid "API Keys"
+msgstr "Klucze API"
+
 msgid "Owned Repositories"
 msgstr "Posiadane repozytoria"
 
 msgid "Watched Repositories"
 msgstr "Obserwowane repozytoria"
 
+msgid "Show Permissions"
+msgstr "Pokaż uprawnienia"
+
+msgid "Confirm to reset this API key: %s"
+msgstr "Potwierdź, aby zresetować ten klucz API: %s"
+
 msgid "Expired"
 msgstr "Wygasło"
+
+msgid "Confirm to remove this API key: %s"
+msgstr "Potwierdź usunięcie tego klucz API: %s"
 
 msgid "Remove"
 msgstr "Usuń"
 
+msgid "No additional API keys specified"
+msgstr "Nie określono żadnych dodatkowych kluczy API"
+
+msgid "New API key"
+msgstr "Nowy klucz API"
+
 msgid "Add"
 msgstr "Dodaj"
+
+msgid ""
+"\n"
+"API keys are used to let scripts or services access %s using your\n"
+"account, as if you had provided the script or service with your actual\n"
+"password.\n"
+msgstr ""
+"\n"
+"Klucze API są używane, aby umożliwić skryptom lub usługom\n"
+"dostęp %s przy użyciu twojego konta, tak jakbyś użył\n"
+"rzeczywistego hasła.\n"
+
+msgid ""
+"\n"
+"Like passwords, API keys should therefore never be shared with others,\n"
+"nor passed to untrusted scripts or services. If such sharing should\n"
+"happen anyway, reset the API key on this page to prevent further use.\n"
+msgstr ""
+"\n"
+"Podobnie jak hasła, klucze API nigdy nie powinny być udostępniane\n"
+"innym osobom ani przekazywane do niezaufanych skryptów lub usług.\n"
+"Jeśli jednak coś takiego się wydarzy, zresetuj klucz API na tej stronie,\n"
+"aby zapobiec jego dalszemu użyciu.\n"
 
 msgid "Primary"
 msgstr "Główny"
@@ -1122,8 +1413,24 @@ msgstr "Nowy adres e-mail"
 msgid "Change Your Account Password"
 msgstr "Zmień hasło"
 
+msgid "Current password"
+msgstr "Aktualne hasło"
+
 msgid "New password"
 msgstr "Nowe hasło"
+
+msgid "Confirm new password"
+msgstr "Potwierdź nowe hasło"
+
+msgid ""
+"This account is managed with %s and the password cannot be changed here"
+msgstr "To konto jest zarządzane przez %s i nie można tutaj zmienić hasła"
+
+msgid "Current IP"
+msgstr "Aktualny adres IP"
+
+msgid "Gravatar"
+msgstr "Gravatar"
 
 msgid "Change %s avatar at"
 msgstr "Zmiana awataru %s na"
@@ -1136,6 +1443,18 @@ msgstr "Twoje repozytoria"
 
 msgid "Name"
 msgstr "Nazwa"
+
+msgid "No SSH keys have been added"
+msgstr "Nie dodano żadnych kluczy SSH"
+
+msgid "New SSH key"
+msgstr "Nowy klucz SSH"
+
+msgid "Public key"
+msgstr "Klucz publiczny"
+
+msgid "Public key (contents of e.g. ~/.ssh/id_rsa.pub)"
+msgstr "Klucz publiczny (zawartość np. ~/.ssh/id_rsa.pub)"
 
 msgid "Repositories You are Watching"
 msgstr "Repozytoria które obserwujesz"
@@ -1154,6 +1473,13 @@ msgstr "Dostęp anonimowy"
 
 msgid "Allow anonymous access"
 msgstr "Zezwalaj na dostęp anonimowy"
+
+msgid ""
+"Allow access to Kallithea without needing to log in. Anonymous users use "
+"%s user permissions."
+msgstr ""
+"Zezwalaj na dostęp do Kallithei bez konieczności logowania się. Anonimowi "
+"użytkownicy używają uprawnień użytkownika %s."
 
 msgid ""
 "All default permissions on each repository will be reset to chosen "
