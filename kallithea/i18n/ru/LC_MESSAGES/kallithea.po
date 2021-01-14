@@ -182,7 +182,7 @@ msgid "Closed Branches"
 msgstr "Закрытые ветки"
 
 msgid "Tag"
-msgstr "Тэги"
+msgstr "Метка"
 
 msgid "Bookmark"
 msgstr "Закладки"
@@ -192,6 +192,9 @@ msgstr "Публичный журнал"
 
 msgid "Journal"
 msgstr "Журнал"
+
+msgid "Authentication failed."
+msgstr "Ошибка авторизации."
 
 msgid "Bad captcha"
 msgstr "Неверная капча"
@@ -3142,7 +3145,7 @@ msgid "Comment on Changeset \"%s\""
 msgstr "Комментарий к набору изменений «%s»"
 
 msgid "Changeset on"
-msgstr "Набр изменений для"
+msgstr "Набор изменений для"
 
 msgid "branch"
 msgstr "ветви"
@@ -3150,11 +3153,20 @@ msgstr "ветви"
 msgid "by"
 msgstr "от"
 
+msgid "View Comment"
+msgstr "Просмотр комментария"
+
 msgid "Status change:"
 msgstr "Изменение статуса:"
 
 msgid "The pull request has been closed."
 msgstr "Этот pull-запрос закрыт."
+
+msgid "Message"
+msgstr "Сообщение"
+
+msgid "Password Reset Request"
+msgstr "Запрос сброса пароля"
 
 msgid "Hello %s"
 msgstr "Здравствуйте, %s"
@@ -3201,6 +3213,9 @@ msgstr "от"
 msgid "to"
 msgstr "к"
 
+msgid "View Pull Request"
+msgstr "Просммотр запроса на вливание"
+
 msgid "Mention in Comment on Pull Request %s \"%s\""
 msgstr "Упоминание в комментарии к pull-запросу %s «%s»"
 
@@ -3210,8 +3225,14 @@ msgstr "Pull-запрос %s «%s» закрыт"
 msgid "Comment on Pull Request %s \"%s\""
 msgstr "Комментарий к pull-запросу %s «%s»"
 
+msgid "New User Registration"
+msgstr "Регистрация нового пользователя"
+
 msgid "Full Name"
 msgstr "Полное имя"
+
+msgid "View User Profile"
+msgstr "Просмотр пользователя"
 
 msgid "%s File side-by-side diff"
 msgstr "Построчное сравнение файла %s"
