@@ -56,3 +56,4 @@ syntax: regexp
 ^deps\.dot$
 ^deps\.svg$
 ^deps\.txt$
+^\.pytype/
