@@ -20,9 +20,11 @@ import os
 import random
 import re
 import string
+from typing import Sized
 
 import mock
 import pytest
+from webtest import TestApp
 
 from kallithea.lib import ext_json
 from kallithea.lib.auth import AuthUser
@@ -86,8 +88,14 @@ def make_repo_group(name=TEST_REPO_GROUP):
 
 
 class _BaseTestApi(object):
-    REPO = None
-    REPO_TYPE = None
+    app: TestApp  # assigned by app_fixture in subclass TestController mixin
+    # assigned in subclass:
+    REPO: str
+    REPO_TYPE: str
+    TEST_REVISION: str
+    TEST_PR_SRC: str
+    TEST_PR_DST: str
+    TEST_PR_REVISIONS: Sized
 
     @classmethod
     def setup_class(cls):

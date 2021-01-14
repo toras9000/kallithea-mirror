@@ -93,6 +93,7 @@ time
 traceback
 traitlets
 types
+typing
 urllib
 urlobject
 uuid

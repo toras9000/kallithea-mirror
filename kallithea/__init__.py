@@ -44,6 +44,7 @@ BACKENDS = {
 
 CELERY_APP = celery.Celery()  # needed at import time but is lazy and can be configured later
 
+DEFAULT_USER_ID: int  # set by setup_configuration
 CONFIG = {}  # set to tg.config when TG app is initialized and calls app_cfg
 
 # URL prefix for non repository related links - must start with `/`

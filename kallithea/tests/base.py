@@ -138,6 +138,8 @@ class NullHandler(logging.Handler):
 
 class TestController(object):
     """Pytest-style test controller"""
+    app: TestApp  # assigned by app_fixture
+    _logged_username: str  # assigned by log_user
 
     # Note: pytest base classes cannot have an __init__ method
 

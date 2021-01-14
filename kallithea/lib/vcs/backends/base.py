@@ -11,6 +11,7 @@
 
 import datetime
 import itertools
+from typing import Sequence
 
 from kallithea.lib.vcs.backends import get_backend
 from kallithea.lib.vcs.conf import settings
@@ -51,8 +52,12 @@ class BaseRepository(object):
         ``tags``
             tags as list of changesets
     """
-    scm = None
-    DEFAULT_BRANCH_NAME = None
+    DEFAULT_BRANCH_NAME: str  # assigned in subclass
+    scm: str  # assigned in subclass
+    path: str  # assigned in subclass __init__
+    revisions: Sequence[str]  # LazyProperty in subclass
+    _empty: bool  # property in subclass
+
     EMPTY_CHANGESET = '0' * 40
 
     def __init__(self, repo_path, create=False, **kwargs):
@@ -367,6 +372,9 @@ class BaseChangeset(object):
             otherwise; trying to access this attribute while there is no
             changesets would raise ``EmptyRepositoryError``
     """
+    message: str  # LazyProperty in subclass
+    date: datetime.datetime  # LazyProperty in subclass
+
     def __str__(self):
         return '<%s at %s:%s>' % (self.__class__.__name__, self.revision,
             self.short_id)
