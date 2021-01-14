@@ -15,6 +15,8 @@ import click
 
 import kallithea
 import kallithea.bin.kallithea_cli_base as cli_base
+import kallithea.lib.utils
+import kallithea.model.scm
 from kallithea.lib.db_manage import DbManage
 from kallithea.model import meta
 
