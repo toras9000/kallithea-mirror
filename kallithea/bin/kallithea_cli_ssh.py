@@ -69,7 +69,7 @@ def ssh_serve(user_id, key_id):
         vcs_handler = VcsHandler.make(ssh_command_parts)
         if vcs_handler is not None:
             vcs_handler.serve(user_id, key_id, client_ip)
-            assert False # serve is written so it never will terminate
+            sys.exit(0)
 
     sys.stderr.write("This account can only be used for repository access. SSH command %r is not supported.\n" % ssh_original_command)
     sys.exit(1)

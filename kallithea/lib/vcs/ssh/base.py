@@ -96,7 +96,7 @@ class BaseSshHandler(object):
         # on Git, or through the 'outgoing' Mercurial hook) is hardcoded to
         # ignore the environment action and always use 'pull'.
         set_hook_environment(self.authuser.username, client_ip, self.repo_name, self.vcs_type, 'push')
-        return self._serve()
+        self._serve()
 
     def _serve(self):
         """Serve the native protocol for repository access."""
