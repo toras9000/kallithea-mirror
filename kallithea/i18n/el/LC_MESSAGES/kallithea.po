@@ -747,10 +747,10 @@ msgid "del"
 msgstr "διαγραμμένο"
 
 msgid "rename"
-msgstr "μετονομασμένο"
+msgstr "μετονομασία"
 
 msgid "chmod"
-msgstr "αλλ δικαιωμ"
+msgstr "chmod"
 
 msgid ""
 "%s repository is not mapped to db perhaps it was created or renamed from "
@@ -1233,7 +1233,7 @@ msgid "Username"
 msgstr "Όνομα χρήστη"
 
 msgid "Password"
-msgstr "Κωδικό πρόσβασης"
+msgstr "Κωδικός πρόσβασης"
 
 msgid "Stay logged in after browser restart"
 msgstr ""
@@ -1293,7 +1293,7 @@ msgid "Code you received in the email"
 msgstr "Κωδικός που λάβατε στο μήνυμα ηλεκτρονικού ταχυδρομείου"
 
 msgid "New Password"
-msgstr "Νέος Κωδικός"
+msgstr "Νέος κωδικός πρόσβασης"
 
 msgid "Confirm New Password"
 msgstr "Επιβεβαίωση Νέου Κωδικού Πρόσβασης"
@@ -1317,7 +1317,7 @@ msgid "Last Name"
 msgstr "Επώνυμο"
 
 msgid "Email"
-msgstr "Διεύθυνση Ηλεκτρονικού Ταχυδρομείου"
+msgstr "Ηλεκτρονικό ταχυδρομείο"
 
 msgid "Registered accounts are ready to use and need no further action."
 msgstr ""
@@ -1440,7 +1440,7 @@ msgid "Update Gist"
 msgstr "Ενημέρωση του gist"
 
 msgid "Cancel"
-msgstr "Ακύρωση"
+msgstr "Άκυρο"
 
 msgid "Private Gists for User %s"
 msgstr "Ιδιωτικά gists για το χρήστη %s"
@@ -1542,7 +1542,7 @@ msgid "Confirm to remove this API key: %s"
 msgstr "Επιβεβαίωση κατάργησης αυτού του κλειδιού API: %s"
 
 msgid "Remove"
-msgstr "Κατάργηση"
+msgstr "Αφαίρεση"
 
 msgid "No additional API keys specified"
 msgstr "Δεν έχουν καθοριστεί πρόσθετα κλειδιά API"
@@ -3255,7 +3255,7 @@ msgid "annotation"
 msgstr "σχολιασμός"
 
 msgid "Go Back"
-msgstr "Πήγαινε Πίσω"
+msgstr "Επιστροφή"
 
 msgid "No files at given path"
 msgstr "Δεν υπάρχουν αρχεία στη δοσμένη διαδρομή"
