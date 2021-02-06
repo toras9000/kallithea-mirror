@@ -102,6 +102,7 @@ def _journal_filter(user_log, search_term):
         if not isinstance(qry, query.And):
             qry = [qry]
         for term in qry:
+            assert term is not None, term
             field = term.fieldname
             val = (term.text if not isinstance(term, query.DateRange)
                    else [term.startdate, term.enddate])
