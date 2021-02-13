@@ -343,7 +343,7 @@ msgid "Unmodified"
 msgstr "Неизменный"
 
 msgid "Successfully updated gist content"
-msgstr "Содержимое фрагмента успешно обновлено"
+msgstr "Содержимое gist-записи обновлено"
 
 msgid "Successfully updated gist data"
 msgstr "Данные gist-записи обновлены"
@@ -519,10 +519,10 @@ msgid "An error occurred during this operation"
 msgstr "Произошла ошибка при выполнении операции"
 
 msgid "Pulled from remote location"
-msgstr "Внесены изменения из удалённого репозитория"
+msgstr "Получено из удалённого репозитория"
 
 msgid "An error occurred during pull from remote location"
-msgstr "Произошла ошибка при внесении изменений из удалённого репозитория"
+msgstr "Произошла ошибка при получении изменений из удалённого репозитория"
 
 msgid "An error occurred during deletion of repository stats"
 msgstr "Произошла ошибка при удалении статистики репозитория"
@@ -747,13 +747,13 @@ msgid "[pushed] into"
 msgstr "[отправлено] в"
 
 msgid "[committed via Kallithea] into repository"
-msgstr "[внесены изменения с помощью Kallithea] в репозитории"
+msgstr "[коммит через Kallithea] в репозитории"
 
 msgid "[pulled from remote] into repository"
-msgstr "[внесены изменения из удалённого репозитория] в репозиторий"
+msgstr "[получено из удалённого репозитория] в репозиторий"
 
 msgid "[pulled] from"
-msgstr "[внесены изменения] из"
+msgstr "[получено] из"
 
 msgid "[started following] repository"
 msgstr "[подписка] на репозиторий"
@@ -2089,7 +2089,7 @@ msgid "Remote repository URL"
 msgstr "Ссылка на удалённый репозиторий"
 
 msgid "Pull Changes from Remote Repository"
-msgstr "Изменения из удалённого репозитория"
+msgstr "Получить изменения из удалённого репозитория"
 
 msgid "Confirm to pull changes from remote repository."
 msgstr "Подтвердите применение изменений из удалённого репозитория."
@@ -2240,8 +2240,8 @@ msgid ""
 "pull. They can trigger Python functions or external applications."
 msgstr ""
 "Хуки используются для активации действий при определённых событиях, "
-"например, push/pull-запросах. Могут активироваться функции Python либо "
-"внешние приложения."
+"например, при проталкивании (push) или получении (pull) изменений. По "
+"хуку могут исполняться функции Python либо внешние приложения."
 
 msgid "Failed to remove hook"
 msgstr "Не удалось удалить хук"
@@ -3214,7 +3214,7 @@ msgid "to"
 msgstr "к"
 
 msgid "View Pull Request"
-msgstr "Просммотр запроса на вливание"
+msgstr "Просмотр pull-запроса"
 
 msgid "Mention in Comment on Pull Request %s \"%s\""
 msgstr "Упоминание в комментарии к pull-запросу %s «%s»"
@@ -3532,7 +3532,7 @@ msgstr ""
 "реального предка для слияния."
 
 msgid "Pull changes"
-msgstr "Принять изменения"
+msgstr "Получить изменения"
 
 msgid "Next iteration"
 msgstr "Следующая итерация"
@@ -3658,7 +3658,7 @@ msgid "Show more"
 msgstr "Показать еще"
 
 msgid "commits"
-msgstr "commit'ы"
+msgstr "коммиты"
 
 msgid "files added"
 msgstr "файлы добавлены"
@@ -3670,7 +3670,7 @@ msgid "files removed"
 msgstr "файлы удалены"
 
 msgid "commit"
-msgstr "commit"
+msgstr "коммит"
 
 msgid "file added"
 msgstr "файл удалён"
