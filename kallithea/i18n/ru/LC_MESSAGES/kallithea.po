@@ -48,10 +48,10 @@ msgid "Cannot show empty diff"
 msgstr "Отсутствуют изменения для отображения"
 
 msgid "No ancestor found for merge diff"
-msgstr "Не найдено предка для слияния"
+msgstr "Не найдено предка для слияния правок"
 
 msgid "Multiple merge ancestors found for merge compare"
-msgstr "Найдено несколько предков для сравнения слияния"
+msgstr "Найдено несколько предков для сравнения слияний"
 
 msgid "Cannot compare repositories without using common ancestor"
 msgstr "Невозможно сравнивать репозитории без общего предка"
@@ -212,7 +212,7 @@ msgid "Successfully updated password"
 msgstr "Пароль обновлён"
 
 msgid "Invalid reviewer \"%s\" specified"
-msgstr "Некорректно задан ревьювер «%s»"
+msgstr "Задан неверный ревьюер «%s»"
 
 msgid "%s (closed)"
 msgstr "%s (закрыта)"
@@ -343,7 +343,7 @@ msgid "Unmodified"
 msgstr "Неизменный"
 
 msgid "Successfully updated gist content"
-msgstr "Содержимое gist-записи обновлено"
+msgstr "Содержимое фрагмента успешно обновлено"
 
 msgid "Successfully updated gist data"
 msgstr "Данные gist-записи обновлены"
