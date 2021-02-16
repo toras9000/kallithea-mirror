@@ -402,9 +402,11 @@ class DiffProcessor(object):
         if not html:
             return _files
 
-        # highlight inline changes when one del is followed by one add
         for diff_data in _files:
             for chunk in diff_data['chunks']:
+                for change in chunk:
+                    change['line'] = _escaper(change['line'])
+                # highlight inline changes when one del is followed by one add
                 lineiter = iter(chunk)
                 try:
                     peekline = next(lineiter)
@@ -447,44 +449,44 @@ _escape_re = re.compile(r'(&)|(<)|(>)|(\t)($)?|(\r)|( $)')
 
 def _escaper(diff_line):
     r"""
-    Do HTML escaping/markup of a single diff line (including first +/- column)
+    Do HTML escaping/markup of a single diff line (excluding first +/- column)
 
     >>> _escaper('foobar')
     'foobar'
     >>> _escaper('@foo & bar')
     '@foo &amp; bar'
-    >>> _escaper('+foo < bar')
-    '+foo &lt; bar'
-    >>> _escaper('-foo > bar')
-    '-foo &gt; bar'
-    >>> _escaper(' <foo>')
-    ' &lt;foo&gt;'
-    >>> _escaper(' foo\tbar')
-    ' foo<u>\t</u>bar'
-    >>> _escaper(' foo\rbar\r')
-    ' foo<u class="cr"></u>bar<u class="cr"></u>'
-    >>> _escaper(' foo\t')
-    ' foo<u>\t</u><i></i>'
-    >>> _escaper(' foo ')
-    ' foo <i></i>'
-    >>> _escaper(' foo  ')
-    ' foo  <i></i>'
+    >>> _escaper('foo < bar')
+    'foo &lt; bar'
+    >>> _escaper('foo > bar')
+    'foo &gt; bar'
+    >>> _escaper('<foo>')
+    '&lt;foo&gt;'
+    >>> _escaper('foo\tbar')
+    'foo<u>\t</u>bar'
+    >>> _escaper('foo\rbar\r')
+    'foo<u class="cr"></u>bar<u class="cr"></u>'
+    >>> _escaper('foo\t')
+    'foo<u>\t</u><i></i>'
+    >>> _escaper('foo ')
+    'foo <i></i>'
+    >>> _escaper('foo  ')
+    'foo  <i></i>'
+    >>> _escaper('')
+    ''
     >>> _escaper(' ')
-    ' '
-    >>> _escaper('  ')
-    '  <i></i>'
-    >>> _escaper(' \t')
-    ' <u>\t</u><i></i>'
-    >>> _escaper(' \t  ')
-    ' <u>\t</u>  <i></i>'
-    >>> _escaper('   \t')
-    '   <u>\t</u><i></i>'
-    >>> _escaper(' \t\t  ')
-    ' <u>\t</u><u>\t</u>  <i></i>'
-    >>> _escaper('   \t\t')
-    '   <u>\t</u><u>\t</u><i></i>'
-    >>> _escaper(' foo&bar<baz>  ')
-    ' foo&amp;bar&lt;baz&gt;  <i></i>'
+    ' <i></i>'
+    >>> _escaper('\t')
+    '<u>\t</u><i></i>'
+    >>> _escaper('\t  ')
+    '<u>\t</u>  <i></i>'
+    >>> _escaper('  \t')
+    '  <u>\t</u><i></i>'
+    >>> _escaper('\t\t  ')
+    '<u>\t</u><u>\t</u>  <i></i>'
+    >>> _escaper('  \t\t')
+    '  <u>\t</u><u>\t</u><i></i>'
+    >>> _escaper('foo&bar<baz>  ')
+    'foo&amp;bar&lt;baz&gt;  <i></i>'
     """
 
     def substitute(m):
@@ -502,8 +504,6 @@ def _escaper(diff_line):
         if groups[5]:
             return '<u class="cr"></u>'
         if groups[6]:
-            if m.start() == 0:
-                return ' '  # first column space shouldn't make empty lines show up as trailing space
             return ' <i></i>'
         assert False
 
@@ -594,7 +594,7 @@ def _get_header(vcs, diff_chunk):
         if rest[-1:] != b'\n':
             # The diff will generally already have trailing \n (and be a memoryview). It might also be huge so we don't want to allocate it twice. But in this very rare case, we don't care.
             rest = bytes(rest) + b'\n'
-    diff_lines = (_escaper(safe_str(m.group(1))) for m in re.finditer(br'(.*)\n', rest))
+    diff_lines = (safe_str(m.group(1)) for m in re.finditer(br'(.*)\n', rest))
     return meta_info, diff_lines
 
 
