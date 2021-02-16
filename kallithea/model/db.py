@@ -1977,7 +1977,7 @@ class ChangesetStatus(meta.Base, BaseDbModel):
 
     @classmethod
     def get_status_lbl(cls, value):
-        return cls.STATUSES_DICT.get(value)
+        return str(cls.STATUSES_DICT.get(value))  # using str to evaluate translated LazyString at runtime
 
     @property
     def status_lbl(self):

@@ -192,7 +192,7 @@ class EmailNotificationModel(object):
         bracket_tags = []
         status_change = kwargs.get('status_change')
         if status_change:
-            bracket_tags.append(str(status_change))  # apply str to evaluate LazyString before .join
+            bracket_tags.append(status_change)
         if kwargs.get('closing_pr'):
             bracket_tags.append(_('Closing'))
         if bracket_tags:
