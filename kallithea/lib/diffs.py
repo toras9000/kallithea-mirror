@@ -63,10 +63,10 @@ def _safe_id(idstring):
     return idstring
 
 
-def as_html(table_class='code-difftable', line_class='line',
+def as_html(parsed_lines, table_class='code-difftable', line_class='line',
             old_lineno_class='lineno old', new_lineno_class='lineno new',
             no_lineno_class='lineno',
-            code_class='code', parsed_lines=None):
+            code_class='code'):
     """
     Return given diff as html table with customized css classes
     """
