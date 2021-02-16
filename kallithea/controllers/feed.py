@@ -71,7 +71,7 @@ class FeedController(base.BaseRepoController):
         raw_diff = cs.diff()
         diff_processor = DiffProcessor(raw_diff,
                                        diff_limit=diff_limit,
-                                       inline_diff=False)
+                                       html=False)
 
         for st in diff_processor.parsed:
             st.update({'added': st['stats']['added'],

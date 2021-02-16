@@ -190,7 +190,7 @@ def html_diff(filenode_old, filenode_new, diff_limit=None,
         raw_diff = get_gitdiff(filenode_old, filenode_new,
                                 ignore_whitespace=ignore_whitespace,
                                 context=line_context)
-        diff_processor = DiffProcessor(raw_diff)
+        diff_processor = DiffProcessor(raw_diff, html=True)
         if diff_processor.parsed: # there should be exactly one element, for the specified file
             f = diff_processor.parsed[0]
             op = f['operation']
@@ -266,11 +266,11 @@ class DiffProcessor(object):
     """
     Give it a unified or git diff and it returns a list of the files that were
     mentioned in the diff together with a dict of meta information that
-    can be used to render it in a HTML template.
+    can be used to render it in a HTML template or as text.
     """
     _diff_git_re = re.compile(b'^diff --git', re.MULTILINE)
 
-    def __init__(self, diff, vcs='hg', diff_limit=None, inline_diff=True):
+    def __init__(self, diff, vcs='hg', diff_limit=None, html=True):
         """
         :param diff:   a text in diff format
         :param vcs: type of version control hg or git
@@ -287,9 +287,9 @@ class DiffProcessor(object):
         self.diff_limit = diff_limit
         self.limited_diff = False
         self.vcs = vcs
-        self.parsed = self._parse_gitdiff(inline_diff=inline_diff)
+        self.parsed = self._parse_gitdiff(html=html)
 
-    def _parse_gitdiff(self, inline_diff):
+    def _parse_gitdiff(self, html):
         """Parse self._diff and return a list of dicts with meta info and chunks for each file.
         Might set limited_diff.
         Optionally, do an extra pass and to extra markup of one-liner changes.
@@ -399,7 +399,7 @@ class DiffProcessor(object):
                 'stats':            stats,
             })
 
-        if not inline_diff:
+        if not html:
             return _files
 
         # highlight inline changes when one del is followed by one add
