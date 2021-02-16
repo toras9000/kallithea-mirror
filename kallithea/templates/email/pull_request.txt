@@ -3,30 +3,30 @@
 <%include file="header.txt" args="title=title,link=pr_url"/>\
 </%block>\
 
-${_('Pull request')|n,unicode} \
-${pr_nice_id|n,unicode} \
-"${pr_title|n,unicode}" \
-${_('by')|n,unicode} \
-${pr_owner.full_name_and_username|n,unicode}
+${_('Pull request')|n} \
+${pr_nice_id|n} \
+"${pr_title|n}" \
+${_('by')|n} \
+${pr_owner.full_name_and_username|n}
 ${_('from')} \
-${pr_source_repo|n,unicode} \
-${_('branch')|n,unicode} \
-${pr_source_branch|n,unicode}
-${_('to')|n,unicode} \
-${pr_target_repo|n,unicode} \
-${_('branch')|n,unicode} \
-${pr_target_branch|n,unicode}
+${pr_source_repo|n} \
+${_('branch')|n} \
+${pr_source_branch|n}
+${_('to')|n} \
+${pr_target_repo|n} \
+${_('branch')|n} \
+${pr_target_branch|n}
 
 
-${_('Description')|n,unicode}:
+${_('Description')|n}:
 
-${body|n,unicode}
+${body|n}
 
 
-${_('Changesets')|n,unicode}:
+${_('Changesets')|n}:
 
 %for revision, desc in pr_revisions:
-${webutils.shorter(desc, 80, firstline=True)|n,unicode}
+${webutils.shorter(desc, 80, firstline=True)|n}
 %endfor
 
 <% title = _('View Pull Request') %>\

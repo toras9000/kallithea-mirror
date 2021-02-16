@@ -3,6 +3,6 @@
 ${link}
 
 %endif
-${title|n,unicode}
+${title|n}
 
 ## Trailing empty line
