@@ -66,7 +66,7 @@ msgstr "Άγνωστο σφάλμα"
 msgid ""
 "The request could not be understood by the server due to malformed syntax."
 msgstr ""
-"Η αίτηση δεν  μπόρεσε να ερμηνευτεί από τον εξυπηρετητή λόγω κακής "
+"Η αίτηση δεν μπόρεσε να ερμηνευτεί από τον εξυπηρετητή λόγω κακής "
 "διατύπωσης."
 
 msgid "Unauthorized access to resource"
@@ -722,6 +722,12 @@ msgstr "[διαγραμμένο] αποθετήριο"
 msgid "[created] repository"
 msgstr "[δημιουργημένο] αποθετήριο"
 
+msgid "[created] repository as fork"
+msgstr "[δημιουργήθηκε] αποθετήριο ως κλώνος"
+
+msgid "[forked] repository"
+msgstr "[κλωνοποιημένο] αποθετήριο"
+
 msgid "[updated] repository"
 msgstr "[ενημερωμένο] αποθετήριο"
 
@@ -730,6 +736,21 @@ msgstr "[λήψη] αρχείο από το αποθετήριο"
 
 msgid "[delete] repository"
 msgstr "[διαγραμμένο] αποθετήριο"
+
+msgid "[created] user"
+msgstr "[δημιουργήθηκε] χρήστης"
+
+msgid "[updated] user"
+msgstr "[ενημερώθηκε] χρήστης"
+
+msgid "[created] user group"
+msgstr "[δημιουργήθηκε] ομάδα χρήστη"
+
+msgid "[updated] user group"
+msgstr "[ενημερώθηκε] ομάδα χρήστη"
+
+msgid "[commented] on revision in repository"
+msgstr "[σχολιασμένο] σε αναθεώρηση στο αποθετήριο"
 
 msgid " and %s more"
 msgstr " και %s περισσότερα"
@@ -920,6 +941,12 @@ msgid ""
 msgstr ""
 "Η δημιουργία αποθετηρίου απενεργοποιήθηκε με δικαιώματα εγγραφής σε μια "
 "ομάδα αποθετηρίων"
+
+msgid "Only admins can fork repositories"
+msgstr "Μόνο οι διαχειριστές μπορούν να κλωνοποιήσουν τα αποθετήρια"
+
+msgid "Non-admins can fork repositories"
+msgstr "Οι μη-διαχειριστές μπορούν να κλωνοποιήσουν αποθετήρια"
 
 msgid "Registration disabled"
 msgstr "Η εγγραφή απενεργοποιήθηκε"
@@ -1140,6 +1167,9 @@ msgid ""
 msgstr ""
 "Μη έγκυρη διεύθυνση URL του αποθετηρίου. Πρέπει να είναι μια έγκυρη http, "
 "https, ssh, svn+http ή svn+https διεύθυνση URL"
+
+msgid "Fork has to be the same type as parent"
+msgstr "Ο κλώνος πρέπει να έχει τον ίδιο τύπο με τον γονέα του"
 
 msgid "You don't have permissions to create repository in this group"
 msgstr "Δεν έχετε δικαιώματα δημιουργίας αποθετηρίου σε αυτήν την ομάδα"
@@ -1762,6 +1792,14 @@ msgstr ""
 "Ενεργοποιήστε αυτήν την επιλογή για να επιτρέψετε σε μη διαχειριστές να "
 "δημιουργούν ομάδες χρηστών."
 
+msgid "Repository forking"
+msgstr "Κλωνοποίηση αποθετηρίου"
+
+msgid "Enable this to allow non-admins to fork repositories."
+msgstr ""
+"Ενεργοποιήστε για να επιτρέπεται στους μη-διαχειριστές να κλωνοποιούν "
+"αποθετήρια."
+
 msgid "Registration"
 msgstr "Εγγραφή"
 
@@ -1954,6 +1992,11 @@ msgstr "Γονικό"
 msgid "Set"
 msgstr "Ορισμός"
 
+msgid "Manually set this repository as a fork of another from the list."
+msgstr ""
+"Ορίστε χειροκίνητα αυτό το αποθετήριο ως έναν κλώνο ενός άλλου από αυτόν "
+"τον κατάλογο."
+
 msgid "Public Journal Visibility"
 msgstr "Ορατότητα δημόσιων εγγραφών"
 
@@ -1980,6 +2023,12 @@ msgid "This repository has %s fork"
 msgid_plural "This repository has %s forks"
 msgstr[0] "Αυτό το αποθετήριο έχει %s παράγωγο"
 msgstr[1] "Αυτό το αποθετήριο έχει %s παράγωγα"
+
+msgid "Detach forks"
+msgstr "Αποσύνδεση κλώνων"
+
+msgid "Delete forks"
+msgstr "Διαγραφή κλώνων"
 
 msgid ""
 "The deleted repository will be moved away and hidden until the "
@@ -2019,6 +2068,9 @@ msgstr "Τα επιπλέον πεδία είναι απενεργοποιημέ
 
 msgid "Private Repository"
 msgstr "Ιδιωτικό Αποθετήριο"
+
+msgid "Fork of repository"
+msgstr "Κλώνος αποθετηρίου"
 
 msgid "Remote repository URL"
 msgstr "Διεύθυνση URL απομακρυσμένου αποθετηρίου"
@@ -2764,6 +2816,12 @@ msgstr "Καθαρισμός επιλογής"
 msgid "Go to tip of repository"
 msgstr "Μετάβαση στην κεφαλή του αποθετηρίου"
 
+msgid "Compare fork with %s"
+msgstr "Σύγκριση κλώνου με %s"
+
+msgid "Compare fork with parent repository (%s)"
+msgstr "Σύγκριση κλώνου με μητρικό αποθετήριο (%s)"
+
 msgid "Branch filter:"
 msgstr "Φίλτρο κλάδου:"
 
@@ -3043,6 +3101,9 @@ msgstr "κλάδος"
 msgid "by"
 msgstr "από"
 
+msgid "View Comment"
+msgstr "Προβολή Σχολίου"
+
 msgid "Status change:"
 msgstr "Αλλαγή κατάστασης:"
 
@@ -3121,6 +3182,9 @@ msgstr "Εγγραφή Νέου Χρήστη"
 
 msgid "Full Name"
 msgstr "Ονοματεπώνυμο"
+
+msgid "View User Profile"
+msgstr "Προβολή Λογαριασμού Χρήστη"
 
 msgid "%s File side-by-side diff"
 msgstr "%s Αρχείο διαφοράς δίπλα-δίπλα"
@@ -3269,6 +3333,12 @@ msgstr "Ακόλουθοι"
 msgid "Started following -"
 msgstr "Ξεκίνησαν να ακολουθούν -"
 
+msgid "Fork repository %s"
+msgstr "Κλωνοποίηση αποθετηρίου %s"
+
+msgid "Fork name"
+msgstr "Κλωνοποίηση ονόματος"
+
 msgid "Default revision for files page, downloads, whoosh, and readme."
 msgstr ""
 "Προεπιλεγμένη αναθεώρηση για τη σελίδα αρχείων, λήψεων, whoosh, και "
@@ -3280,11 +3350,29 @@ msgstr "Ιδιωτικό"
 msgid "Copy permissions"
 msgstr "Αντιγραφή δικαιωμάτων"
 
+msgid "Copy permissions from forked repository"
+msgstr "Αντιγραφή αδειών από κλωνοποιημένο αποθετήριο"
+
 msgid "Update after clone"
 msgstr "Ενημέρωση μετά την κλωνοποίηση"
 
 msgid "Checkout source after making a clone"
 msgstr "Πηγαίνετε στον κώδικα μετά την κλωνοποίηση"
+
+msgid "Fork this Repository"
+msgstr "Κλωνοποίηση αυτού του Αποθετηρίου"
+
+msgid "%s Forks"
+msgstr "%s Κλώνοι"
+
+msgid "Forks"
+msgstr "Κλώνοι"
+
+msgid "Forked"
+msgstr "Κλωνοποιημένο"
+
+msgid "There are no forks yet"
+msgstr "Δεν υπάρχουν κλώνοι ακόμη"
 
 msgid "ATOM journal feed"
 msgstr "Ημερολόγιο τροφοδοσίας ATOM"
@@ -3549,6 +3637,9 @@ msgstr "αρχείο αφαιρέθηκε"
 
 msgid "%s Summary"
 msgstr "%s Σύνοψη"
+
+msgid "Fork of"
+msgstr "Κλώνος του"
 
 msgid "Clone from"
 msgstr "Κλώνος από"
