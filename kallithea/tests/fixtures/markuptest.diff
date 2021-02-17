@@ -1,7 +1,7 @@
 diff --git a/f b/f
 --- a/f	
 +++ b/f	
-@@ -51,6 +51,13 @@
+@@ -51,8 +51,15 @@
  	begin();
  	
 +	int foo;
@@ -17,3 +17,6 @@ diff --git a/f b/f
  
 -	#define MIN_STEPS (48)
 +	#define MIN_STEPS (42)
+ 
+-	#define MORE_STEPS	+(48)	
++	#define LESS_STEPS	(42) 

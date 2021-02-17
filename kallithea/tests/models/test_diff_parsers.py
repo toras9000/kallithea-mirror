@@ -351,7 +351,7 @@ class TestDiffLib(base.TestController):
             l.append('%(action)-7s %(new_lineno)3s %(old_lineno)3s %(line)r\n' % d)
         s = ''.join(l)
         assert s == r'''
-context         '@@ -51,6 +51,13 @@'
+context         '@@ -51,8 +51,15 @@'
 unmod    51  51 '<u>\t</u>begin();'
 unmod    52  52 '<u>\t</u><i></i>'
 add      53     '<u>\t</u>int foo;<u class="cr"></u>'
@@ -367,4 +367,7 @@ add      61     '<u>\t</u>#define MAX_STEPS (64)<u class="cr"></u>'
 unmod    62  55 ''
 del          56 '<u>\t</u>#define MIN_STEPS (<del>48</del>)'
 add      63     '<u>\t</u>#define MIN_STEPS (<ins>42</ins>)'
+unmod    64  57 ''
+del          58 '<u>\t</u>#define <del>MORE_STEPS</del><u>\t</u><del>+</del>(<del>48</del>)<del><u>\t</u></del><del><i></i></del>'
+add      65     '<u>\t</u>#define <ins>LESS_STEPS</ins><u>\t</u>(<ins>42</ins>)<ins> <i></i></ins>'
 '''
