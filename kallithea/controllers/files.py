@@ -639,7 +639,7 @@ class FilesController(base.BaseRepoController):
         else:
             fid = h.FID(diff2, node2.path)
             diff_limit = None if fulldiff else self.cut_off_limit
-            c.a_rev, c.cs_rev, a_path, diff, st, op = diffs.wrapped_diff(filenode_old=node1,
+            c.a_rev, c.cs_rev, a_path, diff, st, op = diffs.html_diff(filenode_old=node1,
                                          filenode_new=node2,
                                          diff_limit=diff_limit,
                                          ignore_whitespace=ignore_whitespace_diff,

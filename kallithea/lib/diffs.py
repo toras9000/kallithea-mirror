@@ -168,10 +168,10 @@ def wrap_to_table(html):
               </table>''' % html
 
 
-def wrapped_diff(filenode_old, filenode_new, diff_limit=None,
+def html_diff(filenode_old, filenode_new, diff_limit=None,
                 ignore_whitespace=True, line_context=3):
     """
-    Returns a file diff wrapped into a table.
+    Returns a file diff as HTML wrapped into a table.
     Checks for diff_limit and presents a message if the diff is too big.
     """
     if filenode_old is None:
