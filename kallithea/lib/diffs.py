@@ -629,19 +629,17 @@ def _parse_lines(diff_lines):
             old_line -= 1
             new_line -= 1
 
-            context = len(gr) == 5
             old_end += old_line
             new_end += new_line
 
-            if context:
-                # skip context only if it's first line
-                if int(gr[0]) > 1:
-                    lines.append({
-                        'old_lineno': '',
-                        'new_lineno': '',
-                        'action':     'context',
-                        'line':       line,
-                    })
+            # include '@@' line if it gives a line number hint or separate chunks - not if the chunk starts at start of file like '@@ -1,7 +1,7 @@'
+            if int(gr[0]) > 1:
+                lines.append({
+                    'old_lineno': '',
+                    'new_lineno': '',
+                    'action':     'context',
+                    'line':       line,
+                })
 
             line = next(diff_lines)
 
