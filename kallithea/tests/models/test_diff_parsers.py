@@ -344,10 +344,10 @@ class TestDiffLib(base.TestController):
         raw_diff = fixture.load_resource('markuptest.diff', strip=False)
         diff_processor = DiffProcessor(raw_diff)
         chunks = diff_processor.parsed[0]['chunks']
-        assert not chunks[0]
+        assert len(chunks) == 1, chunks
         #from pprint import pprint; pprint(chunks[1])
         l = ['\n']
-        for d in chunks[1]:
+        for d in chunks[0]:
             l.append('%(action)-7s %(new_lineno)3s %(old_lineno)3s %(line)r\n' % d)
         s = ''.join(l)
         assert s == r'''

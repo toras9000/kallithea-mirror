@@ -381,13 +381,19 @@ class DiffProcessor(object):
                 # not with the current UI
                 chunks = []
 
-            chunks.insert(0, [{
-                'old_lineno': '',
-                'new_lineno': '',
-                'action':     'context',
-                'line':       msg,
-                } for _op, msg in stats['ops'].items()
-                  if _op not in [MOD_FILENODE]])
+            # show helpful additional texts for mode change and renaming, but not for plain 'modified file'
+            msgs = [
+                {
+                    'old_lineno': '',
+                    'new_lineno': '',
+                    'action': 'context',
+                    'line': msg,
+                }
+                for op_, msg in stats['ops'].items()
+                if op_ != MOD_FILENODE
+            ]
+            if msgs:
+                chunks.insert(0, msgs)
 
             _files.append({
                 'old_filename':     head['a_path'],
