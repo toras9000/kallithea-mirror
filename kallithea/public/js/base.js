@@ -528,7 +528,7 @@ function move_comments($anchorcomments) {
         var line_no = $anchorcomment.data('line_no');
         if ($comment_div[0]) {
             $comment_div.append($anchorcomment.children());
-            if (f_path && line_no) {
+            if (f_path && line_no !== '') {
                 _comment_div_append_add($comment_div, f_path, line_no);
             } else {
                 _comment_div_append_form($comment_div, f_path, line_no);
