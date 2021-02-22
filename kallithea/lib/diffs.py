@@ -77,7 +77,6 @@ def as_html(parsed_lines, table_class='code-difftable', line_class='line',
     })
 
     for file_info in parsed_lines:
-        count_no_lineno = 0  # counter to allow comments on lines without new/old line numbers
         for chunk in file_info['chunks']:
             _html_empty = False
             for change in chunk:
@@ -128,11 +127,10 @@ def as_html(parsed_lines, table_class='code-difftable', line_class='line',
                     ###########################################################
                     # NO LINE NUMBER
                     ###########################################################
-                    anchor = "%(filename)s_%(count_no_lineno)s" % {
+                    anchor = "%(filename)s_%(context_lineno)s" % {
                         'filename': _safe_id(file_info['filename']),
-                        'count_no_lineno': count_no_lineno,
+                        'context_lineno': change['context_lineno'],
                     }
-                    count_no_lineno += 1
                     _html.append('''\t<td id="%(anchor)s" class="%(olc)s" colspan="2">''' % {
                         'anchor': anchor,
                         'olc': no_lineno_class,
@@ -394,6 +392,14 @@ class DiffProcessor(object):
             ]
             if msgs:
                 chunks.insert(0, msgs)
+
+            # enumerate 'context' lines that don't have new/old line numbers so they can be commented on
+            context_lineno = 0
+            for chunk in chunks:
+                for change in chunk:
+                    if not change['old_lineno'] and not change['new_lineno']:
+                        change['context_lineno'] = context_lineno
+                        context_lineno += 1
 
             _files.append({
                 'old_filename':     head['a_path'],
