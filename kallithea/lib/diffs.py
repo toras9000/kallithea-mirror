@@ -664,15 +664,14 @@ def _parse_lines(diff_lines):
                 else:
                     raise Exception('error parsing diff - unknown command in line %r at -%s+%s' % (line, old_line, new_line))
 
-                if not _newline_marker.match(line):
-                    old_line += affects_old
-                    new_line += affects_new
-                    lines.append({
-                        'old_lineno':   affects_old and old_line or '',
-                        'new_lineno':   affects_new and new_line or '',
-                        'action':       action,
-                        'line':         line[1:],
-                    })
+                old_line += affects_old
+                new_line += affects_new
+                lines.append({
+                    'old_lineno':   affects_old and old_line or '',
+                    'new_lineno':   affects_new and new_line or '',
+                    'action':       action,
+                    'line':         line[1:],
+                })
 
                 line = next(diff_lines)
 
