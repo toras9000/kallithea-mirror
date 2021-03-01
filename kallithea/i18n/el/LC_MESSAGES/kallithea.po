@@ -1659,7 +1659,7 @@ msgid "Name"
 msgstr "Όνομα"
 
 msgid "Fingerprint"
-msgstr "Αποτύπωμα"
+msgstr "Ψηφιακό αποτύπωμα"
 
 msgid "Last Used"
 msgstr "Τελευταία χρησιμοποιήθηκε"
@@ -1840,7 +1840,7 @@ msgid "Settings"
 msgstr "Ρυθμίσεις"
 
 msgid "Advanced"
-msgstr "Προχωρημένες Ρυθμίσεις"
+msgstr "Για προχωρημένους"
 
 msgid "Permissions"
 msgstr "Δικαιώματα"
@@ -2545,7 +2545,7 @@ msgid "Users"
 msgstr "Χρήστες"
 
 msgid "Add User"
-msgstr "Προσθήκη χρήστη"
+msgstr "Προσθήκη Χρήστη"
 
 msgid "Password confirmation"
 msgstr "Επιβεβαίωση κωδικού πρόσβασης"
@@ -3214,7 +3214,7 @@ msgid "or"
 msgstr "ή"
 
 msgid "Upload File"
-msgstr "Ανέβασμα Αρχείου"
+msgstr "Αποστολή αρχείου"
 
 msgid "Create New File"
 msgstr "Δημιουργία Νέου Αρχείου"
