@@ -1299,8 +1299,8 @@ class _BaseTestApi(object):
         RepoModel().grant_user_permission(repo=self.REPO,
                                           user=db.User.DEFAULT_USER_NAME,
                                           perm='repository.none')
+        fork_name = 'api-repo-fork'
         try:
-            fork_name = 'api-repo-fork'
             id_, params = _build_data(self.apikey_regular, 'fork_repo',
                                       repoid=self.REPO,
                                       fork_name=fork_name,
