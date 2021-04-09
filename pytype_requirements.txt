@@ -1,7 +1,6 @@
 # Note: pytype currently only supports Python3.8
 pytype == 2021.1.8
 # optional modules that we want for pytype checking
-appenlight_client
 ipython
 kajiki
 psycopg2
