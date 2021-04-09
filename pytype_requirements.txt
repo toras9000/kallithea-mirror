@@ -1,5 +1,5 @@
-# Note: pytype currently only supports Python3.8
-pytype == 2021.1.8
+# Note: we support pytype on Python3.9
+pytype==2021.4.1
 # optional modules that we want for pytype checking
 ipython
 kajiki
