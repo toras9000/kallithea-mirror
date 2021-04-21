@@ -172,7 +172,6 @@ class ScmModel(object):
 
         log.info('scanning for repositories in %s', repos_path)
 
-        baseui = make_ui()
         repos = {}
 
         for name, path in get_filesystem_repos(repos_path):
@@ -185,7 +184,7 @@ class ScmModel(object):
                     raise RepositoryError('Duplicate repository name %s '
                                           'found in %s' % (name, path))
                 else:
-                    repos[name] = get_repo(path[1], baseui=baseui)
+                    repos[name] = get_repo(path[1], baseui=make_ui(path[1]))
             except (OSError, VCSError):
                 continue
         log.debug('found %s paths with repositories', len(repos))
