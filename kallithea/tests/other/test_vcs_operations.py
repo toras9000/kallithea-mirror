@@ -558,7 +558,7 @@ class TestVCSOperations(base.TestController):
         stdout, stderr = Command(base.TESTS_TMP_PATH) \
             .execute(vt.repo_type, 'clone', clone_url, dest_dir, ignoreReturnCode=True)
         if vt.repo_type == 'hg':
-            assert 'preoutgoing.testhook hook failed' in stdout
+            assert 'preoutgoing.testhook hook failed' in stdout + stderr
         elif vt.repo_type == 'git':
             assert 'error: 406' in stderr
 
