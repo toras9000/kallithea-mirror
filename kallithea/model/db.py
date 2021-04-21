@@ -1097,14 +1097,6 @@ class Repository(meta.Base, BaseDbModel):
         path_prefix = self.group.full_path_splitted if self.group else []
         return kallithea.URL_SEP.join(path_prefix + [repo_name])
 
-    @property
-    def _ui(self):
-        """
-        Creates an db based ui object for this repository
-        """
-        from kallithea.lib.utils import make_ui
-        return make_ui()
-
     @classmethod
     def is_valid(cls, repo_name):
         """
@@ -1324,7 +1316,8 @@ class Repository(meta.Base, BaseDbModel):
     def scm_instance_no_cache(self):
         repo_full_path = self.repo_full_path
         log.debug('Creating instance of repository at %s', repo_full_path)
-        self._scm_instance = get_repo(repo_full_path, baseui=self._ui)
+        from kallithea.lib.utils import make_ui
+        self._scm_instance = get_repo(repo_full_path, baseui=make_ui())
         return self._scm_instance
 
     def __json__(self):
