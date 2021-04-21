@@ -1317,7 +1317,7 @@ class Repository(meta.Base, BaseDbModel):
         repo_full_path = self.repo_full_path
         log.debug('Creating instance of repository at %s', repo_full_path)
         from kallithea.lib.utils import make_ui
-        self._scm_instance = get_repo(repo_full_path, baseui=make_ui())
+        self._scm_instance = get_repo(repo_full_path, baseui=make_ui(repo_full_path))
         return self._scm_instance
 
     def __json__(self):
@@ -2241,7 +2241,9 @@ class Gist(meta.Base, BaseDbModel):
     @property
     def scm_instance(self):
         gist_base_path = os.path.join(kallithea.CONFIG['base_path'], self.GIST_STORE_LOC)
-        return get_repo(os.path.join(gist_base_path, self.gist_access_id))
+        repo_full_path = os.path.join(gist_base_path, self.gist_access_id)
+        from kallithea.lib.utils import make_ui
+        return get_repo(repo_full_path, baseui=make_ui(repo_full_path))
 
 
 class UserSshKeys(meta.Base, BaseDbModel):
