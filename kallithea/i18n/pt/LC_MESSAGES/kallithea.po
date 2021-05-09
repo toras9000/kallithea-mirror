@@ -87,7 +87,7 @@ msgid "Location must be relative path and must not contain .. in path"
 msgstr "O caminho deve ser relativo e não pode conter .."
 
 msgid "Downloads disabled"
-msgstr "Downloads desativados"
+msgstr "Descarregas desativadas"
 
 msgid "Unknown revision %s"
 msgstr "Revisão desconhecida %s"
@@ -144,7 +144,7 @@ msgid "Successfully opened new pull request"
 msgstr "Novo pull request criado com sucesso"
 
 msgid "Successfully deleted pull request"
-msgstr "Pull request excluído com sucesso"
+msgstr "Pull request apagado com sucesso"
 
 msgid "Invalid search query. Try quoting it."
 msgstr "Consulta de busca inválida. Tente usar aspas."
@@ -174,7 +174,7 @@ msgid "Error occurred during gist creation"
 msgstr "Ocorreu um erro durante a criação de um gist"
 
 msgid "Deleted gist %s"
-msgstr "Gist %s excluído"
+msgstr "Gist %s apagado"
 
 msgid "You can't edit this user since it's crucial for entire application"
 msgstr ""
@@ -238,13 +238,13 @@ msgid "Error occurred during update of repository group %s"
 msgstr "Ocorreu um erro durante a atualização do grupo de repositórios %s"
 
 msgid "This group contains %s repositories and cannot be deleted"
-msgstr "Esse grupo contém %s repositórios e não pode ser excluído"
+msgstr "Esse grupo contém %s repositórios e não pode ser apagado"
 
 msgid "This group contains %s subgroups and cannot be deleted"
-msgstr "Este grupo contém %s subgrupos e não pode ser excluído"
+msgstr "Este grupo contém %s subgrupos e não pode ser apagado"
 
 msgid "Removed repository group %s"
-msgstr "Grupo de repositórios %s excluído"
+msgstr "Grupo de repositórios %s apagado"
 
 msgid "Error occurred during deletion of repository group %s"
 msgstr "Ocorreu um erro durante a exclusão do grupo de repositórios %s"
@@ -277,10 +277,10 @@ msgid "Error occurred during update of repository %s"
 msgstr "Ocorreu um erro durante a atualização do repositório %s"
 
 msgid "Deleted %s forks"
-msgstr "%s bifurcações excluídas"
+msgstr "%s bifurcações apagadas"
 
 msgid "Deleted repository %s"
-msgstr "Repositório %s excluído"
+msgstr "Repositório %s apagado"
 
 msgid "An error occurred during deletion of %s"
 msgstr "Ocorreu um erro durante a exclusão de %s"
@@ -357,7 +357,7 @@ msgid "Error occurred during update of user group %s"
 msgstr "Ocorreu um erro durante a atualização do grupo de utilizadores %s"
 
 msgid "Successfully deleted user group"
-msgstr "Grupo de utilizadores excluído com sucesso"
+msgstr "Grupo de utilizadores apagado com sucesso"
 
 msgid "An error occurred during deletion of user group"
 msgstr "Ocorreu um erro durante a exclusão do grupo de utilizadores"
@@ -384,7 +384,7 @@ msgid "User updated successfully"
 msgstr "Utilizador atualizado com sucesso"
 
 msgid "Successfully deleted user"
-msgstr "Utilizador excluído com sucesso"
+msgstr "Utilizador apagado com sucesso"
 
 msgid "An error occurred during deletion of user"
 msgstr "Ocorreu um erro ao apagar o utilizador"
@@ -411,7 +411,7 @@ msgid "No changes detected"
 msgstr "Nenhuma alteração detectada"
 
 msgid "Deleted branch: %s"
-msgstr "Excluído ramo: %s"
+msgstr "Ramo apagado: %s"
 
 msgid "Created tag: %s"
 msgstr "Tag criada: %s"
@@ -429,7 +429,7 @@ msgid "revisions"
 msgstr "revisões"
 
 msgid "[deleted] repository"
-msgstr "repositório [excluído]"
+msgstr "repositório [apagado]"
 
 msgid "[created] repository"
 msgstr "repositório [criado]"
@@ -783,7 +783,7 @@ msgid "Enable statistics window on summary page."
 msgstr "Ativar janela de estatísticas na página de sumário."
 
 msgid "Enable downloads"
-msgstr "Ativar downloads"
+msgstr "Ativar descarregas"
 
 msgid "Enable download menu on summary page."
 msgstr "Ativar menu de descarregar na página de sumário."
@@ -1567,16 +1567,16 @@ msgid "Trending files"
 msgstr "Tendências em ficheiros"
 
 msgid "Download"
-msgstr "Download"
+msgstr "Descarrega"
 
 msgid "There are no downloads yet"
-msgstr "Ainda não há downloads"
+msgstr "Ainda não há descarregas"
 
 msgid "Downloads are disabled for this repository"
-msgstr "Downloads estão desativados para este repositório"
+msgstr "Descarregas estão desativados para este repositório"
 
 msgid "Download as zip"
-msgstr "Download como zip"
+msgstr "Descarrega como zip"
 
 msgid "Check this to download archive with subrepos"
 msgstr "Marque isto para descarregar o arquivo com subrepositórios"
