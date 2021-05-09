@@ -406,6 +406,35 @@ for more info.
    user that Kallithea runs.
 
 
+Proxy setups
+------------
+
+When Kallithea is processing HTTP requests from a user, it will see and use
+some of the basic properties of the connection, both at the TCP/IP level and at
+the HTTP level. The WSGI server will provide this information to Kallithea in
+the "environment".
+
+In some setups, a proxy server will take requests from users and forward
+them to the actual Kallithea server. The proxy server will thus be the
+immediate client of the Kallithea WSGI server, and Kallithea will basically see
+it as such. To make sure Kallithea sees the request as it arrived from the
+client to the proxy server, the proxy server must be configured to
+somehow pass the original information on to Kallithea, and Kallithea must be
+configured to pick that information up and trust it.
+
+Kallithea will by default rely on its WSGI server to provide the IP of the
+client in the WSGI environment as ``REMOTE_ADDR``, but it can also
+get it from the ``X-Real-IP`` or ``X-Forwarded-For`` HTTP headers.
+
+Kallithea will by default rely on finding the protocol (``http`` or ``https``)
+in the WSGI environment as ``wsgi.url_scheme``. If the proxy server puts
+the protocol of the client request in the ``X-Url-Scheme``,
+``X-Forwarded-Scheme``, or ``X-Forwarded-Proto`` HTTP header,
+Kallithea can be configured to trust these headers by setting::
+
+    https_fixup = true
+
+
 HTTPS support
 -------------
 
