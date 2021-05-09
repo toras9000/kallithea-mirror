@@ -26,6 +26,7 @@ Original author and date, and relevant copyright and licensing information is be
 """
 
 
+import kallithea
 from kallithea.lib.utils2 import asbool
 
 
@@ -54,20 +55,17 @@ class HttpsFixup(object):
         middleware you should set this header inside your
         proxy ie. nginx, apache etc.
         """
-        # DETECT PROTOCOL !
-        if 'HTTP_X_URL_SCHEME' in environ:
-            proto = environ.get('HTTP_X_URL_SCHEME')
-        elif 'HTTP_X_FORWARDED_SCHEME' in environ:
-            proto = environ.get('HTTP_X_FORWARDED_SCHEME')
-        elif 'HTTP_X_FORWARDED_PROTO' in environ:
-            proto = environ.get('HTTP_X_FORWARDED_PROTO')
-        else:
-            proto = 'http'
-        org_proto = proto
+        proto = None
 
         # if we have force, just override
         if asbool(self.config.get('force_https')):
             proto = 'https'
+        else:
+            # get protocol from configured WSGI environment variable
+            url_scheme_variable = kallithea.CONFIG.get('url_scheme_variable')
+            if url_scheme_variable:
+                proto = environ.get(url_scheme_variable)
 
-        environ['wsgi.url_scheme'] = proto
-        environ['wsgi._org_proto'] = org_proto
+        if proto:
+            environ['wsgi._org_proto'] = environ.get('wsgi.url_scheme')
+            environ['wsgi.url_scheme'] = proto

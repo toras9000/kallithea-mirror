@@ -177,6 +177,9 @@ cut_off_limit = 256000
 <%text>##</%text> WSGI environment variable to get the IP address of the client (default REMOTE_ADDR)
 #remote_addr_variable = HTTP_X_FORWARDED_FOR
 
+<%text>##</%text> WSGI environment variable to get the protocol (http or https) of the client connection (default wsgi.url_scheme)
+#url_scheme_variable = HTTP_X_FORWARDED_PROTO
+
 <%text>##</%text> always pretend the client connected using HTTPS (default false)
 #force_https = true
 

@@ -35,7 +35,7 @@ def wrap_app(app):
     app = SimpleGit(app, config)
 
     # Enable https redirects based on HTTP_X_URL_SCHEME set by proxy
-    if any(asbool(config.get(x)) for x in ['https_fixup', 'force_https', 'use_htsts']):
+    if any(asbool(config.get(x)) for x in ['url_scheme_variable', 'force_https', 'use_htsts']):
         app = HttpsFixup(app, config)
 
     app = PermanentRepoUrl(app, config)

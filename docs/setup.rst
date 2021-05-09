@@ -432,11 +432,10 @@ HTTP header, set::
 
 Kallithea will by default rely on finding the protocol (``http`` or ``https``)
 in the WSGI environment as ``wsgi.url_scheme``. If the proxy server puts
-the protocol of the client request in the ``X-Url-Scheme``,
-``X-Forwarded-Scheme``, or ``X-Forwarded-Proto`` HTTP header,
-Kallithea can be configured to trust these headers by setting::
+the protocol of the client request in the ``X-Forwarded-Proto`` HTTP header,
+Kallithea can be configured to trust that header by setting::
 
-    https_fixup = true
+    url_scheme_variable = HTTP_X_FORWARDED_PROTO
 
 
 HTTPS support
@@ -447,9 +446,8 @@ Kallithea will by default generate URLs based on the WSGI environment.
 Alternatively, you can use some special configuration settings to control
 directly which scheme/protocol Kallithea will use when generating URLs:
 
-- With ``https_fixup = true``, the scheme will be taken from the
-  ``X-Url-Scheme``, ``X-Forwarded-Scheme`` or ``X-Forwarded-Proto`` HTTP header
-  (default ``http``).
+- With ``url_scheme_variable`` set, the scheme will be taken from that HTTP
+  header.
 - With ``force_https = true``, the scheme will be seen as ``https``.
 - With ``use_htsts = true``, Kallithea will set ``Strict-Transport-Security`` when using https.
 
