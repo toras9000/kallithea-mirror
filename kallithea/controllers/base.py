@@ -64,15 +64,17 @@ def render(template_path):
 
 def _filter_proxy(ip):
     """
-    HEADERS can have multiple ips inside the left-most being the original
-    client, and each successive proxy that passed the request adding the IP
-    address where it received the request from.
+    HTTP_X_FORWARDED_FOR headers can have multiple IP addresses, with the
+    leftmost being the original client. Each proxy that is forwarding the
+    request will usually add the IP address it sees the request coming from.
 
-    :param ip:
+    The client might have provided a fake leftmost value before hitting the
+    first proxy, so if we have a proxy that is adding one IP address, we can
+    only trust the rightmost address.
     """
     if ',' in ip:
         _ips = ip.split(',')
-        _first_ip = _ips[0].strip()
+        _first_ip = _ips[-1].strip()
         log.debug('Got multiple IPs %s, using %s', ','.join(_ips), _first_ip)
         return _first_ip
     return ip
