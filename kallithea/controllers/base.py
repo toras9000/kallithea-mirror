@@ -81,20 +81,12 @@ def _filter_proxy(ip):
 
 
 def get_ip_addr(environ):
-    proxy_key = 'HTTP_X_REAL_IP'
-    proxy_key2 = 'HTTP_X_FORWARDED_FOR'
-    def_key = 'REMOTE_ADDR'
-
-    ip = environ.get(proxy_key)
-    if ip:
-        return _filter_proxy(ip)
-
-    ip = environ.get(proxy_key2)
-    if ip:
-        return _filter_proxy(ip)
-
-    ip = environ.get(def_key, '0.0.0.0')
-    return _filter_proxy(ip)
+    """The web server will set REMOTE_ADDR to the unfakeable IP layer client IP address.
+    If using a proxy server, make it possible to use another value, such as
+    the X-Forwarded-For header, by setting `remote_addr_variable = HTTP_X_FORWARDED_FOR`.
+    """
+    remote_addr_variable = kallithea.CONFIG.get('remote_addr_variable', 'REMOTE_ADDR')
+    return _filter_proxy(environ.get(remote_addr_variable, '0.0.0.0'))
 
 
 def get_path_info(environ):

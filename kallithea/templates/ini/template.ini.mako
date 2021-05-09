@@ -174,6 +174,9 @@ app_instance_uuid = ${uuid()}
 <%text>##</%text> cut off limit for large diffs (size in bytes)
 cut_off_limit = 256000
 
+<%text>##</%text> WSGI environment variable to get the IP address of the client (default REMOTE_ADDR)
+#remote_addr_variable = HTTP_X_FORWARDED_FOR
+
 <%text>##</%text> always pretend the client connected using HTTPS (default false)
 #force_https = true
 

@@ -423,8 +423,12 @@ somehow pass the original information on to Kallithea, and Kallithea must be
 configured to pick that information up and trust it.
 
 Kallithea will by default rely on its WSGI server to provide the IP of the
-client in the WSGI environment as ``REMOTE_ADDR``, but it can also
-get it from the ``X-Real-IP`` or ``X-Forwarded-For`` HTTP headers.
+client in the WSGI environment as ``REMOTE_ADDR``, but it can be configured to
+get it from an HTTP header that has been set by the proxy server. For
+example, if the proxy server puts the client IP in the ``X-Forwarded-For``
+HTTP header, set::
+
+    remote_addr_variable = HTTP_X_FORWARDED_FOR
 
 Kallithea will by default rely on finding the protocol (``http`` or ``https``)
 in the WSGI environment as ``wsgi.url_scheme``. If the proxy server puts
