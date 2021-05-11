@@ -1028,10 +1028,10 @@ msgstr "Імя карыстальніка"
 msgid "Password"
 msgstr "Пароль"
 
-msgid "Forgot your password ?"
+msgid "Forgot your password?"
 msgstr "Забыліся на пароль?"
 
-msgid "Don't have an account ?"
+msgid "Don't have an account?"
 msgstr "Няма акаўнта?"
 
 msgid "Sign In"
@@ -1950,8 +1950,8 @@ msgstr "Няма рэвізій"
 msgid "Failed to revoke permission"
 msgstr "Не атрымалася адклікаць прывілеі"
 
-msgid "Confirm to revoke permission for {0}: {1} ?"
-msgstr "Пацвердзіце выдаленне прывілею для {0}: {1} ?"
+msgid "Confirm to revoke permission for {0}: {1}?"
+msgstr "Пацвердзіце выдаленне прывілею для {0}: {1}?"
 
 msgid "Select changeset"
 msgstr "Выбраць набор змен"

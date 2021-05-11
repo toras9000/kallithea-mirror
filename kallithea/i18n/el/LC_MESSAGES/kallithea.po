@@ -1279,10 +1279,10 @@ msgid "Stay logged in after browser restart"
 msgstr ""
 "Μείνετε συνδεδεμένοι μετά την επανεκκίνηση του προγράμματος περιήγησης"
 
-msgid "Forgot your password ?"
+msgid "Forgot your password?"
 msgstr "Ξεχάσατε τον κωδικό σας;"
 
-msgid "Don't have an account ?"
+msgid "Don't have an account?"
 msgstr "Δεν έχετε λογαριασμό;"
 
 msgid "Sign In"
@@ -2815,7 +2815,7 @@ msgstr ""
 msgid "Failed to revoke permission"
 msgstr "Απέτυχε η ανάκληση του δικαιωμάτος"
 
-msgid "Confirm to revoke permission for {0}: {1} ?"
+msgid "Confirm to revoke permission for {0}: {1}?"
 msgstr "Επιβεβαιώστε την ανάκληση του δικαιώματος για {0}: {1};"
 
 msgid "Select changeset"

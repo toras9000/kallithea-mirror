@@ -1287,10 +1287,10 @@ msgstr "Пароль"
 msgid "Stay logged in after browser restart"
 msgstr "Оставаться авторизованным"
 
-msgid "Forgot your password ?"
+msgid "Forgot your password?"
 msgstr "Забыли пароль?"
 
-msgid "Don't have an account ?"
+msgid "Don't have an account?"
 msgstr "Нет аккаунта?"
 
 msgid "Sign In"
@@ -2795,8 +2795,8 @@ msgstr ""
 msgid "Failed to revoke permission"
 msgstr "Не удалось отозвать привилегии"
 
-msgid "Confirm to revoke permission for {0}: {1} ?"
-msgstr "Подтвердите удаление привилегии для {0}: {1} ?"
+msgid "Confirm to revoke permission for {0}: {1}?"
+msgstr "Подтвердите удаление привилегии для {0}: {1}?"
 
 msgid "Select changeset"
 msgstr "Выбрать набор изменений"

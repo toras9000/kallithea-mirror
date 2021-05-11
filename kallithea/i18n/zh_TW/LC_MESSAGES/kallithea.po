@@ -206,10 +206,10 @@ msgstr "帳號"
 msgid "Password"
 msgstr "密碼"
 
-msgid "Forgot your password ?"
+msgid "Forgot your password?"
 msgstr "忘記您的密碼?"
 
-msgid "Don't have an account ?"
+msgid "Don't have an account?"
 msgstr "沒有帳號?"
 
 msgid "Sign In"

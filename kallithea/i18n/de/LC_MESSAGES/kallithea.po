@@ -1115,10 +1115,10 @@ msgstr "Passwort"
 msgid "Stay logged in after browser restart"
 msgstr "Nach dem Neustart des Browsers eingeloggt bleiben"
 
-msgid "Forgot your password ?"
+msgid "Forgot your password?"
 msgstr "Passwort vergessen?"
 
-msgid "Don't have an account ?"
+msgid "Don't have an account?"
 msgstr "Kein Account?"
 
 msgid "Sign In"
@@ -2326,7 +2326,7 @@ msgstr "Einen weiteren Kommentar hinzufügen"
 msgid "Group"
 msgstr "Gruppe"
 
-msgid "Confirm to revoke permission for {0}: {1} ?"
+msgid "Confirm to revoke permission for {0}: {1}?"
 msgstr "Widerruf der Rechte für {0}: {1} bestätigen?"
 
 msgid "Select changeset"

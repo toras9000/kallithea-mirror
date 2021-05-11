@@ -1000,10 +1000,10 @@ msgstr "ユーザー名"
 msgid "Password"
 msgstr "パスワード"
 
-msgid "Forgot your password ?"
+msgid "Forgot your password?"
 msgstr "パスワードを忘れた?"
 
-msgid "Don't have an account ?"
+msgid "Don't have an account?"
 msgstr "アカウントを持っていない?"
 
 msgid "Sign In"
@@ -2149,7 +2149,7 @@ msgstr "リビジョンなし"
 msgid "Failed to revoke permission"
 msgstr "権限の取消に失敗しました"
 
-msgid "Confirm to revoke permission for {0}: {1} ?"
+msgid "Confirm to revoke permission for {0}: {1}?"
 msgstr "権限 {0}: {1} を取り消してもよろしいですか？"
 
 msgid "Select changeset"

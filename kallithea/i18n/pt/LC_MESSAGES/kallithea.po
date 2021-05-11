@@ -718,11 +718,11 @@ msgstr "Nome de utilizador"
 msgid "Password"
 msgstr "Palavra-passe"
 
-msgid "Forgot your password ?"
-msgstr "Esqueceu sua palavra-passe ?"
+msgid "Forgot your password?"
+msgstr "Esqueceu sua palavra-passe?"
 
-msgid "Don't have an account ?"
-msgstr "Não possui uma conta ?"
+msgid "Don't have an account?"
+msgstr "Não possui uma conta?"
 
 msgid "Sign In"
 msgstr "Entrar"

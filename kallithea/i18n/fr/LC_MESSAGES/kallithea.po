@@ -1320,11 +1320,11 @@ msgstr "Mot de passe"
 msgid "Stay logged in after browser restart"
 msgstr "Rester connecté après un redémarrage du navigateur"
 
-msgid "Forgot your password ?"
-msgstr "Mot de passe oublié ?"
+msgid "Forgot your password?"
+msgstr "Mot de passe oublié?"
 
-msgid "Don't have an account ?"
-msgstr "Vous n’avez pas de compte ?"
+msgid "Don't have an account?"
+msgstr "Vous n’avez pas de compte?"
 
 msgid "Sign In"
 msgstr "Connexion"
@@ -2803,7 +2803,7 @@ msgstr ""
 msgid "Failed to revoke permission"
 msgstr "Échec de la révocation de permission"
 
-msgid "Confirm to revoke permission for {0}: {1} ?"
+msgid "Confirm to revoke permission for {0}: {1}?"
 msgstr "Voulez-vous vraiment révoquer la permission pour {0} : {1} ?"
 
 msgid "Select changeset"

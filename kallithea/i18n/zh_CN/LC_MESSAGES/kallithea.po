@@ -615,10 +615,10 @@ msgstr "帐号"
 msgid "Password"
 msgstr "密码"
 
-msgid "Forgot your password ?"
+msgid "Forgot your password?"
 msgstr "忘记了密码？"
 
-msgid "Don't have an account ?"
+msgid "Don't have an account?"
 msgstr "还没有帐号？"
 
 msgid "Sign In"

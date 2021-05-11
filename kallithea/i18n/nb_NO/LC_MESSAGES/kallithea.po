@@ -614,7 +614,7 @@ msgstr "Brukernavn"
 msgid "Password"
 msgstr "Passord"
 
-msgid "Forgot your password ?"
+msgid "Forgot your password?"
 msgstr "Glemt passordet ditt?"
 
 msgid "Password Reset"

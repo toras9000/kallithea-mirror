@@ -1088,10 +1088,10 @@ msgstr "Hasło"
 msgid "Stay logged in after browser restart"
 msgstr "Pozostań zalogowany po ponownym uruchomieniu przeglądarki"
 
-msgid "Forgot your password ?"
+msgid "Forgot your password?"
 msgstr "Zapomniałeś hasła?"
 
-msgid "Don't have an account ?"
+msgid "Don't have an account?"
 msgstr "Nie masz konta?"
 
 msgid "Sign In"
