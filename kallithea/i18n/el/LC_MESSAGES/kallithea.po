@@ -66,7 +66,7 @@ msgstr "Άγνωστο σφάλμα"
 msgid ""
 "The request could not be understood by the server due to malformed syntax."
 msgstr ""
-"Η αίτηση δεν  μπόρεσε να ερμηνευτεί από τον εξυπηρετητή λόγω κακής "
+"Η αίτηση δεν μπόρεσε να ερμηνευτεί από τον εξυπηρετητή λόγω κακής "
 "διατύπωσης."
 
 msgid "Unauthorized access to resource"
@@ -195,6 +195,9 @@ msgstr "Δημόσιο Ημερολόγιο"
 
 msgid "Journal"
 msgstr "Ημερολόγιο"
+
+msgid "Authentication failed."
+msgstr "Ο έλεγχος ταυτότητας απέτυχε."
 
 msgid "Bad captcha"
 msgstr "Λάθος captcha"
@@ -712,6 +715,12 @@ msgstr "[διαγραμμένο] αποθετήριο"
 msgid "[created] repository"
 msgstr "[δημιουργημένο] αποθετήριο"
 
+msgid "[created] repository as fork"
+msgstr "[δημιουργήθηκε] αποθετήριο ως κλώνος"
+
+msgid "[forked] repository"
+msgstr "[κλωνοποιημένο] αποθετήριο"
+
 msgid "[updated] repository"
 msgstr "[ενημερωμένο] αποθετήριο"
 
@@ -720,6 +729,45 @@ msgstr "[λήψη] αρχείο από το αποθετήριο"
 
 msgid "[delete] repository"
 msgstr "[διαγραμμένο] αποθετήριο"
+
+msgid "[created] user"
+msgstr "[δημιουργήθηκε] χρήστης"
+
+msgid "[updated] user"
+msgstr "[ενημερώθηκε] χρήστης"
+
+msgid "[created] user group"
+msgstr "[δημιουργήθηκε] ομάδα χρήστη"
+
+msgid "[updated] user group"
+msgstr "[ενημερώθηκε] ομάδα χρήστη"
+
+msgid "[commented] on revision in repository"
+msgstr "[σχολιασμένο] σε αναθεώρηση στο αποθετήριο"
+
+msgid "[commented] on pull request for"
+msgstr "[σχολίασε] σχετικά με το αίτημα έλξης για"
+
+msgid "[closed] pull request for"
+msgstr "[κλειστή] αίτηση έλξης για"
+
+msgid "[pushed] into"
+msgstr "[ωθήθηκε] σε"
+
+msgid "[committed via Kallithea] into repository"
+msgstr "[δεσμεύεται μέσω Καλλιθέας] σε αποθετήριο"
+
+msgid "[pulled from remote] into repository"
+msgstr "[τραβήχτηκε από το τηλεχειριστήριο] στο αποθετήριο"
+
+msgid "[pulled] from"
+msgstr "[τραβήχτηκε] από"
+
+msgid "[started following] repository"
+msgstr "[άρχισε να ακολουθεί] αποθετήριο δεδομένων"
+
+msgid "[stopped following] repository"
+msgstr "[σταμάτησε να ακολουθεί] αποθετήριο δεδομένων"
 
 msgid " and %s more"
 msgstr " και %s περισσότερα"
@@ -737,10 +785,10 @@ msgid "del"
 msgstr "διαγραμμένο"
 
 msgid "rename"
-msgstr "μετονομασμένο"
+msgstr "μετονομασία"
 
 msgid "chmod"
-msgstr "αλλ δικαιωμ"
+msgstr "chmod"
 
 msgid ""
 "%s repository is not mapped to db perhaps it was created or renamed from "
@@ -910,6 +958,12 @@ msgid ""
 msgstr ""
 "Η δημιουργία αποθετηρίου απενεργοποιήθηκε με δικαιώματα εγγραφής σε μια "
 "ομάδα αποθετηρίων"
+
+msgid "Only admins can fork repositories"
+msgstr "Μόνο οι διαχειριστές μπορούν να κλωνοποιήσουν τα αποθετήρια"
+
+msgid "Non-admins can fork repositories"
+msgstr "Οι μη-διαχειριστές μπορούν να κλωνοποιήσουν αποθετήρια"
 
 msgid "Registration disabled"
 msgstr "Η εγγραφή απενεργοποιήθηκε"
@@ -1124,6 +1178,9 @@ msgstr "Η ομάδα αποθετηρίου με το όνομα \"%(repo)s\" �
 msgid "Invalid repository URL"
 msgstr "Μη έγκυρη διεύθυνση URL αποθετηρίου"
 
+msgid "Fork has to be the same type as parent"
+msgstr "Ο κλώνος πρέπει να έχει τον ίδιο τύπο με τον γονέα του"
+
 msgid "You don't have permissions to create repository in this group"
 msgstr "Δεν έχετε δικαιώματα δημιουργίας αποθετηρίου σε αυτήν την ομάδα"
 
@@ -1216,7 +1273,7 @@ msgid "Username"
 msgstr "Όνομα χρήστη"
 
 msgid "Password"
-msgstr "Κωδικό πρόσβασης"
+msgstr "Κωδικός πρόσβασης"
 
 msgid "Stay logged in after browser restart"
 msgstr ""
@@ -1276,7 +1333,7 @@ msgid "Code you received in the email"
 msgstr "Κωδικός που λάβατε στο μήνυμα ηλεκτρονικού ταχυδρομείου"
 
 msgid "New Password"
-msgstr "Νέος Κωδικός"
+msgstr "Νέος κωδικός πρόσβασης"
 
 msgid "Confirm New Password"
 msgstr "Επιβεβαίωση Νέου Κωδικού Πρόσβασης"
@@ -1300,7 +1357,7 @@ msgid "Last Name"
 msgstr "Επώνυμο"
 
 msgid "Email"
-msgstr "Διεύθυνση Ηλεκτρονικού Ταχυδρομείου"
+msgstr "Ηλεκτρονικό ταχυδρομείο"
 
 msgid "Registered accounts are ready to use and need no further action."
 msgstr ""
@@ -1423,7 +1480,7 @@ msgid "Update Gist"
 msgstr "Ενημέρωση του gist"
 
 msgid "Cancel"
-msgstr "Ακύρωση"
+msgstr "Άκυρο"
 
 msgid "Private Gists for User %s"
 msgstr "Ιδιωτικά gists για το χρήστη %s"
@@ -1525,7 +1582,7 @@ msgid "Confirm to remove this API key: %s"
 msgstr "Επιβεβαίωση κατάργησης αυτού του κλειδιού API: %s"
 
 msgid "Remove"
-msgstr "Κατάργηση"
+msgstr "Αφαίρεση"
 
 msgid "No additional API keys specified"
 msgstr "Δεν έχουν καθοριστεί πρόσθετα κλειδιά API"
@@ -1612,7 +1669,7 @@ msgid "Name"
 msgstr "Όνομα"
 
 msgid "Fingerprint"
-msgstr "Αποτύπωμα"
+msgstr "Ψηφιακό αποτύπωμα"
 
 msgid "Last Used"
 msgstr "Τελευταία χρησιμοποιήθηκε"
@@ -1745,6 +1802,14 @@ msgstr ""
 "Ενεργοποιήστε αυτήν την επιλογή για να επιτρέψετε σε μη διαχειριστές να "
 "δημιουργούν ομάδες χρηστών."
 
+msgid "Repository forking"
+msgstr "Κλωνοποίηση αποθετηρίου"
+
+msgid "Enable this to allow non-admins to fork repositories."
+msgstr ""
+"Ενεργοποιήστε για να επιτρέπεται στους μη-διαχειριστές να κλωνοποιούν "
+"αποθετήρια."
+
 msgid "Registration"
 msgstr "Εγγραφή"
 
@@ -1785,7 +1850,7 @@ msgid "Settings"
 msgstr "Ρυθμίσεις"
 
 msgid "Advanced"
-msgstr "Προχωρημένες Ρυθμίσεις"
+msgstr "Για προχωρημένους"
 
 msgid "Permissions"
 msgstr "Δικαιώματα"
@@ -1891,6 +1956,9 @@ msgstr ""
 msgid "Type of repository to create."
 msgstr "Τύπος αποθετηρίου προς δημιουργία."
 
+msgid "Landing revision"
+msgstr "Αναθεώρηση εκφόρτωσης"
+
 msgid ""
 "Default revision for files page, downloads, full text search index and "
 "readme generation"
@@ -1937,6 +2005,11 @@ msgstr "Γονικό"
 msgid "Set"
 msgstr "Ορισμός"
 
+msgid "Manually set this repository as a fork of another from the list."
+msgstr ""
+"Ορίστε χειροκίνητα αυτό το αποθετήριο ως έναν κλώνο ενός άλλου από αυτόν "
+"τον κατάλογο."
+
 msgid "Public Journal Visibility"
 msgstr "Ορατότητα δημόσιων εγγραφών"
 
@@ -1963,6 +2036,12 @@ msgid "This repository has %s fork"
 msgid_plural "This repository has %s forks"
 msgstr[0] "Αυτό το αποθετήριο έχει %s παράγωγο"
 msgstr[1] "Αυτό το αποθετήριο έχει %s παράγωγα"
+
+msgid "Detach forks"
+msgstr "Αποσύνδεση κλώνων"
+
+msgid "Delete forks"
+msgstr "Διαγραφή κλώνων"
 
 msgid ""
 "The deleted repository will be moved away and hidden until the "
@@ -2002,6 +2081,9 @@ msgstr "Τα επιπλέον πεδία είναι απενεργοποιημέ
 
 msgid "Private Repository"
 msgstr "Ιδιωτικό Αποθετήριο"
+
+msgid "Fork of repository"
+msgstr "Κλώνος αποθετηρίου"
 
 msgid "Remote repository URL"
 msgstr "Διεύθυνση URL απομακρυσμένου αποθετηρίου"
@@ -2091,6 +2173,9 @@ msgstr "Επανάληψη αντιστοίχισης και επανασάρω�
 msgid "Visual"
 msgstr "Εμφάνιση"
 
+msgid "Hooks"
+msgstr "Άγκιστρα"
+
 msgid "Full Text Search"
 msgstr "Αναζήτηση Πλήρους Κειμένου"
 
@@ -2108,6 +2193,9 @@ msgstr "Επωνυμία ιστότοπου"
 
 msgid "Set a custom title for your Kallithea Service."
 msgstr "Ορίστε έναν προσαρμοσμένο τίτλο για την υπηρεσία της Καλλιθέα σας."
+
+msgid "HTTP authentication realm"
+msgstr "Πεδίο ελέγχου ταυτότητας HTTP"
 
 msgid "HTML/JavaScript/CSS customization block"
 msgstr "Μπλοκ προσαρμογής HTML / JavaScript / CSS"
@@ -2145,6 +2233,12 @@ msgstr "Αποθήκευση Ρυθμίσεων"
 
 msgid "Built-in Mercurial Hooks (Read-Only)"
 msgstr "Ενσωματωμένοι Mercurial Hooks (μόνο για ανάγνωση)"
+
+msgid "Custom Hooks"
+msgstr "Προσαρμοσμένα άγκιστρα"
+
+msgid "Failed to remove hook"
+msgstr "Απέτυχε η αφαίρεση γάντζου"
 
 msgid "Rescan options"
 msgstr "Επιλογές Επανασάρωσης"
@@ -2413,6 +2507,9 @@ msgstr ""
 "Αναλύει τις μετα-ετικέτες από το πεδίο περιγραφής του αποθετηρίου και τις "
 "μετατρέπει σε έγχρωμες ετικέτες."
 
+msgid "Stylify recognised meta tags:"
+msgstr "Αναγνωρισμένες μετα-ετικέτες Stylify:"
+
 msgid "Add user group"
 msgstr "Προσθήκη ομάδας χρηστών"
 
@@ -2465,7 +2562,7 @@ msgid "Users"
 msgstr "Χρήστες"
 
 msgid "Add User"
-msgstr "Προσθήκη χρήστη"
+msgstr "Προσθήκη Χρήστη"
 
 msgid "Password confirmation"
 msgstr "Επιβεβαίωση κωδικού πρόσβασης"
@@ -2497,6 +2594,9 @@ msgstr "Διαγραφή αυτού του χρήστη"
 msgid "Inherited from %s"
 msgstr "Κληρονομήθηκε από %s"
 
+msgid "Name in Source of Record"
+msgstr "Όνομα στην πηγή εγγραφής"
+
 msgid "New password confirmation"
 msgstr "Επιβεβαίωση νέου κωδικού πρόσβασης"
 
@@ -2518,6 +2618,9 @@ msgstr "Αποθετήριο Mercurial"
 msgid "Git repository"
 msgstr "Αποθετήριο Git"
 
+msgid "Create Fork"
+msgstr "Δημιουργία πιρουνιού"
+
 msgid "Summary"
 msgstr "Περίληψη"
 
@@ -2536,6 +2639,9 @@ msgstr "Αιτήματα Έλξης"
 msgid "Options"
 msgstr "Επιλογές"
 
+msgid "Compare Fork"
+msgstr "Σύγκριση πιρουνιού"
+
 msgid "Compare"
 msgstr "Σύγκριση"
 
@@ -2547,6 +2653,9 @@ msgstr "Παρακολούθηση"
 
 msgid "Unfollow"
 msgstr "Κατάργηση παρακολούθησης"
+
+msgid "Fork"
+msgstr "Πιρούνι"
 
 msgid "Create Pull Request"
 msgstr "Δημιουργία Αιτήματος Έλξης"
@@ -2620,6 +2729,14 @@ msgid "Select this option to allow user group creation for this user"
 msgstr ""
 "Ενεργοποιήστε αυτήν την επιλογή για να επιτρέψετε τη δημιουργία ομάδας "
 "χρηστών για αυτόν το χρήστη"
+
+msgid "Fork repositories"
+msgstr "Αποθετήρια διακλαδώσεων"
+
+msgid "Select this option to allow repository forking for this user"
+msgstr ""
+"Επιλέξτε αυτή την επιλογή για να επιτρέψετε τη διακλάδωση αποθετηρίου για "
+"αυτόν τον χρήστη"
 
 msgid "Show"
 msgstr "Εμφάνιση"
@@ -2736,6 +2853,12 @@ msgstr "Καθαρισμός επιλογής"
 msgid "Go to tip of repository"
 msgstr "Μετάβαση στην κεφαλή του αποθετηρίου"
 
+msgid "Compare fork with %s"
+msgstr "Σύγκριση κλώνου με %s"
+
+msgid "Compare fork with parent repository (%s)"
+msgstr "Σύγκριση κλώνου με μητρικό αποθετήριο (%s)"
+
 msgid "Branch filter:"
 msgstr "Φίλτρο κλάδου:"
 
@@ -2805,6 +2928,12 @@ msgstr "Λήψη διαφοράς"
 
 msgid "Merge"
 msgstr "Συγχώνευση"
+
+msgid "Grafted from:"
+msgstr "Μπόλιασμα από:"
+
+msgid "Transplanted from:"
+msgstr "Μεταμοσχεύτηκε από:"
 
 msgid "Replaced by:"
 msgstr "Αντικαταστάθηκε από:"
@@ -3015,11 +3144,20 @@ msgstr "κλάδος"
 msgid "by"
 msgstr "από"
 
+msgid "View Comment"
+msgstr "Προβολή Σχολίου"
+
 msgid "Status change:"
 msgstr "Αλλαγή κατάστασης:"
 
 msgid "The pull request has been closed."
 msgstr "Το αίτημα έλξης έχει κλείσει."
+
+msgid "Message"
+msgstr "Μήνυμα"
+
+msgid "Password Reset Request"
+msgstr "Αίτημα επαναφοράς κωδικού"
 
 msgid "Hello %s"
 msgstr "Γεια σας %s"
@@ -3070,6 +3208,9 @@ msgstr "από"
 msgid "to"
 msgstr "προς"
 
+msgid "View Pull Request"
+msgstr "Προβολή Αιτήματος Έλξης"
+
 msgid "Mention in Comment on Pull Request %s \"%s\""
 msgstr "Αναφορά στο σχόλιο για το αίτημα έλξης %s \"%s\""
 
@@ -3079,8 +3220,14 @@ msgstr "Το αίτημα έλξης %s \"%s\" είναι Κλειστό"
 msgid "Comment on Pull Request %s \"%s\""
 msgstr "Σχόλιο στην αίτηση έλξης %s \"%s\""
 
+msgid "New User Registration"
+msgstr "Εγγραφή Νέου Χρήστη"
+
 msgid "Full Name"
 msgstr "Ονοματεπώνυμο"
+
+msgid "View User Profile"
+msgstr "Προβολή Λογαριασμού Χρήστη"
 
 msgid "%s File side-by-side diff"
 msgstr "%s Αρχείο διαφοράς δίπλα-δίπλα"
@@ -3110,7 +3257,7 @@ msgid "or"
 msgstr "ή"
 
 msgid "Upload File"
-msgstr "Ανέβασμα Αρχείου"
+msgstr "Αποστολή αρχείου"
 
 msgid "Create New File"
 msgstr "Δημιουργία Νέου Αρχείου"
@@ -3215,7 +3362,7 @@ msgid "annotation"
 msgstr "σχολιασμός"
 
 msgid "Go Back"
-msgstr "Πήγαινε Πίσω"
+msgstr "Επιστροφή"
 
 msgid "No files at given path"
 msgstr "Δεν υπάρχουν αρχεία στη δοσμένη διαδρομή"
@@ -3229,6 +3376,12 @@ msgstr "Ακόλουθοι"
 msgid "Started following -"
 msgstr "Ξεκίνησαν να ακολουθούν -"
 
+msgid "Fork repository %s"
+msgstr "Κλωνοποίηση αποθετηρίου %s"
+
+msgid "Fork name"
+msgstr "Κλωνοποίηση ονόματος"
+
 msgid "Default revision for files page, downloads, whoosh, and readme."
 msgstr ""
 "Προεπιλεγμένη αναθεώρηση για τη σελίδα αρχείων, λήψεων, whoosh, και "
@@ -3240,11 +3393,29 @@ msgstr "Ιδιωτικό"
 msgid "Copy permissions"
 msgstr "Αντιγραφή δικαιωμάτων"
 
+msgid "Copy permissions from forked repository"
+msgstr "Αντιγραφή αδειών από κλωνοποιημένο αποθετήριο"
+
 msgid "Update after clone"
 msgstr "Ενημέρωση μετά την κλωνοποίηση"
 
 msgid "Checkout source after making a clone"
 msgstr "Πηγαίνετε στον κώδικα μετά την κλωνοποίηση"
+
+msgid "Fork this Repository"
+msgstr "Κλωνοποίηση αυτού του Αποθετηρίου"
+
+msgid "%s Forks"
+msgstr "%s Κλώνοι"
+
+msgid "Forks"
+msgstr "Κλώνοι"
+
+msgid "Forked"
+msgstr "Κλωνοποιημένο"
+
+msgid "There are no forks yet"
+msgstr "Δεν υπάρχουν κλώνοι ακόμη"
 
 msgid "ATOM journal feed"
 msgstr "Ημερολόγιο τροφοδοσίας ATOM"
@@ -3509,6 +3680,9 @@ msgstr "αρχείο αφαιρέθηκε"
 
 msgid "%s Summary"
 msgstr "%s Σύνοψη"
+
+msgid "Fork of"
+msgstr "Κλώνος του"
 
 msgid "Clone from"
 msgstr "Κλώνος από"

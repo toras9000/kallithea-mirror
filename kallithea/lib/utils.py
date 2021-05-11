@@ -288,7 +288,7 @@ def make_ui(repo_path=None):
 
     if repo_path is not None:
         # Note: MercurialRepository / mercurial.localrepo.instance will do this too, so it will always be possible to override db settings or what is hardcoded above
-        baseui.readconfig(repo_path)
+        baseui.readconfig(safe_bytes(os.path.join(repo_path, '.hg', 'hgrc')))
 
     assert baseui.plain()  # set by hgcompat.monkey_do (invoked from import of vcs.backends.hg) to minimize potential impact of loading config files
     return baseui

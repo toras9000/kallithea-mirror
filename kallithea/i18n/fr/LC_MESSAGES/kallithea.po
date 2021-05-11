@@ -1648,10 +1648,11 @@ msgid ""
 msgstr ""
 "\n"
 "Comme les mots de passe, les clés API ne devraient donc jamais être "
-"diffusées à des tiers, ni passés à des scripts ou services auxquels vous "
-"ne faites pas confiance. Si cette diffusion a tout de même lieu, vous "
-"pouvez réinitialiser la clé API sur cette page pour qu'elle ne puisse "
-"plus être utilisée.\n"
+"diffusées à des tiers,\n"
+"ni passés à des scripts ou services auxquels vous ne faites pas "
+"confiance. Si cette diffusion a tout de même lieu,\n"
+"vous pouvez réinitialiser la clé API sur cette page pour qu'elle ne "
+"puisse plus être utilisée.\n"
 
 msgid "Primary"
 msgstr "Primaire"
@@ -2446,6 +2447,13 @@ msgstr ""
 "                                                        {netloc}    "
 "emplacement réseau/hôte du serveur Kallithea en cours d'utilisation."
 
+msgid ""
+"Schema for constructing SSH clone URL, eg. 'ssh://{system_user}"
+"@{hostname}/{repo}'."
+msgstr ""
+"Schéma de construction d'une URL de clone SSH, par exemple. 'ssh://"
+"{system_user}@{hostname}/{repo}'."
+
 msgid "Repository page size"
 msgstr "Taille de la page du dépôt"
 
@@ -3134,6 +3142,9 @@ msgstr "La requête de pull a été fermée."
 msgid "Message"
 msgstr "Message"
 
+msgid "Password Reset Request"
+msgstr "Demande de réinitialisation du mot de passe"
+
 msgid "Hello %s"
 msgstr "Bonjour %s"
 
@@ -3180,6 +3191,9 @@ msgstr "depuis"
 
 msgid "to"
 msgstr "vers"
+
+msgid "View Pull Request"
+msgstr "Afficher la requête de pull"
 
 msgid "Mention in Comment on Pull Request %s \"%s\""
 msgstr "Mention dans le commentaire sur la requête de pull %s « %s »"
@@ -3344,7 +3358,7 @@ msgid "Followers"
 msgstr "Followers"
 
 msgid "Started following -"
-msgstr "A commencé à suivre le dépôt :"
+msgstr "A commencé à suivre -"
 
 msgid "Fork repository %s"
 msgstr "Forker le dépôt %s"
@@ -3663,8 +3677,17 @@ msgstr "Cloner depuis"
 msgid "Clone URL"
 msgstr "URL de clone"
 
+msgid "Use ID"
+msgstr "Utiliser l'ID"
+
+msgid "Use SSH"
+msgstr "Utiliser SSH"
+
 msgid "Use Name"
 msgstr "Utiliser le nom"
+
+msgid "Use HTTP"
+msgstr "Utiliser HTTP"
 
 msgid "Trending files"
 msgstr "Populaires"

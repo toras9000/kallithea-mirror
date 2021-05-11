@@ -48,10 +48,10 @@ msgid "Cannot show empty diff"
 msgstr "Отсутствуют изменения для отображения"
 
 msgid "No ancestor found for merge diff"
-msgstr "Не найдено предка для слияния"
+msgstr "Не найдено предка для слияния правок"
 
 msgid "Multiple merge ancestors found for merge compare"
-msgstr "Найдено несколько предков для сравнения слияния"
+msgstr "Найдено несколько предков для сравнения слияний"
 
 msgid "Cannot compare repositories without using common ancestor"
 msgstr "Невозможно сравнивать репозитории без общего предка"
@@ -182,7 +182,7 @@ msgid "Closed Branches"
 msgstr "Закрытые ветки"
 
 msgid "Tag"
-msgstr "Тэги"
+msgstr "Метка"
 
 msgid "Bookmark"
 msgstr "Закладки"
@@ -192,6 +192,9 @@ msgstr "Публичный журнал"
 
 msgid "Journal"
 msgstr "Журнал"
+
+msgid "Authentication failed."
+msgstr "Ошибка авторизации."
 
 msgid "Bad captcha"
 msgstr "Неверная капча"
@@ -209,7 +212,7 @@ msgid "Successfully updated password"
 msgstr "Пароль обновлён"
 
 msgid "Invalid reviewer \"%s\" specified"
-msgstr "Некорректно задан ревьювер «%s»"
+msgstr "Задан неверный ревьюер «%s»"
 
 msgid "%s (closed)"
 msgstr "%s (закрыта)"
@@ -516,10 +519,10 @@ msgid "An error occurred during this operation"
 msgstr "Произошла ошибка при выполнении операции"
 
 msgid "Pulled from remote location"
-msgstr "Внесены изменения из удалённого репозитория"
+msgstr "Получено из удалённого репозитория"
 
 msgid "An error occurred during pull from remote location"
-msgstr "Произошла ошибка при внесении изменений из удалённого репозитория"
+msgstr "Произошла ошибка при получении изменений из удалённого репозитория"
 
 msgid "An error occurred during deletion of repository stats"
 msgstr "Произошла ошибка при удалении статистики репозитория"
@@ -737,13 +740,13 @@ msgid "[pushed] into"
 msgstr "[отправлено] в"
 
 msgid "[committed via Kallithea] into repository"
-msgstr "[внесены изменения с помощью Kallithea] в репозитории"
+msgstr "[коммит через Kallithea] в репозитории"
 
 msgid "[pulled from remote] into repository"
-msgstr "[внесены изменения из удалённого репозитория] в репозиторий"
+msgstr "[получено из удалённого репозитория] в репозиторий"
 
 msgid "[pulled] from"
-msgstr "[внесены изменения] из"
+msgstr "[получено] из"
 
 msgid "[started following] repository"
 msgstr "[подписка] на репозиторий"
@@ -1555,7 +1558,7 @@ msgid "SSH Keys"
 msgstr "Ключи SSH"
 
 msgid "API Keys"
-msgstr "API-ключи"
+msgstr "Ключи API"
 
 msgid "Owned Repositories"
 msgstr "Свои репозитории"
@@ -2072,7 +2075,7 @@ msgid "Remote repository URL"
 msgstr "Ссылка на удалённый репозиторий"
 
 msgid "Pull Changes from Remote Repository"
-msgstr "Изменения из удалённого репозитория"
+msgstr "Получить изменения из удалённого репозитория"
 
 msgid "Confirm to pull changes from remote repository."
 msgstr "Подтвердите применение изменений из удалённого репозитория."
@@ -2223,8 +2226,8 @@ msgid ""
 "pull. They can trigger Python functions or external applications."
 msgstr ""
 "Хуки используются для активации действий при определённых событиях, "
-"например, push/pull-запросах. Могут активироваться функции Python либо "
-"внешние приложения."
+"например, при проталкивании (push) или получении (pull) изменений. По "
+"хуку могут исполняться функции Python либо внешние приложения."
 
 msgid "Failed to remove hook"
 msgstr "Не удалось удалить хук"
@@ -3118,7 +3121,7 @@ msgid "Comment on Changeset \"%s\""
 msgstr "Комментарий к набору изменений «%s»"
 
 msgid "Changeset on"
-msgstr "Набр изменений для"
+msgstr "Набор изменений для"
 
 msgid "branch"
 msgstr "ветви"
@@ -3126,11 +3129,20 @@ msgstr "ветви"
 msgid "by"
 msgstr "от"
 
+msgid "View Comment"
+msgstr "Просмотр комментария"
+
 msgid "Status change:"
 msgstr "Изменение статуса:"
 
 msgid "The pull request has been closed."
 msgstr "Этот pull-запрос закрыт."
+
+msgid "Message"
+msgstr "Сообщение"
+
+msgid "Password Reset Request"
+msgstr "Запрос сброса пароля"
 
 msgid "Hello %s"
 msgstr "Здравствуйте, %s"
@@ -3177,6 +3189,9 @@ msgstr "от"
 msgid "to"
 msgstr "к"
 
+msgid "View Pull Request"
+msgstr "Просмотр pull-запроса"
+
 msgid "Mention in Comment on Pull Request %s \"%s\""
 msgstr "Упоминание в комментарии к pull-запросу %s «%s»"
 
@@ -3186,8 +3201,14 @@ msgstr "Pull-запрос %s «%s» закрыт"
 msgid "Comment on Pull Request %s \"%s\""
 msgstr "Комментарий к pull-запросу %s «%s»"
 
+msgid "New User Registration"
+msgstr "Регистрация нового пользователя"
+
 msgid "Full Name"
 msgstr "Полное имя"
+
+msgid "View User Profile"
+msgstr "Просмотр пользователя"
 
 msgid "%s File side-by-side diff"
 msgstr "Построчное сравнение файла %s"
@@ -3487,7 +3508,7 @@ msgstr ""
 "реального предка для слияния."
 
 msgid "Pull changes"
-msgstr "Принять изменения"
+msgstr "Получить изменения"
 
 msgid "Next iteration"
 msgstr "Следующая итерация"
@@ -3613,7 +3634,7 @@ msgid "Show more"
 msgstr "Показать еще"
 
 msgid "commits"
-msgstr "commit'ы"
+msgstr "коммиты"
 
 msgid "files added"
 msgstr "файлы добавлены"
@@ -3625,7 +3646,7 @@ msgid "files removed"
 msgstr "файлы удалены"
 
 msgid "commit"
-msgstr "commit"
+msgstr "коммит"
 
 msgid "file added"
 msgstr "файл удалён"
