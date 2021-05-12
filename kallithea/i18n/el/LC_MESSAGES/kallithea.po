@@ -2702,9 +2702,6 @@ msgstr "Συνδεθείτε στο λογαριασμό σας"
 msgid "Forgot password?"
 msgstr "Ξεχάσατε τον κωδικό πρόσβασης;"
 
-msgid "Don't have an account?"
-msgstr "Δεν έχετε λογαριασμό;"
-
 msgid "Log Out"
 msgstr "Αποσύνδεση"
 

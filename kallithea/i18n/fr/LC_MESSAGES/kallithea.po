@@ -1323,9 +1323,6 @@ msgstr "Rester connecté après un redémarrage du navigateur"
 msgid "Forgot your password?"
 msgstr "Mot de passe oublié?"
 
-msgid "Don't have an account?"
-msgstr "Vous n’avez pas de compte?"
-
 msgid "Sign In"
 msgstr "Connexion"
 

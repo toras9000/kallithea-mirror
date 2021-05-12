@@ -2687,9 +2687,6 @@ msgstr "Авторизоваться"
 msgid "Forgot password?"
 msgstr "Забыли пароль?"
 
-msgid "Don't have an account?"
-msgstr "Нет аккаунта?"
-
 msgid "Log Out"
 msgstr "Выход"
 
