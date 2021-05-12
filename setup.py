@@ -73,6 +73,7 @@ requirements = [
     "paginate_sqlalchemy >= 0.3.0, < 0.4",
     "bcrypt >= 3.1.0, < 3.2",
     "pip >= 20.0, < 999",
+    "chardet >= 3",
 ]
 
 dependency_links = [
