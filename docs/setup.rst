@@ -417,7 +417,7 @@ directly which scheme/protocol Kallithea will use when generating URLs:
 - With ``https_fixup = true``, the scheme will be taken from the
   ``X-Url-Scheme``, ``X-Forwarded-Scheme`` or ``X-Forwarded-Proto`` HTTP header
   (default ``http``).
-- With ``force_https = true`` the default will be ``https``.
+- With ``force_https = true``, the scheme will be seen as ``https``.
 - With ``use_htsts = true``, Kallithea will set ``Strict-Transport-Security`` when using https.
 
 .. _nginx_virtual_host:

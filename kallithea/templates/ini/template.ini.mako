@@ -174,11 +174,11 @@ app_instance_uuid = ${uuid()}
 <%text>##</%text> cut off limit for large diffs (size in bytes)
 cut_off_limit = 256000
 
-<%text>##</%text> force https in Kallithea, fixes https redirects, assumes it's always https
-force_https = false
+<%text>##</%text> always pretend the client connected using HTTPS (default false)
+#force_https = true
 
-<%text>##</%text> use Strict-Transport-Security headers
-use_htsts = false
+<%text>##</%text> use Strict-Transport-Security headers (default false)
+#use_htsts = true
 
 <%text>##</%text> number of commits stats will parse on each iteration
 commit_parse_limit = 25
