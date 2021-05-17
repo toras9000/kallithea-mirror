@@ -192,7 +192,11 @@ class GitRepository(BaseRepository):
         >>> GitRepository._check_url('git://example.com/\t')
         Traceback (most recent call last):
         ...
+        urllib.error.URLError: <urlopen error Invalid ...>
+
+        The failure above will be one of, depending on the level of WhatWG support:
         urllib.error.URLError: <urlopen error Invalid whitespace character in path: '\t'>
+        urllib.error.URLError: <urlopen error Invalid url: 'git://example.com/	' normalizes to 'git://example.com/'>
         """
         try:
             parsed_url = urllib.parse.urlparse(url)
@@ -203,6 +207,10 @@ class GitRepository(BaseRepository):
         # check first if it's not an local url
         if os.path.isabs(url) and os.path.isdir(url):
             return
+
+        unparsed_url = urllib.parse.urlunparse(parsed_url)
+        if unparsed_url != url:
+            raise urllib.error.URLError("Invalid url: '%s' normalizes to '%s'" % (url, unparsed_url))
 
         if parsed_url.scheme == 'git':
             # Mitigate problems elsewhere with incorrect handling of encoded paths.
