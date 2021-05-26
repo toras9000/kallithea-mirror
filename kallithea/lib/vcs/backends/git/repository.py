@@ -196,7 +196,7 @@ class GitRepository(BaseRepository):
 
         The failure above will be one of, depending on the level of WhatWG support:
         urllib.error.URLError: <urlopen error Invalid whitespace character in path: '\t'>
-        urllib.error.URLError: <urlopen error Invalid url: 'git://example.com/	' normalizes to 'git://example.com/'>
+        urllib.error.URLError: <urlopen error Invalid url: 'git://example.com/    ' normalizes to 'git://example.com/'>
         """
         try:
             parsed_url = urllib.parse.urlparse(url)
