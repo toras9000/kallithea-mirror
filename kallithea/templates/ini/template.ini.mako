@@ -145,6 +145,7 @@ reload-on-exception = true             ; Don't assume that the application worke
 #[filter:proxy-prefix]
 #use = egg:PasteDeploy#prefix
 #prefix = /<your-prefix>
+#translate_forwarded_server = False
 
 [app:main]
 use = egg:kallithea
