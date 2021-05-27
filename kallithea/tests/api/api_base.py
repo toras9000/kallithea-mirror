@@ -19,24 +19,27 @@ Tests for the JSON-RPC web api.
 import os
 import random
 import re
+import string
+from typing import Sized
 
 import mock
 import pytest
+from webtest import TestApp
 
 from kallithea.lib import ext_json
 from kallithea.lib.auth import AuthUser
 from kallithea.lib.utils2 import ascii_bytes
+from kallithea.model import db, meta
 from kallithea.model.changeset_status import ChangesetStatusModel
-from kallithea.model.db import ChangesetStatus, PullRequest, RepoGroup, Repository, Setting, Ui, User
 from kallithea.model.gist import GistModel
-from kallithea.model.meta import Session
+from kallithea.model.pull_request import PullRequestModel
 from kallithea.model.repo import RepoModel
 from kallithea.model.repo_group import RepoGroupModel
 from kallithea.model.scm import ScmModel
 from kallithea.model.user import UserModel
 from kallithea.model.user_group import UserGroupModel
 from kallithea.tests import base
-from kallithea.tests.fixture import Fixture
+from kallithea.tests.fixture import Fixture, raise_exception
 
 
 API_URL = '/_admin/api'
@@ -63,10 +66,6 @@ def _build_data(apikey, method, **kw):
 jsonify = lambda obj: ext_json.loads(ext_json.dumps(obj))
 
 
-def crash(*args, **kwargs):
-    raise Exception('Total Crash !')
-
-
 def api_call(test_obj, params):
     response = test_obj.app.post(API_URL, content_type='application/json',
                                  params=params)
@@ -78,23 +77,29 @@ def make_user_group(name=TEST_USER_GROUP):
     gr = fixture.create_user_group(name, cur_user=base.TEST_USER_ADMIN_LOGIN)
     UserGroupModel().add_user_to_group(user_group=gr,
                                        user=base.TEST_USER_ADMIN_LOGIN)
-    Session().commit()
+    meta.Session().commit()
     return gr
 
 
 def make_repo_group(name=TEST_REPO_GROUP):
     gr = fixture.create_repo_group(name, cur_user=base.TEST_USER_ADMIN_LOGIN)
-    Session().commit()
+    meta.Session().commit()
     return gr
 
 
 class _BaseTestApi(object):
-    REPO = None
-    REPO_TYPE = None
+    app: TestApp  # assigned by app_fixture in subclass TestController mixin
+    # assigned in subclass:
+    REPO: str
+    REPO_TYPE: str
+    TEST_REVISION: str
+    TEST_PR_SRC: str
+    TEST_PR_DST: str
+    TEST_PR_REVISIONS: Sized
 
     @classmethod
     def setup_class(cls):
-        cls.usr = User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
+        cls.usr = db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
         cls.apikey = cls.usr.api_key
         cls.test_user = UserModel().create_or_update(
             username='test-api',
@@ -103,7 +108,7 @@ class _BaseTestApi(object):
             firstname='first',
             lastname='last'
         )
-        Session().commit()
+        meta.Session().commit()
         cls.TEST_USER_LOGIN = cls.test_user.username
         cls.apikey_regular = cls.test_user.api_key
 
@@ -137,29 +142,6 @@ class _BaseTestApi(object):
         })
         given = ext_json.loads(given)
         assert expected == given, (expected, given)
-
-    def test_Optional_object(self):
-        from kallithea.controllers.api.api import Optional
-
-        option1 = Optional(None)
-        assert '<Optional:%s>' % None == repr(option1)
-        assert option1() is None
-
-        assert 1 == Optional.extract(Optional(1))
-        assert 'trololo' == Optional.extract('trololo')
-
-    def test_Optional_OAttr(self):
-        from kallithea.controllers.api.api import Optional, OAttr
-
-        option1 = Optional(OAttr('apiuser'))
-        assert 'apiuser' == Optional.extract(option1)
-
-    def test_OAttr_object(self):
-        from kallithea.controllers.api.api import OAttr
-
-        oattr1 = OAttr('apiuser')
-        assert '<OptionalAttr:apiuser>' == repr(oattr1)
-        assert oattr1() == oattr1
 
     def test_api_wrong_key(self):
         id_, params = _build_data('trololo', 'get_user')
@@ -204,7 +186,6 @@ class _BaseTestApi(object):
         assert response.status == '200 OK'
 
     def test_api_args_different_args(self):
-        import string
         expected = {
             'ascii_letters': string.ascii_letters,
             'ws': string.whitespace,
@@ -219,8 +200,8 @@ class _BaseTestApi(object):
         id_, params = _build_data(self.apikey, 'get_users', )
         response = api_call(self, params)
         ret_all = []
-        _users = User.query().filter_by(is_default_user=False) \
-            .order_by(User.username).all()
+        _users = db.User.query().filter_by(is_default_user=False) \
+            .order_by(db.User.username).all()
         for usr in _users:
             ret = usr.get_api_data()
             ret_all.append(jsonify(ret))
@@ -232,7 +213,7 @@ class _BaseTestApi(object):
                                   userid=base.TEST_USER_ADMIN_LOGIN)
         response = api_call(self, params)
 
-        usr = User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
+        usr = db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
         ret = usr.get_api_data()
         ret['permissions'] = AuthUser(dbuser=usr).permissions
 
@@ -251,7 +232,7 @@ class _BaseTestApi(object):
         id_, params = _build_data(self.apikey, 'get_user')
         response = api_call(self, params)
 
-        usr = User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
+        usr = db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
         ret = usr.get_api_data()
         ret['permissions'] = AuthUser(dbuser=usr).permissions
 
@@ -262,7 +243,7 @@ class _BaseTestApi(object):
         id_, params = _build_data(self.apikey_regular, 'get_user')
         response = api_call(self, params)
 
-        usr = User.get_by_username(self.TEST_USER_LOGIN)
+        usr = db.User.get_by_username(self.TEST_USER_LOGIN)
         ret = usr.get_api_data()
         ret['permissions'] = AuthUser(dbuser=usr).permissions
 
@@ -284,10 +265,10 @@ class _BaseTestApi(object):
         r = fixture.create_repo(repo_name, repo_type=self.REPO_TYPE)
         # hack around that clone_uri can't be set to to a local path
         # (as shown by test_api_create_repo_clone_uri_local)
-        r.clone_uri = os.path.join(Ui.get_by_key('paths', '/').ui_value, self.REPO)
-        Session().commit()
+        r.clone_uri = os.path.join(db.Ui.get_by_key('paths', '/').ui_value, self.REPO)
+        meta.Session().commit()
 
-        pre_cached_tip = [repo.get_api_data()['last_changeset']['short_id'] for repo in Repository.query().filter(Repository.repo_name == repo_name)]
+        pre_cached_tip = [repo.get_api_data()['last_changeset']['short_id'] for repo in db.Repository.query().filter(db.Repository.repo_name == repo_name)]
 
         id_, params = _build_data(self.apikey, 'pull',
                                   repoid=repo_name,)
@@ -297,7 +278,7 @@ class _BaseTestApi(object):
                     'repository': repo_name}
         self._compare_ok(id_, expected, given=response.body)
 
-        post_cached_tip = [repo.get_api_data()['last_changeset']['short_id'] for repo in Repository.query().filter(Repository.repo_name == repo_name)]
+        post_cached_tip = [repo.get_api_data()['last_changeset']['short_id'] for repo in db.Repository.query().filter(db.Repository.repo_name == repo_name)]
 
         fixture.destroy_repo(repo_name)
 
@@ -329,7 +310,7 @@ class _BaseTestApi(object):
         repo_name = 'test_pull_custom_remote'
         fixture.create_repo(repo_name, repo_type=self.REPO_TYPE)
 
-        custom_remote_path = os.path.join(Ui.get_by_key('paths', '/').ui_value, self.REPO)
+        custom_remote_path = os.path.join(db.Ui.get_by_key('paths', '/').ui_value, self.REPO)
 
         id_, params = _build_data(self.apikey, 'pull',
                                   repoid=repo_name,
@@ -349,7 +330,7 @@ class _BaseTestApi(object):
         expected = {'added': [], 'removed': []}
         self._compare_ok(id_, expected, given=response.body)
 
-    @mock.patch.object(ScmModel, 'repo_scan', crash)
+    @mock.patch.object(ScmModel, 'repo_scan', raise_exception)
     def test_api_rescann_error(self):
         id_, params = _build_data(self.apikey, 'rescan_repos', )
         response = api_call(self, params)
@@ -387,7 +368,7 @@ class _BaseTestApi(object):
                                   password='trololo')
         response = api_call(self, params)
 
-        usr = User.get_by_username(username)
+        usr = db.User.get_by_username(username)
         ret = dict(
             msg='created new user `%s`' % username,
             user=jsonify(usr.get_api_data())
@@ -408,7 +389,7 @@ class _BaseTestApi(object):
                                   email=email)
         response = api_call(self, params)
 
-        usr = User.get_by_username(username)
+        usr = db.User.get_by_username(username)
         ret = dict(
             msg='created new user `%s`' % username,
             user=jsonify(usr.get_api_data())
@@ -428,7 +409,7 @@ class _BaseTestApi(object):
                                   email=email, extern_name='internal')
         response = api_call(self, params)
 
-        usr = User.get_by_username(username)
+        usr = db.User.get_by_username(username)
         ret = dict(
             msg='created new user `%s`' % username,
             user=jsonify(usr.get_api_data())
@@ -439,7 +420,7 @@ class _BaseTestApi(object):
         finally:
             fixture.destroy_user(usr.user_id)
 
-    @mock.patch.object(UserModel, 'create_or_update', crash)
+    @mock.patch.object(UserModel, 'create_or_update', raise_exception)
     def test_api_create_user_when_exception_happened(self):
 
         username = 'test_new_api_user'
@@ -458,7 +439,7 @@ class _BaseTestApi(object):
                                            password='qweqwe',
                                            email='u232@example.com',
                                            firstname='u1', lastname='u1')
-        Session().commit()
+        meta.Session().commit()
         username = usr.username
         email = usr.email
         usr_id = usr.user_id
@@ -473,13 +454,13 @@ class _BaseTestApi(object):
         expected = ret
         self._compare_ok(id_, expected, given=response.body)
 
-    @mock.patch.object(UserModel, 'delete', crash)
+    @mock.patch.object(UserModel, 'delete', raise_exception)
     def test_api_delete_user_when_exception_happened(self):
         usr = UserModel().create_or_update(username='test_user',
                                            password='qweqwe',
                                            email='u232@example.com',
                                            firstname='u1', lastname='u1')
-        Session().commit()
+        meta.Session().commit()
         username = usr.username
 
         id_, params = _build_data(self.apikey, 'delete_user',
@@ -505,7 +486,7 @@ class _BaseTestApi(object):
         ('password', 'newpass'),
     ])
     def test_api_update_user(self, name, expected):
-        usr = User.get_by_username(self.TEST_USER_LOGIN)
+        usr = db.User.get_by_username(self.TEST_USER_LOGIN)
         kw = {name: expected,
               'userid': usr.user_id}
         id_, params = _build_data(self.apikey, 'update_user', **kw)
@@ -514,7 +495,7 @@ class _BaseTestApi(object):
         ret = {
             'msg': 'updated user ID:%s %s' % (
                 usr.user_id, self.TEST_USER_LOGIN),
-            'user': jsonify(User \
+            'user': jsonify(db.User \
                 .get_by_username(self.TEST_USER_LOGIN) \
                 .get_api_data())
         }
@@ -523,7 +504,7 @@ class _BaseTestApi(object):
         self._compare_ok(id_, expected, given=response.body)
 
     def test_api_update_user_no_changed_params(self):
-        usr = User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
+        usr = db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
         ret = jsonify(usr.get_api_data())
         id_, params = _build_data(self.apikey, 'update_user',
                                   userid=base.TEST_USER_ADMIN_LOGIN)
@@ -538,7 +519,7 @@ class _BaseTestApi(object):
         self._compare_ok(id_, expected, given=response.body)
 
     def test_api_update_user_by_user_id(self):
-        usr = User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
+        usr = db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
         ret = jsonify(usr.get_api_data())
         id_, params = _build_data(self.apikey, 'update_user',
                                   userid=usr.user_id)
@@ -553,7 +534,7 @@ class _BaseTestApi(object):
         self._compare_ok(id_, expected, given=response.body)
 
     def test_api_update_user_default_user(self):
-        usr = User.get_default_user()
+        usr = db.User.get_default_user()
         id_, params = _build_data(self.apikey, 'update_user',
                                   userid=usr.user_id)
 
@@ -561,9 +542,9 @@ class _BaseTestApi(object):
         expected = 'editing default user is forbidden'
         self._compare_error(id_, expected, given=response.body)
 
-    @mock.patch.object(UserModel, 'update_user', crash)
+    @mock.patch.object(UserModel, 'update_user', raise_exception)
     def test_api_update_user_when_exception_happens(self):
-        usr = User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
+        usr = db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
         ret = jsonify(usr.get_api_data())
         id_, params = _build_data(self.apikey, 'update_user',
                                   userid=usr.user_id)
@@ -580,7 +561,7 @@ class _BaseTestApi(object):
         RepoModel().grant_user_group_permission(repo=self.REPO,
                                                 group_name=new_group,
                                                 perm='repository.read')
-        Session().commit()
+        meta.Session().commit()
         id_, params = _build_data(self.apikey, 'get_repo',
                                   repoid=self.REPO)
         response = api_call(self, params)
@@ -632,7 +613,7 @@ class _BaseTestApi(object):
         RepoModel().grant_user_permission(repo=self.REPO,
                                           user=self.TEST_USER_LOGIN,
                                           perm=grant_perm)
-        Session().commit()
+        meta.Session().commit()
         id_, params = _build_data(self.apikey_regular, 'get_repo',
                                   repoid=self.REPO)
         response = api_call(self, params)
@@ -671,7 +652,7 @@ class _BaseTestApi(object):
 
     def test_api_get_repo_by_non_admin_no_permission_to_repo(self):
         RepoModel().grant_user_permission(repo=self.REPO,
-                                          user=User.DEFAULT_USER_NAME,
+                                          user=db.User.DEFAULT_USER_NAME,
                                           perm='repository.none')
         try:
             RepoModel().grant_user_permission(repo=self.REPO,
@@ -686,7 +667,7 @@ class _BaseTestApi(object):
             self._compare_error(id_, expected, given=response.body)
         finally:
             RepoModel().grant_user_permission(repo=self.REPO,
-                                              user=User.DEFAULT_USER_NAME,
+                                              user=db.User.DEFAULT_USER_NAME,
                                               perm='repository.read')
 
     def test_api_get_repo_that_doesn_not_exist(self):
@@ -704,7 +685,7 @@ class _BaseTestApi(object):
 
         expected = jsonify([
             repo.get_api_data()
-            for repo in Repository.query()
+            for repo in db.Repository.query()
         ])
 
         self._compare_ok(id_, expected, given=response.body)
@@ -715,7 +696,7 @@ class _BaseTestApi(object):
 
         expected = jsonify([
             repo.get_api_data()
-            for repo in RepoModel().get_all_user_repos(self.TEST_USER_LOGIN)
+            for repo in AuthUser(dbuser=db.User.get_by_username(self.TEST_USER_LOGIN)).get_all_user_repos()
         ])
 
         self._compare_ok(id_, expected, given=response.body)
@@ -784,7 +765,7 @@ class _BaseTestApi(object):
         RepoModel().grant_user_permission(repo=self.REPO,
                                           user=self.TEST_USER_LOGIN,
                                           perm=grant_perm)
-        Session().commit()
+        meta.Session().commit()
 
         rev = 'tip'
         path = '/'
@@ -816,7 +797,6 @@ class _BaseTestApi(object):
         ret = {
             'msg': 'Created new repository `%s`' % repo_name,
             'success': True,
-            'task': None,
         }
         expected = ret
         self._compare_ok(id_, expected, given=response.body)
@@ -877,7 +857,7 @@ class _BaseTestApi(object):
 
         # create group before creating repo
         rg = fixture.create_repo_group(repo_group_name)
-        Session().commit()
+        meta.Session().commit()
 
         id_, params = _build_data(self.apikey, 'create_repo',
                                   repo_name=repo_name,
@@ -887,7 +867,6 @@ class _BaseTestApi(object):
         expected = {
             'msg': 'Created new repository `%s`' % repo_name,
             'success': True,
-            'task': None,
         }
         self._compare_ok(id_, expected, given=response.body)
         repo = RepoModel().get_by_repo_name(repo_name)
@@ -901,14 +880,14 @@ class _BaseTestApi(object):
         repo_group_name = '%s/%s' % (TEST_REPO_GROUP, repo_group_basename)
         repo_name = '%s/api-repo' % repo_group_name
 
-        top_group = RepoGroup.get_by_group_name(TEST_REPO_GROUP)
+        top_group = db.RepoGroup.get_by_group_name(TEST_REPO_GROUP)
         assert top_group
         rg = fixture.create_repo_group(repo_group_basename, parent_group_id=top_group)
-        Session().commit()
+        meta.Session().commit()
         RepoGroupModel().grant_user_permission(repo_group_name,
                                                self.TEST_USER_LOGIN,
                                                'group.none')
-        Session().commit()
+        meta.Session().commit()
 
         id_, params = _build_data(self.apikey_regular, 'create_repo',
                                   repo_name=repo_name,
@@ -949,7 +928,6 @@ class _BaseTestApi(object):
         ret = {
             'msg': 'Created new repository `%s`' % repo_name,
             'success': True,
-            'task': None,
         }
         expected = ret
         self._compare_ok(id_, expected, given=response.body)
@@ -969,7 +947,6 @@ class _BaseTestApi(object):
         ret = {
             'msg': 'Created new repository `%s`' % repo_name,
             'success': True,
-            'task': None,
         }
         expected = ret
         self._compare_ok(id_, expected, given=response.body)
@@ -1011,7 +988,7 @@ class _BaseTestApi(object):
         self._compare_error(id_, expected, given=response.body)
         fixture.destroy_repo(repo_name)
 
-    @mock.patch.object(RepoModel, 'create', crash)
+    @mock.patch.object(RepoModel, 'create', raise_exception)
     def test_api_create_repo_exception_occurred(self):
         repo_name = 'api-repo'
         id_, params = _build_data(self.apikey, 'create_repo',
@@ -1131,7 +1108,7 @@ class _BaseTestApi(object):
         finally:
             fixture.destroy_repo(repo_name)
 
-    @mock.patch.object(RepoModel, 'update', crash)
+    @mock.patch.object(RepoModel, 'update', raise_exception)
     def test_api_update_repo_exception_occurred(self):
         repo_name = 'api_update_me'
         fixture.create_repo(repo_name, repo_type=self.REPO_TYPE)
@@ -1255,7 +1232,7 @@ class _BaseTestApi(object):
         repo_name = 'api_delete_me'
         fixture.create_repo(repo_name, repo_type=self.REPO_TYPE)
         try:
-            with mock.patch.object(RepoModel, 'delete', crash):
+            with mock.patch.object(RepoModel, 'delete', raise_exception):
                 id_, params = _build_data(self.apikey, 'delete_repo',
                                           repoid=repo_name, )
                 response = api_call(self, params)
@@ -1278,7 +1255,6 @@ class _BaseTestApi(object):
             'msg': 'Created fork of `%s` as `%s`' % (self.REPO,
                                                      fork_name),
             'success': True,
-            'task': None,
         }
         expected = ret
         self._compare_ok(id_, expected, given=response.body)
@@ -1302,7 +1278,6 @@ class _BaseTestApi(object):
             'msg': 'Created fork of `%s` as `%s`' % (self.REPO,
                                                      fork_name),
             'success': True,
-            'task': None,
         }
         expected = ret
         self._compare_ok(id_, expected, given=response.body)
@@ -1322,10 +1297,10 @@ class _BaseTestApi(object):
 
     def test_api_fork_repo_non_admin_no_permission_to_fork(self):
         RepoModel().grant_user_permission(repo=self.REPO,
-                                          user=User.DEFAULT_USER_NAME,
+                                          user=db.User.DEFAULT_USER_NAME,
                                           perm='repository.none')
+        fork_name = 'api-repo-fork'
         try:
-            fork_name = 'api-repo-fork'
             id_, params = _build_data(self.apikey_regular, 'fork_repo',
                                       repoid=self.REPO,
                                       fork_name=fork_name,
@@ -1335,7 +1310,7 @@ class _BaseTestApi(object):
             self._compare_error(id_, expected, given=response.body)
         finally:
             RepoModel().grant_user_permission(repo=self.REPO,
-                                              user=User.DEFAULT_USER_NAME,
+                                              user=db.User.DEFAULT_USER_NAME,
                                               perm='repository.read')
             fixture.destroy_repo(fork_name)
 
@@ -1406,7 +1381,7 @@ class _BaseTestApi(object):
         expected = "repo `%s` already exist" % fork_name
         self._compare_error(id_, expected, given=response.body)
 
-    @mock.patch.object(RepoModel, 'create_fork', crash)
+    @mock.patch.object(RepoModel, 'create_fork', raise_exception)
     def test_api_fork_repo_exception_occurred(self):
         fork_name = 'api-repo-fork'
         id_, params = _build_data(self.apikey, 'fork_repo',
@@ -1478,7 +1453,7 @@ class _BaseTestApi(object):
         expected = "user group `%s` already exist" % TEST_USER_GROUP
         self._compare_error(id_, expected, given=response.body)
 
-    @mock.patch.object(UserGroupModel, 'create', crash)
+    @mock.patch.object(UserGroupModel, 'create', raise_exception)
     def test_api_get_user_group_exception_occurred(self):
         group_name = 'exception_happens'
         id_, params = _build_data(self.apikey, 'create_user_group',
@@ -1514,7 +1489,7 @@ class _BaseTestApi(object):
                 gr_name = updates['group_name']
             fixture.destroy_user_group(gr_name)
 
-    @mock.patch.object(UserGroupModel, 'update', crash)
+    @mock.patch.object(UserGroupModel, 'update', raise_exception)
     def test_api_update_user_group_exception_occurred(self):
         gr_name = 'test_group'
         fixture.create_user_group(gr_name)
@@ -1553,7 +1528,7 @@ class _BaseTestApi(object):
         expected = 'user group `%s` does not exist' % 'false-group'
         self._compare_error(id_, expected, given=response.body)
 
-    @mock.patch.object(UserGroupModel, 'add_user_to_group', crash)
+    @mock.patch.object(UserGroupModel, 'add_user_to_group', raise_exception)
     def test_api_add_user_to_user_group_exception_occurred(self):
         gr_name = 'test_group'
         fixture.create_user_group(gr_name)
@@ -1571,7 +1546,7 @@ class _BaseTestApi(object):
         gr_name = 'test_group_3'
         gr = fixture.create_user_group(gr_name)
         UserGroupModel().add_user_to_group(gr, user=base.TEST_USER_ADMIN_LOGIN)
-        Session().commit()
+        meta.Session().commit()
         try:
             id_, params = _build_data(self.apikey, 'remove_user_from_user_group',
                                       usergroupid=gr_name,
@@ -1586,12 +1561,12 @@ class _BaseTestApi(object):
         finally:
             fixture.destroy_user_group(gr_name)
 
-    @mock.patch.object(UserGroupModel, 'remove_user_from_group', crash)
+    @mock.patch.object(UserGroupModel, 'remove_user_from_group', raise_exception)
     def test_api_remove_user_from_user_group_exception_occurred(self):
         gr_name = 'test_group_3'
         gr = fixture.create_user_group(gr_name)
         UserGroupModel().add_user_to_group(gr, user=base.TEST_USER_ADMIN_LOGIN)
-        Session().commit()
+        meta.Session().commit()
         try:
             id_, params = _build_data(self.apikey, 'remove_user_from_user_group',
                                       usergroupid=gr_name,
@@ -1645,7 +1620,7 @@ class _BaseTestApi(object):
                                   usergroupid=gr_name)
 
         try:
-            with mock.patch.object(UserGroupModel, 'delete', crash):
+            with mock.patch.object(UserGroupModel, 'delete', raise_exception):
                 response = api_call(self, params)
                 expected = 'failed to delete user group ID:%s %s' % (gr_id, gr_name)
                 self._compare_error(id_, expected, given=response.body)
@@ -1687,7 +1662,7 @@ class _BaseTestApi(object):
         expected = 'permission `%s` does not exist' % perm
         self._compare_error(id_, expected, given=response.body)
 
-    @mock.patch.object(RepoModel, 'grant_user_permission', crash)
+    @mock.patch.object(RepoModel, 'grant_user_permission', raise_exception)
     def test_api_grant_user_permission_exception_when_adding(self):
         perm = 'repository.read'
         id_, params = _build_data(self.apikey,
@@ -1717,7 +1692,7 @@ class _BaseTestApi(object):
         }
         self._compare_ok(id_, expected, given=response.body)
 
-    @mock.patch.object(RepoModel, 'revoke_user_permission', crash)
+    @mock.patch.object(RepoModel, 'revoke_user_permission', raise_exception)
     def test_api_revoke_user_permission_exception_when_adding(self):
         id_, params = _build_data(self.apikey,
                                   'revoke_user_permission',
@@ -1765,7 +1740,7 @@ class _BaseTestApi(object):
         expected = 'permission `%s` does not exist' % perm
         self._compare_error(id_, expected, given=response.body)
 
-    @mock.patch.object(RepoModel, 'grant_user_group_permission', crash)
+    @mock.patch.object(RepoModel, 'grant_user_group_permission', raise_exception)
     def test_api_grant_user_group_permission_exception_when_adding(self):
         perm = 'repository.read'
         id_, params = _build_data(self.apikey,
@@ -1784,7 +1759,7 @@ class _BaseTestApi(object):
         RepoModel().grant_user_group_permission(repo=self.REPO,
                                                 group_name=TEST_USER_GROUP,
                                                 perm='repository.read')
-        Session().commit()
+        meta.Session().commit()
         id_, params = _build_data(self.apikey,
                                   'revoke_user_group_permission',
                                   repoid=self.REPO,
@@ -1799,7 +1774,7 @@ class _BaseTestApi(object):
         }
         self._compare_ok(id_, expected, given=response.body)
 
-    @mock.patch.object(RepoModel, 'revoke_user_group_permission', crash)
+    @mock.patch.object(RepoModel, 'revoke_user_group_permission', raise_exception)
     def test_api_revoke_user_group_permission_exception_when_adding(self):
         id_, params = _build_data(self.apikey,
                                   'revoke_user_group_permission',
@@ -1868,7 +1843,7 @@ class _BaseTestApi(object):
             RepoGroupModel().grant_user_permission(TEST_REPO_GROUP,
                                                    self.TEST_USER_LOGIN,
                                                    'group.admin')
-            Session().commit()
+            meta.Session().commit()
 
         id_, params = _build_data(self.apikey_regular,
                                   'grant_user_permission_to_repo_group',
@@ -1901,7 +1876,7 @@ class _BaseTestApi(object):
         expected = 'permission `%s` does not exist' % perm
         self._compare_error(id_, expected, given=response.body)
 
-    @mock.patch.object(RepoGroupModel, 'grant_user_permission', crash)
+    @mock.patch.object(RepoGroupModel, 'grant_user_permission', raise_exception)
     def test_api_grant_user_permission_to_repo_group_exception_when_adding(self):
         perm = 'group.read'
         id_, params = _build_data(self.apikey,
@@ -1926,7 +1901,7 @@ class _BaseTestApi(object):
         RepoGroupModel().grant_user_permission(repo_group=TEST_REPO_GROUP,
                                                user=base.TEST_USER_ADMIN_LOGIN,
                                                perm='group.read',)
-        Session().commit()
+        meta.Session().commit()
 
         id_, params = _build_data(self.apikey,
                                   'revoke_user_permission_from_repo_group',
@@ -1960,13 +1935,13 @@ class _BaseTestApi(object):
         RepoGroupModel().grant_user_permission(repo_group=TEST_REPO_GROUP,
                                                user=base.TEST_USER_ADMIN_LOGIN,
                                                perm='group.read',)
-        Session().commit()
+        meta.Session().commit()
 
         if grant_admin:
             RepoGroupModel().grant_user_permission(TEST_REPO_GROUP,
                                                    self.TEST_USER_LOGIN,
                                                    'group.admin')
-            Session().commit()
+            meta.Session().commit()
 
         id_, params = _build_data(self.apikey_regular,
                                   'revoke_user_permission_from_repo_group',
@@ -1986,7 +1961,7 @@ class _BaseTestApi(object):
             expected = 'repository group `%s` does not exist' % TEST_REPO_GROUP
             self._compare_error(id_, expected, given=response.body)
 
-    @mock.patch.object(RepoGroupModel, 'revoke_user_permission', crash)
+    @mock.patch.object(RepoGroupModel, 'revoke_user_permission', raise_exception)
     def test_api_revoke_user_permission_from_repo_group_exception_when_adding(self):
         id_, params = _build_data(self.apikey,
                                   'revoke_user_permission_from_repo_group',
@@ -2056,7 +2031,7 @@ class _BaseTestApi(object):
             RepoGroupModel().grant_user_permission(TEST_REPO_GROUP,
                                                    self.TEST_USER_LOGIN,
                                                    'group.admin')
-            Session().commit()
+            meta.Session().commit()
 
         id_, params = _build_data(self.apikey_regular,
                                   'grant_user_group_permission_to_repo_group',
@@ -2090,7 +2065,7 @@ class _BaseTestApi(object):
         expected = 'permission `%s` does not exist' % perm
         self._compare_error(id_, expected, given=response.body)
 
-    @mock.patch.object(RepoGroupModel, 'grant_user_group_permission', crash)
+    @mock.patch.object(RepoGroupModel, 'grant_user_group_permission', raise_exception)
     def test_api_grant_user_group_permission_exception_when_adding_to_repo_group(self):
         perm = 'group.read'
         id_, params = _build_data(self.apikey,
@@ -2115,7 +2090,7 @@ class _BaseTestApi(object):
         RepoGroupModel().grant_user_group_permission(repo_group=TEST_REPO_GROUP,
                                                      group_name=TEST_USER_GROUP,
                                                      perm='group.read',)
-        Session().commit()
+        meta.Session().commit()
         id_, params = _build_data(self.apikey,
                                   'revoke_user_group_permission_from_repo_group',
                                   repogroupid=TEST_REPO_GROUP,
@@ -2148,13 +2123,13 @@ class _BaseTestApi(object):
         RepoGroupModel().grant_user_permission(repo_group=TEST_REPO_GROUP,
                                                user=base.TEST_USER_ADMIN_LOGIN,
                                                perm='group.read',)
-        Session().commit()
+        meta.Session().commit()
 
         if grant_admin:
             RepoGroupModel().grant_user_permission(TEST_REPO_GROUP,
                                                    self.TEST_USER_LOGIN,
                                                    'group.admin')
-            Session().commit()
+            meta.Session().commit()
 
         id_, params = _build_data(self.apikey_regular,
                                   'revoke_user_group_permission_from_repo_group',
@@ -2174,7 +2149,7 @@ class _BaseTestApi(object):
             expected = 'repository group `%s` does not exist' % TEST_REPO_GROUP
             self._compare_error(id_, expected, given=response.body)
 
-    @mock.patch.object(RepoGroupModel, 'revoke_user_group_permission', crash)
+    @mock.patch.object(RepoGroupModel, 'revoke_user_group_permission', raise_exception)
     def test_api_revoke_user_group_permission_from_repo_group_exception_when_adding(self):
         id_, params = _build_data(self.apikey, 'revoke_user_group_permission_from_repo_group',
                                   repogroupid=TEST_REPO_GROUP,
@@ -2295,7 +2270,7 @@ class _BaseTestApi(object):
         }
         self._compare_ok(id_, expected, given=response.body)
 
-    @mock.patch.object(GistModel, 'create', crash)
+    @mock.patch.object(GistModel, 'create', raise_exception)
     def test_api_create_gist_exception_occurred(self):
         id_, params = _build_data(self.apikey_regular, 'create_gist',
                                   files={})
@@ -2327,7 +2302,7 @@ class _BaseTestApi(object):
         expected = 'gist `%s` does not exist' % (gist_id,)
         self._compare_error(id_, expected, given=response.body)
 
-    @mock.patch.object(GistModel, 'delete', crash)
+    @mock.patch.object(GistModel, 'delete', raise_exception)
     def test_api_delete_gist_exception_occurred(self):
         gist_id = fixture.create_gist().gist_access_id
         id_, params = _build_data(self.apikey, 'delete_gist',
@@ -2348,7 +2323,7 @@ class _BaseTestApi(object):
     def test_api_get_server_info(self):
         id_, params = _build_data(self.apikey, 'get_server_info')
         response = api_call(self, params)
-        expected = Setting.get_server_info()
+        expected = db.Setting.get_server_info()
         self._compare_ok(id_, expected, given=response.body)
 
     def test_api_get_changesets(self):
@@ -2449,7 +2424,7 @@ class _BaseTestApi(object):
             "args": {"pullrequest_id": pull_request_id},
         }))
         response = api_call(self, params)
-        pullrequest = PullRequest().get(pull_request_id)
+        pullrequest = db.PullRequest().get(pull_request_id)
         expected = {
             "status": "new",
             "pull_request_id": pull_request_id,
@@ -2465,6 +2440,8 @@ class _BaseTestApi(object):
             "statuses": [{"status": "under_review", "reviewer": base.TEST_USER_ADMIN_LOGIN, "modified_at": "2000-01-01T00:00:00"} for i in range(0, len(self.TEST_PR_REVISIONS))],
             "title": "get test",
             "revisions": self.TEST_PR_REVISIONS,
+            "created_on": "2000-01-01T00:00:00",
+            "updated_on": "2000-01-01T00:00:00",
         }
         self._compare_ok(random_id, expected,
                          given=re.sub(br"\d\d\d\d\-\d\d\-\d\dT\d\d\:\d\d\:\d\d",
@@ -2481,9 +2458,9 @@ class _BaseTestApi(object):
         }))
         response = api_call(self, params)
         self._compare_ok(random_id, True, given=response.body)
-        pullrequest = PullRequest().get(pull_request_id)
+        pullrequest = db.PullRequest().get(pull_request_id)
         assert pullrequest.comments[-1].text == ''
-        assert pullrequest.status == PullRequest.STATUS_CLOSED
+        assert pullrequest.status == db.PullRequest.STATUS_CLOSED
         assert pullrequest.is_closed() == True
 
     def test_api_status_pullrequest(self):
@@ -2492,24 +2469,24 @@ class _BaseTestApi(object):
         random_id = random.randrange(1, 9999)
         params = ascii_bytes(ext_json.dumps({
             "id": random_id,
-            "api_key": User.get_by_username(base.TEST_USER_REGULAR2_LOGIN).api_key,
+            "api_key": db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN).api_key,
             "method": "comment_pullrequest",
-            "args": {"pull_request_id": pull_request_id, "status": ChangesetStatus.STATUS_APPROVED},
+            "args": {"pull_request_id": pull_request_id, "status": db.ChangesetStatus.STATUS_APPROVED},
         }))
         response = api_call(self, params)
-        pullrequest = PullRequest().get(pull_request_id)
+        pullrequest = db.PullRequest().get(pull_request_id)
         self._compare_error(random_id, "No permission to change pull request status. User needs to be admin, owner or reviewer.", given=response.body)
-        assert ChangesetStatus.STATUS_UNDER_REVIEW == ChangesetStatusModel().calculate_pull_request_result(pullrequest)[2]
+        assert db.ChangesetStatus.STATUS_UNDER_REVIEW == ChangesetStatusModel().calculate_pull_request_result(pullrequest)[2]
         params = ascii_bytes(ext_json.dumps({
             "id": random_id,
-            "api_key": User.get_by_username(base.TEST_USER_REGULAR_LOGIN).api_key,
+            "api_key": db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN).api_key,
             "method": "comment_pullrequest",
-            "args": {"pull_request_id": pull_request_id, "status": ChangesetStatus.STATUS_APPROVED},
+            "args": {"pull_request_id": pull_request_id, "status": db.ChangesetStatus.STATUS_APPROVED},
         }))
         response = api_call(self, params)
         self._compare_ok(random_id, True, given=response.body)
-        pullrequest = PullRequest().get(pull_request_id)
-        assert ChangesetStatus.STATUS_APPROVED == ChangesetStatusModel().calculate_pull_request_result(pullrequest)[2]
+        pullrequest = db.PullRequest().get(pull_request_id)
+        assert db.ChangesetStatus.STATUS_APPROVED == ChangesetStatusModel().calculate_pull_request_result(pullrequest)[2]
 
     def test_api_comment_pullrequest(self):
         pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, "comment test")
@@ -2522,5 +2499,319 @@ class _BaseTestApi(object):
         }))
         response = api_call(self, params)
         self._compare_ok(random_id, True, given=response.body)
-        pullrequest = PullRequest().get(pull_request_id)
+        pullrequest = db.PullRequest().get(pull_request_id)
         assert pullrequest.comments[-1].text == 'Looks good to me'
+
+    def test_api_edit_reviewers_add_single(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = db.PullRequest().get(pull_request_id)
+        pullrequest.owner = self.test_user
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id, "add": base.TEST_USER_REGULAR2_LOGIN},
+        }))
+        response = api_call(self, params)
+        expected = { 'added': [base.TEST_USER_REGULAR2_LOGIN], 'already_present': [], 'removed': [] }
+
+        self._compare_ok(random_id, expected, given=response.body)
+        assert db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
+
+    def test_api_edit_reviewers_add_nonexistent(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = db.PullRequest().get(pull_request_id)
+        pullrequest.owner = self.test_user
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id, "add": 999},
+        }))
+        response = api_call(self, params)
+
+        self._compare_error(random_id, "user `999` does not exist", given=response.body)
+
+    def test_api_edit_reviewers_add_multiple(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = db.PullRequest().get(pull_request_id)
+        pullrequest.owner = self.test_user
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {
+                "pull_request_id": pull_request_id,
+                "add": [ self.TEST_USER_LOGIN, base.TEST_USER_REGULAR2_LOGIN ]
+            },
+        }))
+        response = api_call(self, params)
+        # list order depends on python sorting hash, which is randomized
+        assert set(ext_json.loads(response.body)['result']['added']) == set([base.TEST_USER_REGULAR2_LOGIN, self.TEST_USER_LOGIN])
+        assert set(ext_json.loads(response.body)['result']['already_present']) == set()
+        assert set(ext_json.loads(response.body)['result']['removed']) == set()
+
+        assert db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(self.TEST_USER_LOGIN) in pullrequest.get_reviewer_users()
+
+    def test_api_edit_reviewers_add_already_present(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = db.PullRequest().get(pull_request_id)
+        pullrequest.owner = self.test_user
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {
+                "pull_request_id": pull_request_id,
+                "add": [ base.TEST_USER_REGULAR_LOGIN, base.TEST_USER_REGULAR2_LOGIN ]
+            },
+        }))
+        response = api_call(self, params)
+        expected = { 'added': [base.TEST_USER_REGULAR2_LOGIN],
+                     'already_present': [base.TEST_USER_REGULAR_LOGIN],
+                     'removed': [],
+                   }
+
+        self._compare_ok(random_id, expected, given=response.body)
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
+
+    def test_api_edit_reviewers_add_closed(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = db.PullRequest().get(pull_request_id)
+        pullrequest.owner = self.test_user
+        PullRequestModel().close_pull_request(pull_request_id)
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id, "add": base.TEST_USER_REGULAR2_LOGIN},
+        }))
+        response = api_call(self, params)
+        self._compare_error(random_id, "Cannot edit reviewers of a closed pull request.", given=response.body)
+
+    def test_api_edit_reviewers_add_not_owner(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = db.PullRequest().get(pull_request_id)
+        pullrequest.owner = db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id, "add": base.TEST_USER_REGULAR2_LOGIN},
+        }))
+        response = api_call(self, params)
+        self._compare_error(random_id, "No permission to edit reviewers of this pull request. User needs to be admin or pull request owner.", given=response.body)
+
+
+    def test_api_edit_reviewers_remove_single(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = db.PullRequest().get(pull_request_id)
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+
+        pullrequest.owner = self.test_user
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id, "remove": base.TEST_USER_REGULAR_LOGIN},
+        }))
+        response = api_call(self, params)
+
+        expected = { 'added': [],
+                     'already_present': [],
+                     'removed': [base.TEST_USER_REGULAR_LOGIN],
+                   }
+        self._compare_ok(random_id, expected, given=response.body)
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) not in pullrequest.get_reviewer_users()
+
+    def test_api_edit_reviewers_remove_nonexistent(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = db.PullRequest().get(pull_request_id)
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+
+        pullrequest.owner = self.test_user
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id, "remove": 999},
+        }))
+        response = api_call(self, params)
+
+        self._compare_error(random_id, "user `999` does not exist", given=response.body)
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+
+    def test_api_edit_reviewers_remove_nonpresent(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = db.PullRequest().get(pull_request_id)
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) not in pullrequest.get_reviewer_users()
+
+        pullrequest.owner = self.test_user
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id, "remove": base.TEST_USER_REGULAR2_LOGIN},
+        }))
+        response = api_call(self, params)
+
+        # NOTE: no explicit indication that removed user was not even a reviewer
+        expected = { 'added': [],
+                     'already_present': [],
+                     'removed': [base.TEST_USER_REGULAR2_LOGIN],
+                   }
+        self._compare_ok(random_id, expected, given=response.body)
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) not in pullrequest.get_reviewer_users()
+
+    def test_api_edit_reviewers_remove_multiple(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = db.PullRequest().get(pull_request_id)
+        prr = db.PullRequestReviewer(db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN), pullrequest)
+        meta.Session().add(prr)
+        meta.Session().commit()
+
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
+
+        pullrequest.owner = self.test_user
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id, "remove": [ base.TEST_USER_REGULAR_LOGIN, base.TEST_USER_REGULAR2_LOGIN ] },
+        }))
+        response = api_call(self, params)
+
+        # list order depends on python sorting hash, which is randomized
+        assert set(ext_json.loads(response.body)['result']['added']) == set()
+        assert set(ext_json.loads(response.body)['result']['already_present']) == set()
+        assert set(ext_json.loads(response.body)['result']['removed']) == set([base.TEST_USER_REGULAR_LOGIN, base.TEST_USER_REGULAR2_LOGIN])
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) not in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) not in pullrequest.get_reviewer_users()
+
+    def test_api_edit_reviewers_remove_closed(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = db.PullRequest().get(pull_request_id)
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        PullRequestModel().close_pull_request(pull_request_id)
+
+        pullrequest.owner = self.test_user
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id, "remove": base.TEST_USER_REGULAR_LOGIN},
+        }))
+        response = api_call(self, params)
+
+        self._compare_error(random_id, "Cannot edit reviewers of a closed pull request.", given=response.body)
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+
+    def test_api_edit_reviewers_remove_not_owner(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = db.PullRequest().get(pull_request_id)
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+
+        pullrequest.owner = db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id, "remove": base.TEST_USER_REGULAR_LOGIN},
+        }))
+        response = api_call(self, params)
+
+        self._compare_error(random_id, "No permission to edit reviewers of this pull request. User needs to be admin or pull request owner.", given=response.body)
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+
+    def test_api_edit_reviewers_add_remove_single(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = db.PullRequest().get(pull_request_id)
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) not in pullrequest.get_reviewer_users()
+
+        pullrequest.owner = self.test_user
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id,
+                     "add": base.TEST_USER_REGULAR2_LOGIN,
+                     "remove": base.TEST_USER_REGULAR_LOGIN
+                    },
+        }))
+        response = api_call(self, params)
+
+        expected = { 'added': [base.TEST_USER_REGULAR2_LOGIN],
+                     'already_present': [],
+                     'removed': [base.TEST_USER_REGULAR_LOGIN],
+                   }
+        self._compare_ok(random_id, expected, given=response.body)
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) not in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
+
+    def test_api_edit_reviewers_add_remove_multiple(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = db.PullRequest().get(pull_request_id)
+        prr = db.PullRequestReviewer(db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN), pullrequest)
+        meta.Session().add(prr)
+        meta.Session().commit()
+        assert db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) not in pullrequest.get_reviewer_users()
+
+        pullrequest.owner = self.test_user
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id,
+                     "add": [ base.TEST_USER_REGULAR2_LOGIN ],
+                     "remove": [ base.TEST_USER_REGULAR_LOGIN, base.TEST_USER_ADMIN_LOGIN ],
+                    },
+        }))
+        response = api_call(self, params)
+
+        # list order depends on python sorting hash, which is randomized
+        assert set(ext_json.loads(response.body)['result']['added']) == set([base.TEST_USER_REGULAR2_LOGIN])
+        assert set(ext_json.loads(response.body)['result']['already_present']) == set()
+        assert set(ext_json.loads(response.body)['result']['removed']) == set([base.TEST_USER_REGULAR_LOGIN, base.TEST_USER_ADMIN_LOGIN])
+        assert db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN) not in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) not in pullrequest.get_reviewer_users()
+        assert db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN) in pullrequest.get_reviewer_users()
+
+    def test_api_edit_reviewers_invalid_params(self):
+        pull_request_id = fixture.create_pullrequest(self, self.REPO, self.TEST_PR_SRC, self.TEST_PR_DST, 'edit reviewer test')
+        pullrequest = db.PullRequest().get(pull_request_id)
+        assert db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN) in pullrequest.get_reviewer_users()
+
+        pullrequest.owner = db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
+        random_id = random.randrange(1, 9999)
+        params = ascii_bytes(ext_json.dumps({
+            "id": random_id,
+            "api_key": self.apikey_regular,
+            "method": "edit_reviewers",
+            "args": {"pull_request_id": pull_request_id},
+        }))
+        response = api_call(self, params)
+
+        self._compare_error(random_id, "Invalid request. Neither 'add' nor 'remove' is specified.", given=response.body)
+        assert ext_json.loads(response.body)['result'] is None

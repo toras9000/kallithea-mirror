@@ -20,28 +20,71 @@ installing Kallithea.
 2. **Install Kallithea software.**
     This makes the ``kallithea-cli`` command line tool available.
 
-3. **Create low level configuration file.**
+3. **Prepare front-end files**
+    Some front-end files must be fetched or created using ``npm`` and ``node``
+    tooling so they can be served to the client as static files.
+
+4. **Create low level configuration file.**
     Use ``kallithea-cli config-create`` to create a ``.ini`` file with database
     connection info, mail server information, configuration for the specified
     web server, etc.
 
-4. **Populate the database.**
+5. **Populate the database.**
     Use ``kallithea-cli db-create`` with the ``.ini`` file to create the
     database schema and insert the most basic information: the location of the
     repository store and an initial local admin user.
 
-5. **Configure the web server.**
+6. **Configure the web server.**
     The web server must invoke the WSGI entrypoint for the Kallithea software
     using the ``.ini`` file (and thus the database). This makes the web
     application available so the local admin user can log in and tweak the
     configuration further.
 
-6. **Configure users.**
+7. **Configure users.**
     The initial admin user can create additional local users, or configure how
     users can be created and authenticated from other user directories.
 
 See the subsequent sections, the separate OS-specific instructions, and
 :ref:`setup` for details on these steps.
+
+
+File system location
+--------------------
+
+Kallithea can be installed in many different ways. The main parts are:
+
+- A location for the Kallithea software and its dependencies. This includes
+  the Python code, template files, and front-end code. After installation, this
+  will be read-only (except when upgrading).
+
+- A location for the ``.ini`` configuration file that tells the Kallithea
+  instance which database to use (and thus also the repository location).
+  After installation, this will be read-only (except when upgrading).
+
+- A location for various data files and caches for the Kallithea instance. This
+  is by default in a ``data`` directory next to the ``.ini`` file. This will
+  have to be writable by the running Kallithea service.
+
+- A database. The ``.ini`` file specifies which database to use. The database
+  will be a separate service and live elsewhere in the filesystem if using
+  PostgreSQL or MariaDB/MySQL. If using SQLite, it will by default live next to
+  the ``.ini`` file, as ``kallithea.db``.
+
+- A location for the repositories that are hosted by this Kallithea instance.
+  This will have to be writable by the running Kallithea service. The path to
+  this location will be configured in the database.
+
+For production setups, one recommendation is to use ``/srv/kallithea`` for the
+``.ini`` and ``data``, place the virtualenv in ``venv``, and use a Kallithea
+clone in ``kallithea``. Create a ``kallithea`` user, let it own
+``/srv/kallithea``, and run as that user when installing.
+
+For simple setups, it is fine to just use something like a ``kallithea`` user
+with home in ``/home/kallithea`` and place everything there.
+
+For experiments, it might be convenient to run everything as yourself and work
+inside a clone of Kallithea, with the ``.ini`` and SQLite database in the root
+of the clone, and a virtualenv in ``venv``.
 
 
 Python environment
@@ -177,7 +220,7 @@ There are several web server options:
   to get a configuration starting point for your choice of web server.
 
   (Gearbox will do like ``paste`` and use the WSGI application entry point
-  ``kallithea.config.middleware:make_app`` as specified in ``setup.py``.)
+  ``kallithea.config.application:make_app`` as specified in ``setup.py``.)
 
 - `Apache httpd`_ can serve WSGI applications directly using mod_wsgi_ and a
   simple Python file with the necessary configuration. This is a good option if
@@ -216,13 +259,13 @@ continuous hammering from the internet.
 .. _Python: http://www.python.org/
 .. _Gunicorn: http://gunicorn.org/
 .. _Gevent: http://www.gevent.org/
-.. _Waitress: http://waitress.readthedocs.org/en/latest/
-.. _Gearbox: http://turbogears.readthedocs.io/en/latest/turbogears/gearbox.html
+.. _Waitress: https://docs.pylonsproject.org/projects/waitress/
+.. _Gearbox: https://turbogears.readthedocs.io/en/latest/turbogears/gearbox.html
 .. _PyPI: https://pypi.python.org/pypi
 .. _Apache httpd: http://httpd.apache.org/
-.. _mod_wsgi: https://code.google.com/p/modwsgi/
+.. _mod_wsgi: https://modwsgi.readthedocs.io/
 .. _isapi-wsgi: https://github.com/hexdump42/isapi-wsgi
-.. _uWSGI: https://uwsgi-docs.readthedocs.org/en/latest/
+.. _uWSGI: https://uwsgi-docs.readthedocs.io/
 .. _nginx: http://nginx.org/en/
 .. _iis: http://en.wikipedia.org/wiki/Internet_Information_Services
 .. _pip: http://en.wikipedia.org/wiki/Pip_%28package_manager%29

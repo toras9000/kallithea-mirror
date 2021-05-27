@@ -37,6 +37,7 @@ import traceback
 
 import ipaddr
 import sqlalchemy
+import urlobject
 from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Index, Integer, LargeBinary, String, Unicode, UnicodeText, UniqueConstraint
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import class_mapper, joinedload, relationship, validates
@@ -44,26 +45,21 @@ from tg.i18n import lazy_ugettext as _
 from webob.exc import HTTPNotFound
 
 import kallithea
-from kallithea.lib import ext_json
+from kallithea.lib import ext_json, ssh, webutils
 from kallithea.lib.exceptions import DefaultUserException
-from kallithea.lib.utils2 import (Optional, ascii_bytes, aslist, get_changeset_safe, get_clone_url, remove_prefix, safe_bytes, safe_int, safe_str, str2bool,
-                                  urlreadable)
-from kallithea.lib.vcs import get_backend
-from kallithea.lib.vcs.backends.base import EmptyChangeset
-from kallithea.lib.vcs.utils.helpers import get_scm
-from kallithea.model.meta import Base, Session
+from kallithea.lib.utils2 import (asbool, ascii_bytes, aslist, check_git_version, get_changeset_safe, get_clone_url, remove_prefix, safe_bytes, safe_int,
+                                  safe_str, urlreadable)
+from kallithea.lib.vcs import get_repo
+from kallithea.lib.vcs.backends.base import BaseChangeset, EmptyChangeset
+from kallithea.lib.vcs.utils import author_email, author_name
+from kallithea.model import meta
 
 
-URL_SEP = '/'
 log = logging.getLogger(__name__)
 
 #==============================================================================
 # BASE CLASSES
 #==============================================================================
-
-def _hash_key(k):
-    return hashlib.md5(safe_bytes(k)).hexdigest()
-
 
 class BaseDbModel(object):
     """
@@ -113,7 +109,7 @@ class BaseDbModel(object):
 
     @classmethod
     def query(cls):
-        return Session().query(cls)
+        return meta.Session().query(cls)
 
     @classmethod
     def get(cls, id_):
@@ -163,7 +159,7 @@ class BaseDbModel(object):
     @classmethod
     def delete(cls, id_):
         obj = cls.query().get(id_)
-        Session().delete(obj)
+        meta.Session().delete(obj)
 
     def __repr__(self):
         return '<DB:%s>' % (self.__class__.__name__)
@@ -171,11 +167,10 @@ class BaseDbModel(object):
 
 _table_args_default_dict = {'extend_existing': True,
                             'mysql_engine': 'InnoDB',
-                            'mysql_charset': 'utf8',
                             'sqlite_autoincrement': True,
                            }
 
-class Setting(Base, BaseDbModel):
+class Setting(meta.Base, BaseDbModel):
     __tablename__ = 'settings'
     __table_args__ = (
         _table_args_default_dict,
@@ -185,10 +180,9 @@ class Setting(Base, BaseDbModel):
         'str': safe_bytes,
         'int': safe_int,
         'unicode': safe_str,
-        'bool': str2bool,
+        'bool': asbool,
         'list': functools.partial(aslist, sep=',')
     }
-    DEFAULT_UPDATE_URL = ''
 
     app_settings_id = Column(Integer(), primary_key=True)
     app_settings_name = Column(String(255), nullable=False, unique=True)
@@ -249,10 +243,10 @@ class Setting(Base, BaseDbModel):
         return res
 
     @classmethod
-    def create_or_update(cls, key, val=Optional(''), type=Optional('unicode')):
+    def create_or_update(cls, key, val=None, type=None):
         """
         Creates or updates Kallithea setting. If updates are triggered, it will only
-        update parameters that are explicitly set. Optional instance will be skipped.
+        update parameters that are explicitly set. 'None' values will be skipped.
 
         :param key:
         :param val:
@@ -261,16 +255,16 @@ class Setting(Base, BaseDbModel):
         """
         res = cls.get_by_name(key)
         if res is None:
-            val = Optional.extract(val)
-            type = Optional.extract(type)
+            # new setting
+            val = val if val is not None else ''
+            type = type if type is not None else 'unicode'
             res = cls(key, val, type)
-            Session().add(res)
+            meta.Session().add(res)
         else:
-            res.app_settings_name = key
-            if not isinstance(val, Optional):
+            if val is not None:
                 # update if set
                 res.app_settings_value = val
-            if not isinstance(type, Optional):
+            if type is not None:
                 # update if set
                 res.app_settings_type = type
         return res
@@ -312,9 +306,10 @@ class Setting(Base, BaseDbModel):
 
     @classmethod
     def get_server_info(cls):
-        import pkg_resources
         import platform
-        from kallithea.lib.utils import check_git_version
+
+        import pkg_resources
+
         mods = [(p.project_name, p.version) for p in pkg_resources.working_set]
         info = {
             'modules': sorted(mods, key=lambda k: k[0].lower()),
@@ -327,7 +322,7 @@ class Setting(Base, BaseDbModel):
         return info
 
 
-class Ui(Base, BaseDbModel):
+class Ui(meta.Base, BaseDbModel):
     __tablename__ = 'ui'
     __table_args__ = (
         Index('ui_ui_section_ui_key_idx', 'ui_section', 'ui_key'),
@@ -335,8 +330,8 @@ class Ui(Base, BaseDbModel):
         _table_args_default_dict,
     )
 
-    HOOK_UPDATE = 'changegroup.update'
-    HOOK_REPO_SIZE = 'changegroup.repo_size'
+    HOOK_UPDATE = 'changegroup.kallithea_update'
+    HOOK_REPO_SIZE = 'changegroup.kallithea_repo_size'
 
     ui_id = Column(Integer(), primary_key=True)
     ui_section = Column(String(255), nullable=False)
@@ -355,22 +350,15 @@ class Ui(Base, BaseDbModel):
         setting = cls.get_by_key(section, key)
         if setting is None:
             setting = cls(ui_section=section, ui_key=key)
-            Session().add(setting)
+            meta.Session().add(setting)
         return setting
-
-    @classmethod
-    def get_builtin_hooks(cls):
-        q = cls.query()
-        q = q.filter(cls.ui_key.in_([cls.HOOK_UPDATE, cls.HOOK_REPO_SIZE]))
-        q = q.filter(cls.ui_section == 'hooks')
-        q = q.order_by(cls.ui_section, cls.ui_key)
-        return q.all()
 
     @classmethod
     def get_custom_hooks(cls):
         q = cls.query()
-        q = q.filter(~cls.ui_key.in_([cls.HOOK_UPDATE, cls.HOOK_REPO_SIZE]))
         q = q.filter(cls.ui_section == 'hooks')
+        q = q.filter(~cls.ui_key.in_([cls.HOOK_UPDATE, cls.HOOK_REPO_SIZE]))
+        q = q.filter(cls.ui_active)
         q = q.order_by(cls.ui_section, cls.ui_key)
         return q.all()
 
@@ -390,7 +378,7 @@ class Ui(Base, BaseDbModel):
             self.ui_section, self.ui_key, self.ui_value)
 
 
-class User(Base, BaseDbModel):
+class User(meta.Base, BaseDbModel):
     __tablename__ = 'users'
     __table_args__ = (
         Index('u_username_idx', 'username'),
@@ -597,12 +585,9 @@ class User(Base, BaseDbModel):
     def get_from_cs_author(cls, author):
         """
         Tries to get User objects out of commit author string
-
-        :param author:
         """
-        from kallithea.lib.helpers import email, author_name
         # Valid email in the attribute passed, see if they're in the system
-        _email = email(author)
+        _email = author_email(author)
         if _email:
             user = cls.get_by_email(_email)
             if user is not None:
@@ -669,7 +654,7 @@ class User(Base, BaseDbModel):
         return data
 
 
-class UserApiKeys(Base, BaseDbModel):
+class UserApiKeys(meta.Base, BaseDbModel):
     __tablename__ = 'user_api_keys'
     __table_args__ = (
         Index('uak_api_key_idx', 'api_key'),
@@ -691,7 +676,7 @@ class UserApiKeys(Base, BaseDbModel):
         return (self.expires != -1) & (time.time() > self.expires)
 
 
-class UserEmailMap(Base, BaseDbModel):
+class UserEmailMap(meta.Base, BaseDbModel):
     __tablename__ = 'user_email_map'
     __table_args__ = (
         Index('uem_email_idx', 'email'),
@@ -706,7 +691,7 @@ class UserEmailMap(Base, BaseDbModel):
     @validates('_email')
     def validate_email(self, key, email):
         # check if this email is not main one
-        main_email = Session().query(User).filter(User.email == email).scalar()
+        main_email = meta.Session().query(User).filter(User.email == email).scalar()
         if main_email is not None:
             raise AttributeError('email %s is present is user table' % email)
         return email
@@ -720,7 +705,7 @@ class UserEmailMap(Base, BaseDbModel):
         self._email = val.lower() if val else None
 
 
-class UserIpMap(Base, BaseDbModel):
+class UserIpMap(meta.Base, BaseDbModel):
     __tablename__ = 'user_ip_map'
     __table_args__ = (
         UniqueConstraint('user_id', 'ip_addr'),
@@ -748,7 +733,7 @@ class UserIpMap(Base, BaseDbModel):
         return "<%s %s: %s>" % (self.__class__.__name__, self.user_id, self.ip_addr)
 
 
-class UserLog(Base, BaseDbModel):
+class UserLog(meta.Base, BaseDbModel):
     __tablename__ = 'user_logs'
     __table_args__ = (
         _table_args_default_dict,
@@ -776,7 +761,7 @@ class UserLog(Base, BaseDbModel):
     repository = relationship('Repository', cascade='')
 
 
-class UserGroup(Base, BaseDbModel):
+class UserGroup(meta.Base, BaseDbModel):
     __tablename__ = 'users_groups'
     __table_args__ = (
         _table_args_default_dict,
@@ -857,7 +842,7 @@ class UserGroup(Base, BaseDbModel):
         return data
 
 
-class UserGroupMember(Base, BaseDbModel):
+class UserGroupMember(meta.Base, BaseDbModel):
     __tablename__ = 'users_groups_members'
     __table_args__ = (
         _table_args_default_dict,
@@ -875,7 +860,7 @@ class UserGroupMember(Base, BaseDbModel):
         self.user_id = u_id
 
 
-class RepositoryField(Base, BaseDbModel):
+class RepositoryField(meta.Base, BaseDbModel):
     __tablename__ = 'repositories_fields'
     __table_args__ = (
         UniqueConstraint('repository_id', 'field_key'),  # no-multi field
@@ -913,7 +898,7 @@ class RepositoryField(Base, BaseDbModel):
         return row
 
 
-class Repository(Base, BaseDbModel):
+class Repository(meta.Base, BaseDbModel):
     __tablename__ = 'repositories'
     __table_args__ = (
         Index('r_repo_name_idx', 'repo_name'),
@@ -1029,7 +1014,7 @@ class Repository(Base, BaseDbModel):
         :param cls:
         :param repo_name:
         """
-        return URL_SEP.join(repo_name.split(os.sep))
+        return kallithea.URL_SEP.join(repo_name.split(os.sep))
 
     @classmethod
     def guess_instance(cls, value):
@@ -1040,9 +1025,9 @@ class Repository(Base, BaseDbModel):
         """Get the repo, defaulting to database case sensitivity.
         case_insensitive will be slower and should only be specified if necessary."""
         if case_insensitive:
-            q = Session().query(cls).filter(sqlalchemy.func.lower(cls.repo_name) == sqlalchemy.func.lower(repo_name))
+            q = meta.Session().query(cls).filter(sqlalchemy.func.lower(cls.repo_name) == sqlalchemy.func.lower(repo_name))
         else:
-            q = Session().query(cls).filter(cls.repo_name == repo_name)
+            q = meta.Session().query(cls).filter(cls.repo_name == repo_name)
         q = q.options(joinedload(Repository.fork)) \
                 .options(joinedload(Repository.owner)) \
                 .options(joinedload(Repository.group))
@@ -1055,7 +1040,7 @@ class Repository(Base, BaseDbModel):
         assert repo_full_path.startswith(base_full_path + os.path.sep)
         repo_name = repo_full_path[len(base_full_path) + 1:]
         repo_name = cls.normalize_repo_name(repo_name)
-        return cls.get_by_repo_name(repo_name.strip(URL_SEP))
+        return cls.get_by_repo_name(repo_name.strip(kallithea.URL_SEP))
 
     @classmethod
     def get_repo_forks(cls, repo_id):
@@ -1077,7 +1062,7 @@ class Repository(Base, BaseDbModel):
 
     @property
     def just_name(self):
-        return self.repo_name.split(URL_SEP)[-1]
+        return self.repo_name.split(kallithea.URL_SEP)[-1]
 
     @property
     def groups_with_parents(self):
@@ -1100,7 +1085,7 @@ class Repository(Base, BaseDbModel):
         # we need to split the name by / since this is how we store the
         # names in the database, but that eventually needs to be converted
         # into a valid system path
-        p += self.repo_name.split(URL_SEP)
+        p += self.repo_name.split(kallithea.URL_SEP)
         return os.path.join(*p)
 
     def get_new_name(self, repo_name):
@@ -1110,15 +1095,7 @@ class Repository(Base, BaseDbModel):
         :param group_name:
         """
         path_prefix = self.group.full_path_splitted if self.group else []
-        return URL_SEP.join(path_prefix + [repo_name])
-
-    @property
-    def _ui(self):
-        """
-        Creates an db based ui object for this repository
-        """
-        from kallithea.lib.utils import make_ui
-        return make_ui()
+        return kallithea.URL_SEP.join(path_prefix + [repo_name])
 
     @classmethod
     def is_valid(cls, repo_name):
@@ -1163,8 +1140,8 @@ class Repository(Base, BaseDbModel):
             ))
         if with_pullrequests:
             data['pull_requests'] = repo.pull_requests_other
-        rc_config = Setting.get_app_settings()
-        repository_fields = str2bool(rc_config.get('repository_fields'))
+        settings = Setting.get_app_settings()
+        repository_fields = asbool(settings.get('repository_fields'))
         if repository_fields:
             for f in self.extra_fields:
                 data[f.field_key_prefixed] = f.field_value
@@ -1179,7 +1156,6 @@ class Repository(Base, BaseDbModel):
     def clone_uri_hidden(self):
         clone_uri = self.clone_uri
         if clone_uri:
-            import urlobject
             url_obj = urlobject.URLObject(self.clone_uri)
             if url_obj.password:
                 clone_uri = url_obj.with_password('*****')
@@ -1193,8 +1169,7 @@ class Repository(Base, BaseDbModel):
         else:
             clone_uri_tmpl = clone_uri_tmpl.replace('_{repoid}', '{repo}')
 
-        import kallithea.lib.helpers as h
-        prefix_url = h.canonical_url('home')
+        prefix_url = webutils.canonical_url('home')
 
         return get_clone_url(clone_uri_tmpl=clone_uri_tmpl,
                              prefix_url=prefix_url,
@@ -1235,7 +1210,6 @@ class Repository(Base, BaseDbModel):
 
         :param cs_cache:
         """
-        from kallithea.lib.vcs.backends.base import BaseChangeset
         if cs_cache is None:
             cs_cache = EmptyChangeset()
             # use no-cache version here
@@ -1253,7 +1227,7 @@ class Repository(Base, BaseDbModel):
                       self.repo_name, cs_cache)
             self.updated_on = last_change
             self.changeset_cache = cs_cache
-            Session().commit()
+            meta.Session().commit()
         else:
             log.debug('changeset_cache for %s already up to date with %s',
                       self.repo_name, cs_cache['raw_id'])
@@ -1315,9 +1289,8 @@ class Repository(Base, BaseDbModel):
         return grouped
 
     def _repo_size(self):
-        from kallithea.lib import helpers as h
         log.debug('calculating repository size...')
-        return h.format_byte_size(self.scm_instance.size)
+        return webutils.format_byte_size(self.scm_instance.size)
 
     #==========================================================================
     # SCM CACHE INSTANCE
@@ -1342,16 +1315,9 @@ class Repository(Base, BaseDbModel):
 
     def scm_instance_no_cache(self):
         repo_full_path = self.repo_full_path
-        alias = get_scm(repo_full_path)[0]
-        log.debug('Creating instance of %s repository from %s',
-                  alias, self.repo_full_path)
-        backend = get_backend(alias)
-
-        if alias == 'hg':
-            self._scm_instance = backend(repo_full_path, create=False, baseui=self._ui)
-        else:
-            self._scm_instance = backend(repo_full_path, create=False)
-
+        log.debug('Creating instance of repository at %s', repo_full_path)
+        from kallithea.lib.utils import make_ui
+        self._scm_instance = get_repo(repo_full_path, baseui=make_ui(repo_full_path))
         return self._scm_instance
 
     def __json__(self):
@@ -1362,7 +1328,7 @@ class Repository(Base, BaseDbModel):
         )
 
 
-class RepoGroup(Base, BaseDbModel):
+class RepoGroup(meta.Base, BaseDbModel):
     __tablename__ = 'groups'
     __table_args__ = (
         _table_args_default_dict,
@@ -1406,11 +1372,9 @@ class RepoGroup(Base, BaseDbModel):
     @classmethod
     def _generate_choice(cls, repo_group):
         """Return tuple with group_id and name as html literal"""
-        from webhelpers2.html import literal
-        import kallithea.lib.helpers as h
         if repo_group is None:
             return (-1, '-- %s --' % _('top level'))
-        return repo_group.group_id, literal(cls.SEP.join(h.html_escape(x) for x in repo_group.full_path_splitted))
+        return repo_group.group_id, webutils.literal(cls.SEP.join(webutils.html_escape(x) for x in repo_group.full_path_splitted))
 
     @classmethod
     def groups_choices(cls, groups):
@@ -1450,7 +1414,7 @@ class RepoGroup(Base, BaseDbModel):
 
     @property
     def name(self):
-        return self.group_name.split(URL_SEP)[-1]
+        return self.group_name.split(kallithea.URL_SEP)[-1]
 
     @property
     def full_path(self):
@@ -1458,7 +1422,7 @@ class RepoGroup(Base, BaseDbModel):
 
     @property
     def full_path_splitted(self):
-        return self.group_name.split(URL_SEP)
+        return self.group_name.split(kallithea.URL_SEP)
 
     @property
     def repositories(self):
@@ -1513,7 +1477,7 @@ class RepoGroup(Base, BaseDbModel):
         """
         path_prefix = (self.parent_group.full_path_splitted if
                        self.parent_group else [])
-        return URL_SEP.join(path_prefix + [group_name])
+        return kallithea.URL_SEP.join(path_prefix + [group_name])
 
     def get_api_data(self):
         """
@@ -1532,7 +1496,7 @@ class RepoGroup(Base, BaseDbModel):
         return data
 
 
-class Permission(Base, BaseDbModel):
+class Permission(meta.Base, BaseDbModel):
     __tablename__ = 'permissions'
     __table_args__ = (
         Index('p_perm_name_idx', 'permission_name'),
@@ -1557,17 +1521,11 @@ class Permission(Base, BaseDbModel):
         ('usergroup.write', _('Default user has write access to new user groups')),
         ('usergroup.admin', _('Default user has admin access to new user groups')),
 
-        ('hg.repogroup.create.false', _('Only admins can create repository groups')),
-        ('hg.repogroup.create.true', _('Non-admins can create repository groups')),
-
         ('hg.usergroup.create.false', _('Only admins can create user groups')),
         ('hg.usergroup.create.true', _('Non-admins can create user groups')),
 
         ('hg.create.none', _('Only admins can create top level repositories')),
         ('hg.create.repository', _('Non-admins can create top level repositories')),
-
-        ('hg.create.write_on_repogroup.true', _('Repository creation enabled with write permission to a repository group')),
-        ('hg.create.write_on_repogroup.false', _('Repository creation disabled with write permission to a repository group')),
 
         ('hg.fork.none', _('Only admins can fork repositories')),
         ('hg.fork.repository', _('Non-admins can fork repositories')),
@@ -1586,7 +1544,6 @@ class Permission(Base, BaseDbModel):
         'group.read',
         'usergroup.read',
         'hg.create.repository',
-        'hg.create.write_on_repogroup.true',
         'hg.fork.repository',
         'hg.register.manual_activate',
         'hg.extern_activate.auto',
@@ -1611,9 +1568,6 @@ class Permission(Base, BaseDbModel):
         'usergroup.write': 3,
         'usergroup.admin': 4,
 
-        'hg.repogroup.create.false': 0,
-        'hg.repogroup.create.true': 1,
-
         'hg.usergroup.create.false': 0,
         'hg.usergroup.create.true': 1,
 
@@ -1622,9 +1576,6 @@ class Permission(Base, BaseDbModel):
 
         'hg.create.none': 0,
         'hg.create.repository': 1,
-
-        'hg.create.write_on_repogroup.false': 0,
-        'hg.create.write_on_repogroup.true': 1,
 
         'hg.register.none': 0,
         'hg.register.manual_activate': 1,
@@ -1652,7 +1603,7 @@ class Permission(Base, BaseDbModel):
 
     @classmethod
     def get_default_perms(cls, default_user_id):
-        q = Session().query(UserRepoToPerm) \
+        q = meta.Session().query(UserRepoToPerm) \
          .options(joinedload(UserRepoToPerm.repository)) \
          .options(joinedload(UserRepoToPerm.permission)) \
          .filter(UserRepoToPerm.user_id == default_user_id)
@@ -1661,7 +1612,7 @@ class Permission(Base, BaseDbModel):
 
     @classmethod
     def get_default_group_perms(cls, default_user_id):
-        q = Session().query(UserRepoGroupToPerm) \
+        q = meta.Session().query(UserRepoGroupToPerm) \
          .options(joinedload(UserRepoGroupToPerm.group)) \
          .options(joinedload(UserRepoGroupToPerm.permission)) \
          .filter(UserRepoGroupToPerm.user_id == default_user_id)
@@ -1670,7 +1621,7 @@ class Permission(Base, BaseDbModel):
 
     @classmethod
     def get_default_user_group_perms(cls, default_user_id):
-        q = Session().query(UserUserGroupToPerm) \
+        q = meta.Session().query(UserUserGroupToPerm) \
          .options(joinedload(UserUserGroupToPerm.user_group)) \
          .options(joinedload(UserUserGroupToPerm.permission)) \
          .filter(UserUserGroupToPerm.user_id == default_user_id)
@@ -1678,7 +1629,7 @@ class Permission(Base, BaseDbModel):
         return q.all()
 
 
-class UserRepoToPerm(Base, BaseDbModel):
+class UserRepoToPerm(meta.Base, BaseDbModel):
     __tablename__ = 'repo_to_perm'
     __table_args__ = (
         UniqueConstraint('user_id', 'repository_id', 'permission_id'),
@@ -1700,7 +1651,7 @@ class UserRepoToPerm(Base, BaseDbModel):
         n.user = user
         n.repository = repository
         n.permission = permission
-        Session().add(n)
+        meta.Session().add(n)
         return n
 
     def __repr__(self):
@@ -1708,7 +1659,7 @@ class UserRepoToPerm(Base, BaseDbModel):
             self.__class__.__name__, self.user, self.repository, self.permission)
 
 
-class UserUserGroupToPerm(Base, BaseDbModel):
+class UserUserGroupToPerm(meta.Base, BaseDbModel):
     __tablename__ = 'user_user_group_to_perm'
     __table_args__ = (
         UniqueConstraint('user_id', 'user_group_id', 'permission_id'),
@@ -1730,7 +1681,7 @@ class UserUserGroupToPerm(Base, BaseDbModel):
         n.user = user
         n.user_group = user_group
         n.permission = permission
-        Session().add(n)
+        meta.Session().add(n)
         return n
 
     def __repr__(self):
@@ -1738,7 +1689,7 @@ class UserUserGroupToPerm(Base, BaseDbModel):
             self.__class__.__name__, self.user, self.user_group, self.permission)
 
 
-class UserToPerm(Base, BaseDbModel):
+class UserToPerm(meta.Base, BaseDbModel):
     __tablename__ = 'user_to_perm'
     __table_args__ = (
         UniqueConstraint('user_id', 'permission_id'),
@@ -1757,7 +1708,7 @@ class UserToPerm(Base, BaseDbModel):
             self.__class__.__name__, self.user, self.permission)
 
 
-class UserGroupRepoToPerm(Base, BaseDbModel):
+class UserGroupRepoToPerm(meta.Base, BaseDbModel):
     __tablename__ = 'users_group_repo_to_perm'
     __table_args__ = (
         UniqueConstraint('repository_id', 'users_group_id', 'permission_id'),
@@ -1779,7 +1730,7 @@ class UserGroupRepoToPerm(Base, BaseDbModel):
         n.users_group = users_group
         n.repository = repository
         n.permission = permission
-        Session().add(n)
+        meta.Session().add(n)
         return n
 
     def __repr__(self):
@@ -1787,7 +1738,7 @@ class UserGroupRepoToPerm(Base, BaseDbModel):
             self.__class__.__name__, self.users_group, self.repository, self.permission)
 
 
-class UserGroupUserGroupToPerm(Base, BaseDbModel):
+class UserGroupUserGroupToPerm(meta.Base, BaseDbModel):
     __tablename__ = 'user_group_user_group_to_perm'
     __table_args__ = (
         UniqueConstraint('target_user_group_id', 'user_group_id', 'permission_id'),
@@ -1809,7 +1760,7 @@ class UserGroupUserGroupToPerm(Base, BaseDbModel):
         n.target_user_group = target_user_group
         n.user_group = user_group
         n.permission = permission
-        Session().add(n)
+        meta.Session().add(n)
         return n
 
     def __repr__(self):
@@ -1817,7 +1768,7 @@ class UserGroupUserGroupToPerm(Base, BaseDbModel):
             self.__class__.__name__, self.user_group, self.target_user_group, self.permission)
 
 
-class UserGroupToPerm(Base, BaseDbModel):
+class UserGroupToPerm(meta.Base, BaseDbModel):
     __tablename__ = 'users_group_to_perm'
     __table_args__ = (
         UniqueConstraint('users_group_id', 'permission_id',),
@@ -1832,7 +1783,7 @@ class UserGroupToPerm(Base, BaseDbModel):
     permission = relationship('Permission')
 
 
-class UserRepoGroupToPerm(Base, BaseDbModel):
+class UserRepoGroupToPerm(meta.Base, BaseDbModel):
     __tablename__ = 'user_repo_group_to_perm'
     __table_args__ = (
         UniqueConstraint('user_id', 'group_id', 'permission_id'),
@@ -1854,11 +1805,11 @@ class UserRepoGroupToPerm(Base, BaseDbModel):
         n.user = user
         n.group = repository_group
         n.permission = permission
-        Session().add(n)
+        meta.Session().add(n)
         return n
 
 
-class UserGroupRepoGroupToPerm(Base, BaseDbModel):
+class UserGroupRepoGroupToPerm(meta.Base, BaseDbModel):
     __tablename__ = 'users_group_repo_group_to_perm'
     __table_args__ = (
         UniqueConstraint('users_group_id', 'group_id'),
@@ -1880,11 +1831,11 @@ class UserGroupRepoGroupToPerm(Base, BaseDbModel):
         n.users_group = user_group
         n.group = repository_group
         n.permission = permission
-        Session().add(n)
+        meta.Session().add(n)
         return n
 
 
-class Statistics(Base, BaseDbModel):
+class Statistics(meta.Base, BaseDbModel):
     __tablename__ = 'statistics'
     __table_args__ = (
          _table_args_default_dict,
@@ -1900,7 +1851,7 @@ class Statistics(Base, BaseDbModel):
     repository = relationship('Repository', single_parent=True)
 
 
-class UserFollowing(Base, BaseDbModel):
+class UserFollowing(meta.Base, BaseDbModel):
     __tablename__ = 'user_followings'
     __table_args__ = (
         UniqueConstraint('user_id', 'follows_repository_id', name='uq_user_followings_user_repo'),
@@ -1924,7 +1875,7 @@ class UserFollowing(Base, BaseDbModel):
         return cls.query().filter(cls.follows_repository_id == repo_id)
 
 
-class ChangesetComment(Base, BaseDbModel):
+class ChangesetComment(meta.Base, BaseDbModel):
     __tablename__ = 'changeset_comments'
     __table_args__ = (
         Index('cc_revision_idx', 'revision'),
@@ -1954,9 +1905,8 @@ class ChangesetComment(Base, BaseDbModel):
 
     def url(self):
         anchor = "comment-%s" % self.comment_id
-        import kallithea.lib.helpers as h
         if self.revision:
-            return h.url('changeset_home', repo_name=self.repo.repo_name, revision=self.revision, anchor=anchor)
+            return webutils.url('changeset_home', repo_name=self.repo.repo_name, revision=self.revision, anchor=anchor)
         elif self.pull_request_id is not None:
             return self.pull_request.url(anchor=anchor)
 
@@ -1971,7 +1921,7 @@ class ChangesetComment(Base, BaseDbModel):
         return self.created_on > datetime.datetime.now() - datetime.timedelta(minutes=5)
 
 
-class ChangesetStatus(Base, BaseDbModel):
+class ChangesetStatus(meta.Base, BaseDbModel):
     __tablename__ = 'changeset_statuses'
     __table_args__ = (
         Index('cs_revision_idx', 'revision'),
@@ -2020,7 +1970,7 @@ class ChangesetStatus(Base, BaseDbModel):
 
     @classmethod
     def get_status_lbl(cls, value):
-        return cls.STATUSES_DICT.get(value)
+        return str(cls.STATUSES_DICT.get(value))  # using str to evaluate translated LazyString at runtime
 
     @property
     def status_lbl(self):
@@ -2034,7 +1984,7 @@ class ChangesetStatus(Base, BaseDbModel):
             )
 
 
-class PullRequest(Base, BaseDbModel):
+class PullRequest(meta.Base, BaseDbModel):
     __tablename__ = 'pull_requests'
     __table_args__ = (
         Index('pr_org_repo_id_idx', 'org_repo_id'),
@@ -2156,11 +2106,12 @@ class PullRequest(Base, BaseDbModel):
             status=self.status,
             comments=self.comments,
             statuses=self.statuses,
+            created_on=self.created_on.replace(microsecond=0),
+            updated_on=self.updated_on.replace(microsecond=0),
         )
 
     def url(self, **kwargs):
         canonical = kwargs.pop('canonical', None)
-        import kallithea.lib.helpers as h
         b = self.org_ref_parts[1]
         if b != self.other_ref_parts[1]:
             s = '/_/' + b
@@ -2168,16 +2119,17 @@ class PullRequest(Base, BaseDbModel):
             s = '/_/' + self.title
         kwargs['extra'] = urlreadable(s)
         if canonical:
-            return h.canonical_url('pullrequest_show', repo_name=self.other_repo.repo_name,
+            return webutils.canonical_url('pullrequest_show', repo_name=self.other_repo.repo_name,
                                    pull_request_id=self.pull_request_id, **kwargs)
-        return h.url('pullrequest_show', repo_name=self.other_repo.repo_name,
+        return webutils.url('pullrequest_show', repo_name=self.other_repo.repo_name,
                      pull_request_id=self.pull_request_id, **kwargs)
 
 
-class PullRequestReviewer(Base, BaseDbModel):
+class PullRequestReviewer(meta.Base, BaseDbModel):
     __tablename__ = 'pull_request_reviewers'
     __table_args__ = (
         Index('pull_request_reviewers_user_id_idx', 'user_id'),
+        UniqueConstraint('pull_request_id', 'user_id'),
         _table_args_default_dict,
     )
 
@@ -2205,13 +2157,16 @@ class UserNotification(object):
     __tablename__ = 'user_to_notification'
 
 
-class Gist(Base, BaseDbModel):
+class Gist(meta.Base, BaseDbModel):
     __tablename__ = 'gists'
     __table_args__ = (
         Index('g_gist_access_id_idx', 'gist_access_id'),
         Index('g_created_on_idx', 'created_on'),
         _table_args_default_dict,
     )
+
+    GIST_STORE_LOC = '.rc_gist_store'
+    GIST_METADATA_FILE = '.rc_gist_metadata'
 
     GIST_PUBLIC = 'public'
     GIST_PRIVATE = 'private'
@@ -2257,8 +2212,7 @@ class Gist(Base, BaseDbModel):
         if alias_url:
             return alias_url.replace('{gistid}', self.gist_access_id)
 
-        import kallithea.lib.helpers as h
-        return h.canonical_url('gist', gist_id=self.gist_access_id)
+        return webutils.canonical_url('gist', gist_id=self.gist_access_id)
 
     def get_api_data(self):
         """
@@ -2286,13 +2240,13 @@ class Gist(Base, BaseDbModel):
 
     @property
     def scm_instance(self):
-        from kallithea.lib.vcs import get_repo
-        from kallithea.model.gist import GIST_STORE_LOC
-        gist_base_path = os.path.join(kallithea.CONFIG['base_path'], GIST_STORE_LOC)
-        return get_repo(os.path.join(gist_base_path, self.gist_access_id))
+        gist_base_path = os.path.join(kallithea.CONFIG['base_path'], self.GIST_STORE_LOC)
+        repo_full_path = os.path.join(gist_base_path, self.gist_access_id)
+        from kallithea.lib.utils import make_ui
+        return get_repo(repo_full_path, baseui=make_ui(repo_full_path))
 
 
-class UserSshKeys(Base, BaseDbModel):
+class UserSshKeys(meta.Base, BaseDbModel):
     __tablename__ = 'user_ssh_keys'
     __table_args__ = (
         Index('usk_fingerprint_idx', 'fingerprint'),
@@ -2316,8 +2270,12 @@ class UserSshKeys(Base, BaseDbModel):
 
     @public_key.setter
     def public_key(self, full_key):
-        # the full public key is too long to be suitable as database key - instead,
-        # use fingerprints similar to 'ssh-keygen -E sha256 -lf ~/.ssh/id_rsa.pub'
+        """The full public key is too long to be suitable as database key.
+        Instead, as a side-effect of setting the public key string, compute the
+        fingerprints according to https://tools.ietf.org/html/rfc4716#section-4
+        BUT using sha256 instead of md5, similar to 'ssh-keygen -E sha256 -lf
+        ~/.ssh/id_rsa.pub' .
+        """
+        keytype, key_bytes, comment = ssh.parse_pub_key(full_key)
         self._public_key = full_key
-        enc_key = safe_bytes(full_key.split(" ")[1])
-        self.fingerprint = base64.b64encode(hashlib.sha256(base64.b64decode(enc_key)).digest()).replace(b'\n', b'').rstrip(b'=').decode()
+        self.fingerprint = base64.b64encode(hashlib.sha256(key_bytes).digest()).replace(b'\n', b'').rstrip(b'=').decode()

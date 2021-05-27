@@ -36,10 +36,9 @@ from tempfile import _RandomNameSequence
 
 import pytest
 
-from kallithea import CONFIG
+import kallithea
 from kallithea.lib.utils2 import ascii_bytes, safe_str
-from kallithea.model.db import Repository, Ui, User, UserIpMap, UserLog
-from kallithea.model.meta import Session
+from kallithea.model import db, meta
 from kallithea.model.ssh_key import SshKeyModel
 from kallithea.model.user import UserModel
 from kallithea.tests import base
@@ -69,13 +68,13 @@ class SshVcsTest(object):
 
     @classmethod
     def repo_url_param(cls, webserver, repo_name, username=base.TEST_USER_ADMIN_LOGIN, password=base.TEST_USER_ADMIN_PASS, client_ip=base.IP_ADDR):
-        user = User.get_by_username(username)
+        user = db.User.get_by_username(username)
         if user.ssh_keys:
             ssh_key = user.ssh_keys[0]
         else:
             sshkeymodel = SshKeyModel()
             ssh_key = sshkeymodel.create(user, 'test key', cls.public_keys[user.username])
-            Session().commit()
+            meta.Session().commit()
 
         return cls._ssh_param(repo_name, user, ssh_key, client_ip)
 
@@ -101,7 +100,7 @@ class HgSshVcsTest(HgVcsTest, SshVcsTest):
         # Specify a custom ssh command on the command line
         return r"""--config ui.ssh="bash -c 'SSH_ORIGINAL_COMMAND=\"\$2\" SSH_CONNECTION=\"%s 1024 127.0.0.1 22\" kallithea-cli ssh-serve -c %s %s %s' --" ssh://someuser@somehost/%s""" % (
             client_ip,
-            CONFIG['__file__'],
+            kallithea.CONFIG['__file__'],
             user.user_id,
             ssh_key.user_ssh_key_id,
             repo_name)
@@ -112,7 +111,7 @@ class GitSshVcsTest(GitVcsTest, SshVcsTest):
         # Set a custom ssh command in the global environment
         os.environ['GIT_SSH_COMMAND'] = r"""bash -c 'SSH_ORIGINAL_COMMAND="$2" SSH_CONNECTION="%s 1024 127.0.0.1 22" kallithea-cli ssh-serve -c %s %s %s' --""" % (
             client_ip,
-            CONFIG['__file__'],
+            kallithea.CONFIG['__file__'],
             user.user_id,
             ssh_key.user_ssh_key_id)
         return "ssh://someuser@somehost/%s""" % repo_name
@@ -221,10 +220,10 @@ def _check_outgoing(vcs, cwd, clone_url):
 
 
 def set_anonymous_access(enable=True):
-    user = User.get_default_user()
+    user = db.User.get_default_user()
     user.active = enable
-    Session().commit()
-    if enable != User.get_default_user().active:
+    meta.Session().commit()
+    if enable != db.User.get_default_user().active:
         raise Exception('Cannot set anonymous access')
 
 
@@ -253,10 +252,10 @@ class TestVCSOperations(base.TestController):
         yield
         # remove hook
         for hook in ['prechangegroup', 'pretxnchangegroup', 'preoutgoing', 'changegroup', 'outgoing', 'incoming']:
-            entry = Ui.get_by_key('hooks', '%s.testhook' % hook)
+            entry = db.Ui.get_by_key('hooks', '%s.testhook' % hook)
             if entry:
-                Session().delete(entry)
-        Session().commit()
+                meta.Session().delete(entry)
+        meta.Session().commit()
 
     @pytest.fixture(scope="module")
     def testfork(self):
@@ -308,17 +307,17 @@ class TestVCSOperations(base.TestController):
         if vt.repo_type == 'git':
             assert 'not found' in stderr or 'abort: Access to %r denied' % 'trololo' in stderr
         elif vt.repo_type == 'hg':
-            assert 'HTTP Error 404: Not Found' in stderr or 'abort: no suitable response from remote hg' in stderr and 'remote: abort: Access to %r denied' % 'trololo' in stdout
+            assert 'HTTP Error 404: Not Found' in stderr or 'abort: no suitable response from remote hg' in stderr and 'remote: abort: Access to %r denied' % 'trololo' in stdout + stderr
 
     @parametrize_vcs_test
     def test_push_new_repo(self, webserver, vt):
         # Clear the log so we know what is added
-        UserLog.query().delete()
-        Session().commit()
+        db.UserLog.query().delete()
+        meta.Session().commit()
 
         # Create an empty server repo using the API
         repo_name = 'new_%s_%s' % (vt.repo_type, next(_RandomNameSequence()))
-        usr = User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
+        usr = db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
         params = {
             "id": 7,
             "api_key": usr.api_key,
@@ -358,7 +357,8 @@ class TestVCSOperations(base.TestController):
         # <UserLog('id:new_git_XXX:user_created_repo')>
         # <UserLog('id:new_git_XXX:pull')>
         # <UserLog('id:new_git_XXX:push:aed9d4c1732a1927da3be42c47eb9afdc200d427,d38b083a07af10a9f44193486959a96a23db78da,4841ff9a2b385bec995f4679ef649adb3f437622')>
-        action_parts = [ul.action.split(':', 1) for ul in UserLog.query().order_by(UserLog.user_log_id)]
+        meta.Session.close()  # make sure SA fetches all new log entries (apparently only needed for MariaDB/MySQL ...)
+        action_parts = [ul.action.split(':', 1) for ul in db.UserLog.query().order_by(db.UserLog.user_log_id)]
         assert [(t[0], (t[1].count(',') + 1) if len(t) == 2 else 0) for t in action_parts] == ([
             ('started_following_repo', 0),
             ('user_created_repo', 0),
@@ -372,8 +372,8 @@ class TestVCSOperations(base.TestController):
 
     @parametrize_vcs_test
     def test_push_new_file(self, webserver, testfork, vt):
-        UserLog.query().delete()
-        Session().commit()
+        db.UserLog.query().delete()
+        meta.Session().commit()
 
         dest_dir = _get_tmp_dir()
         clone_url = vt.repo_url_param(webserver, vt.repo_name)
@@ -389,27 +389,29 @@ class TestVCSOperations(base.TestController):
             assert 'Repository size' in stdout
             assert 'Last revision is now' in stdout
 
-        action_parts = [ul.action.split(':', 1) for ul in UserLog.query().order_by(UserLog.user_log_id)]
+        meta.Session.close()  # make sure SA fetches all new log entries (apparently only needed for MariaDB/MySQL ...)
+        action_parts = [ul.action.split(':', 1) for ul in db.UserLog.query().order_by(db.UserLog.user_log_id)]
         assert [(t[0], (t[1].count(',') + 1) if len(t) == 2 else 0) for t in action_parts] == \
             [('pull', 0), ('push', 3)]
 
     @parametrize_vcs_test
     def test_pull(self, webserver, testfork, vt):
-        UserLog.query().delete()
-        Session().commit()
+        db.UserLog.query().delete()
+        meta.Session().commit()
 
         dest_dir = _get_tmp_dir()
         stdout, stderr = Command(base.TESTS_TMP_PATH).execute(vt.repo_type, 'init', dest_dir)
 
         clone_url = vt.repo_url_param(webserver, vt.repo_name)
         stdout, stderr = Command(dest_dir).execute(vt.repo_type, 'pull', clone_url)
+        meta.Session.close()  # make sure SA fetches all new log entries (apparently only needed for MariaDB/MySQL ...)
 
         if vt.repo_type == 'git':
             assert 'FETCH_HEAD' in stderr
         elif vt.repo_type == 'hg':
             assert 'new changesets' in stdout
 
-        action_parts = [ul.action for ul in UserLog.query().order_by(UserLog.user_log_id)]
+        action_parts = [ul.action for ul in db.UserLog.query().order_by(db.UserLog.user_log_id)]
         assert action_parts == ['pull']
 
         # Test handling of URLs with extra '/' around repo_name
@@ -426,7 +428,7 @@ class TestVCSOperations(base.TestController):
             if vt.repo_type == 'git':
                 assert "abort: Access to './%s' denied" % vt.repo_name in stderr
             else:
-                assert "abort: Access to './%s' denied" % vt.repo_name in stdout
+                assert "abort: Access to './%s' denied" % vt.repo_name in stdout + stderr
 
         stdout, stderr = Command(dest_dir).execute(vt.repo_type, 'pull', clone_url.replace('/' + vt.repo_name, '/%s/' % vt.repo_name), ignoreReturnCode=True)
         if vt.repo_type == 'git':
@@ -440,7 +442,7 @@ class TestVCSOperations(base.TestController):
 
     @parametrize_vcs_test
     def test_push_invalidates_cache(self, webserver, testfork, vt):
-        pre_cached_tip = [repo.get_api_data()['last_changeset']['short_id'] for repo in Repository.query().filter(Repository.repo_name == testfork[vt.repo_type])]
+        pre_cached_tip = [repo.get_api_data()['last_changeset']['short_id'] for repo in db.Repository.query().filter(db.Repository.repo_name == testfork[vt.repo_type])]
 
         dest_dir = _get_tmp_dir()
         clone_url = vt.repo_url_param(webserver, testfork[vt.repo_type])
@@ -448,12 +450,11 @@ class TestVCSOperations(base.TestController):
 
         stdout, stderr = _add_files_and_push(webserver, vt, dest_dir, files_no=1, clone_url=clone_url)
 
-        Session().commit()  # expire test session to make sure SA fetch new Repository instances after last_changeset has been updated server side hook in other process
-
         if vt.repo_type == 'git':
             _check_proper_git_push(stdout, stderr)
 
-        post_cached_tip = [repo.get_api_data()['last_changeset']['short_id'] for repo in Repository.query().filter(Repository.repo_name == testfork[vt.repo_type])]
+        meta.Session.close()  # expire session to make sure SA fetches new Repository instances after last_changeset has been updated by server side hook in another process
+        post_cached_tip = [repo.get_api_data()['last_changeset']['short_id'] for repo in db.Repository.query().filter(db.Repository.repo_name == testfork[vt.repo_type])]
         assert pre_cached_tip != post_cached_tip
 
     @parametrize_vcs_test_http
@@ -473,8 +474,8 @@ class TestVCSOperations(base.TestController):
 
     @parametrize_vcs_test
     def test_push_with_readonly_credentials(self, webserver, vt):
-        UserLog.query().delete()
-        Session().commit()
+        db.UserLog.query().delete()
+        meta.Session().commit()
 
         dest_dir = _get_tmp_dir()
         clone_url = vt.repo_url_param(webserver, vt.repo_name, username=base.TEST_USER_REGULAR_LOGIN, password=base.TEST_USER_REGULAR_PASS)
@@ -487,7 +488,8 @@ class TestVCSOperations(base.TestController):
         elif vt.repo_type == 'hg':
             assert 'abort: HTTP Error 403: Forbidden' in stderr or 'abort: push failed on remote' in stderr and 'remote: Push access to %r denied' % str(vt.repo_name) in stdout
 
-        action_parts = [ul.action.split(':', 1) for ul in UserLog.query().order_by(UserLog.user_log_id)]
+        meta.Session.close()  # make sure SA fetches all new log entries (apparently only needed for MariaDB/MySQL ...)
+        action_parts = [ul.action.split(':', 1) for ul in db.UserLog.query().order_by(db.UserLog.user_log_id)]
         assert [(t[0], (t[1].count(',') + 1) if len(t) == 2 else 0) for t in action_parts] == \
             [('pull', 0)]
 
@@ -513,7 +515,7 @@ class TestVCSOperations(base.TestController):
         try:
             # Add IP constraint that excludes the test context:
             user_model.add_extra_ip(base.TEST_USER_ADMIN_LOGIN, '10.10.10.10/32')
-            Session().commit()
+            meta.Session().commit()
             # IP permissions are cached, need to wait for the cache in the server process to expire
             time.sleep(1.5)
             clone_url = vt.repo_url_param(webserver, vt.repo_name)
@@ -522,12 +524,12 @@ class TestVCSOperations(base.TestController):
                 # The message apparently changed in Git 1.8.3, so match it loosely.
                 assert re.search(r'\b403\b', stderr) or 'abort: User test_admin from 127.0.0.127 cannot be authorized' in stderr
             elif vt.repo_type == 'hg':
-                assert 'abort: HTTP Error 403: Forbidden' in stderr or 'remote: abort: User test_admin from 127.0.0.127 cannot be authorized' in stdout
+                assert 'abort: HTTP Error 403: Forbidden' in stderr or 'remote: abort: User test_admin from 127.0.0.127 cannot be authorized' in stdout + stderr
         finally:
             # release IP restrictions
-            for ip in UserIpMap.query():
-                UserIpMap.delete(ip.ip_id)
-            Session().commit()
+            for ip in db.UserIpMap.query():
+                db.UserIpMap.delete(ip.ip_id)
+            meta.Session().commit()
             # IP permissions are cached, need to wait for the cache in the server process to expire
             time.sleep(1.5)
 
@@ -548,23 +550,23 @@ class TestVCSOperations(base.TestController):
     @parametrize_vcs_test_hg # git hooks doesn't work like hg hooks
     def test_custom_hooks_preoutgoing(self, testhook_cleanup, webserver, testfork, vt):
         # set prechangegroup to failing hook (returns True)
-        Ui.create_or_update_hook('preoutgoing.testhook', 'python:kallithea.tests.fixture.failing_test_hook')
-        Session().commit()
+        db.Ui.create_or_update_hook('preoutgoing.testhook', 'python:kallithea.tests.fixture.failing_test_hook')
+        meta.Session().commit()
         # clone repo
         clone_url = vt.repo_url_param(webserver, testfork[vt.repo_type], username=base.TEST_USER_ADMIN_LOGIN, password=base.TEST_USER_ADMIN_PASS)
         dest_dir = _get_tmp_dir()
         stdout, stderr = Command(base.TESTS_TMP_PATH) \
             .execute(vt.repo_type, 'clone', clone_url, dest_dir, ignoreReturnCode=True)
         if vt.repo_type == 'hg':
-            assert 'preoutgoing.testhook hook failed' in stdout
+            assert 'preoutgoing.testhook hook failed' in stdout + stderr
         elif vt.repo_type == 'git':
             assert 'error: 406' in stderr
 
     @parametrize_vcs_test_hg # git hooks doesn't work like hg hooks
     def test_custom_hooks_prechangegroup(self, testhook_cleanup, webserver, testfork, vt):
         # set prechangegroup to failing hook (returns exit code 1)
-        Ui.create_or_update_hook('prechangegroup.testhook', 'python:kallithea.tests.fixture.failing_test_hook')
-        Session().commit()
+        db.Ui.create_or_update_hook('prechangegroup.testhook', 'python:kallithea.tests.fixture.failing_test_hook')
+        meta.Session().commit()
         # clone repo
         clone_url = vt.repo_url_param(webserver, testfork[vt.repo_type], username=base.TEST_USER_ADMIN_LOGIN, password=base.TEST_USER_ADMIN_PASS)
         dest_dir = _get_tmp_dir()
@@ -580,8 +582,8 @@ class TestVCSOperations(base.TestController):
         assert stdout != ''
 
         # set prechangegroup hook to exception throwing method
-        Ui.create_or_update_hook('prechangegroup.testhook', 'python:kallithea.tests.fixture.exception_test_hook')
-        Session().commit()
+        db.Ui.create_or_update_hook('prechangegroup.testhook', 'python:kallithea.tests.fixture.exception_test_hook')
+        meta.Session().commit()
         # re-try to push
         stdout, stderr = Command(dest_dir).execute('%s push' % vt.repo_type, clone_url, ignoreReturnCode=True)
         if vt is HgHttpVcsTest:
@@ -595,8 +597,8 @@ class TestVCSOperations(base.TestController):
         assert stdout != ''
 
         # set prechangegroup hook to method that returns False
-        Ui.create_or_update_hook('prechangegroup.testhook', 'python:kallithea.tests.fixture.passing_test_hook')
-        Session().commit()
+        db.Ui.create_or_update_hook('prechangegroup.testhook', 'python:kallithea.tests.fixture.passing_test_hook')
+        meta.Session().commit()
         # re-try to push
         stdout, stderr = Command(dest_dir).execute('%s push' % vt.repo_type, clone_url, ignoreReturnCode=True)
         assert 'passing_test_hook succeeded' in stdout + stderr

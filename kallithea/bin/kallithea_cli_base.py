@@ -23,7 +23,7 @@ import click
 import paste.deploy
 
 import kallithea
-import kallithea.config.middleware
+import kallithea.config.application
 
 
 # kallithea_cli is usually invoked through the 'kallithea-cli' wrapper script
@@ -53,10 +53,10 @@ def read_config(ini_file_name, strip_section_prefix):
 def cli():
     """Various commands to manage a Kallithea instance."""
 
-def register_command(config_file=False, config_file_initialize_app=False, hidden=False):
+def register_command(needs_config_file=False, config_file_initialize_app=False, hidden=False):
     """Register a kallithea-cli subcommand.
 
-    If one of the config_file flags are true, a config file must be specified
+    If one of the needs_config_file flags are true, a config file must be specified
     with -c and it is read and logging is configured. The configuration is
     available in the kallithea.CONFIG dict.
 
@@ -64,21 +64,23 @@ def register_command(config_file=False, config_file_initialize_app=False, hidden
     (including tg.config), and database access will also be fully initialized.
     """
     cli_command = cli.command(hidden=hidden)
-    if config_file or config_file_initialize_app:
+    if needs_config_file or config_file_initialize_app:
         def annotator(annotated):
             @click.option('--config_file', '-c', help="Path to .ini file with app configuration.",
                 type=click.Path(dir_okay=False, exists=True, readable=True), required=True)
             @functools.wraps(annotated) # reuse meta data from the wrapped function so click can see other options
             def runtime_wrapper(config_file, *args, **kwargs):
                 path_to_ini_file = os.path.realpath(config_file)
-                kallithea.CONFIG = paste.deploy.appconfig('config:' + path_to_ini_file)
+                config = paste.deploy.appconfig('config:' + path_to_ini_file)
                 cp = configparser.ConfigParser(strict=False)
                 cp.read_string(read_config(path_to_ini_file, strip_section_prefix=annotated.__name__))
                 logging.config.fileConfig(cp,
                     {'__file__': path_to_ini_file, 'here': os.path.dirname(path_to_ini_file)})
+                if needs_config_file:
+                    annotated(*args, config=config, **kwargs)
                 if config_file_initialize_app:
-                    kallithea.config.middleware.make_app(kallithea.CONFIG.global_conf, **kallithea.CONFIG.local_conf)
-                return annotated(*args, **kwargs)
+                    kallithea.config.application.make_app(config.global_conf, **config.local_conf)
+                    annotated(*args, **kwargs)
             return cli_command(runtime_wrapper)
         return annotator
     return cli_command

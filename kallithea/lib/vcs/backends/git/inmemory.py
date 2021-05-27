@@ -9,6 +9,8 @@ from kallithea.lib.vcs.backends.base import BaseInMemoryChangeset
 from kallithea.lib.vcs.exceptions import RepositoryError
 from kallithea.lib.vcs.utils import ascii_str, safe_bytes
 
+from . import repository
+
 
 class GitInMemoryChangeset(BaseInMemoryChangeset):
 
@@ -32,9 +34,8 @@ class GitInMemoryChangeset(BaseInMemoryChangeset):
         """
         self.check_integrity(parents)
 
-        from .repository import GitRepository
         if branch is None:
-            branch = GitRepository.DEFAULT_BRANCH_NAME
+            branch = repository.GitRepository.DEFAULT_BRANCH_NAME
 
         repo = self.repository._repo
         object_store = repo.object_store

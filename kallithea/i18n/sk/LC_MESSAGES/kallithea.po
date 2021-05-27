@@ -16,12 +16,6 @@ msgstr "Zatiaľ nie sú žiadne zmeny"
 msgid "(closed)"
 msgstr "(zatvorené)"
 
-msgid "Show whitespace"
-msgstr "Ukázať medzery"
-
-msgid "Ignore whitespace"
-msgstr "Ignorovať medzery"
-
 msgid "Such revision does not exist for this repository"
 msgstr "Taká revízia neexistuje"
 
@@ -135,6 +129,9 @@ msgstr "Vytváranie repozitára %s"
 
 msgid "Delete this Repository"
 msgstr "Vymazať tento repozitár"
+
+msgid "Ignore whitespace"
+msgstr "Ignorovať medzery"
 
 msgid "Cancel Changes"
 msgstr "Zrušiť zmeny"

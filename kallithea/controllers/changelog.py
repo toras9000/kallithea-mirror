@@ -33,20 +33,20 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest, HTTPFound, HTTPNotFound
 
-import kallithea.lib.helpers as h
-from kallithea.config.routing import url
+from kallithea.controllers import base
+from kallithea.lib import webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
-from kallithea.lib.base import BaseRepoController, render
 from kallithea.lib.graphmod import graph_data
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import safe_int
 from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError, ChangesetError, EmptyRepositoryError, NodeDoesNotExistError, RepositoryError
+from kallithea.lib.webutils import url
 
 
 log = logging.getLogger(__name__)
 
 
-class ChangelogController(BaseRepoController):
+class ChangelogController(base.BaseRepoController):
 
     def _before(self, *args, **kwargs):
         super(ChangelogController, self)._before(*args, **kwargs)
@@ -64,10 +64,10 @@ class ChangelogController(BaseRepoController):
         try:
             return c.db_repo_scm_instance.get_changeset(rev)
         except EmptyRepositoryError as e:
-            h.flash(_('There are no changesets yet'), category='error')
+            webutils.flash(_('There are no changesets yet'), category='error')
         except RepositoryError as e:
             log.error(traceback.format_exc())
-            h.flash(e, category='error')
+            webutils.flash(e, category='error')
         raise HTTPBadRequest()
 
     @LoginRequired(allow_default_user=True)
@@ -111,8 +111,8 @@ class ChangelogController(BaseRepoController):
                         cs = self.__get_cs(revision, repo_name)
                         collection = cs.get_file_history(f_path)
                     except RepositoryError as e:
-                        h.flash(e, category='warning')
-                        raise HTTPFound(location=h.url('changelog_home', repo_name=repo_name))
+                        webutils.flash(e, category='warning')
+                        raise HTTPFound(location=webutils.url('changelog_home', repo_name=repo_name))
             else:
                 collection = c.db_repo_scm_instance.get_changesets(start=0, end=revision,
                                                         branch_name=branch_name, reverse=True)
@@ -125,11 +125,11 @@ class ChangelogController(BaseRepoController):
             c.cs_comments = c.db_repo.get_comments(page_revisions)
             c.cs_statuses = c.db_repo.statuses(page_revisions)
         except EmptyRepositoryError as e:
-            h.flash(e, category='warning')
+            webutils.flash(e, category='warning')
             raise HTTPFound(location=url('summary_home', repo_name=c.repo_name))
         except (RepositoryError, ChangesetDoesNotExistError, Exception) as e:
             log.error(traceback.format_exc())
-            h.flash(e, category='error')
+            webutils.flash(e, category='error')
             raise HTTPFound(location=url('changelog_home', repo_name=c.repo_name))
 
         c.branch_name = branch_name
@@ -146,12 +146,12 @@ class ChangelogController(BaseRepoController):
 
         c.revision = revision # requested revision ref
         c.first_revision = c.cs_pagination[0] # pagination is never empty here!
-        return render('changelog/changelog.html')
+        return base.render('changelog/changelog.html')
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
     def changelog_details(self, cs):
         if request.environ.get('HTTP_X_PARTIAL_XHR'):
             c.cs = c.db_repo_scm_instance.get_changeset(cs)
-            return render('changelog/changelog_details.html')
+            return base.render('changelog/changelog_details.html')
         raise HTTPNotFound()

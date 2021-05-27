@@ -38,21 +38,21 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPFound, HTTPNotFound
 
-from kallithea.config.routing import url
-from kallithea.controllers.changeset import _context_url, _ignorews_url, anchor_url, get_ignore_ws, get_line_ctx
-from kallithea.lib import diffs
-from kallithea.lib import helpers as h
+import kallithea
+import kallithea.lib.helpers as h
+from kallithea.controllers import base
+from kallithea.lib import diffs, webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
-from kallithea.lib.base import BaseRepoController, jsonify, render
 from kallithea.lib.exceptions import NonRelativePathError
-from kallithea.lib.utils import action_logger
-from kallithea.lib.utils2 import convert_line_endings, detect_mode, safe_int, safe_str, str2bool
+from kallithea.lib.utils2 import asbool, convert_line_endings, detect_mode, safe_str
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.conf import settings
 from kallithea.lib.vcs.exceptions import (ChangesetDoesNotExistError, ChangesetError, EmptyRepositoryError, ImproperArchiveTypeError, NodeAlreadyExistsError,
                                           NodeDoesNotExistError, NodeError, RepositoryError, VCSError)
 from kallithea.lib.vcs.nodes import FileNode
-from kallithea.model import db
+from kallithea.lib.vcs.utils import author_email
+from kallithea.lib.webutils import url
+from kallithea.model import userlog
 from kallithea.model.repo import RepoModel
 from kallithea.model.scm import ScmModel
 
@@ -60,7 +60,7 @@ from kallithea.model.scm import ScmModel
 log = logging.getLogger(__name__)
 
 
-class FilesController(BaseRepoController):
+class FilesController(base.BaseRepoController):
 
     def _before(self, *args, **kwargs):
         super(FilesController, self)._before(*args, **kwargs)
@@ -82,15 +82,15 @@ class FilesController(BaseRepoController):
             url_ = url('files_add_home',
                        repo_name=c.repo_name,
                        revision=0, f_path='', anchor='edit')
-            add_new = h.link_to(_('Click here to add new file'), url_, class_="alert-link")
-            h.flash(_('There are no files yet.') + ' ' + add_new, category='warning')
+            add_new = webutils.link_to(_('Click here to add new file'), url_, class_="alert-link")
+            webutils.flash(_('There are no files yet.') + ' ' + add_new, category='warning')
             raise HTTPNotFound()
         except (ChangesetDoesNotExistError, LookupError):
             msg = _('Such revision does not exist for this repository')
-            h.flash(msg, category='error')
+            webutils.flash(msg, category='error')
             raise HTTPNotFound()
         except RepositoryError as e:
-            h.flash(e, category='error')
+            webutils.flash(e, category='error')
             raise HTTPNotFound()
 
     def __get_filenode(self, cs, path):
@@ -107,10 +107,10 @@ class FilesController(BaseRepoController):
                 raise RepositoryError('given path is a directory')
         except ChangesetDoesNotExistError:
             msg = _('Such revision does not exist for this repository')
-            h.flash(msg, category='error')
+            webutils.flash(msg, category='error')
             raise HTTPNotFound()
         except RepositoryError as e:
-            h.flash(e, category='error')
+            webutils.flash(e, category='error')
             raise HTTPNotFound()
 
         return file_node
@@ -171,30 +171,30 @@ class FilesController(BaseRepoController):
 
                 c.authors = []
                 for a in set([x.author for x in _hist]):
-                    c.authors.append((h.email(a), h.person(a)))
+                    c.authors.append((author_email(a), h.person(a)))
             else:
                 c.authors = c.file_history = []
         except RepositoryError as e:
-            h.flash(e, category='error')
+            webutils.flash(e, category='error')
             raise HTTPNotFound()
 
         if request.environ.get('HTTP_X_PARTIAL_XHR'):
-            return render('files/files_ypjax.html')
+            return base.render('files/files_ypjax.html')
 
         # TODO: tags and bookmarks?
         c.revision_options = [(c.changeset.raw_id,
-                              _('%s at %s') % (b, h.short_id(c.changeset.raw_id))) for b in c.changeset.branches] + \
+                              _('%s at %s') % (b, c.changeset.short_id)) for b in c.changeset.branches] + \
             [(n, b) for b, n in c.db_repo_scm_instance.branches.items()]
         if c.db_repo_scm_instance.closed_branches:
             prefix = _('(closed)') + ' '
             c.revision_options += [('-', '-')] + \
                 [(n, prefix + b) for b, n in c.db_repo_scm_instance.closed_branches.items()]
 
-        return render('files/files.html')
+        return base.render('files/files.html')
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def history(self, repo_name, revision, f_path):
         changeset = self.__get_cs(revision)
         _file = changeset.get_node(f_path)
@@ -223,8 +223,8 @@ class FilesController(BaseRepoController):
             file_history, _hist = self._get_node_history(changeset, f_path)
             c.authors = []
             for a in set([x.author for x in _hist]):
-                c.authors.append((h.email(a), h.person(a)))
-            return render('files/files_history_box.html')
+                c.authors.append((author_email(a), h.person(a)))
+            return base.render('files/files_history_box.html')
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
@@ -233,7 +233,7 @@ class FilesController(BaseRepoController):
         file_node = self.__get_filenode(cs, f_path)
 
         response.content_disposition = \
-            'attachment; filename=%s' % f_path.split(db.URL_SEP)[-1]
+            'attachment; filename=%s' % f_path.split(kallithea.URL_SEP)[-1]
 
         response.content_type = file_node.mimetype
         return file_node.content
@@ -292,9 +292,9 @@ class FilesController(BaseRepoController):
         _branches = repo.scm_instance.branches
         # check if revision is a branch name or branch hash
         if revision not in _branches and revision not in _branches.values():
-            h.flash(_('You can only delete files with revision '
+            webutils.flash(_('You can only delete files with revision '
                       'being a valid branch'), category='warning')
-            raise HTTPFound(location=h.url('files_home',
+            raise HTTPFound(location=webutils.url('files_home',
                                   repo_name=repo_name, revision='tip',
                                   f_path=f_path))
 
@@ -327,15 +327,15 @@ class FilesController(BaseRepoController):
                     author=author,
                 )
 
-                h.flash(_('Successfully deleted file %s') % f_path,
+                webutils.flash(_('Successfully deleted file %s') % f_path,
                         category='success')
             except Exception:
                 log.error(traceback.format_exc())
-                h.flash(_('Error occurred during commit'), category='error')
+                webutils.flash(_('Error occurred during commit'), category='error')
             raise HTTPFound(location=url('changeset_home',
                                 repo_name=c.repo_name, revision='tip'))
 
-        return render('files/files_delete.html')
+        return base.render('files/files_delete.html')
 
     @LoginRequired()
     @HasRepoPermissionLevelDecorator('write')
@@ -346,9 +346,9 @@ class FilesController(BaseRepoController):
         _branches = repo.scm_instance.branches
         # check if revision is a branch name or branch hash
         if revision not in _branches and revision not in _branches.values():
-            h.flash(_('You can only edit files with revision '
+            webutils.flash(_('You can only edit files with revision '
                       'being a valid branch'), category='warning')
-            raise HTTPFound(location=h.url('files_home',
+            raise HTTPFound(location=webutils.url('files_home',
                                   repo_name=repo_name, revision='tip',
                                   f_path=f_path))
 
@@ -375,7 +375,7 @@ class FilesController(BaseRepoController):
             author = request.authuser.full_contact
 
             if content == old_content:
-                h.flash(_('No changes'), category='warning')
+                webutils.flash(_('No changes'), category='warning')
                 raise HTTPFound(location=url('changeset_home', repo_name=c.repo_name,
                                     revision='tip'))
             try:
@@ -385,15 +385,15 @@ class FilesController(BaseRepoController):
                                              ip_addr=request.ip_addr,
                                              author=author, message=message,
                                              content=content, f_path=f_path)
-                h.flash(_('Successfully committed to %s') % f_path,
+                webutils.flash(_('Successfully committed to %s') % f_path,
                         category='success')
             except Exception:
                 log.error(traceback.format_exc())
-                h.flash(_('Error occurred during commit'), category='error')
+                webutils.flash(_('Error occurred during commit'), category='error')
             raise HTTPFound(location=url('changeset_home',
                                 repo_name=c.repo_name, revision='tip'))
 
-        return render('files/files_edit.html')
+        return base.render('files/files_edit.html')
 
     @LoginRequired()
     @HasRepoPermissionLevelDecorator('write')
@@ -425,11 +425,11 @@ class FilesController(BaseRepoController):
                     content = content.file
 
             if not content:
-                h.flash(_('No content'), category='warning')
+                webutils.flash(_('No content'), category='warning')
                 raise HTTPFound(location=url('changeset_home', repo_name=c.repo_name,
                                     revision='tip'))
             if not filename:
-                h.flash(_('No filename'), category='warning')
+                webutils.flash(_('No filename'), category='warning')
                 raise HTTPFound(location=url('changeset_home', repo_name=c.repo_name,
                                     revision='tip'))
             # strip all crap out of file, just leave the basename
@@ -453,22 +453,22 @@ class FilesController(BaseRepoController):
                     author=author,
                 )
 
-                h.flash(_('Successfully committed to %s') % node_path,
+                webutils.flash(_('Successfully committed to %s') % node_path,
                         category='success')
             except NonRelativePathError as e:
-                h.flash(_('Location must be relative path and must not '
+                webutils.flash(_('Location must be relative path and must not '
                           'contain .. in path'), category='warning')
                 raise HTTPFound(location=url('changeset_home', repo_name=c.repo_name,
                                     revision='tip'))
             except (NodeError, NodeAlreadyExistsError) as e:
-                h.flash(_(e), category='error')
+                webutils.flash(_(e), category='error')
             except Exception:
                 log.error(traceback.format_exc())
-                h.flash(_('Error occurred during commit'), category='error')
+                webutils.flash(_('Error occurred during commit'), category='error')
             raise HTTPFound(location=url('changeset_home',
                                 repo_name=c.repo_name, revision='tip'))
 
-        return render('files/files_add.html')
+        return base.render('files/files_add.html')
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
@@ -505,13 +505,12 @@ class FilesController(BaseRepoController):
         except (ImproperArchiveTypeError, KeyError):
             return _('Unknown archive type')
 
-        from kallithea import CONFIG
         rev_name = cs.raw_id[:12]
         archive_name = '%s-%s%s' % (repo_name.replace('/', '_'), rev_name, ext)
 
         archive_path = None
         cached_archive_path = None
-        archive_cache_dir = CONFIG.get('archive_cache_dir')
+        archive_cache_dir = kallithea.CONFIG.get('archive_cache_dir')
         if archive_cache_dir and not subrepos: # TODO: subrepo caching?
             if not os.path.isdir(archive_cache_dir):
                 os.makedirs(archive_cache_dir)
@@ -547,7 +546,7 @@ class FilesController(BaseRepoController):
                 log.debug('Destroying temp archive %s', archive_path)
                 os.remove(archive_path)
 
-        action_logger(user=request.authuser,
+        userlog.action_logger(user=request.authuser,
                       action='user_downloaded_archive:%s' % (archive_name),
                       repo=repo_name, ipaddr=request.ip_addr, commit=True)
 
@@ -558,8 +557,8 @@ class FilesController(BaseRepoController):
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
     def diff(self, repo_name, f_path):
-        ignore_whitespace = request.GET.get('ignorews') == '1'
-        line_context = safe_int(request.GET.get('context'), 3)
+        ignore_whitespace_diff = h.get_ignore_whitespace_diff(request.GET)
+        diff_context_size = h.get_diff_context_size(request.GET)
         diff2 = request.GET.get('diff2', '')
         diff1 = request.GET.get('diff1', '') or diff2
         c.action = request.GET.get('diff')
@@ -567,9 +566,6 @@ class FilesController(BaseRepoController):
         c.f_path = f_path
         c.big_diff = False
         fulldiff = request.GET.get('fulldiff')
-        c.anchor_url = anchor_url
-        c.ignorews_url = _ignorews_url
-        c.context_url = _context_url
         c.changes = OrderedDict()
         c.changes[diff2] = []
 
@@ -577,7 +573,7 @@ class FilesController(BaseRepoController):
         # to reduce JS and callbacks
 
         if request.GET.get('show_rev'):
-            if str2bool(request.GET.get('annotate', 'False')):
+            if asbool(request.GET.get('annotate', 'False')):
                 _url = url('files_annotate_home', repo_name=c.repo_name,
                            revision=diff1, f_path=c.f_path)
             else:
@@ -624,8 +620,8 @@ class FilesController(BaseRepoController):
 
         if c.action == 'download':
             raw_diff = diffs.get_gitdiff(node1, node2,
-                                      ignore_whitespace=ignore_whitespace,
-                                      context=line_context)
+                                      ignore_whitespace=ignore_whitespace_diff,
+                                      context=diff_context_size)
             diff_name = '%s_vs_%s.diff' % (diff1, diff2)
             response.content_type = 'text/plain'
             response.content_disposition = (
@@ -635,26 +631,21 @@ class FilesController(BaseRepoController):
 
         elif c.action == 'raw':
             raw_diff = diffs.get_gitdiff(node1, node2,
-                                      ignore_whitespace=ignore_whitespace,
-                                      context=line_context)
+                                      ignore_whitespace=ignore_whitespace_diff,
+                                      context=diff_context_size)
             response.content_type = 'text/plain'
             return raw_diff
 
         else:
             fid = h.FID(diff2, node2.path)
-            line_context_lcl = get_line_ctx(fid, request.GET)
-            ign_whitespace_lcl = get_ignore_ws(fid, request.GET)
-
             diff_limit = None if fulldiff else self.cut_off_limit
-            c.a_rev, c.cs_rev, a_path, diff, st, op = diffs.wrapped_diff(filenode_old=node1,
+            c.a_rev, c.cs_rev, a_path, diff, st, op = diffs.html_diff(filenode_old=node1,
                                          filenode_new=node2,
                                          diff_limit=diff_limit,
-                                         ignore_whitespace=ign_whitespace_lcl,
-                                         line_context=line_context_lcl,
-                                         enable_comments=False)
+                                         ignore_whitespace=ignore_whitespace_diff,
+                                         line_context=diff_context_size)
             c.file_diff_data = [(fid, fid, op, a_path, node2.path, diff, st)]
-
-            return render('files/file_diff.html')
+            return base.render('files/file_diff.html')
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
@@ -695,14 +686,14 @@ class FilesController(BaseRepoController):
                 node2 = FileNode(f_path, '', changeset=c.changeset_2)
         except ChangesetDoesNotExistError as e:
             msg = _('Such revision does not exist for this repository')
-            h.flash(msg, category='error')
+            webutils.flash(msg, category='error')
             raise HTTPNotFound()
         c.node1 = node1
         c.node2 = node2
         c.cs1 = c.changeset_1
         c.cs2 = c.changeset_2
 
-        return render('files/diff_2way.html')
+        return base.render('files/diff_2way.html')
 
     def _get_node_history(self, cs, f_path, changesets=None):
         """
@@ -745,7 +736,7 @@ class FilesController(BaseRepoController):
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def nodelist(self, repo_name, revision, f_path):
         if request.environ.get('HTTP_X_PARTIAL_XHR'):
             cs = self.__get_cs(revision)

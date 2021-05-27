@@ -14,9 +14,9 @@
 from tg import config
 from tgext.routes import RoutedController
 
-from kallithea.config.routing import make_map
+from kallithea.controllers import base
 from kallithea.controllers.error import ErrorController
-from kallithea.lib.base import BaseController
+from kallithea.controllers.routing import make_map
 
 
 # This is the main Kallithea entry point; TurboGears will forward all requests
@@ -26,7 +26,7 @@ from kallithea.lib.base import BaseController
 # The mapper is configured using routes defined in routing.py.  This use of the
 # 'mapper' attribute is a feature of tgext.routes, which is activated by
 # inheriting from its RoutedController class.
-class RootController(RoutedController, BaseController):
+class RootController(RoutedController, base.BaseController):
 
     def __init__(self):
         self.mapper = make_map(config)

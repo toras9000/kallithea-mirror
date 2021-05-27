@@ -35,18 +35,17 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPFound
 
-from kallithea.config.routing import url
-from kallithea.lib import helpers as h
+import kallithea
+import kallithea.lib.indexers.daemon
+from kallithea.controllers import base
+from kallithea.lib import webutils
 from kallithea.lib.auth import HasPermissionAnyDecorator, LoginRequired
-from kallithea.lib.base import BaseController, render
-from kallithea.lib.celerylib import tasks
-from kallithea.lib.exceptions import HgsubversionImportError
 from kallithea.lib.utils import repo2db_mapper, set_app_settings
 from kallithea.lib.utils2 import safe_str
 from kallithea.lib.vcs import VCSError
-from kallithea.model.db import Repository, Setting, Ui
+from kallithea.lib.webutils import url
+from kallithea.model import db, meta, notification
 from kallithea.model.forms import ApplicationSettingsForm, ApplicationUiSettingsForm, ApplicationVisualisationForm
-from kallithea.model.meta import Session
 from kallithea.model.notification import EmailNotificationModel
 from kallithea.model.scm import ScmModel
 
@@ -54,19 +53,14 @@ from kallithea.model.scm import ScmModel
 log = logging.getLogger(__name__)
 
 
-class SettingsController(BaseController):
-    """REST Controller styled on the Atom Publishing Protocol"""
-    # To properly map this controller, ensure your config/routing.py
-    # file has a resource setup:
-    #     map.resource('setting', 'settings', controller='admin/settings',
-    #         path_prefix='/admin', name_prefix='admin_')
+class SettingsController(base.BaseController):
 
     @LoginRequired(allow_default_user=True)
     def _before(self, *args, **kwargs):
         super(SettingsController, self)._before(*args, **kwargs)
 
     def _get_hg_ui_settings(self):
-        ret = Ui.query().all()
+        ret = db.Ui.query().all()
 
         settings = {}
         for each in ret:
@@ -92,7 +86,7 @@ class SettingsController(BaseController):
                 form_result = application_form.to_python(dict(request.POST))
             except formencode.Invalid as errors:
                 return htmlfill.render(
-                     render('admin/settings/settings.html'),
+                     base.render('admin/settings/settings.html'),
                      defaults=errors.value,
                      errors=errors.error_dict or {},
                      prefix_error=False,
@@ -101,52 +95,37 @@ class SettingsController(BaseController):
 
             try:
                 if c.visual.allow_repo_location_change:
-                    sett = Ui.get_by_key('paths', '/')
+                    sett = db.Ui.get_by_key('paths', '/')
                     sett.ui_value = form_result['paths_root_path']
 
                 # HOOKS
-                sett = Ui.get_by_key('hooks', Ui.HOOK_UPDATE)
-                sett.ui_active = form_result['hooks_changegroup_update']
+                sett = db.Ui.get_by_key('hooks', db.Ui.HOOK_UPDATE)
+                sett.ui_active = form_result['hooks_changegroup_kallithea_update']
 
-                sett = Ui.get_by_key('hooks', Ui.HOOK_REPO_SIZE)
-                sett.ui_active = form_result['hooks_changegroup_repo_size']
+                sett = db.Ui.get_by_key('hooks', db.Ui.HOOK_REPO_SIZE)
+                sett.ui_active = form_result['hooks_changegroup_kallithea_repo_size']
 
                 ## EXTENSIONS
-                sett = Ui.get_or_create('extensions', 'largefiles')
+                sett = db.Ui.get_or_create('extensions', 'largefiles')
                 sett.ui_active = form_result['extensions_largefiles']
 
-                sett = Ui.get_or_create('extensions', 'hgsubversion')
-                sett.ui_active = form_result['extensions_hgsubversion']
-                if sett.ui_active:
-                    try:
-                        import hgsubversion  # pragma: no cover
-                        assert hgsubversion
-                    except ImportError:
-                        raise HgsubversionImportError
-
-#                sett = Ui.get_or_create('extensions', 'hggit')
+#                sett = db.Ui.get_or_create('extensions', 'hggit')
 #                sett.ui_active = form_result['extensions_hggit']
 
-                Session().commit()
+                meta.Session().commit()
 
-                h.flash(_('Updated VCS settings'), category='success')
-
-            except HgsubversionImportError:
-                log.error(traceback.format_exc())
-                h.flash(_('Unable to activate hgsubversion support. '
-                          'The "hgsubversion" library is missing'),
-                        category='error')
+                webutils.flash(_('Updated VCS settings'), category='success')
 
             except Exception:
                 log.error(traceback.format_exc())
-                h.flash(_('Error occurred while updating '
+                webutils.flash(_('Error occurred while updating '
                           'application settings'), category='error')
 
-        defaults = Setting.get_app_settings()
+        defaults = db.Setting.get_app_settings()
         defaults.update(self._get_hg_ui_settings())
 
         return htmlfill.render(
-            render('admin/settings/settings.html'),
+            base.render('admin/settings/settings.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -168,33 +147,33 @@ class SettingsController(BaseController):
                                             install_git_hooks=install_git_hooks,
                                             user=request.authuser.username,
                                             overwrite_git_hooks=overwrite_git_hooks)
-            added_msg = h.HTML(', ').join(
-                h.link_to(safe_str(repo_name), h.url('summary_home', repo_name=repo_name)) for repo_name in added
+            added_msg = webutils.HTML(', ').join(
+                webutils.link_to(safe_str(repo_name), webutils.url('summary_home', repo_name=repo_name)) for repo_name in added
             ) or '-'
-            removed_msg = h.HTML(', ').join(
+            removed_msg = webutils.HTML(', ').join(
                 safe_str(repo_name) for repo_name in removed
             ) or '-'
-            h.flash(h.HTML(_('Repositories successfully rescanned. Added: %s. Removed: %s.')) %
+            webutils.flash(webutils.HTML(_('Repositories successfully rescanned. Added: %s. Removed: %s.')) %
                     (added_msg, removed_msg), category='success')
 
             if invalidate_cache:
                 log.debug('invalidating all repositories cache')
                 i = 0
-                for repo in Repository.query():
+                for repo in db.Repository.query():
                     try:
                         ScmModel().mark_for_invalidation(repo.repo_name)
                         i += 1
                     except VCSError as e:
                         log.warning('VCS error invalidating %s: %s', repo.repo_name, e)
-                h.flash(_('Invalidated %s repositories') % i, category='success')
+                webutils.flash(_('Invalidated %s repositories') % i, category='success')
 
             raise HTTPFound(location=url('admin_settings_mapping'))
 
-        defaults = Setting.get_app_settings()
+        defaults = db.Setting.get_app_settings()
         defaults.update(self._get_hg_ui_settings())
 
         return htmlfill.render(
-            render('admin/settings/settings.html'),
+            base.render('admin/settings/settings.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -208,7 +187,7 @@ class SettingsController(BaseController):
                 form_result = application_form.to_python(dict(request.POST))
             except formencode.Invalid as errors:
                 return htmlfill.render(
-                    render('admin/settings/settings.html'),
+                    base.render('admin/settings/settings.html'),
                     defaults=errors.value,
                     errors=errors.error_dict or {},
                     prefix_error=False,
@@ -223,25 +202,25 @@ class SettingsController(BaseController):
                     'captcha_public_key',
                     'captcha_private_key',
                 ):
-                    Setting.create_or_update(setting, form_result[setting])
+                    db.Setting.create_or_update(setting, form_result[setting])
 
-                Session().commit()
+                meta.Session().commit()
                 set_app_settings(config)
-                h.flash(_('Updated application settings'), category='success')
+                webutils.flash(_('Updated application settings'), category='success')
 
             except Exception:
                 log.error(traceback.format_exc())
-                h.flash(_('Error occurred while updating '
+                webutils.flash(_('Error occurred while updating '
                           'application settings'),
                           category='error')
 
             raise HTTPFound(location=url('admin_settings_global'))
 
-        defaults = Setting.get_app_settings()
+        defaults = db.Setting.get_app_settings()
         defaults.update(self._get_hg_ui_settings())
 
         return htmlfill.render(
-            render('admin/settings/settings.html'),
+            base.render('admin/settings/settings.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -255,7 +234,7 @@ class SettingsController(BaseController):
                 form_result = application_form.to_python(dict(request.POST))
             except formencode.Invalid as errors:
                 return htmlfill.render(
-                    render('admin/settings/settings.html'),
+                    base.render('admin/settings/settings.html'),
                     defaults=errors.value,
                     errors=errors.error_dict or {},
                     prefix_error=False,
@@ -277,26 +256,26 @@ class SettingsController(BaseController):
                     ('clone_ssh_tmpl', 'clone_ssh_tmpl', 'unicode'),
                 ]
                 for setting, form_key, type_ in settings:
-                    Setting.create_or_update(setting, form_result[form_key], type_)
+                    db.Setting.create_or_update(setting, form_result[form_key], type_)
 
-                Session().commit()
+                meta.Session().commit()
                 set_app_settings(config)
-                h.flash(_('Updated visualisation settings'),
+                webutils.flash(_('Updated visualisation settings'),
                         category='success')
 
             except Exception:
                 log.error(traceback.format_exc())
-                h.flash(_('Error occurred during updating '
+                webutils.flash(_('Error occurred during updating '
                           'visualisation settings'),
                         category='error')
 
             raise HTTPFound(location=url('admin_settings_visual'))
 
-        defaults = Setting.get_app_settings()
+        defaults = db.Setting.get_app_settings()
         defaults.update(self._get_hg_ui_settings())
 
         return htmlfill.render(
-            render('admin/settings/settings.html'),
+            base.render('admin/settings/settings.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -310,7 +289,7 @@ class SettingsController(BaseController):
             test_body = ('Kallithea Email test, '
                                'Kallithea version: %s' % c.kallithea_version)
             if not test_email:
-                h.flash(_('Please enter email address'), category='error')
+                webutils.flash(_('Please enter email address'), category='error')
                 raise HTTPFound(location=url('admin_settings_email'))
 
             test_email_txt_body = EmailNotificationModel() \
@@ -322,20 +301,19 @@ class SettingsController(BaseController):
 
             recipients = [test_email] if test_email else None
 
-            tasks.send_email(recipients, test_email_subj,
+            notification.send_email(recipients, test_email_subj,
                              test_email_txt_body, test_email_html_body)
 
-            h.flash(_('Send email task created'), category='success')
+            webutils.flash(_('Send email task created'), category='success')
             raise HTTPFound(location=url('admin_settings_email'))
 
-        defaults = Setting.get_app_settings()
+        defaults = db.Setting.get_app_settings()
         defaults.update(self._get_hg_ui_settings())
 
-        import kallithea
         c.ini = kallithea.CONFIG
 
         return htmlfill.render(
-            render('admin/settings/settings.html'),
+            base.render('admin/settings/settings.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -352,16 +330,16 @@ class SettingsController(BaseController):
 
                 try:
                     ui_key = ui_key and ui_key.strip()
-                    if ui_key in (x.ui_key for x in Ui.get_custom_hooks()):
-                        h.flash(_('Hook already exists'), category='error')
-                    elif ui_key in (x.ui_key for x in Ui.get_builtin_hooks()):
-                        h.flash(_('Builtin hooks are read-only. Please use another hook name.'), category='error')
+                    if ui_key in (x.ui_key for x in db.Ui.get_custom_hooks()):
+                        webutils.flash(_('Hook already exists'), category='error')
+                    elif ui_key and '.kallithea_' in ui_key:
+                        webutils.flash(_('Hook names with ".kallithea_" are reserved for internal use. Please use another hook name.'), category='error')
                     elif ui_value and ui_key:
-                        Ui.create_or_update_hook(ui_key, ui_value)
-                        h.flash(_('Added new hook'), category='success')
+                        db.Ui.create_or_update_hook(ui_key, ui_value)
+                        webutils.flash(_('Added new hook'), category='success')
                     elif hook_id:
-                        Ui.delete(hook_id)
-                        Session().commit()
+                        db.Ui.delete(hook_id)
+                        meta.Session().commit()
 
                     # check for edits
                     update = False
@@ -370,27 +348,26 @@ class SettingsController(BaseController):
                                         _d.get('hook_ui_value_new', []),
                                         _d.get('hook_ui_value', [])):
                         if v != ov:
-                            Ui.create_or_update_hook(k, v)
+                            db.Ui.create_or_update_hook(k, v)
                             update = True
 
                     if update:
-                        h.flash(_('Updated hooks'), category='success')
-                    Session().commit()
+                        webutils.flash(_('Updated hooks'), category='success')
+                    meta.Session().commit()
                 except Exception:
                     log.error(traceback.format_exc())
-                    h.flash(_('Error occurred during hook creation'),
+                    webutils.flash(_('Error occurred during hook creation'),
                             category='error')
 
                 raise HTTPFound(location=url('admin_settings_hooks'))
 
-        defaults = Setting.get_app_settings()
+        defaults = db.Setting.get_app_settings()
         defaults.update(self._get_hg_ui_settings())
 
-        c.hooks = Ui.get_builtin_hooks()
-        c.custom_hooks = Ui.get_custom_hooks()
+        c.custom_hooks = db.Ui.get_custom_hooks()
 
         return htmlfill.render(
-            render('admin/settings/settings.html'),
+            base.render('admin/settings/settings.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -401,15 +378,15 @@ class SettingsController(BaseController):
         if request.POST:
             repo_location = self._get_hg_ui_settings()['paths_root_path']
             full_index = request.POST.get('full_index', False)
-            tasks.whoosh_index(repo_location, full_index)
-            h.flash(_('Whoosh reindex task scheduled'), category='success')
+            kallithea.lib.indexers.daemon.whoosh_index(repo_location, full_index)
+            webutils.flash(_('Whoosh reindex task scheduled'), category='success')
             raise HTTPFound(location=url('admin_settings_search'))
 
-        defaults = Setting.get_app_settings()
+        defaults = db.Setting.get_app_settings()
         defaults.update(self._get_hg_ui_settings())
 
         return htmlfill.render(
-            render('admin/settings/settings.html'),
+            base.render('admin/settings/settings.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -418,17 +395,16 @@ class SettingsController(BaseController):
     def settings_system(self):
         c.active = 'system'
 
-        defaults = Setting.get_app_settings()
+        defaults = db.Setting.get_app_settings()
         defaults.update(self._get_hg_ui_settings())
 
-        import kallithea
         c.ini = kallithea.CONFIG
-        server_info = Setting.get_server_info()
+        server_info = db.Setting.get_server_info()
         for key, val in server_info.items():
             setattr(c, key, val)
 
         return htmlfill.render(
-            render('admin/settings/settings.html'),
+            base.render('admin/settings/settings.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)

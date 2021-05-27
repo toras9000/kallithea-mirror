@@ -61,16 +61,16 @@
                       <i class="icon-file-code"></i></a>
                   <a href="${h.url('files_diff_2way_home',repo_name=cs_repo_name,f_path=cs_filename,diff2=cs_rev,diff1=a_rev,diff='diff',fulldiff=1)}" data-toggle="tooltip" title="${_('Show full side-by-side diff for this file')}">
                       <i class="icon-docs"></i></a>
-                  <a href="${h.url('files_diff_home',repo_name=cs_repo_name,f_path=cs_filename,diff2=cs_rev,diff1=a_rev,diff='raw')}" data-toggle="tooltip" title="${_('Raw diff')}">
+                  <a href="${h.url('files_diff_home',repo_name=cs_repo_name,f_path=cs_filename,diff2=cs_rev,diff1=a_rev,diff='raw')}" data-toggle="tooltip" title="${_('Raw diff for this file')}">
                       <i class="icon-diff"></i></a>
-                  <a href="${h.url('files_diff_home',repo_name=cs_repo_name,f_path=cs_filename,diff2=cs_rev,diff1=a_rev,diff='download')}" data-toggle="tooltip" title="${_('Download diff')}">
+                  <a href="${h.url('files_diff_home',repo_name=cs_repo_name,f_path=cs_filename,diff2=cs_rev,diff1=a_rev,diff='download')}" data-toggle="tooltip" title="${_('Download diff for this file')}">
                       <i class="icon-floppy"></i></a>
-                  ${c.ignorews_url(request.GET, url_fid)}
-                  ${c.context_url(request.GET, url_fid)}
+                  ${h.ignore_whitespace_link(request.GET, id_fid)}
+                  ${h.increase_context_link(request.GET, id_fid)}
                 </div>
                 <div class="pull-right">
                     ${_('Show inline comments')}
-                    ${h.checkbox('checkbox-show-inline-' + id_fid, checked="checked",class_="show-inline-comments",**{'data-id_for':id_fid})}
+                    ${h.checkbox('checkbox-show-inline-' + id_fid, checked="checked",class_="show-inline-comments",**{'data-for':id_fid})}
                 </div>
         </div>
         <div class="no-padding panel-body" data-f_path="${cs_filename}">
@@ -96,7 +96,8 @@
 </%def>
 
 <%def name="diff_block_js()">
-<script>'use strict';
+<script>
+'use strict';
 $(document).ready(function(){
     $('.btn-image-diff-show').click(function(){
         $('.btn-image-diff-show').hide();
@@ -137,7 +138,7 @@ $(document).ready(function(){
         if(target == null){
             target = this;
         }
-        var boxid = $(target).data('id_for');
+        var boxid = $(target).data('for');
         if(target.checked){
             $('#{0} .inline-comments'.format(boxid)).show();
         }else{

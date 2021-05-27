@@ -30,15 +30,18 @@ import kallithea
 import kallithea.bin.kallithea_cli_base as cli_base
 from kallithea.lib.utils import REMOVED_REPO_PAT, repo2db_mapper
 from kallithea.lib.utils2 import ask_ok
-from kallithea.model.db import Repository
-from kallithea.model.meta import Session
+from kallithea.model import db, meta
 from kallithea.model.scm import ScmModel
 
 
 @cli_base.register_command(config_file_initialize_app=True)
 @click.option('--remove-missing', is_flag=True,
         help='Remove missing repositories from the Kallithea database.')
-def repo_scan(remove_missing):
+@click.option('--install-git-hooks', is_flag=True,
+        help='(Re)install Kallithea Git hooks without overwriting other hooks.')
+@click.option('--overwrite-git-hooks', is_flag=True,
+        help='(Re)install Kallithea Git hooks, overwriting other hooks.')
+def repo_scan(remove_missing, install_git_hooks, overwrite_git_hooks):
     """Scan filesystem for repositories.
 
     Search the configured repository root for new repositories and add them
@@ -49,7 +52,9 @@ def repo_scan(remove_missing):
     """
     click.echo('Now scanning root location for new repos ...')
     added, removed = repo2db_mapper(ScmModel().repo_scan(),
-                                    remove_obsolete=remove_missing)
+                                    remove_obsolete=remove_missing,
+                                    install_git_hooks=install_git_hooks,
+                                    overwrite_git_hooks=overwrite_git_hooks)
     click.echo('Scan completed.')
     if added:
         click.echo('Added: %s' % ', '.join(added))
@@ -73,11 +78,11 @@ def repo_update_metadata(repositories):
     updated.
     """
     if not repositories:
-        repo_list = Repository.query().all()
+        repo_list = db.Repository.query().all()
     else:
         repo_names = [n.strip() for n in repositories]
-        repo_list = list(Repository.query()
-                        .filter(Repository.repo_name.in_(repo_names)))
+        repo_list = list(db.Repository.query()
+                        .filter(db.Repository.repo_name.in_(repo_names)))
 
     for repo in repo_list:
         # update latest revision metadata in database
@@ -86,7 +91,7 @@ def repo_update_metadata(repositories):
         # first access
         repo.set_invalidate()
 
-    Session().commit()
+    meta.Session().commit()
 
     click.echo('Updated database with information about latest change in the following %s repositories:' % (len(repo_list)))
     click.echo('\n'.join(repo.repo_name for repo in repo_list))

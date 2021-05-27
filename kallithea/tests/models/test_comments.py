@@ -1,8 +1,8 @@
 import pytest
 from tg.util.webtest import test_context
 
+from kallithea.model import db
 from kallithea.model.comment import ChangesetCommentsModel
-from kallithea.model.db import Repository
 from kallithea.tests import base
 
 
@@ -23,7 +23,7 @@ class TestComments(base.TestController):
 
     def test_create_delete_general_comment(self):
         with test_context(self.app):
-            repo_id = Repository.get_by_repo_name(base.HG_REPO).repo_id
+            repo_id = db.Repository.get_by_repo_name(base.HG_REPO).repo_id
             revision = '9a7b4ff9e8b40bbda72fc75f162325b9baa45cda'
 
             self._check_comment_count(repo_id, revision,
@@ -47,7 +47,7 @@ class TestComments(base.TestController):
 
     def test_create_delete_inline_comment(self):
         with test_context(self.app):
-            repo_id = Repository.get_by_repo_name(base.HG_REPO).repo_id
+            repo_id = db.Repository.get_by_repo_name(base.HG_REPO).repo_id
             revision = '9a7b4ff9e8b40bbda72fc75f162325b9baa45cda'
 
             self._check_comment_count(repo_id, revision,
@@ -81,7 +81,7 @@ class TestComments(base.TestController):
 
     def test_create_delete_multiple_inline_comments(self):
         with test_context(self.app):
-            repo_id = Repository.get_by_repo_name(base.HG_REPO).repo_id
+            repo_id = db.Repository.get_by_repo_name(base.HG_REPO).repo_id
             revision = '9a7b4ff9e8b40bbda72fc75f162325b9baa45cda'
 
             self._check_comment_count(repo_id, revision,
@@ -161,7 +161,7 @@ class TestComments(base.TestController):
 
     def test_selective_retrieval_of_inline_comments(self):
         with test_context(self.app):
-            repo_id = Repository.get_by_repo_name(base.HG_REPO).repo_id
+            repo_id = db.Repository.get_by_repo_name(base.HG_REPO).repo_id
             revision = '9a7b4ff9e8b40bbda72fc75f162325b9baa45cda'
 
             self._check_comment_count(repo_id, revision,

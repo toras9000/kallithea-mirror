@@ -35,15 +35,13 @@ from kallithea.controllers.api import JSONRPCController, JSONRPCError
 from kallithea.lib.auth import (AuthUser, HasPermissionAny, HasPermissionAnyDecorator, HasRepoGroupPermissionLevel, HasRepoPermissionLevel,
                                 HasUserGroupPermissionLevel)
 from kallithea.lib.exceptions import DefaultUserException, UserGroupsAssignedException
-from kallithea.lib.utils import action_logger, repo2db_mapper
-from kallithea.lib.utils2 import OAttr, Optional
+from kallithea.lib.utils import repo2db_mapper
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.exceptions import EmptyRepositoryError
+from kallithea.model import db, meta, userlog
 from kallithea.model.changeset_status import ChangesetStatusModel
 from kallithea.model.comment import ChangesetCommentsModel
-from kallithea.model.db import ChangesetStatus, Gist, Permission, PullRequest, RepoGroup, Repository, Setting, User, UserGroup, UserIpMap
 from kallithea.model.gist import GistModel
-from kallithea.model.meta import Session
 from kallithea.model.pull_request import PullRequestModel
 from kallithea.model.repo import RepoModel
 from kallithea.model.repo_group import RepoGroupModel
@@ -57,10 +55,10 @@ log = logging.getLogger(__name__)
 
 def store_update(updates, attr, name):
     """
-    Stores param in updates dict if it's not instance of Optional
-    allows easy updates of passed in params
+    Stores param in updates dict if it's not None (i.e. if user explicitly set
+    a parameter). This allows easy updates of passed in params.
     """
-    if not isinstance(attr, Optional):
+    if attr is not None:
         updates[name] = attr
 
 
@@ -94,7 +92,7 @@ def get_repo_group_or_error(repogroupid):
 
     :param repogroupid:
     """
-    repo_group = RepoGroup.guess_instance(repogroupid)
+    repo_group = db.RepoGroup.guess_instance(repogroupid)
     if repo_group is None:
         raise JSONRPCError(
             'repository group `%s` does not exist' % (repogroupid,))
@@ -119,7 +117,7 @@ def get_perm_or_error(permid, prefix=None):
 
     :param permid:
     """
-    perm = Permission.get_by_key(permid)
+    perm = db.Permission.get_by_key(permid)
     if perm is None:
         raise JSONRPCError('permission `%s` does not exist' % (permid,))
     if prefix:
@@ -161,7 +159,7 @@ class ApiController(JSONRPCController):
         return args
 
     @HasPermissionAnyDecorator('hg.admin')
-    def pull(self, repoid, clone_uri=Optional(None)):
+    def pull(self, repoid, clone_uri=None):
         """
         Triggers a pull from remote location on given repo. Can be used to
         automatically keep remote repos up to date. This command can be executed
@@ -197,7 +195,7 @@ class ApiController(JSONRPCController):
             ScmModel().pull_changes(repo.repo_name,
                                     request.authuser.username,
                                     request.ip_addr,
-                                    clone_uri=Optional.extract(clone_uri))
+                                    clone_uri=clone_uri)
             return dict(
                 msg='Pulled from `%s`' % repo.repo_name,
                 repository=repo.repo_name
@@ -209,7 +207,7 @@ class ApiController(JSONRPCController):
             )
 
     @HasPermissionAnyDecorator('hg.admin')
-    def rescan_repos(self, remove_obsolete=Optional(False)):
+    def rescan_repos(self, remove_obsolete=False):
         """
         Triggers rescan repositories action. If remove_obsolete is set
         than also delete repos that are in database but not in the filesystem.
@@ -240,7 +238,7 @@ class ApiController(JSONRPCController):
         """
 
         try:
-            rm_obsolete = Optional.extract(remove_obsolete)
+            rm_obsolete = remove_obsolete
             added, removed = repo2db_mapper(ScmModel().repo_scan(),
                                             remove_obsolete=rm_obsolete)
             return {'added': added, 'removed': removed}
@@ -295,7 +293,7 @@ class ApiController(JSONRPCController):
             )
 
     @HasPermissionAnyDecorator('hg.admin')
-    def get_ip(self, userid=Optional(OAttr('apiuser'))):
+    def get_ip(self, userid=None):
         """
         Shows IP address as seen from Kallithea server, together with all
         defined IP addresses for given user. If userid is not passed data is
@@ -321,10 +319,10 @@ class ApiController(JSONRPCController):
             }
 
         """
-        if isinstance(userid, Optional):
+        if userid is None:
             userid = request.authuser.user_id
         user = get_user_or_error(userid)
-        ips = UserIpMap.query().filter(UserIpMap.user == user).all()
+        ips = db.UserIpMap.query().filter(db.UserIpMap.user == user).all()
         return dict(
             server_ip_addr=request.ip_addr,
             user_ips=ips
@@ -350,9 +348,9 @@ class ApiController(JSONRPCController):
           }
           error :  null
         """
-        return Setting.get_server_info()
+        return db.Setting.get_server_info()
 
-    def get_user(self, userid=Optional(OAttr('apiuser'))):
+    def get_user(self, userid=None):
         """
         Gets a user by username or user_id, Returns empty result if user is
         not found. If userid param is skipped it is set to id of user who is
@@ -397,12 +395,12 @@ class ApiController(JSONRPCController):
         if not HasPermissionAny('hg.admin')():
             # make sure normal user does not pass someone else userid,
             # he is not allowed to do that
-            if not isinstance(userid, Optional) and userid != request.authuser.user_id:
+            if userid is not None and userid != request.authuser.user_id:
                 raise JSONRPCError(
                     'userid is not the same as your user'
                 )
 
-        if isinstance(userid, Optional):
+        if userid is None:
             userid = request.authuser.user_id
 
         user = get_user_or_error(userid)
@@ -426,17 +424,17 @@ class ApiController(JSONRPCController):
 
         return [
             user.get_api_data()
-            for user in User.query()
-                .order_by(User.username)
+            for user in db.User.query()
+                .order_by(db.User.username)
                 .filter_by(is_default_user=False)
         ]
 
     @HasPermissionAnyDecorator('hg.admin')
-    def create_user(self, username, email, password=Optional(''),
-                    firstname=Optional(''), lastname=Optional(''),
-                    active=Optional(True), admin=Optional(False),
-                    extern_type=Optional(User.DEFAULT_AUTH_TYPE),
-                    extern_name=Optional('')):
+    def create_user(self, username, email, password='',
+                    firstname='', lastname='',
+                    active=True, admin=False,
+                    extern_type=db.User.DEFAULT_AUTH_TYPE,
+                    extern_name=''):
         """
         Creates new user. Returns new user object. This command can
         be executed only using api_key belonging to user with admin rights.
@@ -484,25 +482,25 @@ class ApiController(JSONRPCController):
 
         """
 
-        if User.get_by_username(username):
+        if db.User.get_by_username(username):
             raise JSONRPCError("user `%s` already exist" % (username,))
 
-        if User.get_by_email(email):
+        if db.User.get_by_email(email):
             raise JSONRPCError("email `%s` already exist" % (email,))
 
         try:
             user = UserModel().create_or_update(
-                username=Optional.extract(username),
-                password=Optional.extract(password),
-                email=Optional.extract(email),
-                firstname=Optional.extract(firstname),
-                lastname=Optional.extract(lastname),
-                active=Optional.extract(active),
-                admin=Optional.extract(admin),
-                extern_type=Optional.extract(extern_type),
-                extern_name=Optional.extract(extern_name)
+                username=username,
+                password=password,
+                email=email,
+                firstname=firstname,
+                lastname=lastname,
+                active=active,
+                admin=admin,
+                extern_type=extern_type,
+                extern_name=extern_name
             )
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='created new user `%s`' % username,
                 user=user.get_api_data()
@@ -512,11 +510,11 @@ class ApiController(JSONRPCController):
             raise JSONRPCError('failed to create user `%s`' % (username,))
 
     @HasPermissionAnyDecorator('hg.admin')
-    def update_user(self, userid, username=Optional(None),
-                    email=Optional(None), password=Optional(None),
-                    firstname=Optional(None), lastname=Optional(None),
-                    active=Optional(None), admin=Optional(None),
-                    extern_type=Optional(None), extern_name=Optional(None)):
+    def update_user(self, userid, username=None,
+                    email=None, password=None,
+                    firstname=None, lastname=None,
+                    active=None, admin=None,
+                    extern_type=None, extern_name=None):
         """
         updates given user if such user exists. This command can
         be executed only using api_key belonging to user with admin rights.
@@ -580,7 +578,7 @@ class ApiController(JSONRPCController):
             store_update(updates, extern_type, 'extern_type')
 
             user = UserModel().update_user(user, **updates)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='updated user ID:%s %s' % (user.user_id, user.username),
                 user=user.get_api_data()
@@ -623,7 +621,7 @@ class ApiController(JSONRPCController):
 
         try:
             UserModel().delete(userid)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='deleted user ID:%s %s' % (user.user_id, user.username),
                 user=None
@@ -682,12 +680,12 @@ class ApiController(JSONRPCController):
 
         return [
             user_group.get_api_data()
-            for user_group in UserGroupList(UserGroup.query().all(), perm_level='read')
+            for user_group in UserGroupList(db.UserGroup.query().all(), perm_level='read')
         ]
 
     @HasPermissionAnyDecorator('hg.admin', 'hg.usergroup.create.true')
-    def create_user_group(self, group_name, description=Optional(''),
-                          owner=Optional(OAttr('apiuser')), active=Optional(True)):
+    def create_user_group(self, group_name, description='',
+                          owner=None, active=True):
         """
         Creates new user group. This command can be executed only using api_key
         belonging to user with admin rights or an user who has create user group
@@ -727,15 +725,13 @@ class ApiController(JSONRPCController):
             raise JSONRPCError("user group `%s` already exist" % (group_name,))
 
         try:
-            if isinstance(owner, Optional):
+            if owner is None:
                 owner = request.authuser.user_id
 
             owner = get_user_or_error(owner)
-            active = Optional.extract(active)
-            description = Optional.extract(description)
             ug = UserGroupModel().create(name=group_name, description=description,
                                          owner=owner, active=active)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='created new user group `%s`' % group_name,
                 user_group=ug.get_api_data()
@@ -745,9 +741,9 @@ class ApiController(JSONRPCController):
             raise JSONRPCError('failed to create group `%s`' % (group_name,))
 
     # permission check inside
-    def update_user_group(self, usergroupid, group_name=Optional(''),
-                          description=Optional(''), owner=Optional(None),
-                          active=Optional(True)):
+    def update_user_group(self, usergroupid, group_name=None,
+                          description=None, owner=None,
+                          active=None):
         """
         Updates given usergroup.  This command can be executed only using api_key
         belonging to user with admin rights or an admin of given user group
@@ -786,7 +782,7 @@ class ApiController(JSONRPCController):
             if not HasUserGroupPermissionLevel('admin')(user_group.users_group_name):
                 raise JSONRPCError('user group `%s` does not exist' % (usergroupid,))
 
-        if not isinstance(owner, Optional):
+        if owner is not None:
             owner = get_user_or_error(owner)
 
         updates = {}
@@ -796,7 +792,7 @@ class ApiController(JSONRPCController):
         store_update(updates, active, 'users_group_active')
         try:
             UserGroupModel().update(user_group, updates)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='updated user group ID:%s %s' % (user_group.users_group_id,
                                                      user_group.users_group_name),
@@ -842,7 +838,7 @@ class ApiController(JSONRPCController):
 
         try:
             UserGroupModel().delete(user_group)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='deleted user group ID:%s %s' %
                     (user_group.users_group_id, user_group.users_group_name),
@@ -903,7 +899,7 @@ class ApiController(JSONRPCController):
                 user.username, user_group.users_group_name
             )
             msg = msg if success else 'User is already in that group'
-            Session().commit()
+            meta.Session().commit()
 
             return dict(
                 success=success,
@@ -951,7 +947,7 @@ class ApiController(JSONRPCController):
                 user.username, user_group.users_group_name
             )
             msg = msg if success else "User wasn't in group"
-            Session().commit()
+            meta.Session().commit()
             return dict(success=success, msg=msg)
         except Exception:
             log.error(traceback.format_exc())
@@ -963,8 +959,8 @@ class ApiController(JSONRPCController):
 
     # permission check inside
     def get_repo(self, repoid,
-                 with_revision_names=Optional(False),
-                 with_pullrequests=Optional(False)):
+                 with_revision_names=False,
+                 with_pullrequests=False):
         """
         Gets an existing repository by it's name or repository_id. Members will return
         either users_group or user associated to that repository. This command can be
@@ -1064,8 +1060,8 @@ class ApiController(JSONRPCController):
             for uf in repo.followers
         ]
 
-        data = repo.get_api_data(with_revision_names=Optional.extract(with_revision_names),
-                                 with_pullrequests=Optional.extract(with_pullrequests))
+        data = repo.get_api_data(with_revision_names=with_revision_names,
+                                 with_pullrequests=with_pullrequests)
         data['members'] = members
         data['followers'] = followers
         return data
@@ -1101,9 +1097,9 @@ class ApiController(JSONRPCController):
             error:  null
         """
         if not HasPermissionAny('hg.admin')():
-            repos = RepoModel().get_all_user_repos(user=request.authuser.user_id)
+            repos = request.authuser.get_all_user_repos()
         else:
-            repos = Repository.query()
+            repos = db.Repository.query()
 
         return [
             repo.get_api_data()
@@ -1112,7 +1108,7 @@ class ApiController(JSONRPCController):
 
     # permission check inside
     def get_repo_nodes(self, repoid, revision, root_path,
-                       ret_type=Optional('all')):
+                       ret_type='all'):
         """
         returns a list of nodes and it's children in a flat list for a given path
         at given revision. It's possible to specify ret_type to show only `files` or
@@ -1147,7 +1143,6 @@ class ApiController(JSONRPCController):
             if not HasRepoPermissionLevel('read')(repo.repo_name):
                 raise JSONRPCError('repository `%s` does not exist' % (repoid,))
 
-        ret_type = Optional.extract(ret_type)
         _map = {}
         try:
             _d, _f = ScmModel().get_nodes(repo, revision, root_path,
@@ -1168,13 +1163,13 @@ class ApiController(JSONRPCController):
             )
 
     # permission check inside
-    def create_repo(self, repo_name, owner=Optional(OAttr('apiuser')),
-                    repo_type=Optional('hg'), description=Optional(''),
-                    private=Optional(False), clone_uri=Optional(None),
-                    landing_rev=Optional('rev:tip'),
-                    enable_statistics=Optional(False),
-                    enable_downloads=Optional(False),
-                    copy_permissions=Optional(False)):
+    def create_repo(self, repo_name, owner=None,
+                    repo_type=None, description='',
+                    private=False, clone_uri=None,
+                    landing_rev='rev:tip',
+                    enable_statistics=None,
+                    enable_downloads=None,
+                    copy_permissions=False):
         """
         Creates a repository. The repository name contains the full path, but the
         parent repository group must exist. For example "foo/bar/baz" require the groups
@@ -1228,7 +1223,7 @@ class ApiController(JSONRPCController):
         repo_name_parts = repo_name.split('/')
         if len(repo_name_parts) > 1:
             group_name = '/'.join(repo_name_parts[:-1])
-            repo_group = RepoGroup.get_by_group_name(group_name)
+            repo_group = db.RepoGroup.get_by_group_name(group_name)
             if repo_group is None:
                 raise JSONRPCError("repo group `%s` not found" % group_name)
             if not(HasPermissionAny('hg.admin')() or HasRepoGroupPermissionLevel('write')(group_name)):
@@ -1238,12 +1233,12 @@ class ApiController(JSONRPCController):
                 raise JSONRPCError("no permission to create top level repo")
 
         if not HasPermissionAny('hg.admin')():
-            if not isinstance(owner, Optional):
+            if owner is not None:
                 # forbid setting owner for non-admins
                 raise JSONRPCError(
                     'Only Kallithea admin can specify `owner` param'
                 )
-        if isinstance(owner, Optional):
+        if owner is None:
             owner = request.authuser.user_id
 
         owner = get_user_or_error(owner)
@@ -1251,20 +1246,15 @@ class ApiController(JSONRPCController):
         if RepoModel().get_by_repo_name(repo_name):
             raise JSONRPCError("repo `%s` already exist" % repo_name)
 
-        defs = Setting.get_default_repo_settings(strip_prefix=True)
-        if isinstance(private, Optional):
-            private = defs.get('repo_private') or Optional.extract(private)
-        if isinstance(repo_type, Optional):
+        defs = db.Setting.get_default_repo_settings(strip_prefix=True)
+        if private is None:
+            private = defs.get('repo_private') or False
+        if repo_type is None:
             repo_type = defs.get('repo_type')
-        if isinstance(enable_statistics, Optional):
+        if enable_statistics is None:
             enable_statistics = defs.get('repo_enable_statistics')
-        if isinstance(enable_downloads, Optional):
+        if enable_downloads is None:
             enable_downloads = defs.get('repo_enable_downloads')
-
-        clone_uri = Optional.extract(clone_uri)
-        description = Optional.extract(description)
-        landing_rev = Optional.extract(landing_rev)
-        copy_permissions = Optional.extract(copy_permissions)
 
         try:
             data = dict(
@@ -1272,7 +1262,6 @@ class ApiController(JSONRPCController):
                 repo_name_full=repo_name,
                 repo_type=repo_type,
                 repo_description=description,
-                owner=owner,
                 repo_private=private,
                 clone_uri=clone_uri,
                 repo_group=group_name,
@@ -1282,14 +1271,12 @@ class ApiController(JSONRPCController):
                 repo_copy_permissions=copy_permissions,
             )
 
-            task = RepoModel().create(form_data=data, cur_user=owner.username)
-            task_id = task.task_id
+            RepoModel().create(form_data=data, cur_user=owner.username)
             # no commit, it's done in RepoModel, or async via celery
             return dict(
                 msg="Created new repository `%s`" % (repo_name,),
                 success=True,  # cannot return the repo data here since fork
                                # can be done async
-                task=task_id
             )
         except Exception:
             log.error(traceback.format_exc())
@@ -1297,13 +1284,13 @@ class ApiController(JSONRPCController):
                 'failed to create repository `%s`' % (repo_name,))
 
     # permission check inside
-    def update_repo(self, repoid, name=Optional(None),
-                    owner=Optional(OAttr('apiuser')),
-                    group=Optional(None),
-                    description=Optional(''), private=Optional(False),
-                    clone_uri=Optional(None), landing_rev=Optional('rev:tip'),
-                    enable_statistics=Optional(False),
-                    enable_downloads=Optional(False)):
+    def update_repo(self, repoid, name=None,
+                    owner=None,
+                    group=None,
+                    description=None, private=None,
+                    clone_uri=None, landing_rev=None,
+                    enable_statistics=None,
+                    enable_downloads=None):
 
         """
         Updates repo
@@ -1330,7 +1317,7 @@ class ApiController(JSONRPCController):
             ):
                 raise JSONRPCError('no permission to create (or move) top level repositories')
 
-            if not isinstance(owner, Optional):
+            if owner is not None:
                 # forbid setting owner for non-admins
                 raise JSONRPCError(
                     'Only Kallithea admin can specify `owner` param'
@@ -1338,7 +1325,7 @@ class ApiController(JSONRPCController):
 
         updates = {}
         repo_group = group
-        if not isinstance(repo_group, Optional):
+        if repo_group is not None:
             repo_group = get_repo_group_or_error(repo_group)  # TODO: repos can thus currently not be moved to root
             if repo_group.group_id != repo.group_id:
                 if not(HasPermissionAny('hg.admin')() or HasRepoGroupPermissionLevel('write')(repo_group.group_name)):
@@ -1356,7 +1343,7 @@ class ApiController(JSONRPCController):
             store_update(updates, enable_downloads, 'repo_enable_downloads')
 
             RepoModel().update(repo, **updates)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='updated repo ID:%s %s' % (repo.repo_id, repo.repo_name),
                 repository=repo.get_api_data()
@@ -1368,9 +1355,9 @@ class ApiController(JSONRPCController):
     # permission check inside
     @HasPermissionAnyDecorator('hg.admin', 'hg.fork.repository')
     def fork_repo(self, repoid, fork_name,
-                  owner=Optional(OAttr('apiuser')),
-                  description=Optional(''), copy_permissions=Optional(False),
-                  private=Optional(False), landing_rev=Optional('rev:tip')):
+                  owner=None,
+                  description='', copy_permissions=False,
+                  private=False, landing_rev='rev:tip'):
         """
         Creates a fork of given repo. In case of using celery this will
         immediately return success message, while fork is going to be created
@@ -1424,7 +1411,7 @@ class ApiController(JSONRPCController):
         fork_name_parts = fork_name.split('/')
         if len(fork_name_parts) > 1:
             group_name = '/'.join(fork_name_parts[:-1])
-            repo_group = RepoGroup.get_by_group_name(group_name)
+            repo_group = db.RepoGroup.get_by_group_name(group_name)
             if repo_group is None:
                 raise JSONRPCError("repo group `%s` not found" % group_name)
             if not(HasPermissionAny('hg.admin')() or HasRepoGroupPermissionLevel('write')(group_name)):
@@ -1436,7 +1423,7 @@ class ApiController(JSONRPCController):
         if HasPermissionAny('hg.admin')():
             pass
         elif HasRepoPermissionLevel('read')(repo.repo_name):
-            if not isinstance(owner, Optional):
+            if owner is not None:
                 # forbid setting owner for non-admins
                 raise JSONRPCError(
                     'Only Kallithea admin can specify `owner` param'
@@ -1444,7 +1431,7 @@ class ApiController(JSONRPCController):
         else:
             raise JSONRPCError('repository `%s` does not exist' % (repoid,))
 
-        if isinstance(owner, Optional):
+        if owner is None:
             owner = request.authuser.user_id
 
         owner = get_user_or_error(owner)
@@ -1455,22 +1442,20 @@ class ApiController(JSONRPCController):
                 repo_name_full=fork_name,
                 repo_group=group_name,
                 repo_type=repo.repo_type,
-                description=Optional.extract(description),
-                private=Optional.extract(private),
-                copy_permissions=Optional.extract(copy_permissions),
-                landing_rev=Optional.extract(landing_rev),
+                description=description,
+                private=private,
+                copy_permissions=copy_permissions,
+                landing_rev=landing_rev,
                 update_after_clone=False,
                 fork_parent_id=repo.repo_id,
             )
-            task = RepoModel().create_fork(form_data, cur_user=owner.username)
+            RepoModel().create_fork(form_data, cur_user=owner.username)
             # no commit, it's done in RepoModel, or async via celery
-            task_id = task.task_id
             return dict(
                 msg='Created fork of `%s` as `%s`' % (repo.repo_name,
                                                       fork_name),
                 success=True,  # cannot return the repo data here since fork
                                # can be done async
-                task=task_id
             )
         except Exception:
             log.error(traceback.format_exc())
@@ -1480,7 +1465,7 @@ class ApiController(JSONRPCController):
             )
 
     # permission check inside
-    def delete_repo(self, repoid, forks=Optional('')):
+    def delete_repo(self, repoid, forks=''):
         """
         Deletes a repository. This command can be executed only using api_key belonging
         to user with admin rights or regular user that have admin access to repository.
@@ -1509,7 +1494,7 @@ class ApiController(JSONRPCController):
                 raise JSONRPCError('repository `%s` does not exist' % (repoid,))
 
         try:
-            handle_forks = Optional.extract(forks)
+            handle_forks = forks
             _forks_msg = ''
             _forks = [f for f in repo.forks]
             if handle_forks == 'detach':
@@ -1523,7 +1508,7 @@ class ApiController(JSONRPCController):
                 )
 
             RepoModel().delete(repo, forks=forks)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='Deleted repository `%s`%s' % (repo.repo_name, _forks_msg),
                 success=True
@@ -1564,7 +1549,7 @@ class ApiController(JSONRPCController):
 
             RepoModel().grant_user_permission(repo=repo, user=user, perm=perm)
 
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='Granted perm: `%s` for user: `%s` in repo: `%s`' % (
                     perm.permission_name, user.username, repo.repo_name
@@ -1604,7 +1589,7 @@ class ApiController(JSONRPCController):
         user = get_user_or_error(userid)
         try:
             RepoModel().revoke_user_permission(repo=repo, user=user)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='Revoked perm for user: `%s` in repo: `%s`' % (
                     user.username, repo.repo_name
@@ -1666,7 +1651,7 @@ class ApiController(JSONRPCController):
             RepoModel().grant_user_group_permission(
                 repo=repo, group_name=user_group, perm=perm)
 
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='Granted perm: `%s` for user group: `%s` in '
                     'repo: `%s`' % (
@@ -1716,7 +1701,7 @@ class ApiController(JSONRPCController):
             RepoModel().revoke_user_group_permission(
                 repo=repo, group_name=user_group)
 
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='Revoked perm for user group: `%s` in repo: `%s`' % (
                     user_group.users_group_name, repo.repo_name
@@ -1776,14 +1761,14 @@ class ApiController(JSONRPCController):
         """
         return [
             repo_group.get_api_data()
-            for repo_group in RepoGroup.query()
+            for repo_group in db.RepoGroup.query()
         ]
 
     @HasPermissionAnyDecorator('hg.admin')
-    def create_repo_group(self, group_name, description=Optional(''),
-                          owner=Optional(OAttr('apiuser')),
-                          parent=Optional(None),
-                          copy_permissions=Optional(False)):
+    def create_repo_group(self, group_name, description='',
+                          owner=None,
+                          parent=None,
+                          copy_permissions=False):
         """
         Creates a repository group. This command can be executed only using
         api_key belonging to user with admin rights.
@@ -1817,17 +1802,16 @@ class ApiController(JSONRPCController):
           }
 
         """
-        if RepoGroup.get_by_group_name(group_name):
+        if db.RepoGroup.get_by_group_name(group_name):
             raise JSONRPCError("repo group `%s` already exist" % (group_name,))
 
-        if isinstance(owner, Optional):
+        if owner is None:
             owner = request.authuser.user_id
-        group_description = Optional.extract(description)
-        parent_group = Optional.extract(parent)
-        if not isinstance(parent, Optional):
-            parent_group = get_repo_group_or_error(parent_group)
+        group_description = description
+        parent_group = None
+        if parent is not None:
+            parent_group = get_repo_group_or_error(parent)
 
-        copy_permissions = Optional.extract(copy_permissions)
         try:
             repo_group = RepoGroupModel().create(
                 group_name=group_name,
@@ -1836,7 +1820,7 @@ class ApiController(JSONRPCController):
                 parent=parent_group,
                 copy_permissions=copy_permissions
             )
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='created new repo group `%s`' % group_name,
                 repo_group=repo_group.get_api_data()
@@ -1847,10 +1831,10 @@ class ApiController(JSONRPCController):
             raise JSONRPCError('failed to create repo group `%s`' % (group_name,))
 
     @HasPermissionAnyDecorator('hg.admin')
-    def update_repo_group(self, repogroupid, group_name=Optional(''),
-                          description=Optional(''),
-                          owner=Optional(OAttr('apiuser')),
-                          parent=Optional(None)):
+    def update_repo_group(self, repogroupid, group_name=None,
+                          description=None,
+                          owner=None,
+                          parent=None):
         repo_group = get_repo_group_or_error(repogroupid)
 
         updates = {}
@@ -1860,7 +1844,7 @@ class ApiController(JSONRPCController):
             store_update(updates, owner, 'owner')
             store_update(updates, parent, 'parent_group')
             repo_group = RepoGroupModel().update(repo_group, updates)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='updated repository group ID:%s %s' % (repo_group.group_id,
                                                            repo_group.group_name),
@@ -1900,7 +1884,7 @@ class ApiController(JSONRPCController):
 
         try:
             RepoGroupModel().delete(repo_group)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='deleted repo group ID:%s %s' %
                     (repo_group.group_id, repo_group.group_name),
@@ -1914,7 +1898,7 @@ class ApiController(JSONRPCController):
 
     # permission check inside
     def grant_user_permission_to_repo_group(self, repogroupid, userid,
-                                            perm, apply_to_children=Optional('none')):
+                                            perm, apply_to_children='none'):
         """
         Grant permission for user on given repository group, or update existing
         one if found. This command can be executed only using api_key belonging
@@ -1956,7 +1940,6 @@ class ApiController(JSONRPCController):
 
         user = get_user_or_error(userid)
         perm = get_perm_or_error(perm, prefix='group.')
-        apply_to_children = Optional.extract(apply_to_children)
 
         try:
             RepoGroupModel().add_permission(repo_group=repo_group,
@@ -1964,7 +1947,7 @@ class ApiController(JSONRPCController):
                                             obj_type="user",
                                             perm=perm,
                                             recursive=apply_to_children)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='Granted perm: `%s` (recursive:%s) for user: `%s` in repo group: `%s`' % (
                     perm.permission_name, apply_to_children, user.username, repo_group.name
@@ -1979,7 +1962,7 @@ class ApiController(JSONRPCController):
 
     # permission check inside
     def revoke_user_permission_from_repo_group(self, repogroupid, userid,
-                                               apply_to_children=Optional('none')):
+                                               apply_to_children='none'):
         """
         Revoke permission for user on given repository group. This command can
         be executed only using api_key belonging to user with admin rights, or
@@ -2018,7 +2001,6 @@ class ApiController(JSONRPCController):
                 raise JSONRPCError('repository group `%s` does not exist' % (repogroupid,))
 
         user = get_user_or_error(userid)
-        apply_to_children = Optional.extract(apply_to_children)
 
         try:
             RepoGroupModel().delete_permission(repo_group=repo_group,
@@ -2026,7 +2008,7 @@ class ApiController(JSONRPCController):
                                                obj_type="user",
                                                recursive=apply_to_children)
 
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='Revoked perm (recursive:%s) for user: `%s` in repo group: `%s`' % (
                     apply_to_children, user.username, repo_group.name
@@ -2042,7 +2024,7 @@ class ApiController(JSONRPCController):
     # permission check inside
     def grant_user_group_permission_to_repo_group(
             self, repogroupid, usergroupid, perm,
-            apply_to_children=Optional('none')):
+            apply_to_children='none'):
         """
         Grant permission for user group on given repository group, or update
         existing one if found. This command can be executed only using
@@ -2089,15 +2071,13 @@ class ApiController(JSONRPCController):
                 raise JSONRPCError(
                     'user group `%s` does not exist' % (usergroupid,))
 
-        apply_to_children = Optional.extract(apply_to_children)
-
         try:
             RepoGroupModel().add_permission(repo_group=repo_group,
                                             obj=user_group,
                                             obj_type="user_group",
                                             perm=perm,
                                             recursive=apply_to_children)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='Granted perm: `%s` (recursive:%s) for user group: `%s` in repo group: `%s`' % (
                     perm.permission_name, apply_to_children,
@@ -2117,7 +2097,7 @@ class ApiController(JSONRPCController):
     # permission check inside
     def revoke_user_group_permission_from_repo_group(
             self, repogroupid, usergroupid,
-            apply_to_children=Optional('none')):
+            apply_to_children='none'):
         """
         Revoke permission for user group on given repository. This command can be
         executed only using api_key belonging to user with admin rights, or
@@ -2159,14 +2139,12 @@ class ApiController(JSONRPCController):
                 raise JSONRPCError(
                     'user group `%s` does not exist' % (usergroupid,))
 
-        apply_to_children = Optional.extract(apply_to_children)
-
         try:
             RepoGroupModel().delete_permission(repo_group=repo_group,
                                                obj=user_group,
                                                obj_type="user_group",
                                                recursive=apply_to_children)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='Revoked perm (recursive:%s) for user group: `%s` in repo group: `%s`' % (
                     apply_to_children, user_group.users_group_name, repo_group.name
@@ -2194,7 +2172,7 @@ class ApiController(JSONRPCController):
                 raise JSONRPCError('gist `%s` does not exist' % (gistid,))
         return gist.get_api_data()
 
-    def get_gists(self, userid=Optional(OAttr('apiuser'))):
+    def get_gists(self, userid=None):
         """
         Get all gists for given user. If userid is empty returned gists
         are for user who called the api
@@ -2205,27 +2183,27 @@ class ApiController(JSONRPCController):
         if not HasPermissionAny('hg.admin')():
             # make sure normal user does not pass someone else userid,
             # he is not allowed to do that
-            if not isinstance(userid, Optional) and userid != request.authuser.user_id:
+            if userid is not None and userid != request.authuser.user_id:
                 raise JSONRPCError(
                     'userid is not the same as your user'
                 )
 
-        if isinstance(userid, Optional):
+        if userid is None:
             user_id = request.authuser.user_id
         else:
             user_id = get_user_or_error(userid).user_id
 
         return [
             gist.get_api_data()
-            for gist in Gist().query()
+            for gist in db.Gist().query()
                 .filter_by(is_expired=False)
-                .filter(Gist.owner_id == user_id)
-                .order_by(Gist.created_on.desc())
+                .filter(db.Gist.owner_id == user_id)
+                .order_by(db.Gist.created_on.desc())
         ]
 
-    def create_gist(self, files, owner=Optional(OAttr('apiuser')),
-                    gist_type=Optional(Gist.GIST_PUBLIC), lifetime=Optional(-1),
-                    description=Optional('')):
+    def create_gist(self, files, owner=None,
+                    gist_type=db.Gist.GIST_PUBLIC, lifetime=-1,
+                    description=''):
 
         """
         Creates new Gist
@@ -2262,13 +2240,10 @@ class ApiController(JSONRPCController):
 
         """
         try:
-            if isinstance(owner, Optional):
+            if owner is None:
                 owner = request.authuser.user_id
 
             owner = get_user_or_error(owner)
-            description = Optional.extract(description)
-            gist_type = Optional.extract(gist_type)
-            lifetime = Optional.extract(lifetime)
 
             gist = GistModel().create(description=description,
                                       owner=owner,
@@ -2276,7 +2251,7 @@ class ApiController(JSONRPCController):
                                       gist_mapping=files,
                                       gist_type=gist_type,
                                       lifetime=lifetime)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='created new gist',
                 gist=gist.get_api_data()
@@ -2284,12 +2259,6 @@ class ApiController(JSONRPCController):
         except Exception:
             log.error(traceback.format_exc())
             raise JSONRPCError('failed to create gist')
-
-    # def update_gist(self, gistid, files, owner=Optional(OAttr('apiuser')),
-    #                 gist_type=Optional(Gist.GIST_PUBLIC),
-    #                 gist_lifetime=Optional(-1), gist_description=Optional('')):
-    #     gist = get_gist_or_error(gistid)
-    #     updates = {}
 
     # permission check inside
     def delete_gist(self, gistid):
@@ -2324,7 +2293,7 @@ class ApiController(JSONRPCController):
 
         try:
             GistModel().delete(gist)
-            Session().commit()
+            meta.Session().commit()
             return dict(
                 msg='deleted gist ID:%s' % (gist.gist_access_id,),
                 gist=None
@@ -2354,7 +2323,7 @@ class ApiController(JSONRPCController):
             raise JSONRPCError('Repository is empty')
 
     # permission check inside
-    def get_changeset(self, repoid, raw_id, with_reviews=Optional(False)):
+    def get_changeset(self, repoid, raw_id, with_reviews=False):
         repo = get_repo_or_error(repoid)
         if not HasRepoPermissionLevel('read')(repo.repo_name):
             raise JSONRPCError('Access denied to repo %s' % repo.repo_name)
@@ -2364,7 +2333,6 @@ class ApiController(JSONRPCController):
 
         info = dict(changeset.as_dict())
 
-        with_reviews = Optional.extract(with_reviews)
         if with_reviews:
             reviews = ChangesetStatusModel().get_statuses(
                                 repo.repo_name, raw_id)
@@ -2377,7 +2345,7 @@ class ApiController(JSONRPCController):
         """
         Get given pull request by id
         """
-        pull_request = PullRequest.get(pullrequest_id)
+        pull_request = db.PullRequest.get(pullrequest_id)
         if pull_request is None:
             raise JSONRPCError('pull request `%s` does not exist' % (pullrequest_id,))
         if not HasRepoPermissionLevel('read')(pull_request.org_repo.repo_name):
@@ -2390,7 +2358,7 @@ class ApiController(JSONRPCController):
         Add comment, close and change status of pull request.
         """
         apiuser = get_user_or_error(request.authuser.user_id)
-        pull_request = PullRequest.get(pull_request_id)
+        pull_request = db.PullRequest.get(pull_request_id)
         if pull_request is None:
             raise JSONRPCError('pull request `%s` does not exist' % (pull_request_id,))
         if (not HasRepoPermissionLevel('read')(pull_request.org_repo.repo_name)):
@@ -2412,10 +2380,10 @@ class ApiController(JSONRPCController):
             pull_request=pull_request.pull_request_id,
             f_path=None,
             line_no=None,
-            status_change=ChangesetStatus.get_status_lbl(status),
+            status_change=db.ChangesetStatus.get_status_lbl(status),
             closing_pr=close_pr
         )
-        action_logger(apiuser,
+        userlog.action_logger(apiuser,
                       'user_commented_pull_request:%s' % pull_request_id,
                       pull_request.org_repo, request.ip_addr)
         if status:
@@ -2428,8 +2396,54 @@ class ApiController(JSONRPCController):
             )
         if close_pr:
             PullRequestModel().close_pull_request(pull_request_id)
-            action_logger(apiuser,
+            userlog.action_logger(apiuser,
                           'user_closed_pull_request:%s' % pull_request_id,
                           pull_request.org_repo, request.ip_addr)
-        Session().commit()
+        meta.Session().commit()
         return True
+
+    # permission check inside
+    def edit_reviewers(self, pull_request_id, add=None, remove=None):
+        """
+        Add and/or remove one or more reviewers to a pull request, by username
+        or user ID. Reviewers are specified either as a single-user string or
+        as a JSON list of one or more strings.
+        """
+        if add is None and remove is None:
+            raise JSONRPCError('''Invalid request. Neither 'add' nor 'remove' is specified.''')
+
+        pull_request = db.PullRequest.get(pull_request_id)
+        if pull_request is None:
+            raise JSONRPCError('pull request `%s` does not exist' % (pull_request_id,))
+
+        apiuser = get_user_or_error(request.authuser.user_id)
+        is_owner = apiuser.user_id == pull_request.owner_id
+        is_repo_admin = HasRepoPermissionLevel('admin')(pull_request.other_repo.repo_name)
+        if not (apiuser.admin or is_repo_admin or is_owner):
+            raise JSONRPCError('No permission to edit reviewers of this pull request. User needs to be admin or pull request owner.')
+        if pull_request.is_closed():
+            raise JSONRPCError('Cannot edit reviewers of a closed pull request.')
+
+        if not isinstance(add, list):
+            add = [add]
+        if not isinstance(remove, list):
+            remove = [remove]
+
+        # look up actual user objects from given name or id. Bail out if unknown.
+        add_objs = set(get_user_or_error(user) for user in add if user is not None)
+        remove_objs = set(get_user_or_error(user) for user in remove if user is not None)
+
+        new_reviewers = redundant_reviewers = set()
+        if add_objs:
+            new_reviewers, redundant_reviewers = PullRequestModel().add_reviewers(apiuser, pull_request, add_objs)
+        if remove_objs:
+            PullRequestModel().remove_reviewers(apiuser, pull_request, remove_objs)
+
+        meta.Session().commit()
+
+        return {
+            'added': [x.username for x in new_reviewers],
+            'already_present': [x.username for x in redundant_reviewers],
+            # NOTE: no explicit check that removed reviewers were actually present.
+            'removed': [x.username for x in remove_objs],
+        }

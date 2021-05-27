@@ -118,22 +118,15 @@ Trending source files
 
 Trending source files are calculated based on a predefined dictionary of known
 types and extensions. If an extension is missing or you would like to scan
-custom files, it is possible to extend the ``LANGUAGES_EXTENSIONS_MAP``
-dictionary located in ``kallithea/config/conf.py`` with new types.
+custom files, it is possible to add additional file extensions with
+``EXTRA_MAPPINGS`` in your custom Kallithea extensions.py file. See
+:ref:`customization`.
 
 
 Cloning remote repositories
 ---------------------------
 
 Kallithea has the ability to clone repositories from given remote locations.
-Currently it supports the following options:
-
-- hg  -> hg clone
-- svn -> hg clone
-- git -> git clone
-
-.. note:: svn -> hg cloning requires the ``hgsubversion`` library to be
-   installed.
 
 If you need to clone repositories that are protected via basic authentication,
 you can pass the credentials in the URL, e.g.

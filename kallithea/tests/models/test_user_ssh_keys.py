@@ -1,4 +1,4 @@
-from kallithea.model.db import UserSshKeys
+from kallithea.model import db
 from kallithea.tests.base import TestController
 from kallithea.tests.fixture import Fixture
 
@@ -11,7 +11,7 @@ public_key = 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAAgQC6Ycnc2oUZHQnQwuqgZqTTdMDZD7
 class TestUserSshKeys(TestController):
 
     def test_fingerprint_generation(self):
-        key_model = UserSshKeys()
+        key_model = db.UserSshKeys()
         key_model.public_key = public_key
         expected = 'Ke3oUCNJM87P0jJTb3D+e3shjceP2CqMpQKVd75E9I8'
         assert expected == key_model.fingerprint

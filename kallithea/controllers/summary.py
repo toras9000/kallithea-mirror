@@ -38,19 +38,17 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest
 
-import kallithea.lib.helpers as h
-from kallithea.config.conf import ALL_EXTS, ALL_READMES, LANGUAGES_EXTENSIONS_MAP
-from kallithea.lib import ext_json
+from kallithea.controllers import base
+from kallithea.lib import ext_json, webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
-from kallithea.lib.base import BaseRepoController, jsonify, render
-from kallithea.lib.celerylib.tasks import get_commits_stats
+from kallithea.lib.conf import ALL_EXTS, ALL_READMES, LANGUAGES_EXTENSIONS_MAP
 from kallithea.lib.markup_renderer import MarkupRenderer
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import safe_int, safe_str
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.exceptions import ChangesetError, EmptyRepositoryError, NodeDoesNotExistError
 from kallithea.lib.vcs.nodes import FileNode
-from kallithea.model.db import Statistics
+from kallithea.model import async_tasks, db
 
 
 log = logging.getLogger(__name__)
@@ -60,7 +58,7 @@ README_FILES = [''.join([x[0][0], x[1][0]]) for x in
                            key=lambda y:y[0][1] + y[1][1])]
 
 
-class SummaryController(BaseRepoController):
+class SummaryController(base.BaseRepoController):
 
     def __get_readme_data(self, db_repo):
         repo_name = db_repo.repo_name
@@ -108,7 +106,7 @@ class SummaryController(BaseRepoController):
         try:
             collection = c.db_repo_scm_instance.get_changesets(reverse=True)
         except EmptyRepositoryError as e:
-            h.flash(e, category='warning')
+            webutils.flash(e, category='warning')
             collection = []
         c.cs_pagination = Page(collection, page=p, items_per_page=size)
         page_revisions = [x.raw_id for x in list(c.cs_pagination)]
@@ -131,8 +129,8 @@ class SummaryController(BaseRepoController):
         else:
             c.show_stats = False
 
-        stats = Statistics.query() \
-            .filter(Statistics.repository == c.db_repo) \
+        stats = db.Statistics.query() \
+            .filter(db.Statistics.repository == c.db_repo) \
             .scalar()
 
         c.stats_percentage = 0
@@ -150,11 +148,11 @@ class SummaryController(BaseRepoController):
         c.enable_downloads = c.db_repo.enable_downloads
         c.readme_data, c.readme_file = \
             self.__get_readme_data(c.db_repo)
-        return render('summary/summary.html')
+        return base.render('summary/summary.html')
 
     @LoginRequired()
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def repo_size(self, repo_name):
         if request.is_xhr:
             return c.db_repo._repo_size()
@@ -181,8 +179,8 @@ class SummaryController(BaseRepoController):
         c.ts_min = ts_min_m
         c.ts_max = ts_max_y
 
-        stats = Statistics.query() \
-            .filter(Statistics.repository == c.db_repo) \
+        stats = db.Statistics.query() \
+            .filter(db.Statistics.repository == c.db_repo) \
             .scalar()
         c.stats_percentage = 0
         if stats and stats.languages:
@@ -210,5 +208,5 @@ class SummaryController(BaseRepoController):
             c.trending_languages = []
 
         recurse_limit = 500  # don't recurse more than 500 times when parsing
-        get_commits_stats(c.db_repo.repo_name, ts_min_y, ts_max_y, recurse_limit)
-        return render('summary/statistics.html')
+        async_tasks.get_commits_stats(c.db_repo.repo_name, ts_min_y, ts_max_y, recurse_limit)
+        return base.render('summary/statistics.html')

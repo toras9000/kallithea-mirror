@@ -35,24 +35,22 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPForbidden, HTTPFound, HTTPNotFound
 
-from kallithea.config.routing import url
-from kallithea.lib import helpers as h
+from kallithea.controllers import base
+from kallithea.lib import auth, webutils
 from kallithea.lib.auth import LoginRequired
-from kallithea.lib.base import BaseController, jsonify, render
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import safe_int, safe_str, time_to_datetime
 from kallithea.lib.vcs.exceptions import NodeNotChangedError, VCSError
-from kallithea.model.db import Gist
+from kallithea.lib.webutils import url
+from kallithea.model import db, meta
 from kallithea.model.forms import GistForm
 from kallithea.model.gist import GistModel
-from kallithea.model.meta import Session
 
 
 log = logging.getLogger(__name__)
 
 
-class GistsController(BaseController):
-    """REST Controller styled on the Atom Publishing Protocol"""
+class GistsController(base.BaseController):
 
     def __load_defaults(self, extra_values=None):
         c.lifetime_values = [
@@ -77,34 +75,34 @@ class GistsController(BaseController):
         elif c.show_private:
             url_params['private'] = 1
 
-        gists = Gist().query() \
+        gists = db.Gist().query() \
             .filter_by(is_expired=False) \
-            .order_by(Gist.created_on.desc())
+            .order_by(db.Gist.created_on.desc())
 
         # MY private
         if c.show_private and not c.show_public:
-            gists = gists.filter(Gist.gist_type == Gist.GIST_PRIVATE) \
-                             .filter(Gist.owner_id == request.authuser.user_id)
+            gists = gists.filter(db.Gist.gist_type == db.Gist.GIST_PRIVATE) \
+                             .filter(db.Gist.owner_id == request.authuser.user_id)
         # MY public
         elif c.show_public and not c.show_private:
-            gists = gists.filter(Gist.gist_type == Gist.GIST_PUBLIC) \
-                             .filter(Gist.owner_id == request.authuser.user_id)
+            gists = gists.filter(db.Gist.gist_type == db.Gist.GIST_PUBLIC) \
+                             .filter(db.Gist.owner_id == request.authuser.user_id)
 
         # MY public+private
         elif c.show_private and c.show_public:
-            gists = gists.filter(or_(Gist.gist_type == Gist.GIST_PUBLIC,
-                                     Gist.gist_type == Gist.GIST_PRIVATE)) \
-                             .filter(Gist.owner_id == request.authuser.user_id)
+            gists = gists.filter(or_(db.Gist.gist_type == db.Gist.GIST_PUBLIC,
+                                     db.Gist.gist_type == db.Gist.GIST_PRIVATE)) \
+                             .filter(db.Gist.owner_id == request.authuser.user_id)
 
         # default show ALL public gists
         if not c.show_public and not c.show_private:
-            gists = gists.filter(Gist.gist_type == Gist.GIST_PUBLIC)
+            gists = gists.filter(db.Gist.gist_type == db.Gist.GIST_PUBLIC)
 
         c.gists = gists
         p = safe_int(request.GET.get('page'), 1)
         c.gists_pager = Page(c.gists, page=p, items_per_page=10,
                              **url_params)
-        return render('admin/gists/index.html')
+        return base.render('admin/gists/index.html')
 
     @LoginRequired()
     def create(self):
@@ -113,7 +111,7 @@ class GistsController(BaseController):
         try:
             form_result = gist_form.to_python(dict(request.POST))
             # TODO: multiple files support, from the form
-            filename = form_result['filename'] or Gist.DEFAULT_FILENAME
+            filename = form_result['filename'] or db.Gist.DEFAULT_FILENAME
             nodes = {
                 filename: {
                     'content': form_result['content'],
@@ -121,7 +119,7 @@ class GistsController(BaseController):
                 }
             }
             _public = form_result['public']
-            gist_type = Gist.GIST_PUBLIC if _public else Gist.GIST_PRIVATE
+            gist_type = db.Gist.GIST_PUBLIC if _public else db.Gist.GIST_PRIVATE
             gist = GistModel().create(
                 description=form_result['description'],
                 owner=request.authuser.user_id,
@@ -130,13 +128,13 @@ class GistsController(BaseController):
                 gist_type=gist_type,
                 lifetime=form_result['lifetime']
             )
-            Session().commit()
+            meta.Session().commit()
             new_gist_id = gist.gist_access_id
         except formencode.Invalid as errors:
             defaults = errors.value
 
             return formencode.htmlfill.render(
-                render('admin/gists/new.html'),
+                base.render('admin/gists/new.html'),
                 defaults=defaults,
                 errors=errors.error_dict or {},
                 prefix_error=False,
@@ -145,23 +143,23 @@ class GistsController(BaseController):
 
         except Exception as e:
             log.error(traceback.format_exc())
-            h.flash(_('Error occurred during gist creation'), category='error')
+            webutils.flash(_('Error occurred during gist creation'), category='error')
             raise HTTPFound(location=url('new_gist'))
         raise HTTPFound(location=url('gist', gist_id=new_gist_id))
 
     @LoginRequired()
     def new(self, format='html'):
         self.__load_defaults()
-        return render('admin/gists/new.html')
+        return base.render('admin/gists/new.html')
 
     @LoginRequired()
     def delete(self, gist_id):
         gist = GistModel().get_gist(gist_id)
         owner = gist.owner_id == request.authuser.user_id
-        if h.HasPermissionAny('hg.admin')() or owner:
+        if auth.HasPermissionAny('hg.admin')() or owner:
             GistModel().delete(gist)
-            Session().commit()
-            h.flash(_('Deleted gist %s') % gist.gist_access_id, category='success')
+            meta.Session().commit()
+            webutils.flash(_('Deleted gist %s') % gist.gist_access_id, category='success')
         else:
             raise HTTPForbidden()
 
@@ -169,7 +167,7 @@ class GistsController(BaseController):
 
     @LoginRequired(allow_default_user=True)
     def show(self, gist_id, revision='tip', format='html', f_path=None):
-        c.gist = Gist.get_or_404(gist_id)
+        c.gist = db.Gist.get_or_404(gist_id)
 
         if c.gist.is_expired:
             log.error('Gist expired at %s',
@@ -188,11 +186,11 @@ class GistsController(BaseController):
             )
             response.content_type = 'text/plain'
             return content
-        return render('admin/gists/show.html')
+        return base.render('admin/gists/show.html')
 
     @LoginRequired()
     def edit(self, gist_id, format='html'):
-        c.gist = Gist.get_or_404(gist_id)
+        c.gist = db.Gist.get_or_404(gist_id)
 
         if c.gist.is_expired:
             log.error('Gist expired at %s',
@@ -205,7 +203,7 @@ class GistsController(BaseController):
             raise HTTPNotFound()
 
         self.__load_defaults(extra_values=('0', _('Unmodified')))
-        rendered = render('admin/gists/edit.html')
+        rendered = base.render('admin/gists/edit.html')
 
         if request.POST:
             rpost = request.POST
@@ -233,16 +231,16 @@ class GistsController(BaseController):
                     lifetime=rpost['lifetime']
                 )
 
-                Session().commit()
-                h.flash(_('Successfully updated gist content'), category='success')
+                meta.Session().commit()
+                webutils.flash(_('Successfully updated gist content'), category='success')
             except NodeNotChangedError:
                 # raised if nothing was changed in repo itself. We anyway then
                 # store only DB stuff for gist
-                Session().commit()
-                h.flash(_('Successfully updated gist data'), category='success')
+                meta.Session().commit()
+                webutils.flash(_('Successfully updated gist data'), category='success')
             except Exception:
                 log.error(traceback.format_exc())
-                h.flash(_('Error occurred during update of gist %s') % gist_id,
+                webutils.flash(_('Error occurred during update of gist %s') % gist_id,
                         category='error')
 
             raise HTTPFound(location=url('gist', gist_id=gist_id))
@@ -250,9 +248,9 @@ class GistsController(BaseController):
         return rendered
 
     @LoginRequired()
-    @jsonify
+    @base.jsonify
     def check_revision(self, gist_id):
-        c.gist = Gist.get_or_404(gist_id)
+        c.gist = db.Gist.get_or_404(gist_id)
         last_rev = c.gist.scm_instance.get_changeset()
         success = True
         revision = request.POST.get('revision')

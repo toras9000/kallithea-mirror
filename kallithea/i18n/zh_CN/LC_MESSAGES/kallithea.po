@@ -19,15 +19,6 @@ msgstr "无"
 msgid "(closed)"
 msgstr "(已关闭)"
 
-msgid "Show whitespace"
-msgstr "显示空白"
-
-msgid "Ignore whitespace"
-msgstr "忽略空白"
-
-msgid "Increase diff context to %(num)s lines"
-msgstr "增加差异上下文到 %(num)s 行"
-
 msgid "Such revision does not exist for this repository"
 msgstr "在此代码库内，此修改并不存在"
 
@@ -398,6 +389,9 @@ msgstr "修订集过大并已被截断，使用差异菜单查看此差异"
 msgid "No changes detected"
 msgstr "未发现差异"
 
+msgid "Increase diff context to %(num)s lines"
+msgstr "增加差异上下文到 %(num)s 行"
+
 msgid "Deleted branch: %s"
 msgstr "已经删除分支%s"
 
@@ -473,14 +467,6 @@ msgstr " 还有%s个"
 msgid "No files"
 msgstr "无文件"
 
-msgid ""
-"%s repository is not mapped to db perhaps it was created or renamed from "
-"the filesystem please run the application again in order to rescan "
-"repositories"
-msgstr ""
-"版本库%s没有映射到数据库，可能是从文件系统创建或者重命名，请重启Kallithea"
-"以重新扫描版本库"
-
 msgid "%d year"
 msgid_plural "%d years"
 msgstr[0] "%d年"
@@ -519,12 +505,6 @@ msgstr "%s零%s前"
 
 msgid "just now"
 msgstr "刚才"
-
-msgid "on line %s"
-msgstr "在%s行"
-
-msgid "[Mention]"
-msgstr "[提及]"
 
 msgid "Kallithea Administrator"
 msgstr "Kallithea 管理员"
@@ -615,10 +595,10 @@ msgstr "帐号"
 msgid "Password"
 msgstr "密码"
 
-msgid "Forgot your password ?"
+msgid "Forgot your password?"
 msgstr "忘记了密码？"
 
-msgid "Don't have an account ?"
+msgid "Don't have an account?"
 msgstr "还没有帐号？"
 
 msgid "Sign In"
@@ -1008,6 +988,9 @@ msgstr "订阅%s的Atom"
 
 msgid "File diff"
 msgstr "文件差异"
+
+msgid "Ignore whitespace"
+msgstr "忽略空白"
 
 msgid "Location"
 msgstr "位置"

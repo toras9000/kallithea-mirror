@@ -1,4 +1,0 @@
-<%block name="header">\
-</%block>\
-\
-${body|n,unicode}\

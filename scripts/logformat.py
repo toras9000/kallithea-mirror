@@ -40,7 +40,7 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         print('Cleanup of superfluous % formatting of log statements.')
         print('Usage:')
-        print('''  hg revert `hg loc '*.py'|grep -v logformat.py` && scripts/logformat.py `hg loc '*.py'` && hg diff''')
+        print('''  hg revert `hg files 'set:**.py'|grep -v logformat.py` && scripts/logformat.py `hg files 'set:**.py'` && hg diff''')
         raise SystemExit(1)
 
     for f in sys.argv[1:]:

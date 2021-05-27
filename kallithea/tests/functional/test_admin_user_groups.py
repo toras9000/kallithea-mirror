@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from kallithea.model.db import Permission, UserGroup, UserGroupToPerm
-from kallithea.model.meta import Session
+from kallithea.model import db, meta
 from kallithea.tests import base
 
 
@@ -52,14 +51,14 @@ class TestAdminUsersGroupsController(base.TestController):
         self.checkSessionFlash(response,
                                'Created user group ')
 
-        gr = Session().query(UserGroup) \
-            .filter(UserGroup.users_group_name == users_group_name).one()
+        gr = meta.Session().query(db.UserGroup) \
+            .filter(db.UserGroup.users_group_name == users_group_name).one()
 
         response = self.app.post(base.url('delete_users_group', id=gr.users_group_id),
             params={'_session_csrf_secret_token': self.session_csrf_secret_token()})
 
-        gr = Session().query(UserGroup) \
-            .filter(UserGroup.users_group_name == users_group_name).scalar()
+        gr = meta.Session().query(db.UserGroup) \
+            .filter(db.UserGroup.users_group_name == users_group_name).scalar()
 
         assert gr is None
 
@@ -73,7 +72,7 @@ class TestAdminUsersGroupsController(base.TestController):
                                   '_session_csrf_secret_token': self.session_csrf_secret_token()})
         response.follow()
 
-        ug = UserGroup.get_by_group_name(users_group_name)
+        ug = db.UserGroup.get_by_group_name(users_group_name)
         self.checkSessionFlash(response,
                                'Created user group ')
         ## ENABLE REPO CREATE ON A GROUP
@@ -82,14 +81,14 @@ class TestAdminUsersGroupsController(base.TestController):
                                  {'create_repo_perm': True,
                                   '_session_csrf_secret_token': self.session_csrf_secret_token()})
         response.follow()
-        ug = UserGroup.get_by_group_name(users_group_name)
-        p = Permission.get_by_key('hg.create.repository')
-        p2 = Permission.get_by_key('hg.usergroup.create.false')
-        p3 = Permission.get_by_key('hg.fork.none')
+        ug = db.UserGroup.get_by_group_name(users_group_name)
+        p = db.Permission.get_by_key('hg.create.repository')
+        p2 = db.Permission.get_by_key('hg.usergroup.create.false')
+        p3 = db.Permission.get_by_key('hg.fork.none')
         # check if user has this perms, they should be here since
         # defaults are on
-        perms = UserGroupToPerm.query() \
-            .filter(UserGroupToPerm.users_group == ug).all()
+        perms = db.UserGroupToPerm.query() \
+            .filter(db.UserGroupToPerm.users_group == ug).all()
 
         assert sorted([[x.users_group_id, x.permission_id, ] for x in perms]) == sorted([[ug.users_group_id, p.permission_id],
                     [ug.users_group_id, p2.permission_id],
@@ -101,33 +100,33 @@ class TestAdminUsersGroupsController(base.TestController):
             params={'_session_csrf_secret_token': self.session_csrf_secret_token()})
 
         response.follow()
-        ug = UserGroup.get_by_group_name(users_group_name)
-        p = Permission.get_by_key('hg.create.none')
-        p2 = Permission.get_by_key('hg.usergroup.create.false')
-        p3 = Permission.get_by_key('hg.fork.none')
+        ug = db.UserGroup.get_by_group_name(users_group_name)
+        p = db.Permission.get_by_key('hg.create.none')
+        p2 = db.Permission.get_by_key('hg.usergroup.create.false')
+        p3 = db.Permission.get_by_key('hg.fork.none')
 
         # check if user has this perms, they should be here since
         # defaults are on
-        perms = UserGroupToPerm.query() \
-            .filter(UserGroupToPerm.users_group == ug).all()
+        perms = db.UserGroupToPerm.query() \
+            .filter(db.UserGroupToPerm.users_group == ug).all()
 
         assert sorted([[x.users_group_id, x.permission_id, ] for x in perms]) == sorted([[ug.users_group_id, p.permission_id],
                     [ug.users_group_id, p2.permission_id],
                     [ug.users_group_id, p3.permission_id]])
 
         # DELETE !
-        ug = UserGroup.get_by_group_name(users_group_name)
+        ug = db.UserGroup.get_by_group_name(users_group_name)
         ugid = ug.users_group_id
         response = self.app.post(base.url('delete_users_group', id=ug.users_group_id),
             params={'_session_csrf_secret_token': self.session_csrf_secret_token()})
         response = response.follow()
-        gr = Session().query(UserGroup) \
-            .filter(UserGroup.users_group_name == users_group_name).scalar()
+        gr = meta.Session().query(db.UserGroup) \
+            .filter(db.UserGroup.users_group_name == users_group_name).scalar()
 
         assert gr is None
-        p = Permission.get_by_key('hg.create.repository')
-        perms = UserGroupToPerm.query() \
-            .filter(UserGroupToPerm.users_group_id == ugid).all()
+        p = db.Permission.get_by_key('hg.create.repository')
+        perms = db.UserGroupToPerm.query() \
+            .filter(db.UserGroupToPerm.users_group_id == ugid).all()
         perms = [[x.users_group_id,
                   x.permission_id, ] for x in perms]
         assert perms == []
@@ -142,7 +141,7 @@ class TestAdminUsersGroupsController(base.TestController):
                                   '_session_csrf_secret_token': self.session_csrf_secret_token()})
         response.follow()
 
-        ug = UserGroup.get_by_group_name(users_group_name)
+        ug = db.UserGroup.get_by_group_name(users_group_name)
         self.checkSessionFlash(response,
                                'Created user group ')
         ## ENABLE REPO CREATE ON A GROUP
@@ -151,14 +150,14 @@ class TestAdminUsersGroupsController(base.TestController):
                                  {'fork_repo_perm': True, '_session_csrf_secret_token': self.session_csrf_secret_token()})
 
         response.follow()
-        ug = UserGroup.get_by_group_name(users_group_name)
-        p = Permission.get_by_key('hg.create.none')
-        p2 = Permission.get_by_key('hg.usergroup.create.false')
-        p3 = Permission.get_by_key('hg.fork.repository')
+        ug = db.UserGroup.get_by_group_name(users_group_name)
+        p = db.Permission.get_by_key('hg.create.none')
+        p2 = db.Permission.get_by_key('hg.usergroup.create.false')
+        p3 = db.Permission.get_by_key('hg.fork.repository')
         # check if user has this perms, they should be here since
         # defaults are on
-        perms = UserGroupToPerm.query() \
-            .filter(UserGroupToPerm.users_group == ug).all()
+        perms = db.UserGroupToPerm.query() \
+            .filter(db.UserGroupToPerm.users_group == ug).all()
 
         assert sorted([[x.users_group_id, x.permission_id, ] for x in perms]) == sorted([[ug.users_group_id, p.permission_id],
                     [ug.users_group_id, p2.permission_id],
@@ -169,33 +168,33 @@ class TestAdminUsersGroupsController(base.TestController):
             params={'_session_csrf_secret_token': self.session_csrf_secret_token()})
 
         response.follow()
-        ug = UserGroup.get_by_group_name(users_group_name)
-        p = Permission.get_by_key('hg.create.none')
-        p2 = Permission.get_by_key('hg.usergroup.create.false')
-        p3 = Permission.get_by_key('hg.fork.none')
+        ug = db.UserGroup.get_by_group_name(users_group_name)
+        p = db.Permission.get_by_key('hg.create.none')
+        p2 = db.Permission.get_by_key('hg.usergroup.create.false')
+        p3 = db.Permission.get_by_key('hg.fork.none')
         # check if user has this perms, they should be here since
         # defaults are on
-        perms = UserGroupToPerm.query() \
-            .filter(UserGroupToPerm.users_group == ug).all()
+        perms = db.UserGroupToPerm.query() \
+            .filter(db.UserGroupToPerm.users_group == ug).all()
 
         assert sorted([[x.users_group_id, x.permission_id, ] for x in perms]) == sorted([[ug.users_group_id, p.permission_id],
                     [ug.users_group_id, p2.permission_id],
                     [ug.users_group_id, p3.permission_id]])
 
         # DELETE !
-        ug = UserGroup.get_by_group_name(users_group_name)
+        ug = db.UserGroup.get_by_group_name(users_group_name)
         ugid = ug.users_group_id
         response = self.app.post(base.url('delete_users_group', id=ug.users_group_id),
             params={'_session_csrf_secret_token': self.session_csrf_secret_token()})
         response = response.follow()
-        gr = Session().query(UserGroup) \
-                           .filter(UserGroup.users_group_name ==
+        gr = meta.Session().query(db.UserGroup) \
+                           .filter(db.UserGroup.users_group_name ==
                                    users_group_name).scalar()
 
         assert gr is None
-        p = Permission.get_by_key('hg.fork.repository')
-        perms = UserGroupToPerm.query() \
-            .filter(UserGroupToPerm.users_group_id == ugid).all()
+        p = db.Permission.get_by_key('hg.fork.repository')
+        perms = db.UserGroupToPerm.query() \
+            .filter(db.UserGroupToPerm.users_group_id == ugid).all()
         perms = [[x.users_group_id,
                   x.permission_id, ] for x in perms]
         assert perms == []

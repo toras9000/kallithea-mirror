@@ -2,6 +2,7 @@ import datetime
 
 import pytest
 
+from kallithea.lib.vcs.exceptions import BranchDoesNotExistError
 from kallithea.lib.vcs.nodes import FileNode
 from kallithea.tests.vcs.base import _BackendTestMixin
 
@@ -67,7 +68,6 @@ class WorkdirTestCaseMixin(_BackendTestMixin):
         assert self.repo.workdir.get_changeset() == old_head
 
     def test_checkout_branch(self):
-        from kallithea.lib.vcs.exceptions import BranchDoesNotExistError
         # first, 'foobranch' does not exist.
         with pytest.raises(BranchDoesNotExistError):
             self.repo.workdir.checkout_branch(branch='foobranch')

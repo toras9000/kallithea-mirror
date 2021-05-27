@@ -19,12 +19,12 @@ The following describes three different ways of installing Kallithea:
   installations side by side or remove it entirely by just removing the
   virtualenv directory) and does not require root privileges.
 
-- :ref:`installation-without-virtualenv`: The alternative method of installing
-  a Kallithea release is using standard pip. The package will be installed in
-  the same location as all other Python packages you have ever installed. As a
-  result, removing it is not as straightforward as with a virtualenv, as you'd
-  have to remove its dependencies manually and make sure that they are not
-  needed by other packages.
+- Kallithea can also be installed with plain pip - globally or with ``--user``
+  or similar. The package will be installed in the same location as all other
+  Python packages you have ever installed. As a result, removing it is not as
+  straightforward as with a virtualenv, as you'd have to remove its
+  dependencies manually and make sure that they are not needed by other
+  packages. We recommend using virtualenv.
 
 Regardless of the installation method you may need to make sure you have
 appropriate development packages installed, as installation of some of the
@@ -49,17 +49,24 @@ Installation from repository source
 -----------------------------------
 
 To install Kallithea in a virtualenv using the stable branch of the development
-repository, follow the instructions below::
+repository, use the following commands in your bash shell::
 
         hg clone https://kallithea-scm.org/repos/kallithea -u stable
         cd kallithea
-        python3 -m venv ../kallithea-venv
-        . ../kallithea-venv/bin/activate
+        python3 -m venv venv
+        . venv/bin/activate
         pip install --upgrade pip setuptools
         pip install --upgrade -e .
         python3 setup.py compile_catalog   # for translation of the UI
 
-You can now proceed to :ref:`setup`.
+.. note::
+   This will install all Python dependencies into the virtualenv. Kallithea
+   itself will however only be installed as a pointer to the source location.
+   The source clone must thus be kept in the same location, and it shouldn't be
+   updated to other revisions unless you want to upgrade. Edits in the source
+   tree will have immediate impact (possibly after a restart of the service).
+
+You can now proceed to :ref:`prepare-front-end-files`.
 
 .. _installation-virtualenv:
 
@@ -73,27 +80,30 @@ main Python installation and other applications and things will be less
 problematic when upgrading the system or Kallithea.
 An additional benefit of virtualenv is that it doesn't require root privileges.
 
-- Assuming you have installed virtualenv, create a new virtual environment
-  for example, in `/srv/kallithea/venv`, using the venv command::
+- Don't install as root - install as a dedicated user like ``kallithea``.
+  If necessary, create the top directory for the virtualenv (like
+  ``/srv/kallithea/venv``) as root and assign ownership to the user.
+
+  Make a parent folder for the virtualenv (and perhaps also Kallithea
+  configuration and data files) such as ``/srv/kallithea``. Create the
+  directory as root if necessary and grant ownership to the ``kallithea`` user.
+
+- Create a new virtual environment, for example in ``/srv/kallithea/venv``,
+  specifying the right Python binary::
 
     python3 -m venv /srv/kallithea/venv
 
 - Activate the virtualenv in your current shell session and make sure the
-  basic requirements are up-to-date by running::
+  basic requirements are up-to-date by running the following commands in your
+  bash shell::
 
     . /srv/kallithea/venv/bin/activate
     pip install --upgrade pip setuptools
 
-.. note:: You can't use UNIX ``sudo`` to source the ``virtualenv`` script; it
-   will "activate" a shell that terminates immediately. It is also perfectly
-   acceptable (and desirable) to create a virtualenv as a normal user.
+.. note:: You can't use UNIX ``sudo`` to source the ``activate`` script; it
+   will "activate" a shell that terminates immediately.
 
-- Make a folder for Kallithea data files, and configuration somewhere on the
-  filesystem. For example::
-
-    mkdir /srv/kallithea
-
-- Go into the created directory and run this command to install Kallithea::
+- Install Kallithea in the activated virtualenv::
 
     pip install --upgrade kallithea
 
@@ -105,31 +115,30 @@ An additional benefit of virtualenv is that it doesn't require root privileges.
    This might require installation of development packages using your
    distribution's package manager.
 
-  Alternatively, download a .tar.gz from http://pypi.python.org/pypi/Kallithea,
-  extract it and install from source by running::
+   Alternatively, download a .tar.gz from http://pypi.python.org/pypi/Kallithea,
+   extract it and install from source by running::
 
-    pip install --upgrade .
+     pip install --upgrade .
 
 - This will install Kallithea together with all other required
   Python libraries into the activated virtualenv.
 
-You can now proceed to :ref:`setup`.
+You can now proceed to :ref:`prepare-front-end-files`.
 
-.. _installation-without-virtualenv:
+.. _prepare-front-end-files:
 
 
-Installing a released version without virtualenv
-------------------------------------------------
+Prepare front-end files
+-----------------------
 
-For installation without virtualenv, 'just' use::
+Finally, the front-end files with CSS and JavaScript must be prepared. This
+depends on having some commands available in the shell search path: ``npm``
+version 6 or later, and ``node.js`` (version 12 or later) available as
+``node``. The installation method for these dependencies varies between
+operating systems and distributions.
 
-    pip install kallithea
+Prepare the front-end by running::
 
-Note that this method requires root privileges and will install packages
-globally without using the system's package manager.
-
-To install as a regular user in ``~/.local``, you can use::
-
-    pip install --user kallithea
+    kallithea-cli front-end-build
 
 You can now proceed to :ref:`setup`.

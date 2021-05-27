@@ -3,8 +3,8 @@ import json
 import mimetypes
 import posixpath
 
-from kallithea.model.db import Repository
-from kallithea.model.meta import Session
+from kallithea.lib import webutils
+from kallithea.model import db, meta
 from kallithea.tests import base
 from kallithea.tests.fixture import Fixture
 
@@ -22,9 +22,9 @@ GIT_NODE_HISTORY = fixture.load_resource('git_node_history_response.json')
 
 
 def _set_downloads(repo_name, set_to):
-    repo = Repository.get_by_repo_name(repo_name)
+    repo = db.Repository.get_by_repo_name(repo_name)
     repo.enable_downloads = set_to
-    Session().commit()
+    meta.Session().commit()
 
 
 class TestFilesController(base.TestController):
@@ -96,8 +96,7 @@ class TestFilesController(base.TestController):
     def test_file_source(self):
         # Force the global cache to be populated now when we know the right .ini has been loaded.
         # (Without this, the test would fail.)
-        import kallithea.lib.helpers
-        kallithea.lib.helpers._urlify_issues_f = None
+        webutils._urlify_issues_f = None
         self.log_user()
         response = self.app.get(base.url(controller='files', action='index',
                                     repo_name=base.HG_REPO,

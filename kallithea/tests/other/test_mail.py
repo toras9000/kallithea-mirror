@@ -3,14 +3,14 @@
 import mock
 
 import kallithea
-from kallithea.model.db import User
+from kallithea.model import db
 from kallithea.tests import base
 
 
 class smtplib_mock(object):
 
     @classmethod
-    def SMTP(cls, server, port, local_hostname):
+    def SMTP(cls, server, port):
         return smtplib_mock()
 
     def ehlo(self):
@@ -21,12 +21,11 @@ class smtplib_mock(object):
 
     def sendmail(self, sender, dest, msg):
         smtplib_mock.lastsender = sender
-        smtplib_mock.lastdest = dest
+        smtplib_mock.lastdest = set(dest)
         smtplib_mock.lastmsg = msg
-        pass
 
 
-@mock.patch('kallithea.lib.rcmail.smtp_mailer.smtplib', smtplib_mock)
+@mock.patch('kallithea.model.notification.smtplib', smtplib_mock)
 class TestMail(base.TestController):
 
     def test_send_mail_trivial(self):
@@ -41,8 +40,8 @@ class TestMail(base.TestController):
             'smtp_server': mailserver,
             'app_email_from': envelope_from,
         }
-        with mock.patch('kallithea.lib.celerylib.tasks.config', config_mock):
-            kallithea.lib.celerylib.tasks.send_email(recipients, subject, body, html_body)
+        with mock.patch('kallithea.model.notification.config', config_mock):
+            kallithea.model.notification.send_email(recipients, subject, body, html_body)
 
         assert smtplib_mock.lastdest == set(recipients)
         assert smtplib_mock.lastsender == envelope_from
@@ -65,8 +64,8 @@ class TestMail(base.TestController):
             'app_email_from': envelope_from,
             'email_to': email_to,
         }
-        with mock.patch('kallithea.lib.celerylib.tasks.config', config_mock):
-            kallithea.lib.celerylib.tasks.send_email(recipients, subject, body, html_body)
+        with mock.patch('kallithea.model.notification.config', config_mock):
+            kallithea.model.notification.send_email(recipients, subject, body, html_body)
 
         assert smtplib_mock.lastdest == set([base.TEST_USER_ADMIN_EMAIL, email_to])
         assert smtplib_mock.lastsender == envelope_from
@@ -89,8 +88,8 @@ class TestMail(base.TestController):
             'app_email_from': envelope_from,
             'email_to': email_to,
         }
-        with mock.patch('kallithea.lib.celerylib.tasks.config', config_mock):
-            kallithea.lib.celerylib.tasks.send_email(recipients, subject, body, html_body)
+        with mock.patch('kallithea.model.notification.config', config_mock):
+            kallithea.model.notification.send_email(recipients, subject, body, html_body)
 
         assert smtplib_mock.lastdest == set([base.TEST_USER_ADMIN_EMAIL] + email_to.split(','))
         assert smtplib_mock.lastsender == envelope_from
@@ -111,8 +110,8 @@ class TestMail(base.TestController):
             'smtp_server': mailserver,
             'app_email_from': envelope_from,
         }
-        with mock.patch('kallithea.lib.celerylib.tasks.config', config_mock):
-            kallithea.lib.celerylib.tasks.send_email(recipients, subject, body, html_body)
+        with mock.patch('kallithea.model.notification.config', config_mock):
+            kallithea.model.notification.send_email(recipients, subject, body, html_body)
 
         assert smtplib_mock.lastdest == set([base.TEST_USER_ADMIN_EMAIL])
         assert smtplib_mock.lastsender == envelope_from
@@ -128,14 +127,14 @@ class TestMail(base.TestController):
         subject = 'subject'
         body = 'body'
         html_body = 'html_body'
-        author = User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
+        author = db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
 
         config_mock = {
             'smtp_server': mailserver,
             'app_email_from': envelope_from,
         }
-        with mock.patch('kallithea.lib.celerylib.tasks.config', config_mock):
-            kallithea.lib.celerylib.tasks.send_email(recipients, subject, body, html_body, from_name=author.full_name_or_username)
+        with mock.patch('kallithea.model.notification.config', config_mock):
+            kallithea.model.notification.send_email(recipients, subject, body, html_body, from_name=author.full_name_or_username)
 
         assert smtplib_mock.lastdest == set(recipients)
         assert smtplib_mock.lastsender == envelope_from
@@ -152,14 +151,14 @@ class TestMail(base.TestController):
         subject = 'subject'
         body = 'body'
         html_body = 'html_body'
-        author = User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
+        author = db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
 
         config_mock = {
             'smtp_server': mailserver,
             'app_email_from': envelope_from,
         }
-        with mock.patch('kallithea.lib.celerylib.tasks.config', config_mock):
-            kallithea.lib.celerylib.tasks.send_email(recipients, subject, body, html_body, from_name=author.full_name_or_username)
+        with mock.patch('kallithea.model.notification.config', config_mock):
+            kallithea.model.notification.send_email(recipients, subject, body, html_body, from_name=author.full_name_or_username)
 
         assert smtplib_mock.lastdest == set(recipients)
         assert smtplib_mock.lastsender == envelope_from
@@ -175,15 +174,15 @@ class TestMail(base.TestController):
         subject = 'subject'
         body = 'body'
         html_body = 'html_body'
-        author = User(name='foo', lastname='(fubar) "baz"')
+        author = db.User(name='foo', lastname='(fubar) "baz"')
         headers = {'extra': 'yes'}
 
         config_mock = {
             'smtp_server': mailserver,
             'app_email_from': envelope_from,
         }
-        with mock.patch('kallithea.lib.celerylib.tasks.config', config_mock):
-            kallithea.lib.celerylib.tasks.send_email(recipients, subject, body, html_body,
+        with mock.patch('kallithea.model.notification.config', config_mock):
+            kallithea.model.notification.send_email(recipients, subject, body, html_body,
                                                      from_name=author.full_name_or_username, headers=headers)
 
         assert smtplib_mock.lastdest == set(recipients)
@@ -192,6 +191,6 @@ class TestMail(base.TestController):
         assert 'Subject: %s' % subject in smtplib_mock.lastmsg
         assert body in smtplib_mock.lastmsg
         assert html_body in smtplib_mock.lastmsg
-        assert 'Extra: yes' in smtplib_mock.lastmsg
+        assert 'extra: yes' in smtplib_mock.lastmsg
         # verify that headers dict hasn't mutated by send_email
         assert headers == {'extra': 'yes'}

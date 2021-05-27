@@ -105,9 +105,9 @@ ${self.repo_context_bar('showpullrequest')}
             %if c.cs_ranges:
               <div>
                ## TODO: use cs_ranges[-1] or org_ref_parts[1] in both cases?
-               %if h.is_hg(c.pull_request.org_repo):
-                 <span>hg pull ${c.pull_request.org_repo.clone_url(clone_uri_tmpl=c.clone_uri_tmpl)} -r ${h.short_id(c.cs_ranges[-1].raw_id)}</span>
-               %elif h.is_git(c.pull_request.org_repo):
+               %if c.pull_request.org_repo.repo_type == 'hg':
+                 <span>hg pull ${c.pull_request.org_repo.clone_url(clone_uri_tmpl=c.clone_uri_tmpl)} -r ${c.cs_ranges[-1].short_id}</span>
+               %elif c.pull_request.org_repo.repo_type == 'git':
                  <span>git pull ${c.pull_request.org_repo.clone_url(clone_uri_tmpl=c.clone_uri_tmpl)} ${c.pull_request.org_ref_parts[1]}</span>
                %endif
               </div>
@@ -312,7 +312,8 @@ ${self.repo_context_bar('showpullrequest')}
             </div>
         </div>
     </div>
-    <script>'use strict';
+    <script>
+    'use strict';
     // TODO: switch this to pyroutes
     var AJAX_COMMENT_URL = ${h.js(url('pullrequest_comment',repo_name=c.repo_name,pull_request_id=c.pull_request.pull_request_id))};
     var AJAX_COMMENT_DELETE_URL = ${h.js(url('pullrequest_comment_delete',repo_name=c.repo_name,comment_id='__COMMENT_ID__'))};
@@ -343,7 +344,8 @@ ${self.repo_context_bar('showpullrequest')}
     ## main comment form and it status
     ${comment.comments(change_status=c.allowed_to_change_status)}
 
-    <script>'use strict';
+    <script>
+      'use strict';
       $(document).ready(function(){
           PullRequestAutoComplete($('#user'));
           SimpleUserAutoComplete($('#owner'));

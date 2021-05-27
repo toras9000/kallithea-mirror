@@ -22,7 +22,7 @@
 
 <%def name="main()">
 ${self.repo_context_bar('summary')}
-    <div class="panel panel-primary">
+<div class="panel panel-primary">
     <div class="panel-heading clearfix">
         ${self.breadcrumbs()}
     </div>
@@ -51,7 +51,8 @@ ${self.repo_context_bar('summary')}
     </div>
 </div>
 
-<script>'use strict';
+<script>
+'use strict';
 var data = ${h.js(c.trending_languages)};
 var total = 0;
 var tbl = document.createElement('table');
@@ -118,7 +119,8 @@ for (let i=0;i<data.length;i++){
 }
 
 </script>
-<script>'use strict';
+<script>
+'use strict';
 
 /**
  * Plots summary graph

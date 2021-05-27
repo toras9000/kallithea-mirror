@@ -30,20 +30,26 @@ Original author and date, and relevant copyright and licensing information is be
 import platform
 import sys
 
+import celery
+
 
 if sys.version_info < (3, 6):
     raise Exception('Kallithea requires python 3.6 or later')
 
-VERSION = (0, 6, 3)
+VERSION = (0, 6, 99)
 BACKENDS = {
     'hg': 'Mercurial repository',
     'git': 'Git repository',
 }
 
-CELERY_APP = None  # set to Celery app instance if using Celery
-CELERY_EAGER = False
+CELERY_APP = celery.Celery()  # needed at import time but is lazy and can be configured later
 
-CONFIG = {}
+DEFAULT_USER_ID: int  # set by setup_configuration
+CONFIG = {}  # set to tg.config when TG app is initialized and calls app_cfg
+
+# URL prefix for non repository related links - must start with `/`
+ADMIN_PREFIX = '/_admin'
+URL_SEP = '/'
 
 # Linked module for extensions
 EXTENSIONS = {}

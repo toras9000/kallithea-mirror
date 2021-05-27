@@ -37,18 +37,16 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPFound, HTTPNotFound
 
 import kallithea
-from kallithea.config.routing import url
-from kallithea.lib import auth_modules
-from kallithea.lib import helpers as h
+import kallithea.lib.helpers as h
+from kallithea.controllers import base
+from kallithea.lib import auth_modules, webutils
 from kallithea.lib.auth import AuthUser, HasPermissionAnyDecorator, LoginRequired
-from kallithea.lib.base import BaseController, IfSshEnabled, render
 from kallithea.lib.exceptions import DefaultUserException, UserCreationError, UserOwnsReposException
-from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import datetime_to_time, generate_api_key, safe_int
+from kallithea.lib.webutils import fmt_date, url
+from kallithea.model import db, meta, userlog
 from kallithea.model.api_key import ApiKeyModel
-from kallithea.model.db import User, UserEmailMap, UserIpMap, UserToPerm
 from kallithea.model.forms import CustomDefaultPermissionsForm, UserForm
-from kallithea.model.meta import Session
 from kallithea.model.ssh_key import SshKeyModel, SshKeyModelException
 from kallithea.model.user import UserModel
 
@@ -56,8 +54,7 @@ from kallithea.model.user import UserModel
 log = logging.getLogger(__name__)
 
 
-class UsersController(BaseController):
-    """REST Controller styled on the Atom Publishing Protocol"""
+class UsersController(base.BaseController):
 
     @LoginRequired()
     @HasPermissionAnyDecorator('hg.admin')
@@ -65,9 +62,9 @@ class UsersController(BaseController):
         super(UsersController, self)._before(*args, **kwargs)
 
     def index(self, format='html'):
-        c.users_list = User.query().order_by(User.username) \
+        c.users_list = db.User.query().order_by(db.User.username) \
                         .filter_by(is_default_user=False) \
-                        .order_by(func.lower(User.username)) \
+                        .order_by(func.lower(db.User.username)) \
                         .all()
 
         users_data = []
@@ -78,20 +75,20 @@ class UsersController(BaseController):
 
         def username(user_id, username):
             return template.get_def("user_name") \
-                .render_unicode(user_id, username, _=_, h=h, c=c)
+                .render_unicode(user_id, username, _=_, webutils=webutils, c=c)
 
         def user_actions(user_id, username):
             return template.get_def("user_actions") \
-                .render_unicode(user_id, username, _=_, h=h, c=c)
+                .render_unicode(user_id, username, _=_, webutils=webutils, c=c)
 
         for user in c.users_list:
             users_data.append({
                 "gravatar": grav_tmpl % h.gravatar(user.email, size=20),
                 "raw_name": user.username,
                 "username": username(user.user_id, user.username),
-                "firstname": h.escape(user.name),
-                "lastname": h.escape(user.lastname),
-                "last_login": h.fmt_date(user.last_login),
+                "firstname": webutils.escape(user.name),
+                "lastname": webutils.escape(user.lastname),
+                "last_login": fmt_date(user.last_login),
                 "last_login_raw": datetime_to_time(user.last_login),
                 "active": h.boolicon(user.active),
                 "admin": h.boolicon(user.admin),
@@ -106,41 +103,41 @@ class UsersController(BaseController):
             "records": users_data
         }
 
-        return render('admin/users/users.html')
+        return base.render('admin/users/users.html')
 
     def create(self):
-        c.default_extern_type = User.DEFAULT_AUTH_TYPE
+        c.default_extern_type = db.User.DEFAULT_AUTH_TYPE
         c.default_extern_name = ''
         user_model = UserModel()
         user_form = UserForm()()
         try:
             form_result = user_form.to_python(dict(request.POST))
             user = user_model.create(form_result)
-            action_logger(request.authuser, 'admin_created_user:%s' % user.username,
+            userlog.action_logger(request.authuser, 'admin_created_user:%s' % user.username,
                           None, request.ip_addr)
-            h.flash(_('Created user %s') % user.username,
+            webutils.flash(_('Created user %s') % user.username,
                     category='success')
-            Session().commit()
+            meta.Session().commit()
         except formencode.Invalid as errors:
             return htmlfill.render(
-                render('admin/users/user_add.html'),
+                base.render('admin/users/user_add.html'),
                 defaults=errors.value,
                 errors=errors.error_dict or {},
                 prefix_error=False,
                 encoding="UTF-8",
                 force_defaults=False)
         except UserCreationError as e:
-            h.flash(e, 'error')
+            webutils.flash(e, 'error')
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('Error occurred during creation of user %s')
+            webutils.flash(_('Error occurred during creation of user %s')
                     % request.POST.get('username'), category='error')
         raise HTTPFound(location=url('edit_user', id=user.user_id))
 
     def new(self, format='html'):
-        c.default_extern_type = User.DEFAULT_AUTH_TYPE
+        c.default_extern_type = db.User.DEFAULT_AUTH_TYPE
         c.default_extern_name = ''
-        return render('admin/users/user_add.html')
+        return base.render('admin/users/user_add.html')
 
     def update(self, id):
         user_model = UserModel()
@@ -155,10 +152,10 @@ class UsersController(BaseController):
 
             user_model.update(id, form_result, skip_attrs=skip_attrs)
             usr = form_result['username']
-            action_logger(request.authuser, 'admin_updated_user:%s' % usr,
+            userlog.action_logger(request.authuser, 'admin_updated_user:%s' % usr,
                           None, request.ip_addr)
-            h.flash(_('User updated successfully'), category='success')
-            Session().commit()
+            webutils.flash(_('User updated successfully'), category='success')
+            meta.Session().commit()
         except formencode.Invalid as errors:
             defaults = errors.value
             e = errors.error_dict or {}
@@ -176,29 +173,33 @@ class UsersController(BaseController):
                 force_defaults=False)
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('Error occurred during update of user %s')
+            webutils.flash(_('Error occurred during update of user %s')
                     % form_result.get('username'), category='error')
         raise HTTPFound(location=url('edit_user', id=id))
 
     def delete(self, id):
-        usr = User.get_or_404(id)
+        usr = db.User.get_or_404(id)
+        has_ssh_keys = bool(usr.ssh_keys)
         try:
             UserModel().delete(usr)
-            Session().commit()
-            h.flash(_('Successfully deleted user'), category='success')
+            meta.Session().commit()
+            webutils.flash(_('Successfully deleted user'), category='success')
         except (UserOwnsReposException, DefaultUserException) as e:
-            h.flash(e, category='warning')
+            webutils.flash(e, category='warning')
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('An error occurred during deletion of user'),
+            webutils.flash(_('An error occurred during deletion of user'),
                     category='error')
+        else:
+            if has_ssh_keys:
+                SshKeyModel().write_authorized_keys()
         raise HTTPFound(location=url('users'))
 
     def _get_user_or_raise_if_default(self, id):
         try:
-            return User.get_or_404(id, allow_default=False)
+            return db.User.get_or_404(id, allow_default=False)
         except DefaultUserException:
-            h.flash(_("The default user cannot be edited"), category='warning')
+            webutils.flash(_("The default user cannot be edited"), category='warning')
             raise HTTPNotFound
 
     def _render_edit_profile(self, user):
@@ -207,7 +208,7 @@ class UsersController(BaseController):
         c.perm_user = AuthUser(dbuser=user)
         managed_fields = auth_modules.get_managed_fields(user)
         c.readonly = lambda n: 'readonly' if n in managed_fields else None
-        return render('admin/users/user_edit.html')
+        return base.render('admin/users/user_edit.html')
 
     def edit(self, id, format='html'):
         user = self._get_user_or_raise_if_default(id)
@@ -233,7 +234,7 @@ class UsersController(BaseController):
             'fork_repo_perm': umodel.has_perm(c.user, 'hg.fork.repository'),
         })
         return htmlfill.render(
-            render('admin/users/user_edit.html'),
+            base.render('admin/users/user_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -254,7 +255,7 @@ class UsersController(BaseController):
                                                      show_expired=show_expired)
         defaults = c.user.get_dict()
         return htmlfill.render(
-            render('admin/users/user_edit.html'),
+            base.render('admin/users/user_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -265,8 +266,8 @@ class UsersController(BaseController):
         lifetime = safe_int(request.POST.get('lifetime'), -1)
         description = request.POST.get('description')
         ApiKeyModel().create(c.user.user_id, description, lifetime)
-        Session().commit()
-        h.flash(_("API key successfully created"), category='success')
+        meta.Session().commit()
+        webutils.flash(_("API key successfully created"), category='success')
         raise HTTPFound(location=url('edit_user_api_keys', id=c.user.user_id))
 
     def delete_api_key(self, id):
@@ -275,12 +276,12 @@ class UsersController(BaseController):
         api_key = request.POST.get('del_api_key')
         if request.POST.get('del_api_key_builtin'):
             c.user.api_key = generate_api_key()
-            Session().commit()
-            h.flash(_("API key successfully reset"), category='success')
+            meta.Session().commit()
+            webutils.flash(_("API key successfully reset"), category='success')
         elif api_key:
             ApiKeyModel().delete(api_key, c.user.user_id)
-            Session().commit()
-            h.flash(_("API key successfully deleted"), category='success')
+            meta.Session().commit()
+            webutils.flash(_("API key successfully deleted"), category='success')
 
         raise HTTPFound(location=url('edit_user_api_keys', id=c.user.user_id))
 
@@ -301,7 +302,7 @@ class UsersController(BaseController):
             'fork_repo_perm': umodel.has_perm(c.user, 'hg.fork.repository'),
         })
         return htmlfill.render(
-            render('admin/users/user_edit.html'),
+            base.render('admin/users/user_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -315,11 +316,11 @@ class UsersController(BaseController):
 
             user_model = UserModel()
 
-            defs = UserToPerm.query() \
-                .filter(UserToPerm.user == user) \
+            defs = db.UserToPerm.query() \
+                .filter(db.UserToPerm.user == user) \
                 .all()
             for ug in defs:
-                Session().delete(ug)
+                meta.Session().delete(ug)
 
             if form_result['create_repo_perm']:
                 user_model.grant_perm(id, 'hg.create.repository')
@@ -333,23 +334,23 @@ class UsersController(BaseController):
                 user_model.grant_perm(id, 'hg.fork.repository')
             else:
                 user_model.grant_perm(id, 'hg.fork.none')
-            h.flash(_("Updated permissions"), category='success')
-            Session().commit()
+            webutils.flash(_("Updated permissions"), category='success')
+            meta.Session().commit()
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('An error occurred during permissions saving'),
+            webutils.flash(_('An error occurred during permissions saving'),
                     category='error')
         raise HTTPFound(location=url('edit_user_perms', id=id))
 
     def edit_emails(self, id):
         c.user = self._get_user_or_raise_if_default(id)
         c.active = 'emails'
-        c.user_email_map = UserEmailMap.query() \
-            .filter(UserEmailMap.user == c.user).all()
+        c.user_email_map = db.UserEmailMap.query() \
+            .filter(db.UserEmailMap.user == c.user).all()
 
         defaults = c.user.get_dict()
         return htmlfill.render(
-            render('admin/users/user_edit.html'),
+            base.render('admin/users/user_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -361,14 +362,14 @@ class UsersController(BaseController):
 
         try:
             user_model.add_extra_email(id, email)
-            Session().commit()
-            h.flash(_("Added email %s to user") % email, category='success')
+            meta.Session().commit()
+            webutils.flash(_("Added email %s to user") % email, category='success')
         except formencode.Invalid as error:
             msg = error.error_dict['email']
-            h.flash(msg, category='error')
+            webutils.flash(msg, category='error')
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('An error occurred during email saving'),
+            webutils.flash(_('An error occurred during email saving'),
                     category='error')
         raise HTTPFound(location=url('edit_user_emails', id=id))
 
@@ -377,22 +378,22 @@ class UsersController(BaseController):
         email_id = request.POST.get('del_email_id')
         user_model = UserModel()
         user_model.delete_extra_email(id, email_id)
-        Session().commit()
-        h.flash(_("Removed email from user"), category='success')
+        meta.Session().commit()
+        webutils.flash(_("Removed email from user"), category='success')
         raise HTTPFound(location=url('edit_user_emails', id=id))
 
     def edit_ips(self, id):
         c.user = self._get_user_or_raise_if_default(id)
         c.active = 'ips'
-        c.user_ip_map = UserIpMap.query() \
-            .filter(UserIpMap.user == c.user).all()
+        c.user_ip_map = db.UserIpMap.query() \
+            .filter(db.UserIpMap.user == c.user).all()
 
-        c.default_user_ip_map = UserIpMap.query() \
-            .filter(UserIpMap.user_id == kallithea.DEFAULT_USER_ID).all()
+        c.default_user_ip_map = db.UserIpMap.query() \
+            .filter(db.UserIpMap.user_id == kallithea.DEFAULT_USER_ID).all()
 
         defaults = c.user.get_dict()
         return htmlfill.render(
-            render('admin/users/user_edit.html'),
+            base.render('admin/users/user_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -403,14 +404,14 @@ class UsersController(BaseController):
 
         try:
             user_model.add_extra_ip(id, ip)
-            Session().commit()
-            h.flash(_("Added IP address %s to user whitelist") % ip, category='success')
+            meta.Session().commit()
+            webutils.flash(_("Added IP address %s to user whitelist") % ip, category='success')
         except formencode.Invalid as error:
             msg = error.error_dict['ip']
-            h.flash(msg, category='error')
+            webutils.flash(msg, category='error')
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('An error occurred while adding IP address'),
+            webutils.flash(_('An error occurred while adding IP address'),
                     category='error')
 
         if 'default_user' in request.POST:
@@ -421,26 +422,26 @@ class UsersController(BaseController):
         ip_id = request.POST.get('del_ip_id')
         user_model = UserModel()
         user_model.delete_extra_ip(id, ip_id)
-        Session().commit()
-        h.flash(_("Removed IP address from user whitelist"), category='success')
+        meta.Session().commit()
+        webutils.flash(_("Removed IP address from user whitelist"), category='success')
 
         if 'default_user' in request.POST:
             raise HTTPFound(location=url('admin_permissions_ips'))
         raise HTTPFound(location=url('edit_user_ips', id=id))
 
-    @IfSshEnabled
+    @base.IfSshEnabled
     def edit_ssh_keys(self, id):
         c.user = self._get_user_or_raise_if_default(id)
         c.active = 'ssh_keys'
         c.user_ssh_keys = SshKeyModel().get_ssh_keys(c.user.user_id)
         defaults = c.user.get_dict()
         return htmlfill.render(
-            render('admin/users/user_edit.html'),
+            base.render('admin/users/user_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
 
-    @IfSshEnabled
+    @base.IfSshEnabled
     def ssh_keys_add(self, id):
         c.user = self._get_user_or_raise_if_default(id)
 
@@ -449,23 +450,23 @@ class UsersController(BaseController):
         try:
             new_ssh_key = SshKeyModel().create(c.user.user_id,
                                                description, public_key)
-            Session().commit()
+            meta.Session().commit()
             SshKeyModel().write_authorized_keys()
-            h.flash(_("SSH key %s successfully added") % new_ssh_key.fingerprint, category='success')
+            webutils.flash(_("SSH key %s successfully added") % new_ssh_key.fingerprint, category='success')
         except SshKeyModelException as e:
-            h.flash(e.args[0], category='error')
+            webutils.flash(e.args[0], category='error')
         raise HTTPFound(location=url('edit_user_ssh_keys', id=c.user.user_id))
 
-    @IfSshEnabled
+    @base.IfSshEnabled
     def ssh_keys_delete(self, id):
         c.user = self._get_user_or_raise_if_default(id)
 
         fingerprint = request.POST.get('del_public_key_fingerprint')
         try:
             SshKeyModel().delete(fingerprint, c.user.user_id)
-            Session().commit()
+            meta.Session().commit()
             SshKeyModel().write_authorized_keys()
-            h.flash(_("SSH key successfully deleted"), category='success')
+            webutils.flash(_("SSH key successfully deleted"), category='success')
         except SshKeyModelException as e:
-            h.flash(e.args[0], category='error')
+            webutils.flash(e.args[0], category='error')
         raise HTTPFound(location=url('edit_user_ssh_keys', id=c.user.user_id))

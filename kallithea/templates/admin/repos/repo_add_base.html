@@ -7,7 +7,7 @@ ${h.form(url('repos'))}
             <div>
                 ${h.text('repo_name',class_='form-control')}
             </div>
-         </div>
+        </div>
         <div id="remote_clone" class="form-group">
             <label class="control-label" for="clone_uri">${_('Clone remote repository')}:</label>
             <div>
@@ -65,7 +65,8 @@ ${h.form(url('repos'))}
             </div>
         </div>
 </div>
-<script>'use strict';
+<script>
+    'use strict';
     $(document).ready(function(){
         function setCopyPermsOption(group_val){
             if(group_val != "-1"){

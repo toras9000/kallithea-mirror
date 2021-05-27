@@ -380,23 +380,23 @@ class SubprocessIOChunker(object):
             if (returncode is not None # process has terminated
                 and returncode != 0
             ): # and it failed
-                self.output.stop()
+                getattr(self.output, 'stop', lambda: None)()
                 self.error.stop()
                 err = ''.join(self.error)
                 raise EnvironmentError("Subprocess exited due to an error:\n" + err)
         return next(self.output)
 
     def throw(self, type, value=None, traceback=None):
-        if self.output.length or not self.output.done_reading:
+        if getattr(self.output, 'length') or not getattr(self.output, 'done_reading'):
             raise type(value)
 
     def close(self):
         try:
-            self.process.terminate()
+            getattr(self.process, 'terminate', lambda: None)()
         except:
             pass
         try:
-            self.output.close()
+            getattr(self.output, 'close', lambda: None)()
         except:
             pass
         try:

@@ -1,6 +1,5 @@
-from kallithea.model.db import Gist, User
+from kallithea.model import db, meta
 from kallithea.model.gist import GistModel
-from kallithea.model.meta import Session
 from kallithea.tests import base
 
 
@@ -10,20 +9,20 @@ def _create_gist(f_name, content='some gist', lifetime=-1,
     gist_mapping = {
         f_name: {'content': content}
     }
-    owner = User.get_by_username(owner)
+    owner = db.User.get_by_username(owner)
     gist = GistModel().create(description, owner=owner, ip_addr=base.IP_ADDR,
                        gist_mapping=gist_mapping, gist_type=gist_type,
                        lifetime=lifetime)
-    Session().commit()
+    meta.Session().commit()
     return gist
 
 
 class TestGistsController(base.TestController):
 
     def teardown_method(self, method):
-        for g in Gist.query():
+        for g in db.Gist.query():
             GistModel().delete(g)
-        Session().commit()
+        meta.Session().commit()
 
     def test_index(self):
         self.log_user()
@@ -90,7 +89,7 @@ class TestGistsController(base.TestController):
         self.log_user()
         gist = _create_gist('never-see-me')
         gist.gist_expires = 0  # 1970
-        Session().commit()
+        meta.Session().commit()
 
         response = self.app.get(base.url('gist', gist_id=gist.gist_access_id), status=404)
 

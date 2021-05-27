@@ -21,7 +21,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from kallithea.model import db
+from kallithea.model import meta
 
 
 # The alembic.config.Config object, which wraps the current .ini file.
@@ -93,7 +93,7 @@ def run_migrations_online():
 
             # Support autogeneration of migration scripts based on "diff" between
             # current database schema and kallithea.model.db schema.
-            target_metadata=db.Base.metadata,
+            target_metadata=meta.Base.metadata,
             include_object=include_in_autogeneration,
             render_as_batch=True, # batch mode is needed for SQLite support
         )

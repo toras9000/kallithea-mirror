@@ -1,4 +1,4 @@
-%if h.is_hg(c.db_repo_scm_instance):
+%if c.db_repo_scm_instance.alias == 'hg':
 # ${c.db_repo_scm_instance.alias.upper()} changeset patch
 # User ${c.changeset.author |n}
 # Date ${c.changeset.date}
@@ -6,7 +6,7 @@
 ${c.parent_tmpl}
 ${c.changeset.message |n}
 
-%elif h.is_git(c.db_repo_scm_instance):
+%elif c.db_repo_scm_instance.alias == 'git':
 From ${c.changeset.raw_id} ${c.changeset.date}
 From: ${c.changeset.author |n}
 Date: ${c.changeset.date}

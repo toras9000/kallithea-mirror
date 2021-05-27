@@ -1,4 +1,4 @@
-from kallithea.model.db import Setting
+from kallithea.model import db
 from kallithea.tests import base
 
 
@@ -47,7 +47,7 @@ class TestAuthSettingsController(base.TestController):
         response = self.app.post(url=test_url, params=params)
         self.checkSessionFlash(response, 'Auth settings updated successfully')
 
-        new_settings = Setting.get_auth_settings()
+        new_settings = db.Setting.get_auth_settings()
         assert new_settings['auth_ldap_host'] == 'dc.example.com', 'fail db write compare'
 
     @base.skipif(not base.ldap_lib_installed, reason='skipping due to missing ldap lib')
@@ -238,7 +238,7 @@ class TestAuthSettingsController(base.TestController):
         response = self.app.post(url=test_url, params=params)
         self.checkSessionFlash(response, 'Auth settings updated successfully')
 
-        new_settings = Setting.get_auth_settings()
+        new_settings = db.Setting.get_auth_settings()
         assert new_settings['auth_crowd_host'] == 'hostname', 'fail db write compare'
 
     @base.skipif(not base.pam_lib_installed, reason='skipping due to missing pam lib')
@@ -255,5 +255,5 @@ class TestAuthSettingsController(base.TestController):
         response = self.app.post(url=test_url, params=params)
         self.checkSessionFlash(response, 'Auth settings updated successfully')
 
-        new_settings = Setting.get_auth_settings()
+        new_settings = db.Setting.get_auth_settings()
         assert new_settings['auth_pam_service'] == 'kallithea', 'fail db write compare'

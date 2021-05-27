@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from kallithea.model.meta import Session
+from kallithea.model import meta
 from kallithea.model.repo import RepoModel
 from kallithea.tests import base
 from kallithea.tests.fixture import Fixture
@@ -23,8 +23,8 @@ class TestCompareController(base.TestController):
             RepoModel().delete(self.r2_id)
         if self.r1_id:
             RepoModel().delete(self.r1_id)
-        Session().commit()
-        Session.remove()
+        meta.Session().commit()
+        meta.Session.remove()
 
     def test_compare_forks_on_branch_extra_commits_hg(self):
         self.log_user()
@@ -457,12 +457,12 @@ class TestCompareController(base.TestController):
 
         cs0 = fixture.commit_change(repo=r1_name, filename='file1',
                 content='line1', message='commit1', vcs_type='hg', newfile=True)
-        Session().commit()
+        meta.Session().commit()
         assert repo1.scm_instance.revisions == [cs0.raw_id]
         # fork the repo1
         repo2 = fixture.create_fork(r1_name, 'one-fork',
                                     cur_user=base.TEST_USER_ADMIN_LOGIN)
-        Session().commit()
+        meta.Session().commit()
         assert repo2.scm_instance.revisions == [cs0.raw_id]
         self.r2_id = repo2.repo_id
         r2_name = repo2.repo_name
@@ -530,12 +530,12 @@ class TestCompareController(base.TestController):
         cs0 = fixture.commit_change(repo=r1_name, filename='file1',
                 content='line1', message='commit1', vcs_type='git',
                 newfile=True)
-        Session().commit()
+        meta.Session().commit()
         assert repo1.scm_instance.revisions == [cs0.raw_id]
         # fork the repo1
         repo2 = fixture.create_fork(r1_name, 'one-git-fork',
                                     cur_user=base.TEST_USER_ADMIN_LOGIN)
-        Session().commit()
+        meta.Session().commit()
         assert repo2.scm_instance.revisions == [cs0.raw_id]
         self.r2_id = repo2.repo_id
         r2_name = repo2.repo_name

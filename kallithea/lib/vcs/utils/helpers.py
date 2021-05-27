@@ -3,13 +3,18 @@ Utilities aimed to help achieve mostly basic tasks.
 """
 
 import datetime
+import logging
 import os
 import re
 import time
 import urllib.request
 
 import mercurial.url
+from pygments import highlight
+from pygments.formatters import TerminalFormatter
+from pygments.lexers import ClassNotFound, guess_lexer_for_filename
 
+from kallithea.lib.vcs import backends
 from kallithea.lib.vcs.exceptions import RepositoryError, VCSError
 from kallithea.lib.vcs.utils import safe_str
 from kallithea.lib.vcs.utils.paths import abspath
@@ -67,7 +72,6 @@ def get_scms_for_path(path):
 
     :raises VCSError: if given ``path`` is not a directory
     """
-    from kallithea.lib.vcs.backends import get_backend
     if hasattr(path, '__call__'):
         path = path()
     if not os.path.isdir(path):
@@ -87,7 +91,7 @@ def get_scms_for_path(path):
         # We still need to check if it's not bare repository as
         # bare repos don't have working directories
         try:
-            get_backend(key)(path)
+            backends.get_backend(key)(path)
             result.append(key)
             continue
         except RepositoryError:
@@ -99,22 +103,34 @@ def get_scms_for_path(path):
     return result
 
 
+def get_scm_size(alias, root_path):
+    if not alias.startswith('.'):
+        alias += '.'
+
+    size_scm, size_root = 0, 0
+    for path, dirs, files in os.walk(root_path):
+        if path.find(alias) != -1:
+            for f in files:
+                try:
+                    size_scm += os.path.getsize(os.path.join(path, f))
+                except OSError:
+                    pass
+        else:
+            for f in files:
+                try:
+                    size_root += os.path.getsize(os.path.join(path, f))
+                except OSError:
+                    pass
+
+    return size_scm, size_root
+
+
 def get_highlighted_code(name, code, type='terminal'):
     """
     If pygments are available on the system
     then returned output is colored. Otherwise
     unchanged content is returned.
     """
-    import logging
-    try:
-        import pygments
-        pygments
-    except ImportError:
-        return code
-    from pygments import highlight
-    from pygments.lexers import guess_lexer_for_filename, ClassNotFound
-    from pygments.formatters import TerminalFormatter
-
     try:
         lexer = guess_lexer_for_filename(name, code)
         formatter = TerminalFormatter()

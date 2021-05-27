@@ -1,0 +1,23 @@
+<%block name="header">\
+<% title = _('Mention in Comment on Pull Request %s "%s"') % (pr_nice_id, pr_title) if is_mention else _('Pull Request %s "%s" Closed') % (pr_nice_id, pr_title) if closing_pr else _('Comment on Pull Request %s "%s"') % (pr_nice_id, pr_title) %>\
+<%include file="header.txt" args="title=title,link=pr_comment_url"/>\
+</%block>\
+
+<%include file="comment.txt" args="text=body,author=pr_comment_user,status=status_change,close=closing_pr"/>\
+
+${_('Pull request')|n} \
+${pr_nice_id|n} \
+"${pr_title|n}" \
+${_('by')|n} \
+${pr_owner.full_name_and_username|n}
+${_('from')} \
+${pr_source_repo|n} \
+${_('branch')|n} \
+${pr_source_branch|n}
+${_('to')|n} \
+${pr_target_repo|n} \
+${_('branch')|n} \
+${pr_target_branch|n}
+
+<% title = _('View Comment') %>\
+<%include file="button.txt" args="url=pr_comment_url,title=title"/>\

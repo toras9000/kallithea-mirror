@@ -70,7 +70,7 @@ PROJECTS = [
 ]
 
 
-cj = http.cookiejar.FileCookieJar(os.path.join(tempfile.gettempdir(), 'rc_test_cookie.txt'))
+cj = http.cookiejar.FileCookieJar(os.path.join(tempfile.gettempdir(), 'test_cookie.txt'))
 o = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
 o.addheaders = [
     ('User-agent', 'kallithea-crawler'),
@@ -83,7 +83,6 @@ urllib.request.install_opener(o)
 def _get_repo(proj):
     if isinstance(proj, str):
         repo = vcs.get_repo(os.path.join(PROJECT_PATH, proj))
-        proj = proj
     else:
         repo = proj
         proj = repo.name

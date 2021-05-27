@@ -33,19 +33,18 @@ import mercurial.scmutil
 import mercurial.sshpeer
 import mercurial.tags
 import mercurial.ui
+import mercurial.unionrepo
 import mercurial.util
 
 from kallithea.lib.vcs.backends.base import BaseRepository, CollectionGenerator
 from kallithea.lib.vcs.exceptions import (BranchDoesNotExistError, ChangesetDoesNotExistError, EmptyRepositoryError, RepositoryError, TagAlreadyExistError,
                                           TagDoesNotExistError, VCSError)
-from kallithea.lib.vcs.utils import ascii_str, author_email, author_name, date_fromtimestamp, makedate, safe_bytes, safe_str
+from kallithea.lib.vcs.utils import ascii_bytes, ascii_str, author_email, author_name, date_fromtimestamp, makedate, safe_bytes, safe_str
 from kallithea.lib.vcs.utils.helpers import get_urllib_request_handlers
 from kallithea.lib.vcs.utils.lazy import LazyProperty
 from kallithea.lib.vcs.utils.paths import abspath
 
-from .changeset import MercurialChangeset
-from .inmemory import MercurialInMemoryChangeset
-from .workdir import MercurialWorkdir
+from . import changeset, inmemory, workdir
 
 
 log = logging.getLogger(__name__)
@@ -272,7 +271,7 @@ class MercurialRepository(BaseRepository):
             self.get_changeset(rev1)
         self.get_changeset(rev2)
         if path:
-            file_filter = mercurial.match.exact(path)
+            file_filter = mercurial.match.exact([safe_bytes(path)])
         else:
             file_filter = None
 
@@ -282,31 +281,60 @@ class MercurialRepository(BaseRepository):
                                         ignorews=ignore_whitespace,
                                         context=context)))
 
-    @classmethod
-    def _check_url(cls, url, repoui=None):
-        """
-        Function will check given url and try to verify if it's a valid
-        link. Sometimes it may happened that mercurial will issue basic
-        auth request that can cause whole API to hang when used from python
-        or other external calls.
+    @staticmethod
+    def _check_url(url, repoui=None):
+        r"""
+        Raise URLError if url doesn't seem like a valid safe Hg URL. We
+        only allow http, https, ssh, and hg-git URLs.
+
+        For http, https and git URLs, make a connection and probe to see if it is valid.
 
         On failures it'll raise urllib2.HTTPError, exception is also thrown
         when the return code is non 200
-        """
-        # check first if it's not an local url
-        url = safe_bytes(url)
-        if os.path.isdir(url) or url.startswith(b'file:'):
-            return True
 
-        if url.startswith(b'ssh:'):
+        >>> MercurialRepository._check_url('file:///repo')
+
+        >>> MercurialRepository._check_url('http://example.com:65537/repo')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Error parsing URL: 'http://example.com:65537/repo'>
+        >>> MercurialRepository._check_url('foo')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Unsupported protocol in URL 'foo'>
+        >>> MercurialRepository._check_url('git+ssh://example.com/my%20fine repo')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Unsupported protocol in URL 'git+ssh://example.com/my%20fine repo'>
+        >>> MercurialRepository._check_url('svn+http://example.com/repo')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Unsupported protocol in URL 'svn+http://example.com/repo'>
+        """
+        try:
+            parsed_url = urllib.parse.urlparse(url)
+            parsed_url.port  # trigger netloc parsing which might raise ValueError
+        except ValueError:
+            raise urllib.error.URLError("Error parsing URL: %r" % url)
+
+        # check first if it's not an local url
+        if os.path.isabs(url) and os.path.isdir(url) or parsed_url.scheme == 'file':
+            # When creating repos, _get_url will use file protocol for local paths
+            return
+
+        if parsed_url.scheme not in ['http', 'https', 'ssh', 'git+http', 'git+https']:
+            raise urllib.error.URLError("Unsupported protocol in URL %r" % url)
+
+        url = safe_bytes(url)
+
+        if parsed_url.scheme == 'ssh':
             # in case of invalid uri or authentication issues, sshpeer will
             # throw an exception.
             mercurial.sshpeer.instance(repoui or mercurial.ui.ui(), url, False).lookup(b'tip')
-            return True
+            return
 
-        url_prefix = None
-        if b'+' in url[:url.find(b'://')]:
-            url_prefix, url = url.split(b'+', 1)
+        if '+' in parsed_url.scheme:  # strip 'git+' for hg-git URLs
+            url = url.split(b'+', 1)[1]
 
         url_obj = mercurial.util.url(url)
         test_uri, handlers = get_urllib_request_handlers(url_obj)
@@ -335,7 +363,7 @@ class MercurialRepository(BaseRepository):
             # means it cannot be cloned
             raise urllib.error.URLError("[%s] org_exc: %s" % (cleaned_uri, e))
 
-        if not url_prefix: # skip svn+http://... (and git+... too)
+        if parsed_url.scheme in ['http', 'https']:  # skip git+http://... etc
             # now check if it's a proper hg repo
             try:
                 mercurial.httppeer.instance(repoui or mercurial.ui.ui(), url, False).lookup(b'tip')
@@ -343,8 +371,6 @@ class MercurialRepository(BaseRepository):
                 raise urllib.error.URLError(
                     "url [%s] does not look like an hg repo org_exc: %s"
                     % (cleaned_uri, e))
-
-        return True
 
     def _get_repo(self, create, src_url=None, update_after_clone=False):
         """
@@ -358,12 +384,12 @@ class MercurialRepository(BaseRepository):
         """
         try:
             if src_url:
-                url = safe_bytes(self._get_url(src_url))
+                url = self._get_url(src_url)
                 opts = {}
                 if not update_after_clone:
                     opts.update({'noupdate': True})
                 MercurialRepository._check_url(url, self.baseui)
-                mercurial.commands.clone(self.baseui, url, safe_bytes(self.path), **opts)
+                mercurial.commands.clone(self.baseui, safe_bytes(url), safe_bytes(self.path), **opts)
 
                 # Don't try to create if we've already cloned repo
                 create = False
@@ -379,17 +405,12 @@ class MercurialRepository(BaseRepository):
 
     @LazyProperty
     def in_memory_changeset(self):
-        return MercurialInMemoryChangeset(self)
+        return inmemory.MercurialInMemoryChangeset(self)
 
     @LazyProperty
     def description(self):
         _desc = self._repo.ui.config(b'web', b'description', None, untrusted=True)
         return safe_str(_desc or b'unknown')
-
-    @LazyProperty
-    def contact(self):
-        return safe_str(mercurial.hgweb.common.get_contact(self._repo.ui.config)
-                            or b'Unknown')
 
     @LazyProperty
     def last_change(self):
@@ -489,7 +510,7 @@ class MercurialRepository(BaseRepository):
         Returns ``MercurialChangeset`` object representing repository's
         changeset at the given ``revision``.
         """
-        return MercurialChangeset(repository=self, revision=self._get_revision(revision))
+        return changeset.MercurialChangeset(repository=self, revision=self._get_revision(revision))
 
     def get_changesets(self, start=None, end=None, start_date=None,
                        end_date=None, branch_name=None, reverse=False, max_revisions=None):
@@ -545,6 +566,60 @@ class MercurialRepository(BaseRepository):
 
         return CollectionGenerator(self, revs)
 
+    def get_diff_changesets(self, org_rev, other_repo, other_rev):
+        """
+        Returns lists of changesets that can be merged from this repo @org_rev
+        to other_repo @other_rev
+        ... and the other way
+        ... and the ancestors that would be used for merge
+
+        :param org_rev: the revision we want our compare to be made
+        :param other_repo: repo object, most likely the fork of org_repo. It has
+            all changesets that we need to obtain
+        :param other_rev: revision we want out compare to be made on other_repo
+        """
+        ancestors = None
+        if org_rev == other_rev:
+            org_changesets = []
+            other_changesets = []
+
+        else:
+            # case two independent repos
+            if self != other_repo:
+                hgrepo = mercurial.unionrepo.makeunionrepository(other_repo.baseui,
+                                                       safe_bytes(other_repo.path),
+                                                       safe_bytes(self.path))
+                # all ancestors of other_rev will be in other_repo and
+                # rev numbers from hgrepo can be used in other_repo - org_rev ancestors cannot
+
+            # no remote compare do it on the same repository
+            else:
+                hgrepo = other_repo._repo
+
+            ancestors = [ascii_str(hgrepo[ancestor].hex()) for ancestor in
+                         hgrepo.revs(b"id(%s) & ::id(%s)", ascii_bytes(other_rev), ascii_bytes(org_rev))]
+            if ancestors:
+                log.debug("shortcut found: %s is already an ancestor of %s", other_rev, org_rev)
+            else:
+                log.debug("no shortcut found: %s is not an ancestor of %s", other_rev, org_rev)
+                ancestors = [ascii_str(hgrepo[ancestor].hex()) for ancestor in
+                             hgrepo.revs(b"heads(::id(%s) & ::id(%s))", ascii_bytes(org_rev), ascii_bytes(other_rev))] # FIXME: expensive!
+
+            other_changesets = [
+                other_repo.get_changeset(rev)
+                for rev in hgrepo.revs(
+                    b"ancestors(id(%s)) and not ancestors(id(%s)) and not id(%s)",
+                    ascii_bytes(other_rev), ascii_bytes(org_rev), ascii_bytes(org_rev))
+            ]
+            org_changesets = [
+                self.get_changeset(ascii_str(hgrepo[rev].hex()))
+                for rev in hgrepo.revs(
+                    b"ancestors(id(%s)) and not ancestors(id(%s)) and not id(%s)",
+                    ascii_bytes(org_rev), ascii_bytes(other_rev), ascii_bytes(other_rev))
+            ]
+
+        return other_changesets, org_changesets, ancestors
+
     def pull(self, url):
         """
         Tries to pull changes from external location.
@@ -561,7 +636,7 @@ class MercurialRepository(BaseRepository):
         """
         Returns ``Workdir`` instance for this repository.
         """
-        return MercurialWorkdir(self)
+        return workdir.MercurialWorkdir(self)
 
     def get_config_value(self, section, name=None, config_file=None):
         """

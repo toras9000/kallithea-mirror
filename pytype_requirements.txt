@@ -1,0 +1,9 @@
+# Note: we support pytype on Python3.9
+pytype==2021.4.1
+# optional modules that we want for pytype checking
+ipython
+kajiki
+psycopg2
+python-ldap
+python-pam
+tgext.debugbar

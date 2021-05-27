@@ -18,7 +18,7 @@
      - /${c.changelog_for_path}
     %endif
     %if c.revision:
-    @ ${h.short_id(c.first_revision.raw_id)}
+    @ ${c.first_revision.short_id}
     %endif
     - ${ungettext('showing %d out of %d revision', 'showing %d out of %d revisions', size) % (size, c.total_cs)}
 </%def>
@@ -81,7 +81,8 @@ ${self.repo_context_bar('changelog', c.first_revision.raw_id if c.first_revision
                 ${c.cs_pagination.pager()}
 
         <script src="${h.url('/js/graph.js', ver=c.kallithea_version)}"></script>
-        <script>'use strict';
+        <script>
+            'use strict';
             var jsdata = ${h.js(c.jsdata)};
             var graph = new BranchRenderer('graph_canvas', 'graph_content', 'chg_');
 

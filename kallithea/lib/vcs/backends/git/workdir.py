@@ -1,8 +1,8 @@
 import re
 
-from kallithea.lib.utils2 import ascii_str, safe_str
 from kallithea.lib.vcs.backends.base import BaseWorkdir
 from kallithea.lib.vcs.exceptions import BranchDoesNotExistError, RepositoryError
+from kallithea.lib.vcs.utils import ascii_str, safe_str
 
 
 class GitWorkdir(BaseWorkdir):

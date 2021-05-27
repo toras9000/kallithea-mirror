@@ -14,8 +14,7 @@
 
 import pytest
 
-from kallithea.model.db import Repository
-from kallithea.model.meta import Session
+from kallithea.model import db, meta
 from kallithea.model.repo import RepoModel
 from kallithea.model.scm import ScmModel
 from kallithea.tests import base
@@ -36,7 +35,7 @@ class TestSummaryController(base.TestController):
 
     def test_index_hg(self, custom_settings):
         self.log_user()
-        ID = Repository.get_by_repo_name(base.HG_REPO).repo_id
+        ID = db.Repository.get_by_repo_name(base.HG_REPO).repo_id
         response = self.app.get(base.url(controller='summary',
                                     action='index',
                                     repo_name=base.HG_REPO))
@@ -66,7 +65,7 @@ class TestSummaryController(base.TestController):
 
     def test_index_git(self, custom_settings):
         self.log_user()
-        ID = Repository.get_by_repo_name(base.GIT_REPO).repo_id
+        ID = db.Repository.get_by_repo_name(base.GIT_REPO).repo_id
         response = self.app.get(base.url(controller='summary',
                                     action='index',
                                     repo_name=base.GIT_REPO))
@@ -95,7 +94,7 @@ class TestSummaryController(base.TestController):
 
     def test_index_by_id_hg(self):
         self.log_user()
-        ID = Repository.get_by_repo_name(base.HG_REPO).repo_id
+        ID = db.Repository.get_by_repo_name(base.HG_REPO).repo_id
         response = self.app.get(base.url(controller='summary',
                                     action='index',
                                     repo_name='_%s' % ID))
@@ -119,12 +118,12 @@ class TestSummaryController(base.TestController):
         try:
             response.mustcontain("repo_1")
         finally:
-            RepoModel().delete(Repository.get_by_repo_name('repo_1'))
-            Session().commit()
+            RepoModel().delete(db.Repository.get_by_repo_name('repo_1'))
+            meta.Session().commit()
 
     def test_index_by_id_git(self):
         self.log_user()
-        ID = Repository.get_by_repo_name(base.GIT_REPO).repo_id
+        ID = db.Repository.get_by_repo_name(base.GIT_REPO).repo_id
         response = self.app.get(base.url(controller='summary',
                                     action='index',
                                     repo_name='_%s' % ID))
@@ -139,9 +138,9 @@ class TestSummaryController(base.TestController):
         )
 
     def _enable_stats(self, repo):
-        r = Repository.get_by_repo_name(repo)
+        r = db.Repository.get_by_repo_name(repo)
         r.enable_statistics = True
-        Session().commit()
+        meta.Session().commit()
 
     def test_index_trending(self):
         self.log_user()

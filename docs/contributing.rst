@@ -26,12 +26,13 @@ for more details.
 Getting started
 ---------------
 
-To get started with Kallithea development::
+To get started with Kallithea development run the following commands in your
+bash shell::
 
         hg clone https://kallithea-scm.org/repos/kallithea
         cd kallithea
-        python3 -m venv ../kallithea-venv
-        source ../kallithea-venv/bin/activate
+        python3 -m venv venv
+        . venv/bin/activate
         pip install --upgrade pip setuptools
         pip install --upgrade -e . -r dev_requirements.txt python-ldap python-pam
         kallithea-cli config-create my.ini
@@ -71,6 +72,94 @@ review and inclusion, via the mailing list (via ``hg email``).
 .. _contributing-tests:
 
 
+Internal dependencies
+---------------------
+
+We try to keep the code base clean and modular and avoid circular dependencies.
+Code should only invoke code in layers below itself.
+
+Imports should import whole modules ``from`` their parent module, perhaps
+``as`` a shortened name. Avoid imports ``from`` modules.
+
+To avoid cycles and partially initialized modules, ``__init__.py`` should *not*
+contain any non-trivial imports. The top level of a module should *not* be a
+facade for the module functionality.
+
+Common code for a module is often in ``base.py``.
+
+The important part of the dependency graph is approximately linear. In the
+following list, modules may only depend on modules below them:
+
+``tests``
+  Just get the job done - anything goes.
+
+``bin/`` & ``config/`` & ``alembic/``
+  The main entry points, defined in ``setup.py``. Note: The TurboGears template
+  use ``config`` for the high WSGI application - this is not for low level
+  configuration.
+
+``controllers/``
+  The top level web application, with TurboGears using the ``root`` controller
+  as entry point, and ``routing`` dispatching to other controllers.
+
+``templates/**.html``
+  The "view", rendering to HTML. Invoked by controllers which can pass them
+  anything from lower layers - especially ``helpers`` available as ``h`` will
+  cut through all layers, and ``c`` gives access to global variables.
+
+``lib/helpers.py``
+  High level helpers, exposing everything to templates as ``h``. It depends on
+  everything and has a huge dependency chain, so it should not be used for
+  anything else. TODO.
+
+``controllers/base.py``
+  The base class of controllers, with lots of model knowledge.
+
+``lib/auth.py``
+  All things related to authentication. TODO.
+
+``lib/utils.py``
+  High level utils with lots of model knowledge. TODO.
+
+``lib/hooks.py``
+  Hooks into "everything" to give centralized logging to database, cache
+  invalidation, and extension handling. TODO.
+
+``model/``
+  Convenience business logic wrappers around database models.
+
+``model/db.py``
+  Defines the database schema and provides some additional logic.
+
+``model/scm.py``
+  All things related to anything. TODO.
+
+SQLAlchemy
+  Database session and transaction in thread-local variables.
+
+``lib/utils2.py``
+  Low level utils specific to Kallithea.
+
+``lib/webutils.py``
+  Low level generic utils with awareness of the TurboGears environment.
+
+TurboGears
+  Request, response and state like i18n gettext in thread-local variables.
+  External dependency with global state - usage should be minimized.
+
+``lib/vcs/``
+  Previously an independent library. No awareness of web, database, or state.
+
+``lib/*``
+  Various "pure" functionality not depending on anything else.
+
+``__init__``
+  Very basic Kallithea constants - some of them are set very early based on ``.ini``.
+
+This is not exactly how it is right now, but we aim for something like that.
+Especially the areas marked as TODO have some problems that need untangling.
+
+
 Running tests
 -------------
 
@@ -83,6 +172,17 @@ Note that on unix systems, the temporary directory (``/tmp`` or where
 ``$TMPDIR`` points) must allow executable files; Git hooks must be executable,
 and the test suite creates repositories in the temporary directory. Linux
 systems with /tmp mounted noexec will thus fail.
+
+Tests can be run on PostgreSQL like::
+
+    sudo -u postgres createuser 'kallithea-test' --pwprompt  # password password
+    sudo -u postgres createdb 'kallithea-test' --owner 'kallithea-test'
+    REUSE_TEST_DB='postgresql://kallithea-test:password@localhost/kallithea-test' py.test
+
+Tests can be run on MariaDB/MySQL like::
+
+    echo "GRANT ALL PRIVILEGES ON \`kallithea-test\`.* TO 'kallithea-test'@'localhost' IDENTIFIED BY 'password'" | sudo -u mysql mysql
+    TEST_DB='mysql://kallithea-test:password@localhost/kallithea-test?charset=utf8mb4' py.test
 
 You can also use ``tox`` to run the tests with all supported Python versions.
 
@@ -147,8 +247,9 @@ committer/contributor and under GPLv3 unless explicitly stated. We do care a
 lot about preservation of copyright and license information for existing code
 that is brought into the project.
 
-Contributions will be accepted in most formats -- such as commits hosted on your own Kallithea instance, or patches sent by
-email to the `kallithea-general`_ mailing list.
+Contributions will be accepted in most formats -- such as commits hosted on your
+own Kallithea instance, or patches sent by email to the `kallithea-general`_
+mailing list.
 
 Make sure to test your changes both manually and with the automatic tests
 before posting.

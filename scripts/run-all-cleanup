@@ -5,9 +5,13 @@
 set -e
 set -x
 
+hg files 'set:!binary()&grep("^#!.*python")' 'set:**.py' | xargs scripts/deps.py
+dot -Tsvg deps.dot > deps.svg
+
 scripts/docs-headings.py
 scripts/generate-ini.py
 scripts/whitespacecleanup.sh
+hg files 'set:!binary()&grep("^#!.*python")' 'set:**.py' | xargs scripts/source_format.py
 
-hg loc 'set:!binary()&grep("^#!.*python")' '*.py' | xargs scripts/pyflakes
+hg files 'set:!binary()&grep("^#!.*python")' 'set:**.py' | xargs scripts/pyflakes
 echo "no blocking problems found by $0"

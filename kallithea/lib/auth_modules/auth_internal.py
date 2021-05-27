@@ -28,7 +28,7 @@ Original author and date, and relevant copyright and licensing information is be
 
 import logging
 
-from kallithea.lib import auth_modules
+from kallithea.lib import auth_modules, utils2
 from kallithea.lib.compat import hybrid_property
 
 
@@ -78,8 +78,7 @@ class KallitheaAuthPlugin(auth_modules.KallitheaAuthPluginBase):
         }
         log.debug('user data: %s', user_data)
 
-        from kallithea.lib import auth
-        password_match = auth.check_password(password, userobj.password)
+        password_match = utils2.check_password(password, userobj.password)
         if userobj.is_default_user:
             log.info('user %s authenticated correctly as anonymous user',
                      username)

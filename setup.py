@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import os
 import platform
+import re
 import sys
 
 import setuptools
@@ -17,7 +18,6 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 
 def _get_meta_var(name, data, callback_handler=None):
-    import re
     matches = re.compile(r'(?:%s)\s*=\s*(.*)' % name).search(data)
     if matches:
         s = eval(matches.groups()[0])
@@ -53,9 +53,9 @@ requirements = [
     "FormEncode >= 1.3.1, < 1.4",
     "SQLAlchemy >= 1.2.9, < 1.4",
     "Mako >= 0.9.1, < 1.2",
-    "Pygments >= 2.2.0, < 2.6",
+    "Pygments >= 2.2.0, < 2.7",
     "Whoosh >= 2.7.1, < 2.8",
-    "celery >= 4.3, < 4.5, != 4.4.4", # 4.4.4 is broken due to unexpressed dependency on 'future', see https://github.com/celery/celery/pull/6146
+    "celery >= 5, < 5.1",
     "Babel >= 1.3, < 2.9",
     "python-dateutil >= 2.1.0, < 2.9",
     "Markdown >= 2.2.1, < 3.2",
@@ -63,9 +63,9 @@ requirements = [
     "URLObject >= 2.3.4, < 2.5",
     "Routes >= 2.0, < 2.5",
     "dulwich >= 0.19.0, < 0.20",
-    "mercurial >= 5.2, < 5.5",
+    "mercurial >= 5.2, < 5.9",
     "decorator >= 4.2.1, < 4.5",
-    "Paste >= 2.0.3, < 3.4",
+    "Paste >= 2.0.3, < 3.5",
     "bleach >= 3.0, < 3.1.4",
     "Click >= 7.0, < 8",
     "ipaddr >= 2.2.0, < 2.3",
@@ -73,6 +73,7 @@ requirements = [
     "paginate_sqlalchemy >= 0.3.0, < 0.4",
     "bcrypt >= 3.1.0, < 3.2",
     "pip >= 20.0, < 999",
+    "chardet >= 3",
 ]
 
 dependency_links = [
@@ -156,6 +157,6 @@ setuptools.setup(
     kallithea-cli =    kallithea.bin.kallithea_cli:cli
 
     [paste.app_factory]
-    main = kallithea.config.middleware:make_app
+    main = kallithea.config.application:make_app
     """,
 )

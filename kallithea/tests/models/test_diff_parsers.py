@@ -268,6 +268,62 @@ DIFF_FIXTURES = {
           'binary': False,
           'ops': {RENAMED_FILENODE: 'file renamed from oh no to oh yes'}}),
     ],
+    'git_diff_quoting.diff': [
+        ('"foo"',
+         'added',
+         {'added': 1,
+          'binary': False,
+          'deleted': 0,
+          'ops': {1: 'new file 100644'}}),
+        ("'foo'",
+         'added',
+         {'added': 1,
+          'binary': False,
+          'deleted': 0,
+          'ops': {1: 'new file 100644'}}),
+        ("'foo'" '"foo"',
+         'added',
+         {'added': 1,
+          'binary': False,
+          'deleted': 0,
+          'ops': {1: 'new file 100644'}}),
+        ('a\r\nb',  # Note: will be parsed correctly, but other parts of Kallithea can't handle it
+         'added',
+         {'added': 1,
+          'binary': False,
+          'deleted': 0,
+          'ops': {1: 'new file 100644'}}),
+        ('foo\rfoo',  # Note: will be parsed correctly, but other parts of Kallithea can't handle it
+         'added',
+        {'added': 0,
+         'binary': True,
+         'deleted': 0,
+          'ops': {1: 'new file 100644'}}),
+        ('foo bar',
+         'added',
+         {'added': 1,
+          'binary': False,
+          'deleted': 0,
+          'ops': {1: 'new file 100644'}}),
+        ('test',
+         'added',
+         {'added': 1,
+          'binary': False,
+          'deleted': 0,
+          'ops': {1: 'new file 100644'}}),
+        ('esc\033foo',  # Note: will be parsed and handled correctly, but without good UI
+         'added',
+         {'added': 0,
+          'binary': True,
+          'deleted': 0,
+          'ops': {1: 'new file 100644'}}),
+        ('tab\tfoo',  # Note: will be parsed and handled correctly, but without good UI
+         'added',
+         {'added': 0,
+          'binary': True,
+          'deleted': 0,
+          'ops': {1: 'new file 100644'}}),
+    ],
 }
 
 
@@ -288,27 +344,30 @@ class TestDiffLib(base.TestController):
         raw_diff = fixture.load_resource('markuptest.diff', strip=False)
         diff_processor = DiffProcessor(raw_diff)
         chunks = diff_processor.parsed[0]['chunks']
-        assert not chunks[0]
+        assert len(chunks) == 1, chunks
         #from pprint import pprint; pprint(chunks[1])
         l = ['\n']
-        for d in chunks[1]:
+        for d in chunks[0]:
             l.append('%(action)-7s %(new_lineno)3s %(old_lineno)3s %(line)r\n' % d)
         s = ''.join(l)
         assert s == r'''
-context ... ... '@@ -51,6 +51,13 @@\n'
-unmod    51  51 '<u>\t</u>begin();\n'
+context         '@@ -51,8 +51,15 @@'
+unmod    51  51 '<u>\t</u>begin();'
 unmod    52  52 '<u>\t</u><i></i>'
-add      53     '<u>\t</u>int foo;<u class="cr"></u>\n'
-add      54     '<u>\t</u>int bar; <u class="cr"></u>\n'
-add      55     '<u>\t</u>int baz;<u>\t</u><u class="cr"></u>\n'
+add      53     '<u>\t</u>int foo;<u class="cr"></u>'
+add      54     '<u>\t</u>int bar; <u class="cr"></u>'
+add      55     '<u>\t</u>int baz;<u>\t</u><u class="cr"></u>'
 add      56     '<u>\t</u>int space; <i></i>'
 add      57     '<u>\t</u>int tab;<u>\t</u><i></i>'
 add      58     '<u>\t</u><i></i>'
 unmod    59  53 ' <i></i>'
-del          54 '<u>\t</u>#define MAX_STEPS (48)\n'
-add      60     '<u>\t</u><u class="cr"></u>\n'
-add      61     '<u>\t</u>#define MAX_STEPS (64)<u class="cr"></u>\n'
-unmod    62  55 '\n'
-del          56 '<u>\t</u>#define MIN_STEPS (<del>48</del>)\n'
-add      63     '<u>\t</u>#define MIN_STEPS (<ins>42</ins>)\n'
+del          54 '<u>\t</u>#define MAX_STEPS (48)'
+add      60     '<u>\t</u><u class="cr"></u>'
+add      61     '<u>\t</u>#define MAX_STEPS (64)<u class="cr"></u>'
+unmod    62  55 ''
+del          56 '<u>\t</u>#define MIN_STEPS (<del>48</del>)'
+add      63     '<u>\t</u>#define MIN_STEPS (<ins>42</ins>)'
+unmod    64  57 ''
+del          58 '<u>\t</u>#define <del>MORE_STEPS</del><u>\t</u><del>+</del>(<del>48</del>)<del><u>\t</u></del><del><i></i></del>'
+add      65     '<u>\t</u>#define <ins>LESS_STEPS</ins><u>\t</u>(<ins>42</ins>)<ins> <i></i></ins>'
 '''

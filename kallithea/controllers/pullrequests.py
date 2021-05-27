@@ -35,21 +35,20 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest, HTTPForbidden, HTTPFound, HTTPNotFound
 
-from kallithea.config.routing import url
-from kallithea.controllers.changeset import _context_url, _ignorews_url, create_cs_pr_comment, delete_cs_pr_comment
-from kallithea.lib import diffs
-from kallithea.lib import helpers as h
+import kallithea.lib.helpers as h
+from kallithea.controllers import base
+from kallithea.controllers.changeset import create_cs_pr_comment, delete_cs_pr_comment
+from kallithea.lib import auth, diffs, webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
-from kallithea.lib.base import BaseRepoController, jsonify, render
 from kallithea.lib.graphmod import graph_data
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import ascii_bytes, safe_bytes, safe_int
 from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError, EmptyRepositoryError
+from kallithea.lib.webutils import url
+from kallithea.model import db, meta
 from kallithea.model.changeset_status import ChangesetStatusModel
 from kallithea.model.comment import ChangesetCommentsModel
-from kallithea.model.db import ChangesetStatus, PullRequest, PullRequestReviewer, Repository, User
 from kallithea.model.forms import PullRequestForm, PullRequestPostForm
-from kallithea.model.meta import Session
 from kallithea.model.pull_request import CreatePullRequestAction, CreatePullRequestIterationAction, PullRequestModel
 
 
@@ -59,21 +58,21 @@ log = logging.getLogger(__name__)
 def _get_reviewer(user_id):
     """Look up user by ID and validate it as a potential reviewer."""
     try:
-        user = User.get(int(user_id))
+        user = db.User.get(int(user_id))
     except ValueError:
         user = None
 
     if user is None or user.is_default_user:
-        h.flash(_('Invalid reviewer "%s" specified') % user_id, category='error')
+        webutils.flash(_('Invalid reviewer "%s" specified') % user_id, category='error')
         raise HTTPBadRequest()
 
     return user
 
 
-class PullrequestsController(BaseRepoController):
+class PullrequestsController(base.BaseRepoController):
 
     def _get_repo_refs(self, repo, rev=None, branch=None, branch_rev=None):
-        """return a structure with repo's interesting changesets, suitable for
+        """return a structure with scm repo's interesting changesets, suitable for
         the selectors in pullrequest.html
 
         rev: a revision that must be in the list somehow and selected by default
@@ -155,13 +154,14 @@ class PullrequestsController(BaseRepoController):
 
         # prio 4: tip revision
         if not selected:
-            if h.is_hg(repo):
+            if repo.alias == 'hg':
                 if tipbranch:
                     selected = 'branch:%s:%s' % (tipbranch, tiprev)
                 else:
                     selected = 'tag:null:' + repo.EMPTY_CHANGESET
                     tags.append((selected, 'null'))
             else:  # Git
+                assert repo.alias == 'git'
                 if not repo.branches:
                     selected = ''  # doesn't make sense, but better than nothing
                 elif 'master' in repo.branches:
@@ -183,9 +183,9 @@ class PullrequestsController(BaseRepoController):
             return False
 
         owner = request.authuser.user_id == pull_request.owner_id
-        reviewer = PullRequestReviewer.query() \
-            .filter(PullRequestReviewer.pull_request == pull_request) \
-            .filter(PullRequestReviewer.user_id == request.authuser.user_id) \
+        reviewer = db.PullRequestReviewer.query() \
+            .filter(db.PullRequestReviewer.pull_request == pull_request) \
+            .filter(db.PullRequestReviewer.user_id == request.authuser.user_id) \
             .count() != 0
 
         return request.authuser.admin or owner or reviewer
@@ -202,7 +202,7 @@ class PullrequestsController(BaseRepoController):
             url_params['closed'] = 1
         p = safe_int(request.GET.get('page'), 1)
 
-        q = PullRequest.query(include_closed=c.closed, sorted=True)
+        q = db.PullRequest.query(include_closed=c.closed, sorted=True)
         if c.from_:
             q = q.filter_by(org_repo=c.db_repo)
         else:
@@ -211,21 +211,21 @@ class PullrequestsController(BaseRepoController):
 
         c.pullrequests_pager = Page(c.pull_requests, page=p, items_per_page=100, **url_params)
 
-        return render('/pullrequests/pullrequest_show_all.html')
+        return base.render('/pullrequests/pullrequest_show_all.html')
 
     @LoginRequired()
     def show_my(self):
         c.closed = request.GET.get('closed') or ''
 
-        c.my_pull_requests = PullRequest.query(
+        c.my_pull_requests = db.PullRequest.query(
             include_closed=c.closed,
             sorted=True,
         ).filter_by(owner_id=request.authuser.user_id).all()
 
         c.participate_in_pull_requests = []
         c.participate_in_pull_requests_todo = []
-        done_status = set([ChangesetStatus.STATUS_APPROVED, ChangesetStatus.STATUS_REJECTED])
-        for pr in PullRequest.query(
+        done_status = set([db.ChangesetStatus.STATUS_APPROVED, db.ChangesetStatus.STATUS_REJECTED])
+        for pr in db.PullRequest.query(
             include_closed=c.closed,
             reviewer_id=request.authuser.user_id,
             sorted=True,
@@ -236,7 +236,7 @@ class PullrequestsController(BaseRepoController):
             else:
                 c.participate_in_pull_requests_todo.append(pr)
 
-        return render('/pullrequests/pullrequest_show_my.html')
+        return base.render('/pullrequests/pullrequest_show_my.html')
 
     @LoginRequired()
     @HasRepoPermissionLevelDecorator('read')
@@ -246,7 +246,7 @@ class PullrequestsController(BaseRepoController):
         try:
             org_scm_instance.get_changeset()
         except EmptyRepositoryError as e:
-            h.flash(_('There are no changesets yet'),
+            webutils.flash(_('There are no changesets yet'),
                     category='warning')
             raise HTTPFound(location=url('summary_home', repo_name=org_repo.repo_name))
 
@@ -291,11 +291,11 @@ class PullrequestsController(BaseRepoController):
         for fork in org_repo.forks:
             c.a_repos.append((fork.repo_name, fork.repo_name))
 
-        return render('/pullrequests/pullrequest.html')
+        return base.render('/pullrequests/pullrequest.html')
 
     @LoginRequired()
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def repo_info(self, repo_name):
         repo = c.db_repo
         refs, selected_ref = self._get_repo_refs(repo.scm_instance)
@@ -315,61 +315,61 @@ class PullrequestsController(BaseRepoController):
             log.error(traceback.format_exc())
             log.error(str(errors))
             msg = _('Error creating pull request: %s') % errors.msg
-            h.flash(msg, 'error')
+            webutils.flash(msg, 'error')
             raise HTTPBadRequest
 
         # heads up: org and other might seem backward here ...
         org_ref = _form['org_ref'] # will have merge_rev as rev but symbolic name
-        org_repo = Repository.guess_instance(_form['org_repo'])
+        org_repo = db.Repository.guess_instance(_form['org_repo'])
 
         other_ref = _form['other_ref'] # will have symbolic name and head revision
-        other_repo = Repository.guess_instance(_form['other_repo'])
+        other_repo = db.Repository.guess_instance(_form['other_repo'])
 
         reviewers = []
 
         title = _form['pullrequest_title']
         description = _form['pullrequest_desc'].strip()
-        owner = User.get(request.authuser.user_id)
+        owner = db.User.get(request.authuser.user_id)
 
         try:
             cmd = CreatePullRequestAction(org_repo, other_repo, org_ref, other_ref, title, description, owner, reviewers)
         except CreatePullRequestAction.ValidationError as e:
-            h.flash(e, category='error', logf=log.error)
+            webutils.flash(e, category='error', logf=log.error)
             raise HTTPNotFound
 
         try:
             pull_request = cmd.execute()
-            Session().commit()
+            meta.Session().commit()
         except Exception:
-            h.flash(_('Error occurred while creating pull request'),
+            webutils.flash(_('Error occurred while creating pull request'),
                     category='error')
             log.error(traceback.format_exc())
             raise HTTPFound(location=url('pullrequest_home', repo_name=repo_name))
 
-        h.flash(_('Successfully opened new pull request'),
+        webutils.flash(_('Successfully opened new pull request'),
                 category='success')
         raise HTTPFound(location=pull_request.url())
 
     def create_new_iteration(self, old_pull_request, new_rev, title, description, reviewers):
-        owner = User.get(request.authuser.user_id)
+        owner = db.User.get(request.authuser.user_id)
         new_org_rev = self._get_ref_rev(old_pull_request.org_repo, 'rev', new_rev)
         new_other_rev = self._get_ref_rev(old_pull_request.other_repo, old_pull_request.other_ref_parts[0], old_pull_request.other_ref_parts[1])
         try:
             cmd = CreatePullRequestIterationAction(old_pull_request, new_org_rev, new_other_rev, title, description, owner, reviewers)
         except CreatePullRequestAction.ValidationError as e:
-            h.flash(e, category='error', logf=log.error)
+            webutils.flash(e, category='error', logf=log.error)
             raise HTTPNotFound
 
         try:
             pull_request = cmd.execute()
-            Session().commit()
+            meta.Session().commit()
         except Exception:
-            h.flash(_('Error occurred while creating pull request'),
+            webutils.flash(_('Error occurred while creating pull request'),
                     category='error')
             log.error(traceback.format_exc())
             raise HTTPFound(location=old_pull_request.url())
 
-        h.flash(_('New pull request iteration created'),
+        webutils.flash(_('New pull request iteration created'),
                 category='success')
         raise HTTPFound(location=pull_request.url())
 
@@ -377,14 +377,14 @@ class PullrequestsController(BaseRepoController):
     @LoginRequired()
     @HasRepoPermissionLevelDecorator('read')
     def post(self, repo_name, pull_request_id):
-        pull_request = PullRequest.get_or_404(pull_request_id)
+        pull_request = db.PullRequest.get_or_404(pull_request_id)
         if pull_request.is_closed():
             raise HTTPForbidden()
         assert pull_request.other_repo.repo_name == repo_name
         # only owner or admin can update it
         owner = pull_request.owner_id == request.authuser.user_id
-        repo_admin = h.HasRepoPermissionLevel('admin')(c.repo_name)
-        if not (h.HasPermissionAny('hg.admin')() or repo_admin or owner):
+        repo_admin = auth.HasRepoPermissionLevel('admin')(c.repo_name)
+        if not (auth.HasPermissionAny('hg.admin')() or repo_admin or owner):
             raise HTTPForbidden()
 
         _form = PullRequestPostForm()().to_python(request.POST)
@@ -397,11 +397,11 @@ class PullrequestsController(BaseRepoController):
         other_removed = old_reviewers - cur_reviewers
 
         if other_added:
-            h.flash(_('Meanwhile, the following reviewers have been added: %s') %
+            webutils.flash(_('Meanwhile, the following reviewers have been added: %s') %
                     (', '.join(u.username for u in other_added)),
                     category='warning')
         if other_removed:
-            h.flash(_('Meanwhile, the following reviewers have been removed: %s') %
+            webutils.flash(_('Meanwhile, the following reviewers have been removed: %s') %
                     (', '.join(u.username for u in other_removed)),
                     category='warning')
 
@@ -418,28 +418,28 @@ class PullrequestsController(BaseRepoController):
         old_description = pull_request.description
         pull_request.title = _form['pullrequest_title']
         pull_request.description = _form['pullrequest_desc'].strip() or _('No description')
-        pull_request.owner = User.get_by_username(_form['owner'])
-        user = User.get(request.authuser.user_id)
+        pull_request.owner = db.User.get_by_username(_form['owner'])
+        user = db.User.get(request.authuser.user_id)
 
         PullRequestModel().mention_from_description(user, pull_request, old_description)
         PullRequestModel().add_reviewers(user, pull_request, added_reviewers)
         PullRequestModel().remove_reviewers(user, pull_request, removed_reviewers)
 
-        Session().commit()
-        h.flash(_('Pull request updated'), category='success')
+        meta.Session().commit()
+        webutils.flash(_('Pull request updated'), category='success')
 
         raise HTTPFound(location=pull_request.url())
 
     @LoginRequired()
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def delete(self, repo_name, pull_request_id):
-        pull_request = PullRequest.get_or_404(pull_request_id)
+        pull_request = db.PullRequest.get_or_404(pull_request_id)
         # only owner can delete it !
         if pull_request.owner_id == request.authuser.user_id:
             PullRequestModel().delete(pull_request)
-            Session().commit()
-            h.flash(_('Successfully deleted pull request'),
+            meta.Session().commit()
+            webutils.flash(_('Successfully deleted pull request'),
                     category='success')
             raise HTTPFound(location=url('my_pullrequests'))
         raise HTTPForbidden()
@@ -447,7 +447,7 @@ class PullrequestsController(BaseRepoController):
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
     def show(self, repo_name, pull_request_id, extra=None):
-        c.pull_request = PullRequest.get_or_404(pull_request_id)
+        c.pull_request = db.PullRequest.get_or_404(pull_request_id)
         c.allowed_to_change_status = self._is_allowed_to_change_status(c.pull_request)
         cc_model = ChangesetCommentsModel()
         cs_model = ChangesetStatusModel()
@@ -475,7 +475,7 @@ class PullrequestsController(BaseRepoController):
                 c.cs_ranges.append(org_scm_instance.get_changeset(x))
             except ChangesetDoesNotExistError:
                 c.cs_ranges = []
-                h.flash(_('Revision %s not found in %s') % (x, c.cs_repo.repo_name),
+                webutils.flash(_('Revision %s not found in %s') % (x, c.cs_repo.repo_name),
                     'error')
                 break
         c.cs_ranges_org = None # not stored and not important and moving target - could be calculated ...
@@ -553,7 +553,7 @@ class PullrequestsController(BaseRepoController):
                         show.update(org_scm_instance._repo.revs('::%ld - ::%ld - ::%s', brevs, avail_revs, c.a_branch_name))
                         show.add(revs[0]) # make sure graph shows this so we can see how they relate
                         c.update_msg_other = _('Note: Branch %s has another head: %s.') % (c.cs_branch_name,
-                            h.short_id(org_scm_instance.get_changeset((max(brevs))).raw_id))
+                            org_scm_instance.get_changeset(max(brevs)).short_id)
 
                     avail_show = sorted(show, reverse=True)
 
@@ -571,10 +571,8 @@ class PullrequestsController(BaseRepoController):
         c.cs_comments = c.cs_repo.get_comments(raw_ids)
         c.cs_statuses = c.cs_repo.statuses(raw_ids)
 
-        ignore_whitespace = request.GET.get('ignorews') == '1'
-        line_context = safe_int(request.GET.get('context'), 3)
-        c.ignorews_url = _ignorews_url
-        c.context_url = _context_url
+        ignore_whitespace_diff = h.get_ignore_whitespace_diff(request.GET)
+        diff_context_size = h.get_diff_context_size(request.GET)
         fulldiff = request.GET.get('fulldiff')
         diff_limit = None if fulldiff else self.cut_off_limit
 
@@ -583,7 +581,7 @@ class PullrequestsController(BaseRepoController):
                   c.a_rev, c.cs_rev, org_scm_instance.path)
         try:
             raw_diff = diffs.get_diff(org_scm_instance, rev1=c.a_rev, rev2=c.cs_rev,
-                                      ignore_whitespace=ignore_whitespace, context=line_context)
+                                      ignore_whitespace=ignore_whitespace_diff, context=diff_context_size)
         except ChangesetDoesNotExistError:
             raw_diff = safe_bytes(_("The diff can't be shown - the PR revisions could not be found."))
         diff_processor = diffs.DiffProcessor(raw_diff, diff_limit=diff_limit)
@@ -598,7 +596,7 @@ class PullrequestsController(BaseRepoController):
             c.lines_deleted += st['deleted']
             filename = f['filename']
             fid = h.FID('', filename)
-            html_diff = diffs.as_html(enable_comments=True, parsed_lines=[f])
+            html_diff = diffs.as_html(parsed_lines=[f])
             c.file_diff_data.append((fid, None, f['operation'], f['old_filename'], filename, html_diff, st))
 
         # inline comments
@@ -618,23 +616,23 @@ class PullrequestsController(BaseRepoController):
          c.pull_request_pending_reviewers,
          c.current_voting_result,
          ) = cs_model.calculate_pull_request_result(c.pull_request)
-        c.changeset_statuses = ChangesetStatus.STATUSES
+        c.changeset_statuses = db.ChangesetStatus.STATUSES
 
         c.is_ajax_preview = False
         c.ancestors = None # [c.a_rev] ... but that is shown in an other way
-        return render('/pullrequests/pullrequest_show.html')
+        return base.render('/pullrequests/pullrequest_show.html')
 
     @LoginRequired()
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def comment(self, repo_name, pull_request_id):
-        pull_request = PullRequest.get_or_404(pull_request_id)
+        pull_request = db.PullRequest.get_or_404(pull_request_id)
         allowed_to_change_status = self._is_allowed_to_change_status(pull_request)
         return create_cs_pr_comment(repo_name, pull_request=pull_request,
                 allowed_to_change_status=allowed_to_change_status)
 
     @LoginRequired()
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def delete_comment(self, repo_name, comment_id):
         return delete_cs_pr_comment(repo_name, comment_id)

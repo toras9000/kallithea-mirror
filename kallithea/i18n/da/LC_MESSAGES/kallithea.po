@@ -10,23 +10,24 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
+msgid ""
+"CSRF token leak has been detected - all form tokens have been expired"
+msgstr "CSRF-token lækage opdaget, alle form-tokens er invalideret"
+
+msgid "Repository not found in the filesystem"
+msgstr "Repository ikke fundet i filsystemet"
+
 msgid "There are no changesets yet"
 msgstr "Der er ingen changesets endnu"
+
+msgid "Changeset for %s %s not found in %s"
+msgstr "Changeset for %s %s ikke fundet i %s"
 
 msgid "None"
 msgstr "Ingen"
 
 msgid "(closed)"
 msgstr "(lukket)"
-
-msgid "Show whitespace"
-msgstr "Vis mellemrum"
-
-msgid "Ignore whitespace"
-msgstr "Ignorer mellemrum"
-
-msgid "Increase diff context to %(num)s lines"
-msgstr "Øg diff konteksten med %(num)s linjer"
 
 msgid "Successfully deleted pull request %s"
 msgstr "Pull-forespørgsel %s slettet successfuldt"
@@ -495,13 +496,6 @@ msgstr "Der opstod en fejl under sletning af repository statistik"
 msgid "Updated VCS settings"
 msgstr "Opdateret VCS-indstillinger"
 
-msgid ""
-"Unable to activate hgsubversion support. The \"hgsubversion\" library is "
-"missing"
-msgstr ""
-"Ude af stand til at aktivere hgsubversion understøttelse. \"hgsubversion"
-"\" biblioteket mangler"
-
 msgid "Error occurred while updating application settings"
 msgstr "Der opstod en fejl ved opdatering af applikationsindstillinger"
 
@@ -598,16 +592,6 @@ msgstr "Du skal være registreret bruger for at kunne udføre denne handling"
 msgid "You need to be signed in to view this page"
 msgstr "Du skal være logget ind for at se denne side"
 
-msgid ""
-"CSRF token leak has been detected - all form tokens have been expired"
-msgstr "CSRF-token lækage opdaget, alle form-tokens er invalideret"
-
-msgid "Repository not found in the filesystem"
-msgstr "Repository ikke fundet i filsystemet"
-
-msgid "Changeset for %s %s not found in %s"
-msgstr "Changeset for %s %s ikke fundet i %s"
-
 msgid "Binary file"
 msgstr "Binær fil"
 
@@ -619,6 +603,9 @@ msgstr ""
 
 msgid "No changes detected"
 msgstr "Ingen ændringer fundet"
+
+msgid "Increase diff context to %(num)s lines"
+msgstr "Øg diff konteksten med %(num)s linjer"
 
 msgid "Deleted branch: %s"
 msgstr "Slettet branch: %s"
@@ -731,14 +718,6 @@ msgstr "omdøb"
 msgid "chmod"
 msgstr "chmod"
 
-msgid ""
-"%s repository is not mapped to db perhaps it was created or renamed from "
-"the filesystem please run the application again in order to rescan "
-"repositories"
-msgstr ""
-"%s repository er ikke knyttet til db, måske var det skabt eller omdøbt "
-"fra filsystemet, kør applikationen igen for at scanne repositories"
-
 msgid "in %s"
 msgstr "i %s"
 
@@ -753,12 +732,6 @@ msgstr "%s og %s siden"
 
 msgid "just now"
 msgstr "lige nu"
-
-msgid "on line %s"
-msgstr "på linje %s"
-
-msgid "[Mention]"
-msgstr "[Omtale]"
 
 msgid "top level"
 msgstr "top-niveau"
@@ -802,12 +775,6 @@ msgstr "Standard-bruger har skrive-adgang til nye brugergrupper"
 msgid "Default user has admin access to new user groups"
 msgstr "Standard-bruger har admin-adgang til nye brugergrupper"
 
-msgid "Only admins can create repository groups"
-msgstr "Kun administratorer kan oprette repository-grupper"
-
-msgid "Non-admins can create repository groups"
-msgstr "Ikke-administratorer kan oprette repository-grupper"
-
 msgid "Only admins can create user groups"
 msgstr "Kun administratorer kan oprette brugergrupper"
 
@@ -819,17 +786,6 @@ msgstr "Kun administratorer kan oprette top-niveau repositories"
 
 msgid "Non-admins can create top level repositories"
 msgstr "Ikke-administratorer kan oprette top-niveau repositories"
-
-msgid ""
-"Repository creation enabled with write permission to a repository group"
-msgstr ""
-"Repository oprettelse aktiveret med skriveadgang til en repository-gruppe"
-
-msgid ""
-"Repository creation disabled with write permission to a repository group"
-msgstr ""
-"Repository oprettelse deaktiveret med skriveadgang til en repository-"
-"gruppe"
 
 msgid "Only admins can fork repositories"
 msgstr "Kun admins kan fork repositories"
@@ -873,13 +829,6 @@ msgstr "Indtast %(min)i tegn eller flere"
 msgid "Name must not contain only digits"
 msgstr "Navn må ikke kun indeholde cifre"
 
-msgid ""
-"[Comment] %(repo_name)s changeset %(short_id)s \"%(message_short)s\" on "
-"%(branch)s"
-msgstr ""
-"[Kommentar] %(repo_name)s changeset %(short_id)s \"%(message_short)s\" på "
-"%(branch)s"
-
 msgid "New user %(new_username)s registered"
 msgstr "Ny bruger %(new_username)s registreret"
 
@@ -900,11 +849,8 @@ msgstr ""
 msgid "Closing"
 msgstr "Lukning"
 
-msgid ""
-"%(user)s wants you to review pull request %(pr_nice_id)s: %(pr_title)s"
-msgstr ""
-"%(user)s vil have dig til at gennemgå pull-forespørgsel %(pr_nice_id)s: "
-"%(pr_title)s"
-
 msgid "Cannot create empty pull request"
 msgstr "Kan ikke oprette en tom pull-forespørgsel"
+
+msgid "Ignore whitespace"
+msgstr "Ignorer mellemrum"

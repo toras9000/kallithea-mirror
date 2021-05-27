@@ -32,7 +32,7 @@ log = logging.getLogger(__name__)
 
 template_file = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-    'kallithea/lib/paster_commands/template.ini.mako')
+    'kallithea/templates/ini/template.ini.mako')
 
 default_variables = {
     'database_engine': 'sqlite',
@@ -119,9 +119,6 @@ def expand(template, mako_variable_values, settings):
     #variable7 = 7.1
     #variable8 = 8.0
     <BLANKLINE>
-    variable8 = None
-    variable9 = None
-    <BLANKLINE>
     [fourth-section]
     fourth = "four"
     fourth_extra = 4
@@ -180,7 +177,7 @@ def expand(template, mako_variable_values, settings):
                 new_value = section_settings[key]
                 if new_value == line_value:
                     line = line.lstrip('#')
-                else:
+                elif new_value is not None:
                     line += '\n%s = %s' % (key, new_value)
                 section_settings.pop(key)
                 return line
@@ -189,8 +186,12 @@ def expand(template, mako_variable_values, settings):
 
             # 3rd pass:
             # settings that haven't been consumed yet at is appended to section
-            if section_settings:
-                lines += '\n' + ''.join('%s = %s\n' % (key, value) for key, value in sorted(section_settings.items()))
+            append_lines = ''.join(
+                '%s = %s\n' % (key, value)
+                for key, value in sorted(section_settings.items())
+                if value is not None)
+            if append_lines:
+                lines += '\n' + append_lines
 
         return sectionname + '\n' + re.sub('[ \t]+\n', '\n', lines)
 

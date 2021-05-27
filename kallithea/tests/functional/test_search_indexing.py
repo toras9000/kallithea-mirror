@@ -1,8 +1,8 @@
 import mock
 
-from kallithea import CONFIG
-from kallithea.config.conf import INDEX_FILENAMES
-from kallithea.model.meta import Session
+import kallithea
+from kallithea.lib.conf import INDEX_FILENAMES
+from kallithea.model import meta
 from kallithea.model.repo import RepoModel
 from kallithea.model.repo_group import RepoGroupModel
 from kallithea.tests import base
@@ -66,7 +66,7 @@ def rebuild_index(full_index):
         # (FYI, ENOMEM occurs at forking "git" with python 2.7.3,
         # Linux 3.2.78-1 x86_64, 3GB memory, and no ulimit
         # configuration for memory)
-        create_test_index(base.TESTS_TMP_PATH, CONFIG, full_index=full_index)
+        create_test_index(base.TESTS_TMP_PATH, kallithea.CONFIG, full_index=full_index)
 
 
 class TestSearchControllerIndexing(base.TestController):
@@ -103,8 +103,8 @@ class TestSearchControllerIndexing(base.TestController):
                 RepoGroupModel().delete(groupids.pop(groupname),
                                         force_delete=True)
 
-        Session().commit()
-        Session.remove()
+        meta.Session().commit()
+        meta.Session.remove()
 
         rebuild_index(full_index=True) # rebuild fully for subsequent tests
 

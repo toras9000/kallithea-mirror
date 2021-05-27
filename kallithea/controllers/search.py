@@ -35,8 +35,8 @@ from whoosh.index import EmptyIndexError, exists_in, open_dir
 from whoosh.qparser import QueryParser, QueryParserError
 from whoosh.query import Phrase, Prefix
 
+from kallithea.controllers import base
 from kallithea.lib.auth import LoginRequired
-from kallithea.lib.base import BaseRepoController, render
 from kallithea.lib.indexers import CHGSET_IDX_NAME, CHGSETS_SCHEMA, IDX_NAME, SCHEMA, WhooshResultWrapper
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import safe_int
@@ -46,7 +46,7 @@ from kallithea.model.repo import RepoModel
 log = logging.getLogger(__name__)
 
 
-class SearchController(BaseRepoController):
+class SearchController(base.BaseRepoController):
 
     @LoginRequired(allow_default_user=True)
     def index(self, repo_name=None):
@@ -139,4 +139,4 @@ class SearchController(BaseRepoController):
                 c.runtime = _('An error occurred during search operation.')
 
         # Return a rendered template
-        return render('/search/search.html')
+        return base.render('/search/search.html')

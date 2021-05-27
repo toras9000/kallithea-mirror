@@ -56,7 +56,6 @@ ${self.repo_context_bar('options')}
                     ${h.select('type',c.cur_type,[('content',_('File contents')),
                         ('commit',_('Commit messages')),
                         ('path',_('File names')),
-                        ##('repository',_('Repository names')),
                         ],
                         class_='form-control')}
                 </div>
@@ -81,8 +80,6 @@ ${self.repo_context_bar('options')}
         <%include file='search_path.html'/>
     %elif c.cur_type == 'commit':
         <%include file='search_commit.html'/>
-    %elif c.cur_type == 'repository':
-        <%include file='search_repository.html'/>
     %endif
     </div>
 </div>

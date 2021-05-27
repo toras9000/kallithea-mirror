@@ -36,12 +36,12 @@ from whoosh import query
 from whoosh.qparser.dateparse import DateParserPlugin
 from whoosh.qparser.default import QueryParser
 
+from kallithea.controllers import base
 from kallithea.lib.auth import HasPermissionAnyDecorator, LoginRequired
-from kallithea.lib.base import BaseController, render
 from kallithea.lib.indexers import JOURNAL_SCHEMA
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import remove_prefix, remove_suffix, safe_int
-from kallithea.model.db import UserLog
+from kallithea.model import db
 
 
 log = logging.getLogger(__name__)
@@ -77,15 +77,15 @@ def _journal_filter(user_log, search_term):
     def get_filterion(field, val, term):
 
         if field == 'repository':
-            field = getattr(UserLog, 'repository_name')
+            field = getattr(db.UserLog, 'repository_name')
         elif field == 'ip':
-            field = getattr(UserLog, 'user_ip')
+            field = getattr(db.UserLog, 'user_ip')
         elif field == 'date':
-            field = getattr(UserLog, 'action_date')
+            field = getattr(db.UserLog, 'action_date')
         elif field == 'username':
-            field = getattr(UserLog, 'username')
+            field = getattr(db.UserLog, 'username')
         else:
-            field = getattr(UserLog, field)
+            field = getattr(db.UserLog, field)
         log.debug('filter field: %s val=>%s', field, val)
 
         # sql filtering
@@ -102,6 +102,7 @@ def _journal_filter(user_log, search_term):
         if not isinstance(qry, query.And):
             qry = [qry]
         for term in qry:
+            assert term is not None, term
             field = term.fieldname
             val = (term.text if not isinstance(term, query.DateRange)
                    else [term.startdate, term.enddate])
@@ -118,7 +119,7 @@ def _journal_filter(user_log, search_term):
     return user_log
 
 
-class AdminController(BaseController):
+class AdminController(base.BaseController):
 
     @LoginRequired(allow_default_user=True)
     def _before(self, *args, **kwargs):
@@ -126,15 +127,15 @@ class AdminController(BaseController):
 
     @HasPermissionAnyDecorator('hg.admin')
     def index(self):
-        users_log = UserLog.query() \
-                .options(joinedload(UserLog.user)) \
-                .options(joinedload(UserLog.repository))
+        users_log = db.UserLog.query() \
+                .options(joinedload(db.UserLog.user)) \
+                .options(joinedload(db.UserLog.repository))
 
         # FILTERING
         c.search_term = request.GET.get('filter')
         users_log = _journal_filter(users_log, c.search_term)
 
-        users_log = users_log.order_by(UserLog.action_date.desc())
+        users_log = users_log.order_by(db.UserLog.action_date.desc())
 
         p = safe_int(request.GET.get('page'), 1)
 
@@ -142,6 +143,6 @@ class AdminController(BaseController):
                            filter=c.search_term)
 
         if request.environ.get('HTTP_X_PARTIAL_XHR'):
-            return render('admin/admin_log.html')
+            return base.render('admin/admin_log.html')
 
-        return render('admin/admin.html')
+        return base.render('admin/admin.html')

@@ -1,3 +1,4 @@
+import copy
 import datetime
 
 import pytest
@@ -31,7 +32,6 @@ class RepositoryBaseTest(_BackendTestMixin):
         assert self.repo == self.repo
 
     def test_repo_equality_broken_object(self):
-        import copy
         _repo = copy.copy(self.repo)
         delattr(_repo, 'path')
         assert self.repo != _repo

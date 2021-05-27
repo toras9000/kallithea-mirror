@@ -11,23 +11,27 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 
+msgid ""
+"CSRF token leak has been detected - all form tokens have been expired"
+msgstr "Обнаружена утечка CSRF-токена — истёк срок действия токенов форм"
+
+msgid "Repository not found in the filesystem"
+msgstr "Репозиторий не найден на файловой системе"
+
 msgid "There are no changesets yet"
 msgstr "Наборы изменений отсутствуют"
+
+msgid "Changeset for %s %s not found in %s"
+msgstr "Набор изменений для %s %s не найден в %s"
+
+msgid "SSH access is disabled."
+msgstr "Доступ по SSH отключен."
 
 msgid "None"
 msgstr "Ничего"
 
 msgid "(closed)"
 msgstr "(закрыто)"
-
-msgid "Show whitespace"
-msgstr "Отображать пробелы"
-
-msgid "Ignore whitespace"
-msgstr "Игнорировать пробелы"
-
-msgid "Increase diff context to %(num)s lines"
-msgstr "Увеличить контекст до %(num)s строк"
 
 msgid "No permission to change status"
 msgstr "Недостаточно привилегий для изменения статуса"
@@ -530,13 +534,6 @@ msgstr "Произошла ошибка при удалении статисти
 msgid "Updated VCS settings"
 msgstr "Обновлены настройки VCS"
 
-msgid ""
-"Unable to activate hgsubversion support. The \"hgsubversion\" library is "
-"missing"
-msgstr ""
-"Невозможно включить поддержку hgsubversion. Библиотека «hgsubversion» "
-"отсутствует"
-
 msgid "Error occurred while updating application settings"
 msgstr "Произошла ошибка при обновлении настроек приложения"
 
@@ -563,11 +560,6 @@ msgstr "Задача отправки Email создана"
 
 msgid "Hook already exists"
 msgstr "Хук уже существует"
-
-msgid "Builtin hooks are read-only. Please use another hook name."
-msgstr ""
-"Встроенные хуки предназначены только для чтения. Пожалуйста, используйте "
-"другое имя."
 
 msgid "Added new hook"
 msgstr "Добавлена новая ловушка"
@@ -646,19 +638,6 @@ msgstr ""
 msgid "You need to be signed in to view this page"
 msgstr "Страница доступна только авторизованным пользователям"
 
-msgid ""
-"CSRF token leak has been detected - all form tokens have been expired"
-msgstr "Обнаружена утечка CSRF-токена — истёк срок действия токенов форм"
-
-msgid "Repository not found in the filesystem"
-msgstr "Репозиторий не найден на файловой системе"
-
-msgid "Changeset for %s %s not found in %s"
-msgstr "Набор изменений для %s %s не найден в %s"
-
-msgid "SSH access is disabled."
-msgstr "Доступ по SSH отключен."
-
 msgid "Binary file"
 msgstr "Двоичный файл"
 
@@ -670,6 +649,9 @@ msgstr ""
 
 msgid "No changes detected"
 msgstr "Изменений не обнаружено"
+
+msgid "Increase diff context to %(num)s lines"
+msgstr "Увеличить контекст до %(num)s строк"
 
 msgid "Deleted branch: %s"
 msgstr "Удалена ветка: %s"
@@ -782,38 +764,8 @@ msgstr "переименован"
 msgid "chmod"
 msgstr "chmod"
 
-msgid ""
-"%s repository is not mapped to db perhaps it was created or renamed from "
-"the filesystem please run the application again in order to rescan "
-"repositories"
-msgstr ""
-"Репозиторий %s отсутствует в базе данных; возможно, он был создан или "
-"переименован из файловой системы. Пожалуйста, перезапустите приложение "
-"для сканирования репозиториев"
-
 msgid "SSH key is missing"
 msgstr "Отсутствует ключ SSH"
-
-msgid ""
-"Incorrect SSH key - it must have both a key type and a base64 part, like "
-"'ssh-rsa ASRNeaZu4FA...xlJp='"
-msgstr ""
-"Некорректный ключ SSH — должен присутствовать тип ключа и код base64, "
-"например 'ssh-rsa ASRNeaZu4FA...xlJp='"
-
-msgid "Incorrect SSH key - it must start with 'ssh-(rsa|dss|ed25519)'"
-msgstr ""
-"Некорректный ключ SSH — он должен начинаться с 'ssh-(rsa|dss|ed25519)'"
-
-msgid "Incorrect SSH key - unexpected characters in base64 part %r"
-msgstr ""
-"Некорректный ключ SSH — присутствуют некорректные символы в коде base64 %r"
-
-msgid "Incorrect SSH key - failed to decode base64 part %r"
-msgstr "Некорректный ключ SSH — ошибка декодирования кода base64 %r"
-
-msgid "Incorrect SSH key - base64 part is not %r as claimed but %r"
-msgstr "Некорректный ключ SSH — код base64 соответствует не %r, а %r"
 
 msgid "%d year"
 msgid_plural "%d years"
@@ -865,12 +817,6 @@ msgstr "%s и %s назад"
 
 msgid "just now"
 msgstr "только что"
-
-msgid "on line %s"
-msgstr "на строке %s"
-
-msgid "[Mention]"
-msgstr "[Упоминание]"
 
 msgid "top level"
 msgstr "верхний уровень"
@@ -934,12 +880,6 @@ msgstr ""
 "Неавторизованные пользователи имеют права администратора к новым групппам "
 "пользователей"
 
-msgid "Only admins can create repository groups"
-msgstr "Только администраторы могут создавать группы репозиториев"
-
-msgid "Non-admins can create repository groups"
-msgstr "Группы репозиториев могут создаваться любыми пользователями"
-
 msgid "Only admins can create user groups"
 msgstr "Группы пользователей могут создаваться только администраторами"
 
@@ -951,16 +891,6 @@ msgstr "Только администраторы могут создавать 
 
 msgid "Non-admins can create top level repositories"
 msgstr "Любой пользователь может создавать репозитории верхнего уровня"
-
-msgid ""
-"Repository creation enabled with write permission to a repository group"
-msgstr ""
-"Создание репозиториев доступно с правом на запись в группу репозиториев"
-
-msgid ""
-"Repository creation disabled with write permission to a repository group"
-msgstr ""
-"Создание репозиториев недоступно с правом на запись в группу репозиториев"
 
 msgid "Only admins can fork repositories"
 msgstr "Форки репозиториев могут создаваться только администраторами"
@@ -1004,13 +934,6 @@ msgstr "Введите не менее %(min)i символов"
 msgid "Name must not contain only digits"
 msgstr "Имя не может состоять только из цифр"
 
-msgid ""
-"[Comment] %(repo_name)s changeset %(short_id)s \"%(message_short)s\" on "
-"%(branch)s"
-msgstr ""
-"[Комментарий] к набору изменений %(short_id)s «%(message_short)s» "
-"репозитория %(repo_name)s в %(branch)s"
-
 msgid "New user %(new_username)s registered"
 msgstr "Новый пользователь \"%(new_username)s\" зарегистрирован"
 
@@ -1030,11 +953,6 @@ msgstr ""
 
 msgid "Closing"
 msgstr "Закрыт"
-
-msgid ""
-"%(user)s wants you to review pull request %(pr_nice_id)s: %(pr_title)s"
-msgstr ""
-"%(user)s просит вас рассмотреть pull-запрос %(pr_nice_id)s: %(pr_title)s"
 
 msgid "Cannot create empty pull request"
 msgstr "Невозможно создать пустой pull-запрос"
@@ -1081,9 +999,6 @@ msgstr "Ключ SSH %s уже используется пользователе
 
 msgid "SSH key with fingerprint %r found"
 msgstr "Найден ключ SSH с отпечатком %r"
-
-msgid "New user registration"
-msgstr "Регистрация нового пользователя"
 
 msgid ""
 "You can't remove this user since it is crucial for the entire application"
@@ -1197,13 +1112,6 @@ msgstr "Группа репозиториев \"%(repo)s\" уже существ
 msgid "Invalid repository URL"
 msgstr "Недопустимый URL репозитория"
 
-msgid ""
-"Invalid repository URL. It must be a valid http, https, ssh, svn+http or "
-"svn+https URL"
-msgstr ""
-"Недопустимый URL репозитория. Требуется корректный http, https, ssh, svn"
-"+http или svn+https URL"
-
 msgid "Fork has to be the same type as parent"
 msgstr "Форк будет иметь тот же тип, что и родительский"
 
@@ -1301,10 +1209,10 @@ msgstr "Пароль"
 msgid "Stay logged in after browser restart"
 msgstr "Оставаться авторизованным"
 
-msgid "Forgot your password ?"
+msgid "Forgot your password?"
 msgstr "Забыли пароль?"
 
-msgid "Don't have an account ?"
+msgid "Don't have an account?"
 msgstr "Нет аккаунта?"
 
 msgid "Sign In"
@@ -1782,25 +1690,6 @@ msgstr ""
 "Включите, чтобы разрешить всем пользователям создавать репозитории на "
 "верхнем уровне."
 
-msgid ""
-"Note: This will also give all users API access to create repositories "
-"everywhere. That might change in future versions."
-msgstr ""
-"Внимание: это также позволит всем пользователям с помощью API создавать "
-"репозитории где угодно. Это может измениться в будущих версиях."
-
-msgid "Repository creation with group write access"
-msgstr "Создание репозитория с правом записи в группы"
-
-msgid ""
-"With this, write permission to a repository group allows creating "
-"repositories inside that group. Without this, group write permissions "
-"mean nothing."
-msgstr ""
-"С этой опцией, право записи в группу репозиториев позволяет создавать "
-"репозитории в этой группе. Без неё, право записи в группу не имеет "
-"действия."
-
 msgid "User group creation"
 msgstr "Создание групп пользователей"
 
@@ -2229,12 +2118,6 @@ msgstr ""
 msgid "Save Settings"
 msgstr "Сохранить настройки"
 
-msgid "Built-in Mercurial Hooks (Read-Only)"
-msgstr "Встроенные хуки Mercurial (только чтение)"
-
-msgid "Custom Hooks"
-msgstr "Пользовательские хуки"
-
 msgid ""
 "Hooks can be used to trigger actions on certain events such as push / "
 "pull. They can trigger Python functions or external applications."
@@ -2270,25 +2153,6 @@ msgstr ""
 
 msgid "Install Git hooks"
 msgstr "Установить хуки Git"
-
-msgid ""
-"Verify if Kallithea's Git hooks are installed for each repository. "
-"Current hooks will be updated to the latest version."
-msgstr ""
-"Проверяет установку Git хуков от Kallithea у каждого репозитория. Текущие "
-"хуки будут обновлены до последней версии."
-
-msgid "Overwrite existing Git hooks"
-msgstr "Перезаписать существующие хуки"
-
-msgid ""
-"If installing Git hooks, overwrite any existing hooks, even if they do "
-"not seem to come from Kallithea. WARNING: This operation will destroy any "
-"custom git hooks you may have deployed by hand!"
-msgstr ""
-"Перезаписывает все существующие хуки при установке хуков Git, даже если "
-"они не поставляются с Kallithea. ПРЕДУПРЕЖДЕНИЕ: это действие уничтожит "
-"любые Git хуки, которые могли быть созданы вручную!"
 
 msgid "Rescan Repositories"
 msgstr "Пересканировать репозитории"
@@ -2344,16 +2208,6 @@ msgstr "Расширения Mercurial"
 
 msgid "Enable largefiles extension"
 msgstr "Включить поддержку больших файлов"
-
-msgid "Enable hgsubversion extension"
-msgstr "Включить поддержку hgsubversion"
-
-msgid ""
-"Requires hgsubversion library to be installed. Enables cloning of remote "
-"Subversion repositories while converting them to Mercurial."
-msgstr ""
-"Требует наличия библиотеки hgsubversion. Включает клонирование удалённых "
-"репозиториев Subversion с последующим конвертированием в Mercurial."
 
 msgid "Location of repositories"
 msgstr "Местонахождение репозиториев"
@@ -2711,9 +2565,6 @@ msgstr "Авторизоваться"
 msgid "Forgot password?"
 msgstr "Забыли пароль?"
 
-msgid "Don't have an account?"
-msgstr "Нет аккаунта?"
-
 msgid "Log Out"
 msgstr "Выход"
 
@@ -2819,8 +2670,8 @@ msgstr ""
 msgid "Failed to revoke permission"
 msgstr "Не удалось отозвать привилегии"
 
-msgid "Confirm to revoke permission for {0}: {1} ?"
-msgstr "Подтвердите удаление привилегии для {0}: {1} ?"
+msgid "Confirm to revoke permission for {0}: {1}?"
+msgstr "Подтвердите удаление привилегии для {0}: {1}?"
 
 msgid "Select changeset"
 msgstr "Выбрать набор изменений"
@@ -3239,6 +3090,9 @@ msgstr "Построчное сравнение файла %s"
 
 msgid "File diff"
 msgstr "Сравнение файлов"
+
+msgid "Ignore whitespace"
+msgstr "Игнорировать пробелы"
 
 msgid "%s File Diff"
 msgstr "Сравнение файла %s"

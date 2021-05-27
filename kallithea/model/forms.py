@@ -39,7 +39,7 @@ import formencode
 from formencode import All
 from tg.i18n import ugettext as _
 
-from kallithea import BACKENDS
+import kallithea
 from kallithea.model import validators as v
 
 
@@ -238,7 +238,7 @@ def PasswordResetConfirmationForm():
     return _PasswordResetConfirmationForm
 
 
-def RepoForm(edit=False, old_data=None, supported_backends=BACKENDS,
+def RepoForm(edit=False, old_data=None, supported_backends=kallithea.BACKENDS,
              repo_groups=None, landing_revs=None):
     old_data = old_data or {}
     repo_groups = repo_groups or []
@@ -315,7 +315,7 @@ def RepoFieldForm():
     return _RepoFieldForm
 
 
-def RepoForkForm(edit=False, old_data=None, supported_backends=BACKENDS,
+def RepoForkForm(edit=False, old_data=None, supported_backends=kallithea.BACKENDS,
                  repo_groups=None, landing_revs=None):
     old_data = old_data or {}
     repo_groups = repo_groups or []
@@ -384,11 +384,10 @@ def ApplicationUiSettingsForm():
             v.ValidPath(),
             v.UnicodeString(strip=True, min=1, not_empty=True)
         )
-        hooks_changegroup_update = v.StringBoolean(if_missing=False)
-        hooks_changegroup_repo_size = v.StringBoolean(if_missing=False)
+        hooks_changegroup_kallithea_update = v.StringBoolean(if_missing=False)
+        hooks_changegroup_kallithea_repo_size = v.StringBoolean(if_missing=False)
 
         extensions_largefiles = v.StringBoolean(if_missing=False)
-        extensions_hgsubversion = v.StringBoolean(if_missing=False)
         extensions_hggit = v.StringBoolean(if_missing=False)
 
     return _ApplicationUiSettingsForm
@@ -396,7 +395,6 @@ def ApplicationUiSettingsForm():
 
 def DefaultPermissionsForm(repo_perms_choices, group_perms_choices,
                            user_group_perms_choices, create_choices,
-                           create_on_write_choices, repo_group_create_choices,
                            user_group_create_choices, fork_choices,
                            register_choices, extern_activate_choices):
     class _DefaultPermissionsForm(formencode.Schema):
@@ -411,9 +409,7 @@ def DefaultPermissionsForm(repo_perms_choices, group_perms_choices,
         default_user_group_perm = v.OneOf(user_group_perms_choices)
 
         default_repo_create = v.OneOf(create_choices)
-        create_on_write = v.OneOf(create_on_write_choices)
         default_user_group_create = v.OneOf(user_group_create_choices)
-        #default_repo_group_create = v.OneOf(repo_group_create_choices) #not impl. yet
         default_fork = v.OneOf(fork_choices)
 
         default_register = v.OneOf(register_choices)
@@ -435,7 +431,7 @@ def CustomDefaultPermissionsForm():
     return _CustomDefaultPermissionsForm
 
 
-def DefaultsForm(edit=False, old_data=None, supported_backends=BACKENDS):
+def DefaultsForm(edit=False, old_data=None, supported_backends=kallithea.BACKENDS):
     class _DefaultsForm(formencode.Schema):
         allow_extra_fields = True
         filter_extra_fields = True

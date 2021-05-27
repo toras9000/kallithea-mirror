@@ -1,3 +1,0 @@
-<%page args="url,title" />\
-
-${title|n,unicode}: ${url}

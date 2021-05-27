@@ -28,61 +28,46 @@ Original author and date, and relevant copyright and licensing information is be
 
 import logging
 import os
-from hashlib import md5
+from hashlib import sha1
 
 from decorator import decorator
 from tg import config
 
 import kallithea
 from kallithea.lib.pidlock import DaemonLock, LockHeld
-from kallithea.lib.utils2 import safe_bytes
+from kallithea.lib.utils2 import asbool, safe_bytes
 from kallithea.model import meta
 
 
 log = logging.getLogger(__name__)
 
 
-class FakeTask(object):
-    """Fake a sync result to make it look like a finished task"""
-
-    def __init__(self, result):
-        self.result = result
-
-    def failed(self):
-        return False
-
-    traceback = None # if failed
-
-    task_id = None
-
-
 def task(f_org):
-    """Wrapper of celery.task.task, running async if CELERY_APP
+    """Wrapper of celery.task.task, run at import time, before kallithea.CONFIG has been set, and before kallithea.CELERY_APP has been configured.
     """
 
-    if kallithea.CELERY_APP:
-        def f_async(*args, **kwargs):
-            log.info('executing %s task', f_org.__name__)
+    def f_async(*args, **kwargs):
+        log.info('executing async task %s', f_org.__name__)
+        try:
+            f_org(*args, **kwargs)
+        finally:
+            meta.Session.remove()  # prevent reuse of auto created db sessions
+            log.info('executed async task %s', f_org.__name__)
+
+    runner = kallithea.CELERY_APP.task(name=f_org.__name__, ignore_result=True)(f_async)
+
+    def f_wrapped(*args, **kwargs):
+        if asbool(kallithea.CONFIG.get('use_celery')):
+            t = runner.apply_async(args=args, kwargs=kwargs)
+            log.info('executing async task %s - id %s', f_org, t.task_id)
+        else:
+            # invoke f_org directly, without the meta.Session.remove in f_async
+            log.info('executing sync task %s', f_org.__name__)
             try:
                 f_org(*args, **kwargs)
-            finally:
-                log.info('executed %s task', f_org.__name__)
-        f_async.__name__ = f_org.__name__
-        runner = kallithea.CELERY_APP.task(ignore_result=True)(f_async)
-
-        def f_wrapped(*args, **kwargs):
-            t = runner.apply_async(args=args, kwargs=kwargs)
-            log.info('executing task %s in async mode - id %s', f_org, t.task_id)
-            return t
-    else:
-        def f_wrapped(*args, **kwargs):
-            log.info('executing task %s in sync', f_org.__name__)
-            try:
-                result = f_org(*args, **kwargs)
             except Exception as e:
-                log.error('exception executing sync task %s in sync: %r', f_org.__name__, e)
-                raise # TODO: return this in FakeTask as with async tasks?
-            return FakeTask(result)
+                log.error('exception executing sync task %s: %r', f_org.__name__, e)
+                raise # TODO: report errors differently ... and consistently between sync and async
 
     return f_wrapped
 
@@ -94,40 +79,21 @@ def __get_lockkey(func, *fargs, **fkwargs):
     func_name = str(func.__name__) if hasattr(func, '__name__') else str(func)
 
     lockkey = 'task_%s.lock' % \
-        md5(safe_bytes(func_name + '-' + '-'.join(str(x) for x in params))).hexdigest()
+        sha1(safe_bytes(func_name + '-' + '-'.join(str(x) for x in params))).hexdigest()
     return lockkey
 
 
 def locked_task(func):
     def __wrapper(func, *fargs, **fkwargs):
         lockkey = __get_lockkey(func, *fargs, **fkwargs)
-        lockkey_path = config.get('cache_dir') or config['app_conf']['cache_dir']  # Backward compatibility for TurboGears < 2.4
-
         log.info('running task with lockkey %s', lockkey)
         try:
-            l = DaemonLock(os.path.join(lockkey_path, lockkey))
+            l = DaemonLock(os.path.join(config['cache_dir'], lockkey))
             ret = func(*fargs, **fkwargs)
             l.release()
             return ret
         except LockHeld:
             log.info('LockHeld')
             return 'Task with key %s already running' % lockkey
-
-    return decorator(__wrapper, func)
-
-
-def get_session():
-    sa = meta.Session()
-    return sa
-
-
-def dbsession(func):
-    def __wrapper(func, *fargs, **fkwargs):
-        try:
-            ret = func(*fargs, **fkwargs)
-            return ret
-        finally:
-            if kallithea.CELERY_APP and not kallithea.CELERY_EAGER:
-                meta.Session.remove()
 
     return decorator(__wrapper, func)

@@ -15,11 +15,11 @@ import kallithea.tests.base  # FIXME: needed for setting testapp instance!!!
 from kallithea.controllers.root import RootController
 from kallithea.lib import inifile
 from kallithea.lib.utils import repo2db_mapper
-from kallithea.model.db import Setting, User, UserIpMap
-from kallithea.model.meta import Session
+from kallithea.model import db, meta
 from kallithea.model.scm import ScmModel
 from kallithea.model.user import UserModel
 from kallithea.tests.base import TEST_USER_ADMIN_LOGIN, TEST_USER_ADMIN_PASS, TEST_USER_REGULAR_LOGIN, TESTS_TMP_PATH, invalidate_all_caches
+from kallithea.tests.fixture import create_test_env, create_test_index
 
 
 def pytest_configure():
@@ -59,18 +59,21 @@ def pytest_configure():
             'formatter': 'color_formatter_sql',
         },
     }
-    if os.environ.get('TEST_DB'):
-        ini_settings['[app:main]']['sqlalchemy.url'] = os.environ.get('TEST_DB')
+    create_database = os.environ.get('TEST_DB')  # TODO: rename to 'CREATE_TEST_DB'
+    if create_database:
+        ini_settings['[app:main]']['sqlalchemy.url'] = create_database
+    reuse_database = os.environ.get('REUSE_TEST_DB')
+    if reuse_database:
+        ini_settings['[app:main]']['sqlalchemy.url'] = reuse_database
 
     test_ini_file = os.path.join(TESTS_TMP_PATH, 'test.ini')
     inifile.create(test_ini_file, None, ini_settings)
 
     context = loadwsgi.loadcontext(loadwsgi.APP, 'config:%s' % test_ini_file)
-    from kallithea.tests.fixture import create_test_env, create_test_index
 
     # set KALLITHEA_NO_TMP_PATH=1 to disable re-creating the database and test repos
     if not int(os.environ.get('KALLITHEA_NO_TMP_PATH', 0)):
-        create_test_env(TESTS_TMP_PATH, context.config())
+        create_test_env(TESTS_TMP_PATH, context.config(), reuse_database=bool(reuse_database))
 
     # set KALLITHEA_WHOOSH_TEST_DISABLE=1 to disable whoosh index during tests
     if not int(os.environ.get('KALLITHEA_WHOOSH_TEST_DISABLE', 0)):
@@ -100,17 +103,17 @@ def create_test_user():
     yield _create_test_user
     for user_id in test_user_ids:
         UserModel().delete(user_id)
-    Session().commit()
+    meta.Session().commit()
 
 
 def _set_settings(*kvtseq):
-    session = Session()
+    session = meta.Session()
     for kvt in kvtseq:
         assert len(kvt) in (2, 3)
         k = kvt[0]
         v = kvt[1]
         t = kvt[2] if len(kvt) == 3 else 'unicode'
-        Setting.create_or_update(k, v, t)
+        db.Setting.create_or_update(k, v, t)
     session.commit()
 
 
@@ -120,18 +123,18 @@ def set_test_settings():
     # Save settings.
     settings_snapshot = [
         (s.app_settings_name, s.app_settings_value, s.app_settings_type)
-        for s in Setting.query().all()]
+        for s in db.Setting.query().all()]
     yield _set_settings
     # Restore settings.
-    session = Session()
+    session = meta.Session()
     keys = frozenset(k for (k, v, t) in settings_snapshot)
-    for s in Setting.query().all():
+    for s in db.Setting.query().all():
         if s.app_settings_name not in keys:
             session.delete(s)
     for k, v, t in settings_snapshot:
         if t == 'list' and hasattr(v, '__iter__'):
             v = ','.join(v) # Quirk: must format list value manually.
-        Setting.create_or_update(k, v, t)
+        db.Setting.create_or_update(k, v, t)
     session.commit()
 
 
@@ -146,15 +149,15 @@ def auto_clear_ip_permissions():
 
     user_ids = []
     user_ids.append(kallithea.DEFAULT_USER_ID)
-    user_ids.append(User.get_by_username(TEST_USER_REGULAR_LOGIN).user_id)
+    user_ids.append(db.User.get_by_username(TEST_USER_REGULAR_LOGIN).user_id)
 
     for user_id in user_ids:
-        for ip in UserIpMap.query().filter(UserIpMap.user_id == user_id):
+        for ip in db.UserIpMap.query().filter(db.UserIpMap.user_id == user_id):
             user_model.delete_extra_ip(user_id, ip.ip_id)
 
     # IP permissions are cached, need to invalidate this cache explicitly
     invalidate_all_caches()
-    session = Session()
+    session = meta.Session()
     session.commit()
 
 

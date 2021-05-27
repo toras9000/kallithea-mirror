@@ -28,82 +28,57 @@ import tg
 from alembic.migration import MigrationContext
 from alembic.script.base import ScriptDirectory
 from sqlalchemy import create_engine
-from tg.configuration import AppConfig
-from tg.support.converters import asbool
+from tg import FullStackApplicationConfigurator
 
-import kallithea.lib.locale
+import kallithea.lib.locales
 import kallithea.model.base
 import kallithea.model.meta
-from kallithea.lib import celerypylons
-from kallithea.lib.middleware.https_fixup import HttpsFixup
-from kallithea.lib.middleware.permanent_repo_url import PermanentRepoUrl
-from kallithea.lib.middleware.simplegit import SimpleGit
-from kallithea.lib.middleware.simplehg import SimpleHg
-from kallithea.lib.middleware.wrapper import RequestWrapper
-from kallithea.lib.utils import check_git_version, load_rcextensions, set_app_settings, set_indexer_config, set_vcs_config
-from kallithea.lib.utils2 import str2bool
+from kallithea.lib import celery_app
+from kallithea.lib.utils import load_extensions, set_app_settings, set_indexer_config, set_vcs_config
+from kallithea.lib.utils2 import asbool, check_git_version
 from kallithea.model import db
 
 
 log = logging.getLogger(__name__)
 
 
-class KallitheaAppConfig(AppConfig):
-    # Note: AppConfig has a misleading name, as it's not the application
-    # configuration, but the application configurator. The AppConfig values are
-    # used as a template to create the actual configuration, which might
-    # overwrite or extend the one provided by the configurator template.
+base_config = FullStackApplicationConfigurator()
 
-    # To make it clear, AppConfig creates the config and sets into it the same
-    # values that AppConfig itself has. Then the values from the config file and
-    # gearbox options are loaded and merged into the configuration. Then an
-    # after_init_config(conf) method of AppConfig is called for any change that
-    # might depend on options provided by configuration files.
+base_config.update_blueprint({
+    'package': kallithea,
 
-    def __init__(self):
-        super(KallitheaAppConfig, self).__init__()
+    # Rendering Engines Configuration
+    'renderers': [
+        'json',
+        'mako',
+    ],
+    'default_renderer': 'mako',
+    'use_dotted_templatenames': False,
 
-        self['package'] = kallithea
+    # Configure Sessions, store data as JSON to avoid pickle security issues
+    'session.enabled': True,
+    'session.data_serializer': 'json',
 
-        self['prefer_toscawidgets2'] = False
-        self['use_toscawidgets'] = False
+    # Configure the base SQLALchemy Setup
+    'use_sqlalchemy': True,
+    'model': kallithea.model.base,
+    'DBSession': kallithea.model.meta.Session,
 
-        self['renderers'] = []
+    # Configure App without an authentication backend.
+    'auth_backend': None,
 
-        # Enable json in expose
-        self['renderers'].append('json')
+    # Use custom error page for these errors. By default, Turbogears2 does not add
+    # 400 in this list.
+    # Explicitly listing all is considered more robust than appending to defaults,
+    # in light of possible future framework changes.
+    'errorpage.status_codes': [400, 401, 403, 404],
 
-        # Configure template rendering
-        self['renderers'].append('mako')
-        self['default_renderer'] = 'mako'
-        self['use_dotted_templatenames'] = False
+    # Disable transaction manager -- currently Kallithea takes care of transactions itself
+    'tm.enabled': False,
 
-        # Configure Sessions, store data as JSON to avoid pickle security issues
-        self['session.enabled'] = True
-        self['session.data_serializer'] = 'json'
-
-        # Configure the base SQLALchemy Setup
-        self['use_sqlalchemy'] = True
-        self['model'] = kallithea.model.base
-        self['DBSession'] = kallithea.model.meta.Session
-
-        # Configure App without an authentication backend.
-        self['auth_backend'] = None
-
-        # Use custom error page for these errors. By default, Turbogears2 does not add
-        # 400 in this list.
-        # Explicitly listing all is considered more robust than appending to defaults,
-        # in light of possible future framework changes.
-        self['errorpage.status_codes'] = [400, 401, 403, 404]
-
-        # Disable transaction manager -- currently Kallithea takes care of transactions itself
-        self['tm.enabled'] = False
-
-        # Set the default i18n source language so TG doesn't search beyond 'en' in Accept-Language.
-        self['i18n.lang'] = 'en'
-
-
-base_config = KallitheaAppConfig()
+    # Set the default i18n source language so TG doesn't search beyond 'en' in Accept-Language.
+    'i18n.lang': 'en',
+})
 
 # DebugBar, a debug toolbar for TurboGears2.
 # (https://github.com/TurboGears/tgext.debugbar)
@@ -111,20 +86,20 @@ base_config = KallitheaAppConfig()
 # 'debug = true' (not in production!)
 # See the Kallithea documentation for more information.
 try:
+    import kajiki  # only to check its existence
     from tgext.debugbar import enable_debugbar
-    import kajiki # only to check its existence
     assert kajiki
 except ImportError:
     pass
 else:
-    base_config['renderers'].append('kajiki')
+    base_config.get_blueprint_value('renderers').append('kajiki')
     enable_debugbar(base_config)
 
 
 def setup_configuration(app):
     config = app.config
 
-    if not kallithea.lib.locale.current_locale_is_valid():
+    if not kallithea.lib.locales.current_locale_is_valid():
         log.error("Terminating ...")
         sys.exit(1)
 
@@ -134,7 +109,7 @@ def setup_configuration(app):
         mercurial.encoding.encoding = hgencoding
 
     if config.get('ignore_alembic_revision', False):
-        log.warn('database alembic revision checking is disabled')
+        log.warning('database alembic revision checking is disabled')
     else:
         dbconf = config['sqlalchemy.url']
         alembic_cfg = alembic.config.Config()
@@ -160,11 +135,11 @@ def setup_configuration(app):
     # store some globals into kallithea
     kallithea.DEFAULT_USER_ID = db.User.get_default_user().user_id
 
-    if str2bool(config.get('use_celery')):
-        kallithea.CELERY_APP = celerypylons.make_app()
+    if asbool(config.get('use_celery')) and not kallithea.CELERY_APP.finalized:
+        kallithea.CELERY_APP.config_from_object(celery_app.make_celery_config(config))
     kallithea.CONFIG = config
 
-    load_rcextensions(root_path=config['here'])
+    load_extensions(root_path=config['here'])
 
     set_app_settings(config)
 
@@ -188,27 +163,3 @@ def setup_configuration(app):
 
 
 tg.hooks.register('configure_new_app', setup_configuration)
-
-
-def setup_application(app):
-    config = app.config
-
-    # we want our low level middleware to get to the request ASAP. We don't
-    # need any stack middleware in them - especially no StatusCodeRedirect buffering
-    app = SimpleHg(app, config)
-    app = SimpleGit(app, config)
-
-    # Enable https redirects based on HTTP_X_URL_SCHEME set by proxy
-    if any(asbool(config.get(x)) for x in ['https_fixup', 'force_https', 'use_htsts']):
-        app = HttpsFixup(app, config)
-
-    app = PermanentRepoUrl(app, config)
-
-    # Optional and undocumented wrapper - gives more verbose request/response logging, but has a slight overhead
-    if str2bool(config.get('use_wsgi_wrapper')):
-        app = RequestWrapper(app, config)
-
-    return app
-
-
-tg.hooks.register('before_config', setup_application)

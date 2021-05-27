@@ -10,6 +10,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
+msgid ""
+"CSRF token leak has been detected - all form tokens have been expired"
+msgstr ""
+"Es wurde ein CSRF Leck entdeckt. Alle Formular Token sind abgelaufen"
+
+msgid "Repository not found in the filesystem"
+msgstr "Das Repository konnte nicht im Filesystem gefunden werden"
+
 msgid "There are no changesets yet"
 msgstr "Es gibt noch keine Änderungssätze"
 
@@ -18,15 +26,6 @@ msgstr "Keine"
 
 msgid "(closed)"
 msgstr "(geschlossen)"
-
-msgid "Show whitespace"
-msgstr "Zeige unsichtbare Zeichen"
-
-msgid "Ignore whitespace"
-msgstr "Ignoriere unsichtbare Zeichen"
-
-msgid "Increase diff context to %(num)s lines"
-msgstr "Erhöhe diff-Kontext auf %(num)s Zeilen"
 
 msgid "Successfully deleted pull request %s"
 msgstr "Pull-Request %s erfolgreich gelöscht"
@@ -486,13 +485,6 @@ msgstr "Während des löschens der Repository Statistiken trat ein Fehler auf"
 msgid "Updated VCS settings"
 msgstr "VCS-Einstellungen aktualisiert"
 
-msgid ""
-"Unable to activate hgsubversion support. The \"hgsubversion\" library is "
-"missing"
-msgstr ""
-"hgsubversion-Unterstützung konnte nicht aktiviert werden. Die "
-"\"hgsubversion\"-Bibliothek fehlt"
-
 msgid "Error occurred while updating application settings"
 msgstr ""
 "Ein Fehler ist während der Aktualisierung der Applikationseinstellungen "
@@ -519,11 +511,6 @@ msgstr "Bitte geben Sie eine E-Mail-Adresse an"
 
 msgid "Send email task created"
 msgstr "Task zum Versenden von E-Mails erstellt"
-
-msgid "Builtin hooks are read-only. Please use another hook name."
-msgstr ""
-"Die eingebauten Hooks sind schreibgeschützt. Bitte verwenden Sie einen "
-"anderen Hook-Namen."
 
 msgid "Added new hook"
 msgstr "Neuer Hook hinzugefügt"
@@ -604,14 +591,6 @@ msgstr ""
 msgid "You need to be signed in to view this page"
 msgstr "Sie müssen sich anmelden um diese Seite aufzurufen"
 
-msgid ""
-"CSRF token leak has been detected - all form tokens have been expired"
-msgstr ""
-"Es wurde ein CSRF Leck entdeckt. Alle Formular Token sind abgelaufen"
-
-msgid "Repository not found in the filesystem"
-msgstr "Das Repository konnte nicht im Filesystem gefunden werden"
-
 msgid "Binary file"
 msgstr "Binäre Datei"
 
@@ -623,6 +602,9 @@ msgstr ""
 
 msgid "No changes detected"
 msgstr "Keine Änderungen erkannt"
+
+msgid "Increase diff context to %(num)s lines"
+msgstr "Erhöhe diff-Kontext auf %(num)s Zeilen"
 
 msgid "Deleted branch: %s"
 msgstr "Branch %s gelöscht"
@@ -732,15 +714,6 @@ msgstr "umbenennen"
 msgid "chmod"
 msgstr "chmod"
 
-msgid ""
-"%s repository is not mapped to db perhaps it was created or renamed from "
-"the filesystem please run the application again in order to rescan "
-"repositories"
-msgstr ""
-"Das %s Repository ist nicht in der Datenbank vorhanden, eventuell wurde "
-"es im Dateisystem erstellt oder umbenannt. Bitte starten sie die "
-"Applikation erneut um die Repositories neu zu Indizieren"
-
 msgid "%d year"
 msgid_plural "%d years"
 msgstr[0] "%d Jahr"
@@ -786,12 +759,6 @@ msgstr "%s und %s her"
 msgid "just now"
 msgstr "jetzt gerade"
 
-msgid "on line %s"
-msgstr "in Zeile %s"
-
-msgid "[Mention]"
-msgstr "[Mention]"
-
 msgid "top level"
 msgstr "höchste Ebene"
 
@@ -835,12 +802,6 @@ msgstr "Der Standard-Benutzer hat Schreibrechte auf neuen Benutzer-Gruppen"
 msgid "Default user has admin access to new user groups"
 msgstr "Der Standard-Benutzer hat Admin-Rechte auf neuen Benutzer-Gruppen"
 
-msgid "Only admins can create repository groups"
-msgstr "Nur Admins können Repository-Gruppen erstellen"
-
-msgid "Non-admins can create repository groups"
-msgstr "Nicht-Admins können Repository-Gruppen erstellen"
-
 msgid "Only admins can create user groups"
 msgstr "Nur Admins können Benutzer-Gruppen erstellen"
 
@@ -852,18 +813,6 @@ msgstr "Nur Admins können Repositories auf oberster Ebene erstellen"
 
 msgid "Non-admins can create top level repositories"
 msgstr "Nicht-Admins können Repositories oberster Ebene erstellen"
-
-msgid ""
-"Repository creation enabled with write permission to a repository group"
-msgstr ""
-"Erstellung von Repositories mit Schreibzugriff für Repositorygruppe "
-"aktiviert"
-
-msgid ""
-"Repository creation disabled with write permission to a repository group"
-msgstr ""
-"Erstellung von Repositories mit Schreibzugriff für Repositorygruppe "
-"deaktiviert"
 
 msgid "Only admins can fork repositories"
 msgstr "Nur Admins können Repositories forken"
@@ -925,9 +874,6 @@ msgstr "Geschlossen, nächste Iteration: %s ."
 
 msgid "latest tip"
 msgstr "Letzter Tip"
-
-msgid "New user registration"
-msgstr "Neue Benutzerregistrierung"
 
 msgid ""
 "User \"%s\" still owns %s repositories and cannot be removed. Switch "
@@ -1020,13 +966,6 @@ msgstr "Eine Repositorygruppe mit dem Namen \"%(repo)s\" existiert bereits"
 
 msgid "Invalid repository URL"
 msgstr "Ungültige Repository-URL"
-
-msgid ""
-"Invalid repository URL. It must be a valid http, https, ssh, svn+http or "
-"svn+https URL"
-msgstr ""
-"Ungültige Repository-URL. Es muss eine gültige http, https, ssh, svn+http "
-"oder svn+https URL sein"
 
 msgid "Fork has to be the same type as parent"
 msgstr "Forke um den selben typ wie der Vorgesetze zu haben"
@@ -1129,10 +1068,10 @@ msgstr "Passwort"
 msgid "Stay logged in after browser restart"
 msgstr "Nach dem Neustart des Browsers eingeloggt bleiben"
 
-msgid "Forgot your password ?"
+msgid "Forgot your password?"
 msgstr "Passwort vergessen?"
 
-msgid "Don't have an account ?"
+msgid "Don't have an account?"
 msgstr "Kein Account?"
 
 msgid "Sign In"
@@ -1566,25 +1505,6 @@ msgstr ""
 "Aktiviere dies, damit Nicht-Administratoren Repositories auf der obersten "
 "Ebene erstellen können."
 
-msgid ""
-"Note: This will also give all users API access to create repositories "
-"everywhere. That might change in future versions."
-msgstr ""
-"Hinweis: dadurch erhalten auch alle Benutzer API-Zugriff, um überall "
-"Repositories zu erstellen. Das kann sich in zukünftigen Versionen ändern."
-
-msgid "Repository creation with group write access"
-msgstr "Repository-Erstellung mit Gruppen-Schreibzugriff"
-
-msgid ""
-"With this, write permission to a repository group allows creating "
-"repositories inside that group. Without this, group write permissions "
-"mean nothing."
-msgstr ""
-"Falls aktiv, gewährt dies das Recht zum Erzeugen von Repositories in "
-"einer Repository-Gruppe. Falls inaktiv, sind Gruppen-"
-"Schreibberechtigungen wirkungslos."
-
 msgid "User group creation"
 msgstr "Benutzergruppen Erstellung"
 
@@ -1988,12 +1908,6 @@ msgstr ""
 msgid "Save Settings"
 msgstr "Einstellungen speichern"
 
-msgid "Built-in Mercurial Hooks (Read-Only)"
-msgstr "Eingebaute Mercurial Hooks (Read -Only)"
-
-msgid "Custom Hooks"
-msgstr "Benutzerdefinierte Hooks"
-
 msgid ""
 "Hooks can be used to trigger actions on certain events such as push / "
 "pull. They can trigger Python functions or external applications."
@@ -2026,27 +1940,6 @@ msgstr ""
 
 msgid "Install Git hooks"
 msgstr "Git-Hooks installieren"
-
-msgid ""
-"Verify if Kallithea's Git hooks are installed for each repository. "
-"Current hooks will be updated to the latest version."
-msgstr ""
-"Überprüfen Sie, ob die Git-Hooks von Kallithea für jedes Repository "
-"installiert sind. Aktuelle Hooks werden auf die neueste Version "
-"aktualisiert."
-
-msgid "Overwrite existing Git hooks"
-msgstr "Bestehende Git-Hooks überschreiben"
-
-msgid ""
-"If installing Git hooks, overwrite any existing hooks, even if they do "
-"not seem to come from Kallithea. WARNING: This operation will destroy any "
-"custom git hooks you may have deployed by hand!"
-msgstr ""
-"Wenn Sie Git-Hooks installieren, überschreiben Sie alle vorhandenen "
-"Hooks, auch wenn sie nicht von Kallithea zu kommen scheinen. WARNUNG: "
-"Diese Operation zerstört alle benutzerdefinierten Git-Hooks, die Sie "
-"möglicherweise von Hand bereitgestellt haben!"
 
 msgid "Rescan Repositories"
 msgstr "Repositories erneut scannen"
@@ -2102,17 +1995,6 @@ msgstr "Mercurial-Erweiterungen"
 
 msgid "Enable largefiles extension"
 msgstr "Erweiterung largefiles aktivieren"
-
-msgid "Enable hgsubversion extension"
-msgstr "Erweiterung hgsubversion aktivieren"
-
-msgid ""
-"Requires hgsubversion library to be installed. Enables cloning of remote "
-"Subversion repositories while converting them to Mercurial."
-msgstr ""
-"Erfordert die Installation der hgsubversion-Bibliothek. Ermöglicht das "
-"Klonen von entfernten Subversion-Repositories während der Konvertierung "
-"zu Mercurial."
 
 msgid "Location of repositories"
 msgstr "Ort der Repositories"
@@ -2351,7 +2233,7 @@ msgstr "Einen weiteren Kommentar hinzufügen"
 msgid "Group"
 msgstr "Gruppe"
 
-msgid "Confirm to revoke permission for {0}: {1} ?"
+msgid "Confirm to revoke permission for {0}: {1}?"
 msgstr "Widerruf der Rechte für {0}: {1} bestätigen?"
 
 msgid "Select changeset"
@@ -2440,6 +2322,9 @@ msgstr "Abonniere den %s ATOM Feed"
 
 msgid "Hello %s"
 msgstr "Hallo %s"
+
+msgid "Ignore whitespace"
+msgstr "Ignoriere unsichtbare Zeichen"
 
 msgid "or"
 msgstr "oder"

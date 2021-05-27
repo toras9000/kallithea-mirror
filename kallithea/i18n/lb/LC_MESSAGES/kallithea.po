@@ -13,17 +13,14 @@ msgstr ""
 msgid "There are no changesets yet"
 msgstr "Et sinn nach keng Ännerungen do"
 
+msgid "SSH access is disabled."
+msgstr "SSH Accès ass ausgeschalt."
+
 msgid "None"
 msgstr "Keng"
 
 msgid "(closed)"
 msgstr "(Zou)"
-
-msgid "Show whitespace"
-msgstr "Leerzeechen uweisen"
-
-msgid "Ignore whitespace"
-msgstr "Leerzechen ignoréieren"
 
 msgid "No permission to change status"
 msgstr "Keng Erlabnis fir den Status ze änneren"
@@ -163,9 +160,6 @@ msgstr "Näischt"
 msgid "Please enter email address"
 msgstr "Wannechgelift E-Mail-Adress afügen"
 
-msgid "SSH access is disabled."
-msgstr "SSH Accès ass ausgeschalt."
-
 msgid "Binary file"
 msgstr "Binär Datei"
 
@@ -213,6 +207,9 @@ msgstr "Keng Ännerungen"
 
 msgid "No changesets yet"
 msgstr "Nach keng Ännerungen do"
+
+msgid "Ignore whitespace"
+msgstr "Leerzechen ignoréieren"
 
 msgid "There are no forks yet"
 msgstr "Et sinn nach keng Ofzweigungen do"

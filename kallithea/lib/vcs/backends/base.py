@@ -11,7 +11,9 @@
 
 import datetime
 import itertools
+from typing import Sequence
 
+from kallithea.lib.vcs.backends import get_backend
 from kallithea.lib.vcs.conf import settings
 from kallithea.lib.vcs.exceptions import (ChangesetError, EmptyRepositoryError, NodeAlreadyAddedError, NodeAlreadyChangedError, NodeAlreadyExistsError,
                                           NodeAlreadyRemovedError, NodeDoesNotExistError, NodeNotChangedError, RepositoryError)
@@ -27,7 +29,7 @@ class BaseRepository(object):
     **Attributes**
 
         ``DEFAULT_BRANCH_NAME``
-            name of default branch (i.e. "trunk" for svn, "master" for git etc.
+            name of default branch (i.e. "master" for git etc.
 
         ``scm``
             alias of scm, i.e. *git* or *hg*
@@ -50,8 +52,12 @@ class BaseRepository(object):
         ``tags``
             tags as list of changesets
     """
-    scm = None
-    DEFAULT_BRANCH_NAME = None
+    DEFAULT_BRANCH_NAME: str  # assigned in subclass
+    scm: str  # assigned in subclass
+    path: str  # assigned in subclass __init__
+    revisions: Sequence[str]  # LazyProperty in subclass
+    _empty: bool  # property in subclass
+
     EMPTY_CHANGESET = '0' * 40
 
     def __init__(self, repo_path, create=False, **kwargs):
@@ -166,6 +172,20 @@ class BaseRepository(object):
         :param end_date:
         :param branch_name:
         :param reversed:
+        """
+        raise NotImplementedError
+
+    def get_diff_changesets(self, org_rev, other_repo, other_rev):
+        """
+        Returns lists of changesets that can be merged from this repo @org_rev
+        to other_repo @other_rev
+        ... and the other way
+        ... and the ancestors that would be used for merge
+
+        :param org_rev: the revision we want our compare to be made
+        :param other_repo: repo object, most likely the fork of org_repo. It has
+            all changesets that we need to obtain
+        :param other_rev: revision we want out compare to be made on other_repo
         """
         raise NotImplementedError
 
@@ -324,8 +344,7 @@ class BaseChangeset(object):
 
         ``short_id``
             shortened (if apply) version of ``raw_id``; it would be simple
-            shortcut for ``raw_id[:12]`` for git/mercurial backends or same
-            as ``raw_id`` for subversion
+            shortcut for ``raw_id[:12]`` for git/mercurial backends
 
         ``revision``
             revision number as integer
@@ -353,6 +372,9 @@ class BaseChangeset(object):
             otherwise; trying to access this attribute while there is no
             changesets would raise ``EmptyRepositoryError``
     """
+    message: str  # LazyProperty in subclass
+    date: datetime.datetime  # LazyProperty in subclass
+
     def __str__(self):
         return '<%s at %s:%s>' % (self.__class__.__name__, self.revision,
             self.short_id)
@@ -1008,13 +1030,11 @@ class EmptyChangeset(BaseChangeset):
 
     @LazyProperty
     def branch(self):
-        from kallithea.lib.vcs.backends import get_backend
         return get_backend(self.alias).DEFAULT_BRANCH_NAME
 
     @LazyProperty
     def branches(self):
-        from kallithea.lib.vcs.backends import get_backend
-        return [get_backend(self.alias).DEFAULT_BRANCH_NAME]
+        return [self.branch]
 
     @LazyProperty
     def short_id(self):

@@ -34,19 +34,18 @@ from tg import request
 from tg.i18n import ugettext as _
 from webob.exc import HTTPFound
 
-from kallithea.config.routing import url
-from kallithea.lib import helpers as h
+from kallithea.controllers import base
+from kallithea.lib import webutils
 from kallithea.lib.auth import HasPermissionAnyDecorator, LoginRequired
-from kallithea.lib.base import BaseController, render
-from kallithea.model.db import Setting
+from kallithea.lib.webutils import url
+from kallithea.model import db, meta
 from kallithea.model.forms import DefaultsForm
-from kallithea.model.meta import Session
 
 
 log = logging.getLogger(__name__)
 
 
-class DefaultsController(BaseController):
+class DefaultsController(base.BaseController):
 
     @LoginRequired()
     @HasPermissionAnyDecorator('hg.admin')
@@ -54,10 +53,10 @@ class DefaultsController(BaseController):
         super(DefaultsController, self)._before(*args, **kwargs)
 
     def index(self, format='html'):
-        defaults = Setting.get_default_repo_settings()
+        defaults = db.Setting.get_default_repo_settings()
 
         return htmlfill.render(
-            render('admin/defaults/defaults.html'),
+            base.render('admin/defaults/defaults.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False
@@ -69,16 +68,16 @@ class DefaultsController(BaseController):
         try:
             form_result = _form.to_python(dict(request.POST))
             for k, v in form_result.items():
-                setting = Setting.create_or_update(k, v)
-            Session().commit()
-            h.flash(_('Default settings updated successfully'),
+                setting = db.Setting.create_or_update(k, v)
+            meta.Session().commit()
+            webutils.flash(_('Default settings updated successfully'),
                     category='success')
 
         except formencode.Invalid as errors:
             defaults = errors.value
 
             return htmlfill.render(
-                render('admin/defaults/defaults.html'),
+                base.render('admin/defaults/defaults.html'),
                 defaults=defaults,
                 errors=errors.error_dict or {},
                 prefix_error=False,
@@ -86,7 +85,7 @@ class DefaultsController(BaseController):
                 force_defaults=False)
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('Error occurred during update of defaults'),
+            webutils.flash(_('Error occurred during update of defaults'),
                     category='error')
 
         raise HTTPFound(location=url('defaults'))

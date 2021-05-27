@@ -36,21 +36,21 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest, HTTPFound
 
-import kallithea.lib.helpers as h
-from kallithea.config.routing import url
+from kallithea.controllers import base
+from kallithea.lib import webutils
 from kallithea.lib.auth import AuthUser, HasPermissionAnyDecorator
-from kallithea.lib.base import BaseController, log_in_user, render
 from kallithea.lib.exceptions import UserCreationError
-from kallithea.model.db import Setting, User
+from kallithea.lib.recaptcha import submit
+from kallithea.lib.webutils import url
+from kallithea.model import db, meta
 from kallithea.model.forms import LoginForm, PasswordResetConfirmationForm, PasswordResetRequestForm, RegisterForm
-from kallithea.model.meta import Session
 from kallithea.model.user import UserModel
 
 
 log = logging.getLogger(__name__)
 
 
-class LoginController(BaseController):
+class LoginController(base.BaseController):
 
     def _validate_came_from(self, came_from,
             _re=re.compile(r"/(?!/)[-!#$%&'()*+,./:;=?@_~0-9A-Za-z]*$")):
@@ -82,14 +82,14 @@ class LoginController(BaseController):
                 # login_form will check username/password using ValidAuth and report failure to the user
                 c.form_result = login_form.to_python(dict(request.POST))
                 username = c.form_result['username']
-                user = User.get_by_username_or_email(username)
+                user = db.User.get_by_username_or_email(username)
                 assert user is not None  # the same user get just passed in the form validation
             except formencode.Invalid as errors:
                 defaults = errors.value
                 # remove password from filling in form again
                 defaults.pop('password', None)
                 return htmlfill.render(
-                    render('/login.html'),
+                    base.render('/login.html'),
                     defaults=errors.value,
                     errors=errors.error_dict or {},
                     prefix_error=False,
@@ -100,28 +100,28 @@ class LoginController(BaseController):
                 # the fly can throw this exception signaling that there's issue
                 # with user creation, explanation should be provided in
                 # Exception itself
-                h.flash(e, 'error')
+                webutils.flash(e, 'error')
             else:
                 # login_form already validated the password - now set the session cookie accordingly
-                auth_user = log_in_user(user, c.form_result['remember'], is_external_auth=False, ip_addr=request.ip_addr)
+                auth_user = base.log_in_user(user, c.form_result['remember'], is_external_auth=False, ip_addr=request.ip_addr)
                 if auth_user:
                     raise HTTPFound(location=c.came_from)
-                h.flash(_('Authentication failed.'), 'error')
+                webutils.flash(_('Authentication failed.'), 'error')
         else:
             # redirect if already logged in
             if not request.authuser.is_anonymous:
                 raise HTTPFound(location=c.came_from)
             # continue to show login to default user
 
-        return render('/login.html')
+        return base.render('/login.html')
 
     @HasPermissionAnyDecorator('hg.admin', 'hg.register.auto_activate',
                                'hg.register.manual_activate')
     def register(self):
-        def_user_perms = AuthUser(dbuser=User.get_default_user()).permissions['global']
+        def_user_perms = AuthUser(dbuser=db.User.get_default_user()).global_permissions
         c.auto_active = 'hg.register.auto_activate' in def_user_perms
 
-        settings = Setting.get_app_settings()
+        settings = db.Setting.get_app_settings()
         captcha_private_key = settings.get('captcha_private_key')
         c.captcha_active = bool(captcha_private_key)
         c.captcha_public_key = settings.get('captcha_public_key')
@@ -133,7 +133,6 @@ class LoginController(BaseController):
                 form_result['active'] = c.auto_active
 
                 if c.captcha_active:
-                    from kallithea.lib.recaptcha import submit
                     response = submit(request.POST.get('g-recaptcha-response'),
                                       private_key=captcha_private_key,
                                       remoteip=request.ip_addr)
@@ -145,14 +144,14 @@ class LoginController(BaseController):
                                                  error_dict=error_dict)
 
                 UserModel().create_registration(form_result)
-                h.flash(_('You have successfully registered with %s') % (c.site_name or 'Kallithea'),
+                webutils.flash(_('You have successfully registered with %s') % (c.site_name or 'Kallithea'),
                         category='success')
-                Session().commit()
+                meta.Session().commit()
                 raise HTTPFound(location=url('login_home'))
 
             except formencode.Invalid as errors:
                 return htmlfill.render(
-                    render('/register.html'),
+                    base.render('/register.html'),
                     defaults=errors.value,
                     errors=errors.error_dict or {},
                     prefix_error=False,
@@ -163,12 +162,12 @@ class LoginController(BaseController):
                 # the fly can throw this exception signaling that there's issue
                 # with user creation, explanation should be provided in
                 # Exception itself
-                h.flash(e, 'error')
+                webutils.flash(e, 'error')
 
-        return render('/register.html')
+        return base.render('/register.html')
 
     def password_reset(self):
-        settings = Setting.get_app_settings()
+        settings = db.Setting.get_app_settings()
         captcha_private_key = settings.get('captcha_private_key')
         c.captcha_active = bool(captcha_private_key)
         c.captcha_public_key = settings.get('captcha_public_key')
@@ -178,7 +177,6 @@ class LoginController(BaseController):
             try:
                 form_result = password_reset_form.to_python(dict(request.POST))
                 if c.captcha_active:
-                    from kallithea.lib.recaptcha import submit
                     response = submit(request.POST.get('g-recaptcha-response'),
                                       private_key=captcha_private_key,
                                       remoteip=request.ip_addr)
@@ -189,20 +187,20 @@ class LoginController(BaseController):
                         raise formencode.Invalid(_msg, _value, None,
                                                  error_dict=error_dict)
                 redirect_link = UserModel().send_reset_password_email(form_result)
-                h.flash(_('A password reset confirmation code has been sent'),
+                webutils.flash(_('A password reset confirmation code has been sent'),
                             category='success')
                 raise HTTPFound(location=redirect_link)
 
             except formencode.Invalid as errors:
                 return htmlfill.render(
-                    render('/password_reset.html'),
+                    base.render('/password_reset.html'),
                     defaults=errors.value,
                     errors=errors.error_dict or {},
                     prefix_error=False,
                     encoding="UTF-8",
                     force_defaults=False)
 
-        return render('/password_reset.html')
+        return base.render('/password_reset.html')
 
     def password_reset_confirmation(self):
         # This controller handles both GET and POST requests, though we
@@ -215,14 +213,14 @@ class LoginController(BaseController):
         c.timestamp = request.params.get('timestamp') or ''
         c.token = request.params.get('token') or ''
         if not request.POST:
-            return render('/password_reset_confirmation.html')
+            return base.render('/password_reset_confirmation.html')
 
         form = PasswordResetConfirmationForm()()
         try:
             form_result = form.to_python(dict(request.POST))
         except formencode.Invalid as errors:
             return htmlfill.render(
-                render('/password_reset_confirmation.html'),
+                base.render('/password_reset_confirmation.html'),
                 defaults=errors.value,
                 errors=errors.error_dict or {},
                 prefix_error=False,
@@ -234,14 +232,14 @@ class LoginController(BaseController):
             form_result['token'],
         ):
             return htmlfill.render(
-                render('/password_reset_confirmation.html'),
+                base.render('/password_reset_confirmation.html'),
                 defaults=form_result,
                 errors={'token': _('Invalid password reset token')},
                 prefix_error=False,
                 encoding='UTF-8')
 
         UserModel().reset_password(form_result['email'], form_result['password'])
-        h.flash(_('Successfully updated password'), category='success')
+        webutils.flash(_('Successfully updated password'), category='success')
         raise HTTPFound(location=url('login_home'))
 
     def logout(self):
@@ -255,4 +253,4 @@ class LoginController(BaseController):
         Only intended for testing but might also be useful for other kinds
         of automation.
         """
-        return h.session_csrf_secret_token()
+        return webutils.session_csrf_secret_token()

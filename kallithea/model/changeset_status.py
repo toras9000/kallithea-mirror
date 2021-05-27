@@ -29,7 +29,7 @@ import logging
 
 from sqlalchemy.orm import joinedload
 
-from kallithea.model.db import ChangesetStatus, PullRequest, Repository, Session, User
+from kallithea.model import db, meta
 
 
 log = logging.getLogger(__name__)
@@ -39,22 +39,22 @@ class ChangesetStatusModel(object):
 
     def _get_status_query(self, repo, revision, pull_request,
                           with_revisions=False):
-        repo = Repository.guess_instance(repo)
+        repo = db.Repository.guess_instance(repo)
 
-        q = ChangesetStatus.query() \
-            .filter(ChangesetStatus.repo == repo)
+        q = db.ChangesetStatus.query() \
+            .filter(db.ChangesetStatus.repo == repo)
         if not with_revisions:
             # only report the latest vote across all users! TODO: be smarter!
-            q = q.filter(ChangesetStatus.version == 0)
+            q = q.filter(db.ChangesetStatus.version == 0)
 
         if revision:
-            q = q.filter(ChangesetStatus.revision == revision)
+            q = q.filter(db.ChangesetStatus.revision == revision)
         elif pull_request:
-            pull_request = PullRequest.guess_instance(pull_request)
-            q = q.filter(ChangesetStatus.pull_request == pull_request)
+            pull_request = db.PullRequest.guess_instance(pull_request)
+            q = q.filter(db.ChangesetStatus.pull_request == pull_request)
         else:
             raise Exception('Please specify revision or pull_request')
-        q = q.order_by(ChangesetStatus.version.asc())
+        q = q.order_by(db.ChangesetStatus.version.asc())
         return q
 
     def _calculate_status(self, statuses):
@@ -64,15 +64,15 @@ class ChangesetStatusModel(object):
         """
 
         if not statuses:
-            return ChangesetStatus.STATUS_UNDER_REVIEW
+            return db.ChangesetStatus.STATUS_UNDER_REVIEW
 
-        if all(st and st.status == ChangesetStatus.STATUS_APPROVED for st in statuses):
-            return ChangesetStatus.STATUS_APPROVED
+        if all(st and st.status == db.ChangesetStatus.STATUS_APPROVED for st in statuses):
+            return db.ChangesetStatus.STATUS_APPROVED
 
-        if any(st and st.status == ChangesetStatus.STATUS_REJECTED for st in statuses):
-            return ChangesetStatus.STATUS_REJECTED
+        if any(st and st.status == db.ChangesetStatus.STATUS_REJECTED for st in statuses):
+            return db.ChangesetStatus.STATUS_REJECTED
 
-        return ChangesetStatus.STATUS_UNDER_REVIEW
+        return db.ChangesetStatus.STATUS_UNDER_REVIEW
 
     def calculate_pull_request_result(self, pull_request):
         """
@@ -94,9 +94,9 @@ class ChangesetStatusModel(object):
         for user in pull_request.get_reviewer_users():
             st = cs_statuses.get(user.username)
             relevant_statuses.append(st)
-            status = ChangesetStatus.STATUS_NOT_REVIEWED if st is None else st.status
-            if status in (ChangesetStatus.STATUS_NOT_REVIEWED,
-                          ChangesetStatus.STATUS_UNDER_REVIEW):
+            status = db.ChangesetStatus.STATUS_NOT_REVIEWED if st is None else st.status
+            if status in (db.ChangesetStatus.STATUS_NOT_REVIEWED,
+                          db.ChangesetStatus.STATUS_UNDER_REVIEW):
                 pull_request_pending_reviewers.append(user)
             pull_request_reviewers.append((user, status))
 
@@ -130,7 +130,7 @@ class ChangesetStatusModel(object):
         # returned from pull_request
         status = q.first()
         if as_str:
-            return str(status.status) if status else ChangesetStatus.DEFAULT
+            return str(status.status) if status else db.ChangesetStatus.DEFAULT
         return status
 
     def set_status(self, repo, status, user, comment, revision=None,
@@ -146,20 +146,20 @@ class ChangesetStatusModel(object):
         :param revision:
         :param pull_request:
         """
-        repo = Repository.guess_instance(repo)
+        repo = db.Repository.guess_instance(repo)
 
-        q = ChangesetStatus.query()
+        q = db.ChangesetStatus.query()
         if revision is not None:
             assert pull_request is None
-            q = q.filter(ChangesetStatus.repo == repo)
-            q = q.filter(ChangesetStatus.revision == revision)
+            q = q.filter(db.ChangesetStatus.repo == repo)
+            q = q.filter(db.ChangesetStatus.revision == revision)
             revisions = [revision]
         else:
             assert pull_request is not None
-            pull_request = PullRequest.guess_instance(pull_request)
+            pull_request = db.PullRequest.guess_instance(pull_request)
             repo = pull_request.org_repo
-            q = q.filter(ChangesetStatus.repo == repo)
-            q = q.filter(ChangesetStatus.revision.in_(pull_request.revisions))
+            q = q.filter(db.ChangesetStatus.repo == repo)
+            q = q.filter(db.ChangesetStatus.revision.in_(pull_request.revisions))
             revisions = pull_request.revisions
         cur_statuses = q.all()
 
@@ -169,14 +169,14 @@ class ChangesetStatusModel(object):
 
         new_statuses = []
         for rev in revisions:
-            new_status = ChangesetStatus()
+            new_status = db.ChangesetStatus()
             new_status.version = 0 # default
-            new_status.author = User.guess_instance(user)
-            new_status.repo = Repository.guess_instance(repo)
+            new_status.author = db.User.guess_instance(user)
+            new_status.repo = db.Repository.guess_instance(repo)
             new_status.status = status
             new_status.comment = comment
             new_status.revision = rev
             new_status.pull_request = pull_request
             new_statuses.append(new_status)
-            Session().add(new_status)
+            meta.Session().add(new_status)
         return new_statuses

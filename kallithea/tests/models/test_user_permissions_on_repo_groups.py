@@ -1,8 +1,7 @@
 import functools
 
 import kallithea
-from kallithea.model.db import RepoGroup, Repository
-from kallithea.model.meta import Session
+from kallithea.model import db, meta
 from kallithea.model.repo_group import RepoGroupModel
 from kallithea.tests.models.common import _check_expected_count, _create_project_tree, _destroy_project_tree, _get_perms, check_tree_perms, expected_count
 
@@ -22,7 +21,7 @@ def permissions_setup_func(group_name='g0', perm='group.read', recursive='all',
         permissions_setup_func(group_name, perm, recursive,
                                user_id=kallithea.DEFAULT_USER_ID)
 
-    repo_group = RepoGroup.get_by_group_name(group_name=group_name)
+    repo_group = db.RepoGroup.get_by_group_name(group_name=group_name)
     if not repo_group:
         raise Exception('Cannot get group %s' % group_name)
 
@@ -36,13 +35,13 @@ def permissions_setup_func(group_name='g0', perm='group.read', recursive='all',
     RepoGroupModel()._update_permissions(repo_group,
                                          perms_updates=perms_updates,
                                          recursive=recursive, check_perms=False)
-    Session().commit()
+    meta.Session().commit()
 
 
 def setup_module():
     global test_u1_id, _get_repo_perms, _get_group_perms
     test_u1 = _create_project_tree()
-    Session().commit()
+    meta.Session().commit()
     test_u1_id = test_u1.user_id
     _get_repo_perms = functools.partial(_get_perms, key='repositories',
                                         test_u1_id=test_u1_id)
@@ -133,7 +132,7 @@ def test_user_permissions_on_group_with_recursive_mode_for_default_user():
 
     for name, perm in repo_items:
         # default user permissions do not "recurse into" private repos
-        is_private = Repository.get_by_repo_name(name).private
+        is_private = db.Repository.get_by_repo_name(name).private
         check_tree_perms(name, perm, group, 'repository.none' if is_private else 'repository.write')
 
     for name, perm in items:

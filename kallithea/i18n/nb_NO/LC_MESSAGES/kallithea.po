@@ -19,15 +19,6 @@ msgstr "Ingen"
 msgid "(closed)"
 msgstr "(lukket)"
 
-msgid "Show whitespace"
-msgstr "Vis blanktegn"
-
-msgid "Ignore whitespace"
-msgstr "Ignorer blanktegn"
-
-msgid "Increase diff context to %(num)s lines"
-msgstr "Øk diff-bindeleddsinformasjon til %(num)s linjer"
-
 msgid "Successfully deleted pull request %s"
 msgstr "Slettet flettingsforespørsel %s"
 
@@ -436,6 +427,9 @@ msgstr "Fjernet IP-adressen fra brukerhvitlisten"
 msgid "Binary file"
 msgstr "Binærfil"
 
+msgid "Increase diff context to %(num)s lines"
+msgstr "Øk diff-bindeleddsinformasjon til %(num)s linjer"
+
 msgid "Fork name %s"
 msgstr "Forgreningsnavn %s"
 
@@ -516,9 +510,6 @@ msgstr "%s og %s siden"
 
 msgid "just now"
 msgstr "akkurat nå"
-
-msgid "on line %s"
-msgstr "på linje %s"
 
 msgid "top level"
 msgstr "toppnivå"
@@ -614,8 +605,11 @@ msgstr "Brukernavn"
 msgid "Password"
 msgstr "Passord"
 
-msgid "Forgot your password ?"
+msgid "Forgot your password?"
 msgstr "Glemt passordet ditt?"
+
+msgid "Don't have an account?"
+msgstr "Mangler du konto?"
 
 msgid "Password Reset"
 msgstr "Passordstilbakestilling"
@@ -1141,9 +1135,6 @@ msgstr "Ikke innlogget"
 msgid "Forgot password?"
 msgstr "Glemt passordet?"
 
-msgid "Don't have an account?"
-msgstr "Mangler du konto?"
-
 msgid "Log Out"
 msgstr "Logg ut"
 
@@ -1170,3 +1161,6 @@ msgstr "Velg endringssett"
 
 msgid "%s comments"
 msgstr "%s kommentarer"
+
+msgid "Ignore whitespace"
+msgstr "Ignorer blanktegn"

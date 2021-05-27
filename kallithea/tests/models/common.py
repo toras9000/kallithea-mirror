@@ -1,6 +1,5 @@
 from kallithea.lib.auth import AuthUser
-from kallithea.model.db import RepoGroup, Repository, User
-from kallithea.model.meta import Session
+from kallithea.model import db, meta
 from kallithea.model.repo import RepoModel
 from kallithea.model.repo_group import RepoGroupModel
 from kallithea.model.user import UserModel
@@ -11,17 +10,17 @@ fixture = Fixture()
 
 
 def _destroy_project_tree(test_u1_id):
-    Session.remove()
-    repo_group = RepoGroup.get_by_group_name(group_name='g0')
+    meta.Session.remove()
+    repo_group = db.RepoGroup.get_by_group_name(group_name='g0')
     for el in reversed(repo_group.recursive_groups_and_repos()):
-        if isinstance(el, Repository):
+        if isinstance(el, db.Repository):
             RepoModel().delete(el)
-        elif isinstance(el, RepoGroup):
+        elif isinstance(el, db.RepoGroup):
             RepoGroupModel().delete(el, force_delete=True)
 
-    u = User.get(test_u1_id)
-    Session().delete(u)
-    Session().commit()
+    u = db.User.get(test_u1_id)
+    meta.Session().delete(u)
+    meta.Session().commit()
 
 
 def _create_project_tree():
@@ -70,7 +69,7 @@ def _create_project_tree():
 
 
 def expected_count(group_name, objects=False):
-    repo_group = RepoGroup.get_by_group_name(group_name=group_name)
+    repo_group = db.RepoGroup.get_by_group_name(group_name=group_name)
     objs = repo_group.recursive_groups_and_repos()
     if objects:
         return objs

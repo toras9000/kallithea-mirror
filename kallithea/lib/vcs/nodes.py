@@ -14,6 +14,8 @@ import mimetypes
 import posixpath
 import stat
 
+from pygments import lexers
+
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.exceptions import NodeError, RemovedFileNodeError
 from kallithea.lib.vcs.utils import safe_bytes, safe_str
@@ -305,7 +307,6 @@ class FileNode(Node):
                 encoding = None
 
                 # try with pygments
-                from pygments import lexers
                 try:
                     mt = lexers.get_lexer_for_filename(self.name).mimetypes
                 except lexers.ClassNotFound:
@@ -335,7 +336,6 @@ class FileNode(Node):
         Returns pygment's lexer class. Would try to guess lexer taking file's
         content, name and mimetype.
         """
-        from pygments import lexers
         try:
             lexer = lexers.guess_lexer_for_filename(self.name, safe_str(self.content), stripnl=False)
         except lexers.ClassNotFound:
@@ -587,7 +587,7 @@ class SubModuleNode(Node):
         self.path = name.rstrip('/')
         self.kind = NodeKind.SUBMODULE
         self.alias = alias
-        # we have to use emptyChangeset here since this can point to svn/git/hg
+        # we have to use emptyChangeset here since this can point to git/hg
         # submodules we cannot get from repository
         self.changeset = EmptyChangeset(changeset, alias=alias)
         self.url = url

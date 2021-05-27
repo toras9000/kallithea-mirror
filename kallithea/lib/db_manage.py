@@ -26,6 +26,7 @@ Original author and date, and relevant copyright and licensing information is be
 :license: GPLv3, see LICENSE.md for more details.
 """
 
+import getpass
 import logging
 import os
 import sys
@@ -36,12 +37,10 @@ import alembic.config
 import sqlalchemy
 from sqlalchemy.engine import create_engine
 
+from kallithea.lib.utils2 import ask_ok
+from kallithea.model import db, meta
 from kallithea.model.base import init_model
-from kallithea.model.db import Permission, RepoGroup, Repository, Setting, Ui, User, UserRepoGroupToPerm, UserToPerm
-#from kallithea.model import meta
-from kallithea.model.meta import Base, Session
 from kallithea.model.permission import PermissionModel
-from kallithea.model.repo_group import RepoGroupModel
 from kallithea.model.user import UserModel
 
 
@@ -49,9 +48,8 @@ log = logging.getLogger(__name__)
 
 
 class DbManage(object):
-    def __init__(self, dbconf, root, tests=False, SESSION=None, cli_args=None):
+    def __init__(self, dbconf, root, SESSION=None, cli_args=None):
         self.dbname = dbconf.split('/')[-1]
-        self.tests = tests
         self.root = root
         self.dburi = dbconf
         self.cli_args = cli_args or {}
@@ -62,7 +60,6 @@ class DbManage(object):
         force_ask = self.cli_args.get('force_ask')
         if force_ask is not None:
             return force_ask
-        from kallithea.lib.utils2 import ask_ok
         return ask_ok(msg)
 
     def init_db(self, SESSION=None):
@@ -72,48 +69,49 @@ class DbManage(object):
             # init new sessions
             engine = create_engine(self.dburi)
             init_model(engine)
-            self.sa = Session()
+            self.sa = meta.Session()
 
-    def create_tables(self, override=False):
+    def create_tables(self, reuse_database=False):
         """
-        Create a auth database
+        Create database (optional) and tables.
+        If reuse_database is false, the database will be dropped (if it exists)
+        and a new one created. If true, the existing database will be reused
+        and cleaned for content.
         """
-
-        log.info("Any existing database is going to be destroyed")
-        if self.tests:
-            destroy = True
+        url = sqlalchemy.engine.url.make_url(self.dburi)
+        database = url.database
+        if reuse_database:
+            log.info("The content of the database %r will be destroyed and new tables created." % database)
         else:
-            destroy = self._ask_ok('Are you sure to destroy old database ? [y/n]')
-        if not destroy:
+            log.info("The existing database %r will be destroyed and a new one created." % database)
+
+        if not self._ask_ok('Are you sure to destroy old database? [y/n]'):
             print('Nothing done.')
             sys.exit(0)
-        if destroy:
-            # drop and re-create old schemas
 
-            url = sqlalchemy.engine.url.make_url(self.dburi)
-            database = url.database
-
-            # Some databases enforce foreign key constraints and Base.metadata.drop_all() doesn't work
+        if reuse_database:
+            meta.Base.metadata.drop_all()
+        else:
             if url.drivername == 'mysql':
                 url.database = None  # don't connect to the database (it might not exist)
                 engine = sqlalchemy.create_engine(url)
                 with engine.connect() as conn:
-                    conn.execute('DROP DATABASE IF EXISTS ' + database)
-                    conn.execute('CREATE DATABASE ' + database)
+                    conn.execute('DROP DATABASE IF EXISTS `%s`' % database)
+                    conn.execute('CREATE DATABASE `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci' % database)
             elif url.drivername == 'postgresql':
                 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
                 url.database = 'postgres'  # connect to the system database (as the real one might not exist)
                 engine = sqlalchemy.create_engine(url)
                 with engine.connect() as conn:
                     conn.connection.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-                    conn.execute('DROP DATABASE IF EXISTS ' + database)
-                    conn.execute('CREATE DATABASE ' + database)
+                    conn.execute('DROP DATABASE IF EXISTS "%s"' % database)
+                    conn.execute('CREATE DATABASE "%s"' % database)
             else:
+                # Some databases enforce foreign key constraints and Base.metadata.drop_all() doesn't work, but this is
                 # known to work on SQLite - possibly not on other databases with strong referential integrity
-                Base.metadata.drop_all()
+                meta.Base.metadata.drop_all()
 
-        checkfirst = not override
-        Base.metadata.create_all(checkfirst=checkfirst)
+        meta.Base.metadata.create_all(checkfirst=False)
 
         # Create an Alembic configuration and generate the version table,
         # "stamping" it with the most recent Alembic migration revision, to
@@ -128,91 +126,36 @@ class DbManage(object):
 
         log.info('Created tables for %s', self.dbname)
 
-    def fix_repo_paths(self):
-        """
-        Fixes a old kallithea version path into new one without a '*'
-        """
+    def create_admin_user(self):
+        username = self.cli_args.get('username')
+        password = self.cli_args.get('password')
+        email = self.cli_args.get('email')
 
-        paths = Ui.query() \
-                .filter(Ui.ui_key == '/') \
-                .scalar()
+        def get_password():
+            password = getpass.getpass('Specify admin password '
+                                       '(min 6 chars):')
+            confirm = getpass.getpass('Confirm password:')
 
-        paths.ui_value = paths.ui_value.replace('*', '')
+            if password != confirm:
+                log.error('passwords mismatch')
+                return False
+            if len(password) < 6:
+                log.error('password is to short use at least 6 characters')
+                return False
 
-        self.sa.commit()
-
-    def fix_default_user(self):
-        """
-        Fixes a old default user with some 'nicer' default values,
-        used mostly for anonymous access
-        """
-        def_user = User.query().filter_by(is_default_user=True).one()
-
-        def_user.name = 'Anonymous'
-        def_user.lastname = 'User'
-        def_user.email = 'anonymous@kallithea-scm.org'
-
-        self.sa.commit()
-
-    def fix_settings(self):
-        """
-        Fixes kallithea settings adds ga_code key for google analytics
-        """
-
-        hgsettings3 = Setting('ga_code', '')
-
-        self.sa.add(hgsettings3)
-        self.sa.commit()
-
-    def admin_prompt(self, second=False):
-        if not self.tests:
-            import getpass
-
-            username = self.cli_args.get('username')
-            password = self.cli_args.get('password')
-            email = self.cli_args.get('email')
-
-            def get_password():
-                password = getpass.getpass('Specify admin password '
-                                           '(min 6 chars):')
-                confirm = getpass.getpass('Confirm password:')
-
-                if password != confirm:
-                    log.error('passwords mismatch')
-                    return False
-                if len(password) < 6:
-                    log.error('password is to short use at least 6 characters')
-                    return False
-
-                return password
-            if username is None:
-                username = input('Specify admin username:')
-            if password is None:
+            return password
+        if username is None:
+            username = input('Specify admin username:')
+        if password is None:
+            password = get_password()
+            if not password:
+                # second try
                 password = get_password()
                 if not password:
-                    # second try
-                    password = get_password()
-                    if not password:
-                        sys.exit()
-            if email is None:
-                email = input('Specify admin email:')
-            self.create_user(username, password, email, True)
-        else:
-            log.info('creating admin and regular test users')
-            from kallithea.tests.base import TEST_USER_ADMIN_LOGIN, \
-                TEST_USER_ADMIN_PASS, TEST_USER_ADMIN_EMAIL, \
-                TEST_USER_REGULAR_LOGIN, TEST_USER_REGULAR_PASS, \
-                TEST_USER_REGULAR_EMAIL, TEST_USER_REGULAR2_LOGIN, \
-                TEST_USER_REGULAR2_PASS, TEST_USER_REGULAR2_EMAIL
-
-            self.create_user(TEST_USER_ADMIN_LOGIN, TEST_USER_ADMIN_PASS,
-                             TEST_USER_ADMIN_EMAIL, True)
-
-            self.create_user(TEST_USER_REGULAR_LOGIN, TEST_USER_REGULAR_PASS,
-                             TEST_USER_REGULAR_EMAIL, False)
-
-            self.create_user(TEST_USER_REGULAR2_LOGIN, TEST_USER_REGULAR2_PASS,
-                             TEST_USER_REGULAR2_EMAIL, False)
+                    sys.exit()
+        if email is None:
+            email = input('Specify admin email:')
+        self.create_user(username, password, email, True)
 
     def create_auth_plugin_options(self, skip_existing=False):
         """
@@ -223,10 +166,10 @@ class DbManage(object):
 
         for k, v, t in [('auth_plugins', 'kallithea.lib.auth_modules.auth_internal', 'list'),
                         ('auth_internal_enabled', 'True', 'bool')]:
-            if skip_existing and Setting.get_by_name(k) is not None:
+            if skip_existing and db.Setting.get_by_name(k) is not None:
                 log.debug('Skipping option %s', k)
                 continue
-            setting = Setting(k, v, t)
+            setting = db.Setting(k, v, t)
             self.sa.add(setting)
 
     def create_default_options(self, skip_existing=False):
@@ -238,50 +181,11 @@ class DbManage(object):
             ('default_repo_private', False, 'bool'),
             ('default_repo_type', 'hg', 'unicode')
         ]:
-            if skip_existing and Setting.get_by_name(k) is not None:
+            if skip_existing and db.Setting.get_by_name(k) is not None:
                 log.debug('Skipping option %s', k)
                 continue
-            setting = Setting(k, v, t)
+            setting = db.Setting(k, v, t)
             self.sa.add(setting)
-
-    def fixup_groups(self):
-        def_usr = User.get_default_user()
-        for g in RepoGroup.query().all():
-            g.group_name = g.get_new_name(g.name)
-            # get default perm
-            default = UserRepoGroupToPerm.query() \
-                .filter(UserRepoGroupToPerm.group == g) \
-                .filter(UserRepoGroupToPerm.user == def_usr) \
-                .scalar()
-
-            if default is None:
-                log.debug('missing default permission for group %s adding', g)
-                RepoGroupModel()._create_default_perms(g)
-
-    def reset_permissions(self, username):
-        """
-        Resets permissions to default state, useful when old systems had
-        bad permissions, we must clean them up
-
-        :param username:
-        """
-        default_user = User.get_by_username(username)
-        if not default_user:
-            return
-
-        u2p = UserToPerm.query() \
-            .filter(UserToPerm.user == default_user).all()
-        fixed = False
-        if len(u2p) != len(Permission.DEFAULT_USER_PERMISSIONS):
-            for p in u2p:
-                Session().delete(p)
-            fixed = True
-            self.populate_default_permissions()
-        return fixed
-
-    def update_repo_info(self):
-        for repo in Repository.query():
-            repo.update_changeset_cache()
 
     def prompt_repo_root_path(self, test_repo_path='', retries=3):
         _path = self.cli_args.get('repos_location')
@@ -290,7 +194,7 @@ class DbManage(object):
 
         if _path is not None:
             path = _path
-        elif not self.tests and not test_repo_path:
+        elif not test_repo_path:
             path = input(
                  'Enter a valid absolute path to store repositories. '
                  'All repositories in that path will be added automatically:'
@@ -340,15 +244,14 @@ class DbManage(object):
         ui_config = [
             ('paths', '/', repo_root_path, True),
             #('phases', 'publish', 'false', False)
-            ('hooks', Ui.HOOK_UPDATE, 'hg update >&2', False),
-            ('hooks', Ui.HOOK_REPO_SIZE, 'python:kallithea.lib.hooks.repo_size', True),
+            ('hooks', db.Ui.HOOK_UPDATE, 'python:', False),  # the actual value in db doesn't matter
+            ('hooks', db.Ui.HOOK_REPO_SIZE, 'python:', True),  # the actual value in db doesn't matter
             ('extensions', 'largefiles', '', True),
             ('largefiles', 'usercache', os.path.join(repo_root_path, '.cache', 'largefiles'), True),
-            ('extensions', 'hgsubversion', '', False),
             ('extensions', 'hggit', '', False),
         ]
         for ui_section, ui_key, ui_value, ui_active in ui_config:
-            ui_conf = Ui(
+            ui_conf = db.Ui(
                 ui_section=ui_section,
                 ui_key=ui_key,
                 ui_value=ui_value,
@@ -366,12 +269,12 @@ class DbManage(object):
             ('admin_grid_items', 25, 'int'),
             ('show_version', True, 'bool'),
             ('use_gravatar', True, 'bool'),
-            ('gravatar_url', User.DEFAULT_GRAVATAR_URL, 'unicode'),
-            ('clone_uri_tmpl', Repository.DEFAULT_CLONE_URI, 'unicode'),
-            ('clone_ssh_tmpl', Repository.DEFAULT_CLONE_SSH, 'unicode'),
+            ('gravatar_url', db.User.DEFAULT_GRAVATAR_URL, 'unicode'),
+            ('clone_uri_tmpl', db.Repository.DEFAULT_CLONE_URI, 'unicode'),
+            ('clone_ssh_tmpl', db.Repository.DEFAULT_CLONE_SSH, 'unicode'),
         ]
         for key, val, type_ in settings:
-            sett = Setting(key, val, type_)
+            sett = db.Setting(key, val, type_)
             self.sa.add(sett)
 
         self.create_auth_plugin_options()
@@ -384,12 +287,12 @@ class DbManage(object):
         UserModel().create_or_update(username, password, email,
                                      firstname='Kallithea', lastname='Admin',
                                      active=True, admin=admin,
-                                     extern_type=User.DEFAULT_AUTH_TYPE)
+                                     extern_type=db.User.DEFAULT_AUTH_TYPE)
 
     def create_default_user(self):
         log.info('creating default user')
         # create default user for handling default permissions.
-        user = UserModel().create_or_update(username=User.DEFAULT_USER_NAME,
+        user = UserModel().create_or_update(username=db.User.DEFAULT_USER_NAME,
                                             password=str(uuid.uuid1())[:20],
                                             email='anonymous@kallithea-scm.org',
                                             firstname='Anonymous',
@@ -399,7 +302,7 @@ class DbManage(object):
         if self.cli_args.get('public_access') is False:
             log.info('Public access disabled')
             user.active = False
-            Session().commit()
+            meta.Session().commit()
 
     def create_permissions(self):
         """
@@ -416,4 +319,4 @@ class DbManage(object):
         permissions that are missing, and not alter already defined ones
         """
         log.info('creating default user permissions')
-        PermissionModel().create_default_permissions(user=User.DEFAULT_USER_NAME)
+        PermissionModel().create_default_permissions(user=db.User.DEFAULT_USER_NAME)

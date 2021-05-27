@@ -28,7 +28,6 @@ Original author and date, and relevant copyright and licensing information is be
 import logging
 import traceback
 
-import celery.result
 import formencode
 from formencode import htmlfill
 from tg import request
@@ -37,17 +36,15 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPForbidden, HTTPFound, HTTPInternalServerError, HTTPNotFound
 
 import kallithea
-from kallithea.config.routing import url
-from kallithea.lib import helpers as h
-from kallithea.lib.auth import HasPermissionAny, HasRepoPermissionLevelDecorator, LoginRequired, NotAnonymous
-from kallithea.lib.base import BaseRepoController, jsonify, render
+from kallithea.controllers import base
+from kallithea.lib import webutils
+from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired, NotAnonymous
 from kallithea.lib.exceptions import AttachedForksError
-from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import safe_int
 from kallithea.lib.vcs import RepositoryError
-from kallithea.model.db import RepoGroup, Repository, RepositoryField, Setting, UserFollowing
+from kallithea.lib.webutils import url
+from kallithea.model import db, meta, userlog
 from kallithea.model.forms import RepoFieldForm, RepoForm, RepoPermsForm
-from kallithea.model.meta import Session
 from kallithea.model.repo import RepoModel
 from kallithea.model.scm import AvailableRepoGroupChoices, RepoList, ScmModel
 
@@ -55,12 +52,7 @@ from kallithea.model.scm import AvailableRepoGroupChoices, RepoList, ScmModel
 log = logging.getLogger(__name__)
 
 
-class ReposController(BaseRepoController):
-    """
-    REST Controller styled on the Atom Publishing Protocol"""
-    # To properly map this controller, ensure your config/routing.py
-    # file has a resource setup:
-    #     map.resource('repo', 'repos')
+class ReposController(base.BaseRepoController):
 
     @LoginRequired(allow_default_user=True)
     def _before(self, *args, **kwargs):
@@ -70,20 +62,14 @@ class ReposController(BaseRepoController):
         repo_obj = c.db_repo
 
         if repo_obj is None:
-            h.not_mapped_error(c.repo_name)
-            raise HTTPFound(location=url('repos'))
+            raise HTTPNotFound()
 
         return repo_obj
 
     def __load_defaults(self, repo=None):
-        top_perms = ['hg.create.repository']
-        if HasPermissionAny('hg.create.write_on_repogroup.true')():
-            repo_group_perm_level = 'write'
-        else:
-            repo_group_perm_level = 'admin'
         extras = [] if repo is None else [repo.group]
 
-        c.repo_groups = AvailableRepoGroupChoices(top_perms, repo_group_perm_level, extras)
+        c.repo_groups = AvailableRepoGroupChoices('write', extras)
 
         c.landing_revs_choices, c.landing_revs = ScmModel().get_repo_landing_revs(repo)
 
@@ -101,13 +87,13 @@ class ReposController(BaseRepoController):
         return defaults
 
     def index(self, format='html'):
-        repos_list = RepoList(Repository.query(sorted=True).all(), perm_level='admin')
+        repos_list = RepoList(db.Repository.query(sorted=True).all(), perm_level='admin')
         # the repo list will be filtered to only show repos where the user has read permissions
         repos_data = RepoModel().get_repos_as_dict(repos_list, admin=True)
         # data used to render the grid
         c.data = repos_data
 
-        return render('admin/repos/repos.html')
+        return base.render('admin/repos/repos.html')
 
     @NotAnonymous()
     def create(self):
@@ -120,7 +106,7 @@ class ReposController(BaseRepoController):
         except formencode.Invalid as errors:
             log.info(errors)
             return htmlfill.render(
-                render('admin/repos/repo_add.html'),
+                base.render('admin/repos/repo_add.html'),
                 defaults=errors.value,
                 errors=errors.error_dict or {},
                 prefix_error=False,
@@ -130,18 +116,17 @@ class ReposController(BaseRepoController):
         try:
             # create is done sometimes async on celery, db transaction
             # management is handled there.
-            task = RepoModel().create(form_result, request.authuser.user_id)
-            task_id = task.task_id
+            RepoModel().create(form_result, request.authuser.user_id)
         except Exception:
             log.error(traceback.format_exc())
             msg = (_('Error creating repository %s')
                    % form_result.get('repo_name'))
-            h.flash(msg, category='error')
+            webutils.flash(msg, category='error')
             raise HTTPFound(location=url('home'))
 
-        raise HTTPFound(location=h.url('repo_creating_home',
+        raise HTTPFound(location=webutils.url('repo_creating_home',
                               repo_name=form_result['repo_name_full'],
-                              task_id=task_id))
+                              ))
 
     @NotAnonymous()
     def create_repository(self):
@@ -151,9 +136,9 @@ class ReposController(BaseRepoController):
         parent_group = request.GET.get('parent_group')
 
         ## apply the defaults from defaults page
-        defaults = Setting.get_default_repo_settings(strip_prefix=True)
+        defaults = db.Setting.get_default_repo_settings(strip_prefix=True)
         if parent_group:
-            prg = RepoGroup.get(parent_group)
+            prg = db.RepoGroup.get(parent_group)
             if prg is None or not any(rgc[0] == prg.group_id
                                       for rgc in c.repo_groups):
                 raise HTTPForbidden
@@ -162,7 +147,7 @@ class ReposController(BaseRepoController):
         defaults.update({'repo_group': parent_group})
 
         return htmlfill.render(
-            render('admin/repos/repo_add.html'),
+            base.render('admin/repos/repo_add.html'),
             defaults=defaults,
             errors={},
             prefix_error=False,
@@ -172,39 +157,30 @@ class ReposController(BaseRepoController):
     @LoginRequired()
     def repo_creating(self, repo_name):
         c.repo = repo_name
-        c.task_id = request.GET.get('task_id')
         if not c.repo:
             raise HTTPNotFound()
-        return render('admin/repos/repo_creating.html')
+        return base.render('admin/repos/repo_creating.html')
 
     @LoginRequired()
-    @jsonify
+    @base.jsonify
     def repo_check(self, repo_name):
         c.repo = repo_name
-        task_id = request.GET.get('task_id')
-
-        if task_id and task_id not in ['None']:
-            if kallithea.CELERY_APP:
-                task_result = celery.result.AsyncResult(task_id, app=kallithea.CELERY_APP)
-                if task_result.failed():
-                    raise HTTPInternalServerError(task_result.traceback)
-
-        repo = Repository.get_by_repo_name(repo_name)
-        if repo and repo.repo_state == Repository.STATE_CREATED:
+        repo = db.Repository.get_by_repo_name(repo_name)
+        if repo and repo.repo_state == db.Repository.STATE_CREATED:
             if repo.clone_uri:
-                h.flash(_('Created repository %s from %s')
+                webutils.flash(_('Created repository %s from %s')
                         % (repo.repo_name, repo.clone_uri_hidden), category='success')
             else:
-                repo_url = h.link_to(repo.repo_name,
-                                     h.url('summary_home',
+                repo_url = webutils.link_to(repo.repo_name,
+                                     webutils.url('summary_home',
                                            repo_name=repo.repo_name))
                 fork = repo.fork
                 if fork is not None:
                     fork_name = fork.repo_name
-                    h.flash(h.HTML(_('Forked repository %s as %s'))
+                    webutils.flash(webutils.HTML(_('Forked repository %s as %s'))
                             % (fork_name, repo_url), category='success')
                 else:
-                    h.flash(h.HTML(_('Created repository %s')) % repo_url,
+                    webutils.flash(webutils.HTML(_('Created repository %s')) % repo_url,
                             category='success')
             return {'result': True}
         return {'result': False}
@@ -214,12 +190,12 @@ class ReposController(BaseRepoController):
         c.repo_info = self._load_repo()
         self.__load_defaults(c.repo_info)
         c.active = 'settings'
-        c.repo_fields = RepositoryField.query() \
-            .filter(RepositoryField.repository == c.repo_info).all()
+        c.repo_fields = db.RepositoryField.query() \
+            .filter(db.RepositoryField.repository == c.repo_info).all()
 
         repo_model = RepoModel()
         changed_name = repo_name
-        repo = Repository.get_by_repo_name(repo_name)
+        repo = db.Repository.get_by_repo_name(repo_name)
         old_data = {
             'repo_name': repo_name,
             'repo_group': repo.group.get_dict() if repo.group else {},
@@ -233,18 +209,18 @@ class ReposController(BaseRepoController):
             form_result = _form.to_python(dict(request.POST))
             repo = repo_model.update(repo_name, **form_result)
             ScmModel().mark_for_invalidation(repo_name)
-            h.flash(_('Repository %s updated successfully') % repo_name,
+            webutils.flash(_('Repository %s updated successfully') % repo_name,
                     category='success')
             changed_name = repo.repo_name
-            action_logger(request.authuser, 'admin_updated_repo',
+            userlog.action_logger(request.authuser, 'admin_updated_repo',
                 changed_name, request.ip_addr)
-            Session().commit()
+            meta.Session().commit()
         except formencode.Invalid as errors:
             log.info(errors)
             defaults = self.__load_data()
             defaults.update(errors.value)
             return htmlfill.render(
-                render('admin/repos/repo_edit.html'),
+                base.render('admin/repos/repo_edit.html'),
                 defaults=defaults,
                 errors=errors.error_dict or {},
                 prefix_error=False,
@@ -253,7 +229,7 @@ class ReposController(BaseRepoController):
 
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('Error occurred during update of repository %s')
+            webutils.flash(_('Error occurred during update of repository %s')
                     % repo_name, category='error')
         raise HTTPFound(location=url('edit_repo', repo_name=changed_name))
 
@@ -262,8 +238,7 @@ class ReposController(BaseRepoController):
         repo_model = RepoModel()
         repo = repo_model.get_by_repo_name(repo_name)
         if not repo:
-            h.not_mapped_error(repo_name)
-            raise HTTPFound(location=url('repos'))
+            raise HTTPNotFound()
         try:
             _forks = repo.forks.count()
             handle_forks = None
@@ -271,23 +246,23 @@ class ReposController(BaseRepoController):
                 do = request.POST['forks']
                 if do == 'detach_forks':
                     handle_forks = 'detach'
-                    h.flash(_('Detached %s forks') % _forks, category='success')
+                    webutils.flash(_('Detached %s forks') % _forks, category='success')
                 elif do == 'delete_forks':
                     handle_forks = 'delete'
-                    h.flash(_('Deleted %s forks') % _forks, category='success')
+                    webutils.flash(_('Deleted %s forks') % _forks, category='success')
             repo_model.delete(repo, forks=handle_forks)
-            action_logger(request.authuser, 'admin_deleted_repo',
+            userlog.action_logger(request.authuser, 'admin_deleted_repo',
                 repo_name, request.ip_addr)
             ScmModel().mark_for_invalidation(repo_name)
-            h.flash(_('Deleted repository %s') % repo_name, category='success')
-            Session().commit()
+            webutils.flash(_('Deleted repository %s') % repo_name, category='success')
+            meta.Session().commit()
         except AttachedForksError:
-            h.flash(_('Cannot delete repository %s which still has forks')
+            webutils.flash(_('Cannot delete repository %s which still has forks')
                         % repo_name, category='warning')
 
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('An error occurred during deletion of %s') % repo_name,
+            webutils.flash(_('An error occurred during deletion of %s') % repo_name,
                     category='error')
 
         if repo.group:
@@ -297,11 +272,11 @@ class ReposController(BaseRepoController):
     @HasRepoPermissionLevelDecorator('admin')
     def edit(self, repo_name):
         defaults = self.__load_data()
-        c.repo_fields = RepositoryField.query() \
-            .filter(RepositoryField.repository == c.repo_info).all()
+        c.repo_fields = db.RepositoryField.query() \
+            .filter(db.RepositoryField.repository == c.repo_info).all()
         c.active = 'settings'
         return htmlfill.render(
-            render('admin/repos/repo_edit.html'),
+            base.render('admin/repos/repo_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -313,7 +288,7 @@ class ReposController(BaseRepoController):
         defaults = RepoModel()._get_defaults(repo_name)
 
         return htmlfill.render(
-            render('admin/repos/repo_edit.html'),
+            base.render('admin/repos/repo_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -326,8 +301,8 @@ class ReposController(BaseRepoController):
         # TODO: implement this
         #action_logger(request.authuser, 'admin_changed_repo_permissions',
         #              repo_name, request.ip_addr)
-        Session().commit()
-        h.flash(_('Repository permissions updated'), category='success')
+        meta.Session().commit()
+        webutils.flash(_('Repository permissions updated'), category='success')
         raise HTTPFound(location=url('edit_repo_perms', repo_name=repo_name))
 
     @HasRepoPermissionLevelDecorator('admin')
@@ -353,10 +328,10 @@ class ReposController(BaseRepoController):
             # TODO: implement this
             #action_logger(request.authuser, 'admin_revoked_repo_permissions',
             #              repo_name, request.ip_addr)
-            Session().commit()
+            meta.Session().commit()
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('An error occurred during revoking of permission'),
+            webutils.flash(_('An error occurred during revoking of permission'),
                     category='error')
             raise HTTPInternalServerError()
         return []
@@ -364,55 +339,55 @@ class ReposController(BaseRepoController):
     @HasRepoPermissionLevelDecorator('admin')
     def edit_fields(self, repo_name):
         c.repo_info = self._load_repo()
-        c.repo_fields = RepositoryField.query() \
-            .filter(RepositoryField.repository == c.repo_info).all()
+        c.repo_fields = db.RepositoryField.query() \
+            .filter(db.RepositoryField.repository == c.repo_info).all()
         c.active = 'fields'
         if request.POST:
 
             raise HTTPFound(location=url('repo_edit_fields'))
-        return render('admin/repos/repo_edit.html')
+        return base.render('admin/repos/repo_edit.html')
 
     @HasRepoPermissionLevelDecorator('admin')
     def create_repo_field(self, repo_name):
         try:
             form_result = RepoFieldForm()().to_python(dict(request.POST))
-            new_field = RepositoryField()
-            new_field.repository = Repository.get_by_repo_name(repo_name)
+            new_field = db.RepositoryField()
+            new_field.repository = db.Repository.get_by_repo_name(repo_name)
             new_field.field_key = form_result['new_field_key']
             new_field.field_type = form_result['new_field_type']  # python type
             new_field.field_value = form_result['new_field_value']  # set initial blank value
             new_field.field_desc = form_result['new_field_desc']
             new_field.field_label = form_result['new_field_label']
-            Session().add(new_field)
-            Session().commit()
+            meta.Session().add(new_field)
+            meta.Session().commit()
         except formencode.Invalid as e:
-            h.flash(_('Field validation error: %s') % e.msg, category='error')
+            webutils.flash(_('Field validation error: %s') % e.msg, category='error')
         except Exception as e:
             log.error(traceback.format_exc())
-            h.flash(_('An error occurred during creation of field: %r') % e, category='error')
+            webutils.flash(_('An error occurred during creation of field: %r') % e, category='error')
         raise HTTPFound(location=url('edit_repo_fields', repo_name=repo_name))
 
     @HasRepoPermissionLevelDecorator('admin')
     def delete_repo_field(self, repo_name, field_id):
-        field = RepositoryField.get_or_404(field_id)
+        field = db.RepositoryField.get_or_404(field_id)
         try:
-            Session().delete(field)
-            Session().commit()
+            meta.Session().delete(field)
+            meta.Session().commit()
         except Exception as e:
             log.error(traceback.format_exc())
             msg = _('An error occurred during removal of field')
-            h.flash(msg, category='error')
+            webutils.flash(msg, category='error')
         raise HTTPFound(location=url('edit_repo_fields', repo_name=repo_name))
 
     @HasRepoPermissionLevelDecorator('admin')
     def edit_advanced(self, repo_name):
         c.repo_info = self._load_repo()
         c.default_user_id = kallithea.DEFAULT_USER_ID
-        c.in_public_journal = UserFollowing.query() \
-            .filter(UserFollowing.user_id == c.default_user_id) \
-            .filter(UserFollowing.follows_repository == c.repo_info).scalar()
+        c.in_public_journal = db.UserFollowing.query() \
+            .filter(db.UserFollowing.user_id == c.default_user_id) \
+            .filter(db.UserFollowing.follows_repository == c.repo_info).scalar()
 
-        _repos = Repository.query(sorted=True).all()
+        _repos = db.Repository.query(sorted=True).all()
         read_access_repos = RepoList(_repos, perm_level='read')
         c.repos_list = [(None, _('-- Not a fork --'))]
         c.repos_list += [(x.repo_id, x.repo_name)
@@ -428,7 +403,7 @@ class ReposController(BaseRepoController):
         if request.POST:
             raise HTTPFound(location=url('repo_edit_advanced'))
         return htmlfill.render(
-            render('admin/repos/repo_edit.html'),
+            base.render('admin/repos/repo_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False)
@@ -443,14 +418,14 @@ class ReposController(BaseRepoController):
         """
 
         try:
-            repo_id = Repository.get_by_repo_name(repo_name).repo_id
+            repo_id = db.Repository.get_by_repo_name(repo_name).repo_id
             user_id = kallithea.DEFAULT_USER_ID
             self.scm_model.toggle_following_repo(repo_id, user_id)
-            h.flash(_('Updated repository visibility in public journal'),
+            webutils.flash(_('Updated repository visibility in public journal'),
                     category='success')
-            Session().commit()
+            meta.Session().commit()
         except Exception:
-            h.flash(_('An error occurred during setting this'
+            webutils.flash(_('An error occurred during setting this'
                       ' repository in public journal'),
                     category='error')
         raise HTTPFound(location=url('edit_repo_advanced', repo_name=repo_name))
@@ -467,15 +442,15 @@ class ReposController(BaseRepoController):
             repo = ScmModel().mark_as_fork(repo_name, fork_id,
                                            request.authuser.username)
             fork = repo.fork.repo_name if repo.fork else _('Nothing')
-            Session().commit()
-            h.flash(_('Marked repository %s as fork of %s') % (repo_name, fork),
+            meta.Session().commit()
+            webutils.flash(_('Marked repository %s as fork of %s') % (repo_name, fork),
                     category='success')
         except RepositoryError as e:
             log.error(traceback.format_exc())
-            h.flash(e, category='error')
+            webutils.flash(e, category='error')
         except Exception as e:
             log.error(traceback.format_exc())
-            h.flash(_('An error occurred during this operation'),
+            webutils.flash(_('An error occurred during this operation'),
                     category='error')
 
         raise HTTPFound(location=url('edit_repo_advanced', repo_name=repo_name))
@@ -487,13 +462,13 @@ class ReposController(BaseRepoController):
         if request.POST:
             try:
                 ScmModel().pull_changes(repo_name, request.authuser.username, request.ip_addr)
-                h.flash(_('Pulled from remote location'), category='success')
+                webutils.flash(_('Pulled from remote location'), category='success')
             except Exception as e:
                 log.error(traceback.format_exc())
-                h.flash(_('An error occurred during pull from remote location'),
+                webutils.flash(_('An error occurred during pull from remote location'),
                         category='error')
             raise HTTPFound(location=url('edit_repo_remote', repo_name=c.repo_name))
-        return render('admin/repos/repo_edit.html')
+        return base.render('admin/repos/repo_edit.html')
 
     @HasRepoPermissionLevelDecorator('admin')
     def edit_statistics(self, repo_name):
@@ -518,11 +493,11 @@ class ReposController(BaseRepoController):
         if request.POST:
             try:
                 RepoModel().delete_stats(repo_name)
-                Session().commit()
+                meta.Session().commit()
             except Exception as e:
                 log.error(traceback.format_exc())
-                h.flash(_('An error occurred during deletion of repository stats'),
+                webutils.flash(_('An error occurred during deletion of repository stats'),
                         category='error')
             raise HTTPFound(location=url('edit_repo_statistics', repo_name=c.repo_name))
 
-        return render('admin/repos/repo_edit.html')
+        return base.render('admin/repos/repo_edit.html')

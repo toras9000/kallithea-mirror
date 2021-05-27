@@ -26,21 +26,20 @@ Original author and date, and relevant copyright and licensing information is be
 """
 
 
+import hashlib
 import logging
 import re
 import traceback
 
 import bleach
 import markdown as markdown_mod
+from docutils.core import publish_parts
+from docutils.parsers.rst import directives
 
-from kallithea.lib.utils2 import MENTIONS_REGEX, safe_str
+from kallithea.lib import webutils
 
 
 log = logging.getLogger(__name__)
-
-
-url_re = re.compile(r'''\bhttps?://(?:[\da-zA-Z0-9@:.-]+)'''
-                    r'''(?:[/a-zA-Z0-9_=@#~&+%.,:;?!*()-]*[/a-zA-Z0-9_=@#~])?''')
 
 
 class MarkupRenderer(object):
@@ -74,13 +73,12 @@ class MarkupRenderer(object):
 
         :param text:
         """
-        from hashlib import md5
 
         # Extract pre blocks.
         extractions = {}
 
         def pre_extraction_callback(matchobj):
-            digest = md5(matchobj.group(0)).hexdigest()
+            digest = hashlib.sha1(matchobj.group(0)).hexdigest()
             extractions[digest] = matchobj.group(0)
             return "{gfm-extraction-%s}" % digest
         pattern = re.compile(r'<pre>.*?</pre>', re.MULTILINE | re.DOTALL)
@@ -154,7 +152,6 @@ class MarkupRenderer(object):
         >>> MarkupRenderer.plain('https://example.com/')
         '<br /><a href="https://example.com/">https://example.com/</a>'
         """
-        source = safe_str(source)
         if universal_newline:
             newline = '\n'
             source = newline.join(source.splitlines())
@@ -162,7 +159,7 @@ class MarkupRenderer(object):
         def url_func(match_obj):
             url_full = match_obj.group(0)
             return '<a href="%(url)s">%(url)s</a>' % ({'url': url_full})
-        source = url_re.sub(url_func, source)
+        source = webutils.url_re.sub(url_func, source)
         return '<br />' + source.replace("\n", '<br />')
 
     @classmethod
@@ -195,7 +192,6 @@ class MarkupRenderer(object):
         </pre></div>
         </td></tr></table>
         """
-        source = safe_str(source)
         try:
             if flavored:
                 source = cls._flavored_markdown(source)
@@ -213,10 +209,7 @@ class MarkupRenderer(object):
 
     @classmethod
     def rst(cls, source, safe=True):
-        source = safe_str(source)
         try:
-            from docutils.core import publish_parts
-            from docutils.parsers.rst import directives
             docutils_settings = dict([(alias, None) for alias in
                                 cls.RESTRUCTUREDTEXT_DISALLOWED_DIRECTIVES])
 
@@ -231,9 +224,6 @@ class MarkupRenderer(object):
                                   settings_overrides=docutils_settings)
 
             return parts['html_title'] + parts["fragment"]
-        except ImportError:
-            log.warning('Install docutils to use this function')
-            return cls.plain(source)
         except Exception:
             log.error(traceback.format_exc())
             if safe:
@@ -248,5 +238,5 @@ class MarkupRenderer(object):
         def wrapp(match_obj):
             uname = match_obj.groups()[0]
             return r'\ **@%(uname)s**\ ' % {'uname': uname}
-        mention_hl = MENTIONS_REGEX.sub(wrapp, source).strip()
+        mention_hl = webutils.MENTIONS_REGEX.sub(wrapp, source).strip()
         return cls.rst(mention_hl)

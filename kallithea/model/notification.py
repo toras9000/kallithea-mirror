@@ -27,14 +27,21 @@ Original author and date, and relevant copyright and licensing information is be
 """
 
 import datetime
+import email.message
+import email.utils
 import logging
+import smtplib
+import time
+import traceback
 
-from tg import app_globals
+from tg import app_globals, config
 from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 
-from kallithea.lib import helpers as h
-from kallithea.model.db import User
+from kallithea.lib import celerylib, webutils
+from kallithea.lib.utils2 import asbool
+from kallithea.lib.vcs.utils import author_email
+from kallithea.model import db
 
 
 log = logging.getLogger(__name__)
@@ -49,7 +56,7 @@ class NotificationModel(object):
     TYPE_PULL_REQUEST = 'pull_request'
     TYPE_PULL_REQUEST_COMMENT = 'pull_request_comment'
 
-    def create(self, created_by, subject, body, recipients=None,
+    def create(self, created_by, body, recipients=None,
                type_=TYPE_MESSAGE, with_email=True,
                email_kwargs=None, repo_name=None):
         """
@@ -58,7 +65,6 @@ class NotificationModel(object):
 
         :param created_by: int, str or User instance. User who created this
             notification
-        :param subject:
         :param body:
         :param recipients: list of int, str or User objects, when None
             is given send to all admins
@@ -66,17 +72,16 @@ class NotificationModel(object):
         :param with_email: send email with this notification
         :param email_kwargs: additional dict to pass as args to email template
         """
-        from kallithea.lib.celerylib import tasks
         email_kwargs = email_kwargs or {}
         if recipients and not getattr(recipients, '__iter__', False):
             raise Exception('recipients must be a list or iterable')
 
-        created_by_obj = User.guess_instance(created_by)
+        created_by_obj = db.User.guess_instance(created_by)
 
         recipients_objs = set()
         if recipients:
             for u in recipients:
-                obj = User.guess_instance(u)
+                obj = db.User.guess_instance(u)
                 if obj is not None:
                     recipients_objs.add(obj)
                 else:
@@ -87,7 +92,7 @@ class NotificationModel(object):
             )
         elif recipients is None:
             # empty recipients means to all admins
-            recipients_objs = User.query().filter(User.admin == True).all()
+            recipients_objs = db.User.query().filter(db.User.admin == True).all()
             log.debug('sending notifications %s to admins: %s',
                 type_, recipients_objs
             )
@@ -102,16 +107,14 @@ class NotificationModel(object):
             headers['References'] = ' '.join('<%s>' % x for x in email_kwargs['threading'])
 
         # this is passed into template
-        created_on = h.fmt_date(datetime.datetime.now())
+        created_on = webutils.fmt_date(datetime.datetime.now())
         html_kwargs = {
-                  'subject': subject,
-                  'body': h.render_w_mentions(body, repo_name),
+                  'body': None if body is None else webutils.render_w_mentions(body, repo_name),
                   'when': created_on,
                   'user': created_by_obj.username,
                   }
 
         txt_kwargs = {
-                  'subject': subject,
                   'body': body,
                   'when': created_on,
                   'user': created_by_obj.username,
@@ -126,12 +129,18 @@ class NotificationModel(object):
         email_html_body = EmailNotificationModel() \
                             .get_email_tmpl(type_, 'html', **html_kwargs)
 
-        # don't send email to person who created this comment
-        rec_objs = set(recipients_objs).difference(set([created_by_obj]))
+        # don't send email to the person who caused the notification, except for
+        # notifications about new pull requests where the author is explicitly
+        # added.
+        rec_mails = set(obj.email for obj in recipients_objs)
+        if type_ == NotificationModel.TYPE_PULL_REQUEST:
+            rec_mails.add(created_by_obj.email)
+        else:
+            rec_mails.discard(created_by_obj.email)
 
-        # send email with notification to all other participants
-        for rec in rec_objs:
-            tasks.send_email([rec.email], email_subject, email_txt_body,
+        # send email with notification to participants
+        for rec_mail in sorted(rec_mails):
+            send_email([rec_mail], email_subject, email_txt_body,
                      email_html_body, headers,
                      from_name=created_by_obj.full_name_or_username)
 
@@ -159,7 +168,7 @@ class EmailNotificationModel(object):
             self.TYPE_PULL_REQUEST_COMMENT: 'pull_request_comment',
         }
         self._subj_map = {
-            self.TYPE_CHANGESET_COMMENT: _('[Comment] %(repo_name)s changeset %(short_id)s "%(message_short)s" on %(branch)s'),
+            self.TYPE_CHANGESET_COMMENT: _('[Comment] %(repo_name)s changeset %(short_id)s "%(message_short)s" on %(branch)s by %(cs_author_username)s'),
             self.TYPE_MESSAGE: 'Test Message',
             # self.TYPE_PASSWORD_RESET
             self.TYPE_REGISTRATION: _('New user %(new_username)s registered'),
@@ -183,7 +192,7 @@ class EmailNotificationModel(object):
         bracket_tags = []
         status_change = kwargs.get('status_change')
         if status_change:
-            bracket_tags.append(str(status_change))  # apply str to evaluate LazyString before .join
+            bracket_tags.append(status_change)
         if kwargs.get('closing_pr'):
             bracket_tags.append(_('Closing'))
         if bracket_tags:
@@ -197,12 +206,11 @@ class EmailNotificationModel(object):
         """
         return generated template for email based on given type
         """
-
-        base = 'email_templates/' + self.email_types.get(type_, self.email_types[self.TYPE_DEFAULT]) + '.' + content_type
+        base = 'email/' + self.email_types.get(type_, self.email_types[self.TYPE_DEFAULT]) + '.' + content_type
         email_template = self._tmpl_lookup.get_template(base)
         # translator and helpers inject
         _kwargs = {'_': _,
-                   'h': h,
+                   'webutils': webutils,
                    'c': c}
         _kwargs.update(kwargs)
         if content_type == 'html':
@@ -227,3 +235,117 @@ class EmailNotificationModel(object):
 
         log.debug('rendering tmpl %s with kwargs %s', base, _kwargs)
         return email_template.render_unicode(**_kwargs)
+
+
+@celerylib.task
+def send_email(recipients, subject, body='', html_body='', headers=None, from_name=None):
+    """
+    Sends an email with defined parameters from the .ini files.
+
+    :param recipients: list of recipients, if this is None, the defined email
+        address from field 'email_to' and all admins is used instead
+    :param subject: subject of the mail
+    :param body: plain text body of the mail
+    :param html_body: html version of body
+    :param headers: dictionary of prepopulated e-mail headers
+    :param from_name: full name to be used as sender of this mail - often a
+    .full_name_or_username value
+    """
+    assert isinstance(recipients, list), recipients
+    if headers is None:
+        headers = {}
+    else:
+        # do not modify the original headers object passed by the caller
+        headers = headers.copy()
+
+    email_config = config
+    email_prefix = email_config.get('email_prefix', '')
+    if email_prefix:
+        subject = "%s %s" % (email_prefix, subject)
+
+    if not recipients:
+        # if recipients are not defined we send to email_config + all admins
+        recipients = [u.email for u in db.User.query()
+                      .filter(db.User.admin == True).all()]
+        if email_config.get('email_to') is not None:
+            recipients += email_config.get('email_to').split(',')
+
+        # If there are still no recipients, there are no admins and no address
+        # configured in email_to, so return.
+        if not recipients:
+            log.error("No recipients specified and no fallback available.")
+            return
+
+        log.warning("No recipients specified for '%s' - sending to admins %s", subject, ' '.join(recipients))
+
+    # SMTP sender
+    app_email_from = email_config.get('app_email_from', 'Kallithea')
+    # 'From' header
+    if from_name is not None:
+        # set From header based on from_name but with a generic e-mail address
+        # In case app_email_from is in "Some Name <e-mail>" format, we first
+        # extract the e-mail address.
+        envelope_addr = author_email(app_email_from)
+        headers['From'] = '"%s" <%s>' % (
+            email.utils.quote('%s (no-reply)' % from_name),
+            envelope_addr)
+
+    smtp_server = email_config.get('smtp_server')
+    smtp_port = email_config.get('smtp_port')
+    smtp_use_tls = asbool(email_config.get('smtp_use_tls'))
+    smtp_use_ssl = asbool(email_config.get('smtp_use_ssl'))
+    smtp_auth = email_config.get('smtp_auth')  # undocumented - overrule automatic choice of auth mechanism
+    smtp_username = email_config.get('smtp_username')
+    smtp_password = email_config.get('smtp_password')
+
+    logmsg = ("Mail details:\n"
+              "recipients: %s\n"
+              "headers: %s\n"
+              "subject: %s\n"
+              "body:\n%s\n"
+              "html:\n%s\n"
+              % (' '.join(recipients), headers, subject, body, html_body))
+
+    if smtp_server:
+        log.debug("Sending e-mail. " + logmsg)
+    else:
+        log.error("SMTP mail server not configured - cannot send e-mail.")
+        log.warning(logmsg)
+        return
+
+    msg = email.message.EmailMessage()
+    msg['Subject'] = subject
+    msg['From'] = app_email_from  # fallback - might be overridden by a header
+    msg['To'] = ', '.join(recipients)
+    msg['Date'] = email.utils.formatdate(time.time())
+
+    for key, value in headers.items():
+        del msg[key]  # Delete key first to make sure add_header will replace header (if any), no matter the casing
+        msg.add_header(key, value)
+
+    msg.set_content(body)
+    msg.add_alternative(html_body, subtype='html')
+
+    try:
+        if smtp_use_ssl:
+            smtp_serv = smtplib.SMTP_SSL(smtp_server, smtp_port)
+        else:
+            smtp_serv = smtplib.SMTP(smtp_server, smtp_port)
+
+        if smtp_use_tls:
+            smtp_serv.starttls()
+
+        if smtp_auth:
+            smtp_serv.ehlo()  # populate esmtp_features
+            smtp_serv.esmtp_features["auth"] = smtp_auth
+
+        if smtp_username and smtp_password is not None:
+            smtp_serv.login(smtp_username, smtp_password)
+
+        smtp_serv.sendmail(app_email_from, recipients, msg.as_string())
+        smtp_serv.quit()
+
+        log.info('Mail was sent to: %s' % recipients)
+    except:
+        log.error('Mail sending failed')
+        log.error(traceback.format_exc())

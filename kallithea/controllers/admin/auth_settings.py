@@ -32,20 +32,18 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPFound
 
-from kallithea.config.routing import url
-from kallithea.lib import auth_modules
-from kallithea.lib import helpers as h
+from kallithea.controllers import base
+from kallithea.lib import auth_modules, webutils
 from kallithea.lib.auth import HasPermissionAnyDecorator, LoginRequired
-from kallithea.lib.base import BaseController, render
-from kallithea.model.db import Setting
+from kallithea.lib.webutils import url
+from kallithea.model import db, meta
 from kallithea.model.forms import AuthSettingsForm
-from kallithea.model.meta import Session
 
 
 log = logging.getLogger(__name__)
 
 
-class AuthSettingsController(BaseController):
+class AuthSettingsController(base.BaseController):
 
     @LoginRequired()
     @HasPermissionAnyDecorator('hg.admin')
@@ -77,7 +75,7 @@ class AuthSettingsController(BaseController):
                 if "default" in v:
                     c.defaults[fullname] = v["default"]
                 # Current values will be the default on the form, if there are any
-                setting = Setting.get_by_name(fullname)
+                setting = db.Setting.get_by_name(fullname)
                 if setting is not None:
                     c.defaults[fullname] = setting.app_settings_value
         if defaults:
@@ -88,7 +86,7 @@ class AuthSettingsController(BaseController):
 
         log.debug('defaults: %s', defaults)
         return formencode.htmlfill.render(
-            render('admin/auth/auth_settings.html'),
+            base.render('admin/auth/auth_settings.html'),
             defaults=c.defaults,
             errors=errors,
             prefix_error=False,
@@ -131,9 +129,9 @@ class AuthSettingsController(BaseController):
                     # we want to store it comma separated inside our settings
                     v = ','.join(v)
                 log.debug("%s = %s", k, str(v))
-                setting = Setting.create_or_update(k, v)
-            Session().commit()
-            h.flash(_('Auth settings updated successfully'),
+                setting = db.Setting.create_or_update(k, v)
+            meta.Session().commit()
+            webutils.flash(_('Auth settings updated successfully'),
                        category='success')
         except formencode.Invalid as errors:
             log.error(traceback.format_exc())
@@ -144,7 +142,7 @@ class AuthSettingsController(BaseController):
             )
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('error occurred during update of auth settings'),
+            webutils.flash(_('error occurred during update of auth settings'),
                     category='error')
 
         raise HTTPFound(location=url('auth_home'))

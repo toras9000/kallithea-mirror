@@ -11,20 +11,26 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n"
 "%100<10 || n%100>=20) ? 1 : 2;\n"
 
+msgid ""
+"CSRF token leak has been detected - all form tokens have been expired"
+msgstr ""
+"Wykryto wyciek tokenu CSRF — wszystkie tokeny formularza zostały "
+"unieważnione"
+
 msgid "There are no changesets yet"
 msgstr "Brak zestawienia zmian"
+
+msgid "Changeset for %s %s not found in %s"
+msgstr "Zmiany dla %s %s nie zostały znalezione w %s"
+
+msgid "SSH access is disabled."
+msgstr "Dostęp SSH jest wyłączony."
 
 msgid "None"
 msgstr "Brak"
 
 msgid "(closed)"
 msgstr "(zamknięty)"
-
-msgid "Show whitespace"
-msgstr "pokazuj spacje"
-
-msgid "Ignore whitespace"
-msgstr "Ignoruj pokazywanie spacji"
 
 msgid "Successfully deleted pull request %s"
 msgstr ""
@@ -169,9 +175,6 @@ msgstr "Nieprawidłowy token resetowania hasła"
 
 msgid "Successfully updated password"
 msgstr "Pomyślnie zaktualizowano hasło"
-
-msgid "Invalid reviewer \"%s\" specified"
-msgstr "Podano nieprawidłowego recenzenta \"%\""
 
 msgid "%s (closed)"
 msgstr "%s (zamknięty)"
@@ -444,12 +447,6 @@ msgstr "Wystąpił błąd podczas usuwania z repozytorium statystyk"
 msgid "Updated VCS settings"
 msgstr "Aktualizacja ustawień VCS"
 
-msgid ""
-"Unable to activate hgsubversion support. The \"hgsubversion\" library is "
-"missing"
-msgstr ""
-"Nie można włączyć obsługi hgsubversion. Brak biblioteki „hgsubversion”"
-
 msgid "Error occurred while updating application settings"
 msgstr "Wystąpił błąd podczas aktualizacji ustawień aplikacji"
 
@@ -550,18 +547,6 @@ msgstr "Musisz być zarejestrowanym użytkownikiem, żeby wykonać to działanie
 
 msgid "You need to be signed in to view this page"
 msgstr "Musisz być zalogowany, żeby oglądać stronę"
-
-msgid ""
-"CSRF token leak has been detected - all form tokens have been expired"
-msgstr ""
-"Wykryto wyciek tokenu CSRF — wszystkie tokeny formularza zostały "
-"unieważnione"
-
-msgid "Changeset for %s %s not found in %s"
-msgstr "Zmiany dla %s %s nie zostały znalezione w %s"
-
-msgid "SSH access is disabled."
-msgstr "Dostęp SSH jest wyłączony."
 
 msgid "Binary file"
 msgstr "Plik binarny"
@@ -683,40 +668,8 @@ msgstr "zmień nazwę"
 msgid "chmod"
 msgstr "chmod"
 
-msgid ""
-"%s repository is not mapped to db perhaps it was created or renamed from "
-"the filesystem please run the application again in order to rescan "
-"repositories"
-msgstr ""
-"%s repozytorium nie jest mapowane do db może zostało utworzone lub "
-"zmienione z systemie plików proszę uruchomić aplikację ponownie, aby "
-"ponownie przeskanować repozytoria"
-
 msgid "SSH key is missing"
 msgstr "Brak klucza SSH"
-
-msgid ""
-"Incorrect SSH key - it must have both a key type and a base64 part, like "
-"'ssh-rsa ASRNeaZu4FA...xlJp='"
-msgstr ""
-"Nieprawidłowy klucz SSH - musi mieć zarówno typ, jak i część kodowaną "
-"base64, na przykład „ssh-rsa ASRNeaZu4FA ... xlJp=”"
-
-msgid "Incorrect SSH key - it must start with 'ssh-(rsa|dss|ed25519)'"
-msgstr ""
-"Nieprawidłowy klucz SSH - musi zaczynać się od 'ssh-(rsa | dss | ed25519)'"
-
-msgid "Incorrect SSH key - unexpected characters in base64 part %r"
-msgstr ""
-"Nieprawidłowy klucz SSH - nieoczekiwane znaki w części kodowanej base64 %r"
-
-msgid "Incorrect SSH key - failed to decode base64 part %r"
-msgstr "Nieprawidłowy klucz SSH - nie udało się zdekodować części base64 %r"
-
-msgid "Incorrect SSH key - base64 part is not %r as claimed but %r"
-msgstr ""
-"Nieprawidłowy klucz SSH - część kodowana base64 nie jest %r jak podano, "
-"ale %r"
 
 msgid "%d year"
 msgid_plural "%d years"
@@ -769,12 +722,6 @@ msgstr "%s i %s temu"
 msgid "just now"
 msgstr "przed chwilą"
 
-msgid "on line %s"
-msgstr "widziany %s"
-
-msgid "[Mention]"
-msgstr "[Wymieniony]"
-
 msgid "top level"
 msgstr "najwyższy poziom"
 
@@ -821,13 +768,6 @@ msgstr "Domyślny użytkownik ma dostęp do zapisu do nowych grup użytkowników
 msgid "Default user has admin access to new user groups"
 msgstr ""
 "Domyślny użytkownik ma dostęp administracyjny do nowych grup użytkowników"
-
-msgid "Only admins can create repository groups"
-msgstr "Tylko administratorzy mogą tworzyć grupy repozytoriów"
-
-msgid "Non-admins can create repository groups"
-msgstr ""
-"Użytkownicy bez uprawnień administratora mogą tworzyć grupy repozytoriów"
 
 msgid "Only admins can create user groups"
 msgstr "Tylko administratorzy mogą tworzyć grupy użytkowników"
@@ -880,13 +820,6 @@ msgstr "Wpisz %(min)i lub więcej znaków"
 msgid "Name must not contain only digits"
 msgstr "Nazwa nie może zawierać samych cyfr"
 
-msgid ""
-"[Comment] %(repo_name)s changeset %(short_id)s \"%(message_short)s\" on "
-"%(branch)s"
-msgstr ""
-"[Komentarz] %(repo_name)s zmiana %(short_id)s \"%(message_short)s\" w "
-"%(branch)s"
-
 msgid "New user %(new_username)s registered"
 msgstr "Użytkownik %(new_username)s zarejestrował się"
 
@@ -901,9 +834,6 @@ msgstr "Klucz SSH %s jest już używany przez %s"
 
 msgid "SSH key with fingerprint %r found"
 msgstr "Znaleziono klucz SSH z odciskiem palca %r"
-
-msgid "New user registration"
-msgstr "nowy użytkownik się zarejestrował"
 
 msgid ""
 "You can't remove this user since it is crucial for the entire application"
@@ -988,13 +918,6 @@ msgstr "Grupa repozytoriów z nazwą \"%(repo)s\" już istnieje"
 
 msgid "Invalid repository URL"
 msgstr "Nieprawidłowy adres URL repozytorium"
-
-msgid ""
-"Invalid repository URL. It must be a valid http, https, ssh, svn+http or "
-"svn+https URL"
-msgstr ""
-"Nieprawidłowy adres URL repozytorium. Musi to być prawidłowy adres URL "
-"typu http, https, ssh, svn + http lub svn + https"
 
 msgid "Fork has to be the same type as parent"
 msgstr "Fork musi być tego samego typu, jak rodzic"
@@ -1088,10 +1011,10 @@ msgstr "Hasło"
 msgid "Stay logged in after browser restart"
 msgstr "Pozostań zalogowany po ponownym uruchomieniu przeglądarki"
 
-msgid "Forgot your password ?"
+msgid "Forgot your password?"
 msgstr "Zapomniałeś hasła?"
 
-msgid "Don't have an account ?"
+msgid "Don't have an account?"
 msgstr "Nie masz konta?"
 
 msgid "Sign In"
@@ -1681,9 +1604,6 @@ msgstr "Aktualizacja repozytorium po wysłaniu zmian (aktualizacja hg)"
 msgid "Enable largefiles extension"
 msgstr "Rozszerzenia dużych plików"
 
-msgid "Enable hgsubversion extension"
-msgstr "Rozszerzenia hgsubversion"
-
 msgid ""
 "Click to unlock. You must restart Kallithea in order to make this setting "
 "take effect."
@@ -2033,6 +1953,9 @@ msgstr "Pliki z listą zmian i różnic: %s"
 
 msgid "File diff"
 msgstr "Pliki różnic"
+
+msgid "Ignore whitespace"
+msgstr "Ignoruj pokazywanie spacji"
 
 msgid "%s File Diff"
 msgstr "%s Pliki różnic"

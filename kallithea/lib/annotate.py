@@ -28,6 +28,7 @@ Original author and date, and relevant copyright and licensing information is be
 from pygments import highlight
 from pygments.formatters import HtmlFormatter
 
+from kallithea.lib.pygmentsutils import get_custom_lexer
 from kallithea.lib.vcs.exceptions import VCSError
 from kallithea.lib.vcs.nodes import FileNode
 from kallithea.lib.vcs.utils import safe_str
@@ -48,7 +49,6 @@ def annotate_highlight(filenode, annotate_from_changeset_func,
     :param headers: dictionary with headers (keys are whats in ``order``
       parameter)
     """
-    from kallithea.lib.pygmentsutils import get_custom_lexer
     options['linenos'] = True
     formatter = AnnotateHtmlFormatter(filenode=filenode,
         annotate_from_changeset_func=annotate_from_changeset_func, order=order,

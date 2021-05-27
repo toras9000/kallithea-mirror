@@ -6,14 +6,11 @@ import urllib.parse
 import mock
 from tg.util.webtest import test_context
 
-import kallithea.lib.celerylib.tasks
-from kallithea.lib import helpers as h
-from kallithea.lib.auth import check_password
-from kallithea.lib.utils2 import generate_api_key
-from kallithea.model import validators
+import kallithea.model.notification
+from kallithea.lib import webutils
+from kallithea.lib.utils2 import check_password, generate_api_key
+from kallithea.model import db, meta, validators
 from kallithea.model.api_key import ApiKeyModel
-from kallithea.model.db import User
-from kallithea.model.meta import Session
 from kallithea.model.user import UserModel
 from kallithea.tests import base
 from kallithea.tests.fixture import Fixture
@@ -240,7 +237,7 @@ class TestLoginController(base.TestController):
 
         with test_context(self.app):
             msg = validators.ValidUsername()._messages['username_exists']
-        msg = h.html_escape(msg % {'username': uname})
+        msg = webutils.html_escape(msg % {'username': uname})
         response.mustcontain(msg)
 
     def test_register_err_same_email(self):
@@ -313,7 +310,7 @@ class TestLoginController(base.TestController):
         response.mustcontain('An email address must contain a single @')
         with test_context(self.app):
             msg = validators.ValidUsername()._messages['username_exists']
-        msg = h.html_escape(msg % {'username': usr})
+        msg = webutils.html_escape(msg % {'username': usr})
         response.mustcontain(msg)
 
     def test_register_special_chars(self):
@@ -362,7 +359,7 @@ class TestLoginController(base.TestController):
         assert response.status == '302 Found'
         self.checkSessionFlash(response, 'You have successfully registered with Kallithea')
 
-        ret = Session().query(User).filter(User.username == 'test_regular4').one()
+        ret = meta.Session().query(db.User).filter(db.User.username == 'test_regular4').one()
         assert ret.username == username
         assert check_password(password, ret.password) == True
         assert ret.email == email
@@ -396,24 +393,24 @@ class TestLoginController(base.TestController):
         lastname = 'reset'
         timestamp = int(time.time())
 
-        new = User()
+        new = db.User()
         new.username = username
         new.password = password
         new.email = email
         new.name = name
         new.lastname = lastname
         new.api_key = generate_api_key()
-        Session().add(new)
-        Session().commit()
+        meta.Session().add(new)
+        meta.Session().commit()
 
         token = UserModel().get_reset_password_token(
-            User.get_by_username(username), timestamp, self.session_csrf_secret_token())
+            db.User.get_by_username(username), timestamp, self.session_csrf_secret_token())
 
         collected = []
         def mock_send_email(recipients, subject, body='', html_body='', headers=None, from_name=None):
             collected.append((recipients, subject, body, html_body))
 
-        with mock.patch.object(kallithea.lib.celerylib.tasks, 'send_email', mock_send_email), \
+        with mock.patch.object(kallithea.model.notification, 'send_email', mock_send_email), \
                 mock.patch.object(time, 'time', lambda: timestamp):
             response = self.app.post(base.url(controller='login',
                                          action='password_reset'),
@@ -496,7 +493,7 @@ class TestLoginController(base.TestController):
                 headers = {}
             else:
                 if api_key is True:
-                    api_key = User.get_first_admin().api_key
+                    api_key = db.User.get_first_admin().api_key
                 params = {'api_key': api_key}
                 headers = {'Authorization': 'Bearer ' + str(api_key)}
 
@@ -522,13 +519,13 @@ class TestLoginController(base.TestController):
 
     def test_access_page_via_extra_api_key(self):
         new_api_key = ApiKeyModel().create(base.TEST_USER_ADMIN_LOGIN, 'test')
-        Session().commit()
+        meta.Session().commit()
         self._api_key_test(new_api_key.api_key, status=200)
 
     def test_access_page_via_expired_api_key(self):
         new_api_key = ApiKeyModel().create(base.TEST_USER_ADMIN_LOGIN, 'test')
-        Session().commit()
+        meta.Session().commit()
         # patch the API key and make it expired
         new_api_key.expires = 0
-        Session().commit()
+        meta.Session().commit()
         self._api_key_test(new_api_key.api_key, status=403)

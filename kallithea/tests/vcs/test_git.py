@@ -780,9 +780,11 @@ class TestGitHooks(object):
 
         # Create a dictionary where keys are hook names, and values are paths to
         # them in the non-bare repo. Deduplicates code in tests a bit.
+        self.pre_receive = os.path.join(self.repo.path, '.git', 'hooks', "pre-receive")
+        self.post_receive = os.path.join(self.repo.path, '.git', 'hooks', "post-receive")
         self.kallithea_hooks = {
-            "pre-receive": os.path.join(self.repo.path, '.git', 'hooks', "pre-receive"),
-            "post-receive": os.path.join(self.repo.path, '.git', 'hooks', "post-receive"),
+            "pre-receive": self.pre_receive,
+            "post-receive": self.post_receive,
         }
 
     def test_hooks_created_if_missing(self):
@@ -794,10 +796,10 @@ class TestGitHooks(object):
             if os.path.exists(hook_path):
                 os.remove(hook_path)
 
-        ScmModel().install_git_hooks(repo=self.repo)
+        ScmModel().install_git_hooks(self.repo)
 
-        for hook, hook_path in self.kallithea_hooks.items():
-            assert os.path.exists(hook_path)
+        assert not os.path.exists(self.pre_receive)
+        assert os.path.exists(self.post_receive)
 
     def test_kallithea_hooks_updated(self):
         """
@@ -808,11 +810,11 @@ class TestGitHooks(object):
             with open(hook_path, "w") as f:
                 f.write("KALLITHEA_HOOK_VER=0.0.0\nJUST_BOGUS")
 
-        ScmModel().install_git_hooks(repo=self.repo)
+        ScmModel().install_git_hooks(self.repo)
 
-        for hook, hook_path in self.kallithea_hooks.items():
-            with open(hook_path) as f:
-                assert "JUST_BOGUS" not in f.read()
+        assert not os.path.exists(self.pre_receive)
+        with open(self.post_receive) as f:
+            assert "JUST_BOGUS" not in f.read()
 
     def test_custom_hooks_untouched(self):
         """
@@ -823,7 +825,7 @@ class TestGitHooks(object):
             with open(hook_path, "w") as f:
                 f.write("#!/bin/bash\n#CUSTOM_HOOK")
 
-        ScmModel().install_git_hooks(repo=self.repo)
+        ScmModel().install_git_hooks(self.repo)
 
         for hook, hook_path in self.kallithea_hooks.items():
             with open(hook_path) as f:
@@ -838,8 +840,9 @@ class TestGitHooks(object):
             with open(hook_path, "w") as f:
                 f.write("#!/bin/bash\n#CUSTOM_HOOK")
 
-        ScmModel().install_git_hooks(repo=self.repo, force_create=True)
+        ScmModel().install_git_hooks(self.repo, force=True)
 
-        for hook, hook_path in self.kallithea_hooks.items():
-            with open(hook_path) as f:
-                assert "KALLITHEA_HOOK_VER" in f.read()
+        with open(self.pre_receive) as f:
+            assert "KALLITHEA_HOOK_VER" not in f.read()
+        with open(self.post_receive) as f:
+            assert "KALLITHEA_HOOK_VER" in f.read()

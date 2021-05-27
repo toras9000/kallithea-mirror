@@ -29,10 +29,9 @@ from tg import config
 from tg.i18n import ugettext as _
 
 from kallithea.lib import ssh
-from kallithea.lib.utils2 import str2bool
+from kallithea.lib.utils2 import asbool
 from kallithea.lib.vcs.exceptions import RepositoryError
-from kallithea.model.db import User, UserSshKeys
-from kallithea.model.meta import Session
+from kallithea.model import db, meta
 
 
 log = logging.getLogger(__name__)
@@ -58,18 +57,18 @@ class SshKeyModel(object):
         if not description.strip():
             description = comment.strip()
 
-        user = User.guess_instance(user)
+        user = db.User.guess_instance(user)
 
-        new_ssh_key = UserSshKeys()
+        new_ssh_key = db.UserSshKeys()
         new_ssh_key.user_id = user.user_id
         new_ssh_key.description = description
         new_ssh_key.public_key = public_key
 
-        for ssh_key in UserSshKeys.query().filter(UserSshKeys.fingerprint == new_ssh_key.fingerprint).all():
+        for ssh_key in db.UserSshKeys.query().filter(db.UserSshKeys.fingerprint == new_ssh_key.fingerprint).all():
             raise SshKeyModelException(_('SSH key %s is already used by %s') %
                                        (new_ssh_key.fingerprint, ssh_key.user.username))
 
-        Session().add(new_ssh_key)
+        meta.Session().add(new_ssh_key)
 
         return new_ssh_key
 
@@ -78,24 +77,24 @@ class SshKeyModel(object):
         Deletes ssh key with given fingerprint for the given user.
         Will raise SshKeyModelException on errors
         """
-        ssh_key = UserSshKeys.query().filter(UserSshKeys.fingerprint == fingerprint)
+        ssh_key = db.UserSshKeys.query().filter(db.UserSshKeys.fingerprint == fingerprint)
 
-        user = User.guess_instance(user)
-        ssh_key = ssh_key.filter(UserSshKeys.user_id == user.user_id)
+        user = db.User.guess_instance(user)
+        ssh_key = ssh_key.filter(db.UserSshKeys.user_id == user.user_id)
 
         ssh_key = ssh_key.scalar()
         if ssh_key is None:
             raise SshKeyModelException(_('SSH key with fingerprint %r found') % fingerprint)
-        Session().delete(ssh_key)
+        meta.Session().delete(ssh_key)
 
     def get_ssh_keys(self, user):
-        user = User.guess_instance(user)
-        user_ssh_keys = UserSshKeys.query() \
-            .filter(UserSshKeys.user_id == user.user_id).all()
+        user = db.User.guess_instance(user)
+        user_ssh_keys = db.UserSshKeys.query() \
+            .filter(db.UserSshKeys.user_id == user.user_id).all()
         return user_ssh_keys
 
     def write_authorized_keys(self):
-        if not str2bool(config.get('ssh_enabled', False)):
+        if not asbool(config.get('ssh_enabled', False)):
             log.error("Will not write SSH authorized_keys file - ssh_enabled is not configured")
             return
         authorized_keys = config.get('ssh_authorized_keys')
@@ -131,7 +130,7 @@ class SshKeyModel(object):
         fh, tmp_authorized_keys = tempfile.mkstemp('.authorized_keys', dir=os.path.dirname(authorized_keys))
         with os.fdopen(fh, 'w') as f:
             f.write("# WARNING: This .ssh/authorized_keys file is managed by Kallithea. Manual editing or adding new entries will make Kallithea back off.\n")
-            for key in UserSshKeys.query().join(UserSshKeys.user).filter(User.active == True):
+            for key in db.UserSshKeys.query().join(db.UserSshKeys.user).filter(db.User.active == True):
                 f.write(ssh.authorized_keys_line(kallithea_cli_path, config['__file__'], key))
         os.chmod(tmp_authorized_keys, stat.S_IRUSR | stat.S_IWUSR)
         # Note: simple overwrite / rename isn't enough to replace the file on Windows

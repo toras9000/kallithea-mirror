@@ -18,12 +18,12 @@ Authentication modules
 import importlib
 import logging
 import traceback
+from inspect import isfunction
 
-from kallithea.lib.auth import AuthUser, PasswordGenerator
+from kallithea.lib.auth import AuthUser
 from kallithea.lib.compat import hybrid_property
-from kallithea.lib.utils2 import str2bool
-from kallithea.model.db import Setting, User
-from kallithea.model.meta import Session
+from kallithea.lib.utils2 import PasswordGenerator, asbool
+from kallithea.model import db, meta, validators
 from kallithea.model.user import UserModel
 from kallithea.model.user_group import UserGroupModel
 
@@ -38,7 +38,6 @@ class LazyFormencode(object):
         self.kwargs = kwargs
 
     def __call__(self, *args, **kwargs):
-        from inspect import isfunction
         formencode_obj = self.formencode_obj
         if isfunction(formencode_obj):
             # case we wrap validators into functions
@@ -69,8 +68,7 @@ class KallitheaAuthPluginBase(object):
                 self.validator_name = name
 
             def __call__(self, *args, **kwargs):
-                from kallithea.model import validators as v
-                obj = getattr(v, self.validator_name)
+                obj = getattr(validators, self.validator_name)
                 #log.debug('Initializing lazy formencode object: %s', obj)
                 return LazyFormencode(obj, *args, **kwargs)
 
@@ -135,7 +133,7 @@ class KallitheaAuthPluginBase(object):
         log.debug('Trying to fetch user `%s` from Kallithea database',
                   username)
         if username:
-            user = User.get_by_username_or_email(username)
+            user = db.User.get_by_username_or_email(username)
         else:
             log.debug('provided username:`%s` is empty skipping...', username)
         return user
@@ -182,8 +180,8 @@ class KallitheaAuthPluginBase(object):
         OVERRIDING THIS METHOD WILL CAUSE YOUR PLUGIN TO FAIL.
         """
 
-        rcsettings = self.settings()
-        rcsettings.insert(0, {
+        settings = self.settings()
+        settings.insert(0, {
             "name": "enabled",
             "validator": self.validators.StringBoolean(if_missing=False),
             "type": "bool",
@@ -191,7 +189,7 @@ class KallitheaAuthPluginBase(object):
             "formname": "Enabled"
             }
         )
-        return rcsettings
+        return settings
 
     def auth(self, userobj, username, passwd, settings, **kwargs):
         """
@@ -240,7 +238,7 @@ class KallitheaExternalAuthPlugin(KallitheaAuthPluginBase):
             userobj, username, passwd, settings, **kwargs)
         if user_data is not None:
             if userobj is None: # external authentication of unknown user that will be created soon
-                def_user_perms = AuthUser(dbuser=User.get_default_user()).permissions['global']
+                def_user_perms = AuthUser(dbuser=db.User.get_default_user()).global_permissions
                 active = 'hg.extern_activate.auto' in def_user_perms
             else:
                 active = userobj.active
@@ -267,7 +265,7 @@ class KallitheaExternalAuthPlugin(KallitheaAuthPluginBase):
             # created from plugins. We store this info in _group_data JSON field
             groups = user_data['groups'] or []
             UserGroupModel().enforce_groups(user, groups, self.name)
-            Session().commit()
+            meta.Session().commit()
         return user_data
 
 
@@ -316,7 +314,7 @@ def loadplugin(plugin):
 def get_auth_plugins():
     """Return a list of instances of plugins that are available and enabled"""
     auth_plugins = []
-    for plugin_name in Setting.get_by_name("auth_plugins").app_settings_value:
+    for plugin_name in db.Setting.get_by_name("auth_plugins").app_settings_value:
         try:
             plugin = loadplugin(plugin_name)
         except Exception:
@@ -346,11 +344,11 @@ def authenticate(username, password, environ=None):
         plugin_settings = {}
         for v in plugin.plugin_settings():
             conf_key = "auth_%s_%s" % (plugin_name, v["name"])
-            setting = Setting.get_by_name(conf_key)
+            setting = db.Setting.get_by_name(conf_key)
             plugin_settings[v["name"]] = setting.app_settings_value if setting else None
         log.debug('Settings for auth plugin %s: %s', plugin_name, plugin_settings)
 
-        if not str2bool(plugin_settings["enabled"]):
+        if not asbool(plugin_settings["enabled"]):
             log.info("Authentication plugin %s is disabled, skipping for %s",
                      module, username)
             continue

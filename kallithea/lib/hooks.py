@@ -15,7 +15,8 @@
 kallithea.lib.hooks
 ~~~~~~~~~~~~~~~~~~~
 
-Hooks run by Kallithea
+Hooks run by Kallithea. Generally called 'log_*', but will also do important
+invalidation of caches and run extension hooks.
 
 This file was forked by the Kallithea project in July 2014.
 Original author and date, and relevant copyright and licensing information is below:
@@ -25,119 +26,49 @@ Original author and date, and relevant copyright and licensing information is be
 :license: GPLv3, see LICENSE.md for more details.
 """
 
-import os
-import sys
 import time
 
-import mercurial.scmutil
-
-from kallithea.lib import helpers as h
+import kallithea
 from kallithea.lib.exceptions import UserCreationError
-from kallithea.lib.utils import action_logger, make_ui
-from kallithea.lib.utils2 import HookEnvironmentError, ascii_str, get_hook_environment, safe_bytes, safe_str
-from kallithea.lib.vcs.backends.base import EmptyChangeset
-from kallithea.model.db import Repository, User
+from kallithea.lib.utils2 import get_hook_environment
+from kallithea.model import userlog
 
 
-def _get_scm_size(alias, root_path):
-    if not alias.startswith('.'):
-        alias += '.'
-
-    size_scm, size_root = 0, 0
-    for path, dirs, files in os.walk(root_path):
-        if path.find(alias) != -1:
-            for f in files:
-                try:
-                    size_scm += os.path.getsize(os.path.join(path, f))
-                except OSError:
-                    pass
-        else:
-            for f in files:
-                try:
-                    size_root += os.path.getsize(os.path.join(path, f))
-                except OSError:
-                    pass
-
-    size_scm_f = h.format_byte_size(size_scm)
-    size_root_f = h.format_byte_size(size_root)
-    size_total_f = h.format_byte_size(size_root + size_scm)
-
-    return size_scm_f, size_root_f, size_total_f
-
-
-def repo_size(ui, repo, hooktype=None, **kwargs):
-    """Show size of Mercurial repository.
-
-    Called as Mercurial hook changegroup.repo_size after push.
-    """
-    size_hg_f, size_root_f, size_total_f = _get_scm_size('.hg', safe_str(repo.root))
-
-    last_cs = repo[len(repo) - 1]
-
-    msg = ('Repository size .hg: %s Checkout: %s Total: %s\n'
-           'Last revision is now r%s:%s\n') % (
-        size_hg_f, size_root_f, size_total_f, last_cs.rev(), ascii_str(last_cs.hex())[:12]
-    )
-    ui.status(safe_bytes(msg))
-
-
-def log_pull_action(ui, repo, **kwargs):
+def log_pull_action():
     """Logs user last pull action
-
-    Called as Mercurial hook outgoing.pull_logger or from Kallithea before invoking Git.
 
     Does *not* use the action from the hook environment but is always 'pull'.
     """
     ex = get_hook_environment()
 
-    user = User.get_by_username(ex.username)
     action = 'pull'
-    action_logger(user, action, ex.repository, ex.ip, commit=True)
+    userlog.action_logger(ex.username, action, ex.repository, ex.ip, commit=True)
     # extension hook call
-    from kallithea import EXTENSIONS
-    callback = getattr(EXTENSIONS, 'PULL_HOOK', None)
+    callback = getattr(kallithea.EXTENSIONS, 'PULL_HOOK', None)
     if callable(callback):
         kw = {}
         kw.update(ex)
         callback(**kw)
-
-    return 0
-
-
-def log_push_action(ui, repo, node, node_last, **kwargs):
-    """
-    Register that changes have been added to the repo - log the action *and* invalidate caches.
-    Note: This hook is not only logging, but also the side effect invalidating
-    caches! The function should perhaps be renamed.
-
-    Called as Mercurial hook changegroup.kallithea_log_push_action .
-
-    The pushed changesets is given by the revset 'node:node_last'.
-    """
-    revs = [ascii_str(repo[r].hex()) for r in mercurial.scmutil.revrange(repo, [b'%s:%s' % (node, node_last)])]
-    process_pushed_raw_ids(revs)
-    return 0
 
 
 def process_pushed_raw_ids(revs):
     """
     Register that changes have been added to the repo - log the action *and* invalidate caches.
 
-    Called from Mercurial changegroup.kallithea_log_push_action calling hook log_push_action,
+    Called from Mercurial changegroup.kallithea_push_action calling hook push_action,
     or from the Git post-receive hook calling handle_git_post_receive ...
     or from scm _handle_push.
     """
     ex = get_hook_environment()
 
     action = '%s:%s' % (ex.action, ','.join(revs))
-    action_logger(ex.username, action, ex.repository, ex.ip, commit=True)
+    userlog.action_logger(ex.username, action, ex.repository, ex.ip, commit=True)
 
     from kallithea.model.scm import ScmModel
     ScmModel().mark_for_invalidation(ex.repository)
 
     # extension hook call
-    from kallithea import EXTENSIONS
-    callback = getattr(EXTENSIONS, 'PUSH_HOOK', None)
+    callback = getattr(kallithea.EXTENSIONS, 'PUSH_HOOK', None)
     if callable(callback):
         kw = {'pushed_revs': revs}
         kw.update(ex)
@@ -167,22 +98,18 @@ def log_create_repository(repository_dict, created_by, **kwargs):
      'repo_name'
 
     """
-    from kallithea import EXTENSIONS
-    callback = getattr(EXTENSIONS, 'CREATE_REPO_HOOK', None)
+    callback = getattr(kallithea.EXTENSIONS, 'CREATE_REPO_HOOK', None)
     if callable(callback):
         kw = {}
         kw.update(repository_dict)
         kw.update({'created_by': created_by})
         kw.update(kwargs)
-        return callback(**kw)
-
-    return 0
+        callback(**kw)
 
 
 def check_allowed_create_user(user_dict, created_by, **kwargs):
     # pre create hooks
-    from kallithea import EXTENSIONS
-    callback = getattr(EXTENSIONS, 'PRE_CREATE_USER_HOOK', None)
+    callback = getattr(kallithea.EXTENSIONS, 'PRE_CREATE_USER_HOOK', None)
     if callable(callback):
         allowed, reason = callback(created_by=created_by, **user_dict)
         if not allowed:
@@ -217,13 +144,22 @@ def log_create_user(user_dict, created_by, **kwargs):
      'emails',
 
     """
-    from kallithea import EXTENSIONS
-    callback = getattr(EXTENSIONS, 'CREATE_USER_HOOK', None)
+    callback = getattr(kallithea.EXTENSIONS, 'CREATE_USER_HOOK', None)
     if callable(callback):
-        return callback(created_by=created_by, **user_dict)
+        callback(created_by=created_by, **user_dict)
+
+
+def log_create_pullrequest(pullrequest_dict, created_by, **kwargs):
+    """
+    Post create pull request hook.
+
+    :param pullrequest_dict: dict dump of pull request object
+    """
+    callback = getattr(kallithea.EXTENSIONS, 'CREATE_PULLREQUEST_HOOK', None)
+    if callable(callback):
+        return callback(created_by=created_by, **pullrequest_dict)
 
     return 0
-
 
 def log_delete_repository(repository_dict, deleted_by, **kwargs):
     """
@@ -248,17 +184,14 @@ def log_delete_repository(repository_dict, deleted_by, **kwargs):
      'repo_name'
 
     """
-    from kallithea import EXTENSIONS
-    callback = getattr(EXTENSIONS, 'DELETE_REPO_HOOK', None)
+    callback = getattr(kallithea.EXTENSIONS, 'DELETE_REPO_HOOK', None)
     if callable(callback):
         kw = {}
         kw.update(repository_dict)
         kw.update({'deleted_by': deleted_by,
                    'deleted_on': time.time()})
         kw.update(kwargs)
-        return callback(**kw)
-
-    return 0
+        callback(**kw)
 
 
 def log_delete_user(user_dict, deleted_by, **kwargs):
@@ -289,116 +222,6 @@ def log_delete_user(user_dict, deleted_by, **kwargs):
      'emails',
 
     """
-    from kallithea import EXTENSIONS
-    callback = getattr(EXTENSIONS, 'DELETE_USER_HOOK', None)
+    callback = getattr(kallithea.EXTENSIONS, 'DELETE_USER_HOOK', None)
     if callable(callback):
-        return callback(deleted_by=deleted_by, **user_dict)
-
-    return 0
-
-
-def _hook_environment(repo_path):
-    """
-    Create a light-weight environment for stand-alone scripts and return an UI and the
-    db repository.
-
-    Git hooks are executed as subprocess of Git while Kallithea is waiting, and
-    they thus need enough info to be able to create an app environment and
-    connect to the database.
-    """
-    import paste.deploy
-    import kallithea.config.middleware
-
-    extras = get_hook_environment()
-
-    path_to_ini_file = extras['config']
-    kallithea.CONFIG = paste.deploy.appconfig('config:' + path_to_ini_file)
-    #logging.config.fileConfig(ini_file_path) # Note: we are in a different process - don't use configured logging
-    kallithea.config.middleware.make_app(kallithea.CONFIG.global_conf, **kallithea.CONFIG.local_conf)
-
-    # fix if it's not a bare repo
-    if repo_path.endswith(os.sep + '.git'):
-        repo_path = repo_path[:-5]
-
-    repo = Repository.get_by_full_path(repo_path)
-    if not repo:
-        raise OSError('Repository %s not found in database' % repo_path)
-
-    baseui = make_ui()
-    return baseui, repo
-
-
-def handle_git_pre_receive(repo_path, git_stdin_lines):
-    """Called from Git pre-receive hook"""
-    # Currently unused. TODO: remove?
-    return 0
-
-
-def handle_git_post_receive(repo_path, git_stdin_lines):
-    """Called from Git post-receive hook"""
-    try:
-        baseui, repo = _hook_environment(repo_path)
-    except HookEnvironmentError as e:
-        sys.stderr.write("Skipping Kallithea Git post-recieve hook %r.\nGit was apparently not invoked by Kallithea: %s\n" % (sys.argv[0], e))
-        return 0
-
-    # the post push hook should never use the cached instance
-    scm_repo = repo.scm_instance_no_cache()
-
-    rev_data = []
-    for l in git_stdin_lines:
-        old_rev, new_rev, ref = l.strip().split(' ')
-        _ref_data = ref.split('/')
-        if _ref_data[1] in ['tags', 'heads']:
-            rev_data.append({'old_rev': old_rev,
-                             'new_rev': new_rev,
-                             'ref': ref,
-                             'type': _ref_data[1],
-                             'name': '/'.join(_ref_data[2:])})
-
-    git_revs = []
-    for push_ref in rev_data:
-        _type = push_ref['type']
-        if _type == 'heads':
-            if push_ref['old_rev'] == EmptyChangeset().raw_id:
-                # update the symbolic ref if we push new repo
-                if scm_repo.is_empty():
-                    scm_repo._repo.refs.set_symbolic_ref(
-                        b'HEAD',
-                        b'refs/heads/%s' % safe_bytes(push_ref['name']))
-
-                # build exclude list without the ref
-                cmd = ['for-each-ref', '--format=%(refname)', 'refs/heads/*']
-                stdout = scm_repo.run_git_command(cmd)
-                ref = push_ref['ref']
-                heads = [head for head in stdout.splitlines() if head != ref]
-                # now list the git revs while excluding from the list
-                cmd = ['log', push_ref['new_rev'], '--reverse', '--pretty=format:%H']
-                cmd.append('--not')
-                cmd.extend(heads) # empty list is ok
-                stdout = scm_repo.run_git_command(cmd)
-                git_revs += stdout.splitlines()
-
-            elif push_ref['new_rev'] == EmptyChangeset().raw_id:
-                # delete branch case
-                git_revs += ['delete_branch=>%s' % push_ref['name']]
-            else:
-                cmd = ['log', '%(old_rev)s..%(new_rev)s' % push_ref,
-                       '--reverse', '--pretty=format:%H']
-                stdout = scm_repo.run_git_command(cmd)
-                git_revs += stdout.splitlines()
-
-        elif _type == 'tags':
-            git_revs += ['tag=>%s' % push_ref['name']]
-
-    process_pushed_raw_ids(git_revs)
-
-    return 0
-
-
-# Almost exactly like Mercurial contrib/hg-ssh:
-def rejectpush(ui, **kwargs):
-    """Mercurial hook to be installed as pretxnopen and prepushkey for read-only repos"""
-    ex = get_hook_environment()
-    ui.warn(safe_bytes("Push access to %r denied\n" % ex.repository))
-    return 1
+        callback(deleted_by=deleted_by, **user_dict)

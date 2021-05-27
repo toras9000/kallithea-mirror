@@ -90,14 +90,15 @@
                      <td>
                          %if node.is_file():
                              <span data-toggle="tooltip" title="${h.fmt_date(node.last_changeset.date)}">
-                            ${h.age(node.last_changeset.date)}</span>
+                               ${h.age(node.last_changeset.date)}
+                             </span>
                          %endif
                      </td>
                      <td>
                          %if node.is_file():
                              <span title="${node.last_changeset.author}">
-                            ${h.person(node.last_changeset.author)}
-                            </span>
+                               ${h.person(node.last_changeset.author)}
+                             </span>
                          %endif
                      </td>
                 </tr>
@@ -109,7 +110,8 @@
     </div>
 </div>
 
-<script>'use strict';
+<script>
+    'use strict';
     $(document).ready(function(){
         // init node filter if we pass GET param ?search=1
         var search_GET = ${h.js(request.GET.get('search',''))};

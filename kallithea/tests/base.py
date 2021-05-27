@@ -20,10 +20,11 @@ import tempfile
 import time
 
 import pytest
+from beaker.cache import cache_managers
 from webtest import TestApp
 
 from kallithea.lib.utils2 import ascii_str
-from kallithea.model.db import User
+from kallithea.model import db
 
 
 log = logging.getLogger(__name__)
@@ -126,7 +127,6 @@ def invalidate_all_caches():
     effect immediately.
     Note: Any use of this function is probably a workaround - it should be
     replaced with a more specific cache invalidation in code or test."""
-    from beaker.cache import cache_managers
     for cache in cache_managers.values():
         cache.clear()
 
@@ -138,6 +138,8 @@ class NullHandler(logging.Handler):
 
 class TestController(object):
     """Pytest-style test controller"""
+    app: TestApp  # assigned by app_fixture
+    _logged_username: str  # assigned by log_user
 
     # Note: pytest base classes cannot have an __init__ method
 
@@ -166,12 +168,12 @@ class TestController(object):
         return response.session['authuser']
 
     def _get_logged_user(self):
-        return User.get_by_username(self._logged_username)
+        return db.User.get_by_username(self._logged_username)
 
     def assert_authenticated_user(self, response, expected_username):
         cookie = response.session.get('authuser')
         user = cookie and cookie.get('user_id')
-        user = user and User.get(user)
+        user = user and db.User.get(user)
         user = user and user.username
         assert user == expected_username
 

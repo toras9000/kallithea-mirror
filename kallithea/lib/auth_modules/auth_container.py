@@ -29,8 +29,8 @@ import logging
 
 from kallithea.lib import auth_modules
 from kallithea.lib.compat import hybrid_property
-from kallithea.lib.utils2 import str2bool
-from kallithea.model.db import Setting
+from kallithea.lib.utils2 import asbool
+from kallithea.model import db
 
 
 log = logging.getLogger(__name__)
@@ -131,7 +131,7 @@ class KallitheaAuthPlugin(auth_modules.KallitheaExternalAuthPlugin):
             username = environ.get(header)
             log.debug('extracted %s:%s', header, username)
 
-        if username and str2bool(settings.get('clean_username')):
+        if username and asbool(settings.get('clean_username')):
             log.debug('Received username %s from container', username)
             username = self._clean_username(username)
             log.debug('New cleanup user is: %s', username)
@@ -212,10 +212,10 @@ class KallitheaAuthPlugin(auth_modules.KallitheaExternalAuthPlugin):
 
     def get_managed_fields(self):
         fields = ['username', 'password']
-        if(Setting.get_by_name('auth_container_email_header').app_settings_value):
+        if(db.Setting.get_by_name('auth_container_email_header').app_settings_value):
             fields.append('email')
-        if(Setting.get_by_name('auth_container_firstname_header').app_settings_value):
+        if(db.Setting.get_by_name('auth_container_firstname_header').app_settings_value):
             fields.append('firstname')
-        if(Setting.get_by_name('auth_container_lastname_header').app_settings_value):
+        if(db.Setting.get_by_name('auth_container_lastname_header').app_settings_value):
             fields.append('lastname')
         return fields

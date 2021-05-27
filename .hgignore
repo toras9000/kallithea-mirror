@@ -10,16 +10,15 @@ syntax: glob
 *.rej
 *.bak
 .eggs/
-tarballcache/
 
 syntax: regexp
-^rcextensions
-^build
-^dist/
-^docs/build/
-^docs/_build/
+^extensions\.py$
+^build$
+^dist$
+^docs/build$
+^docs/_build$
 ^data$
-^sql_dumps/
+^sql_dumps$
 ^\.settings$
 ^\.project$
 ^\.pydevproject$
@@ -48,8 +47,13 @@ syntax: regexp
 ^test\.db$
 ^Kallithea\.egg-info$
 ^my\.ini$
-^fabfile.py
+^fabfile\.py$
 ^\.idea$
 ^\.cache$
 ^\.pytest_cache$
+^venv$
 /__pycache__$
+^deps\.dot$
+^deps\.svg$
+^deps\.txt$
+^\.pytype/

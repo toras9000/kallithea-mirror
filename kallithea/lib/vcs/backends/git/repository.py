@@ -20,23 +20,23 @@ import urllib.request
 from collections import OrderedDict
 
 import mercurial.util  # import url as hg_url
+from dulwich.client import SubprocessGitClient
 from dulwich.config import ConfigFile
 from dulwich.objects import Tag
 from dulwich.repo import NotGitRepository, Repo
+from dulwich.server import update_server_info
 
 from kallithea.lib.vcs import subprocessio
 from kallithea.lib.vcs.backends.base import BaseRepository, CollectionGenerator
 from kallithea.lib.vcs.conf import settings
 from kallithea.lib.vcs.exceptions import (BranchDoesNotExistError, ChangesetDoesNotExistError, EmptyRepositoryError, RepositoryError, TagAlreadyExistError,
                                           TagDoesNotExistError)
-from kallithea.lib.vcs.utils import ascii_str, date_fromtimestamp, makedate, safe_bytes, safe_str
+from kallithea.lib.vcs.utils import ascii_bytes, ascii_str, date_fromtimestamp, makedate, safe_bytes, safe_str
 from kallithea.lib.vcs.utils.helpers import get_urllib_request_handlers
 from kallithea.lib.vcs.utils.lazy import LazyProperty
 from kallithea.lib.vcs.utils.paths import abspath, get_user_home
 
-from .changeset import GitChangeset
-from .inmemory import GitInMemoryChangeset
-from .workdir import GitWorkdir
+from . import changeset, inmemory, workdir
 
 
 SHA_PATTERN = re.compile(r'^([0-9a-fA-F]{12}|[0-9a-fA-F]{40})$')
@@ -52,8 +52,8 @@ class GitRepository(BaseRepository):
     scm = 'git'
 
     def __init__(self, repo_path, create=False, src_url=None,
-                 update_after_clone=False, bare=False):
-
+                 update_after_clone=False, bare=False, baseui=None):
+        baseui  # unused
         self.path = abspath(repo_path)
         self.repo = self._get_repo(create, src_url, update_after_clone, bare)
         self.bare = self.repo.bare
@@ -147,38 +147,84 @@ class GitRepository(BaseRepository):
         stdout, _stderr = self._run_git_command(cmd, cwd=cwd)
         return safe_str(stdout)
 
-    @classmethod
-    def _check_url(cls, url):
-        """
-        Function will check given url and try to verify if it's a valid
-        link. Sometimes it may happened that git will issue basic
-        auth request that can cause whole API to hang when used from python
-        or other external calls.
+    @staticmethod
+    def _check_url(url):
+        r"""
+        Raise URLError if url doesn't seem like a valid safe Git URL. We
+        only allow http, https, git, and ssh URLs.
 
-        On failures it'll raise urllib2.HTTPError, exception is also thrown
-        when the return code is non 200
+        For http and https URLs, make a connection and probe to see if it is valid.
+
+        >>> GitRepository._check_url('git://example.com/my%20fine repo')
+
+        >>> GitRepository._check_url('http://example.com:65537/repo')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Error parsing URL: 'http://example.com:65537/repo'>
+        >>> GitRepository._check_url('foo')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Unsupported protocol in URL 'foo'>
+        >>> GitRepository._check_url('file:///repo')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Unsupported protocol in URL 'file:///repo'>
+        >>> GitRepository._check_url('git+http://example.com/repo')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Unsupported protocol in URL 'git+http://example.com/repo'>
+        >>> GitRepository._check_url('git://example.com/%09')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Invalid escape character in path: '%'>
+        >>> GitRepository._check_url('git://example.com/%x00')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Invalid escape character in path: '%'>
+        >>> GitRepository._check_url(r'git://example.com/\u0009')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Invalid escape character in path: '\'>
+        >>> GitRepository._check_url(r'git://example.com/\t')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Invalid escape character in path: '\'>
+        >>> GitRepository._check_url('git://example.com/\t')
+        Traceback (most recent call last):
+        ...
+        urllib.error.URLError: <urlopen error Invalid ...>
+
+        The failure above will be one of, depending on the level of WhatWG support:
+        urllib.error.URLError: <urlopen error Invalid whitespace character in path: '\t'>
+        urllib.error.URLError: <urlopen error Invalid url: 'git://example.com/    ' normalizes to 'git://example.com/'>
         """
+        try:
+            parsed_url = urllib.parse.urlparse(url)
+            parsed_url.port  # trigger netloc parsing which might raise ValueError
+        except ValueError:
+            raise urllib.error.URLError("Error parsing URL: %r" % url)
+
         # check first if it's not an local url
         if os.path.isabs(url) and os.path.isdir(url):
-            return True
+            return
 
-        if url.startswith('git://'):
-            try:
-                _git_colon, _empty, _host, path = url.split('/', 3)
-            except ValueError:
-                raise urllib.error.URLError("Invalid URL: %r" % url)
+        unparsed_url = urllib.parse.urlunparse(parsed_url)
+        if unparsed_url != url:
+            raise urllib.error.URLError("Invalid url: '%s' normalizes to '%s'" % (url, unparsed_url))
+
+        if parsed_url.scheme == 'git':
             # Mitigate problems elsewhere with incorrect handling of encoded paths.
             # Don't trust urllib.parse.unquote but be prepared for more flexible implementations elsewhere.
             # Space is the only allowed whitespace character - directly or % encoded. No other % or \ is allowed.
-            for c in path.replace('%20', ' '):
+            for c in parsed_url.path.replace('%20', ' '):
                 if c in '%\\':
                     raise urllib.error.URLError("Invalid escape character in path: '%s'" % c)
                 if c.isspace() and c != ' ':
                     raise urllib.error.URLError("Invalid whitespace character in path: %r" % c)
-            return True
+            return
 
-        if not url.startswith('http://') and not url.startswith('https://'):
-            raise urllib.error.URLError("Unsupported protocol in URL %s" % url)
+        if parsed_url.scheme not in ['http', 'https']:
+            raise urllib.error.URLError("Unsupported protocol in URL %r" % url)
 
         url_obj = mercurial.util.url(safe_bytes(url))
         test_uri, handlers = get_urllib_request_handlers(url_obj)
@@ -210,8 +256,6 @@ class GitRepository(BaseRepository):
         if b'service=git-upload-pack' not in gitdata:
             raise urllib.error.URLError(
                 "url [%s] does not look like an git" % cleaned_uri)
-
-        return True
 
     def _get_repo(self, create, src_url=None, update_after_clone=False,
                   bare=False):
@@ -352,11 +396,6 @@ class GitRepository(BaseRepository):
     def description(self):
         return safe_str(self._repo.get_description() or b'unknown')
 
-    @LazyProperty
-    def contact(self):
-        undefined_contact = 'Unknown'
-        return undefined_contact
-
     @property
     def branches(self):
         if not self.revisions:
@@ -477,9 +516,9 @@ class GitRepository(BaseRepository):
         Returns ``GitChangeset`` object representing commit from git repository
         at the given revision or head (most recent commit) if None given.
         """
-        if isinstance(revision, GitChangeset):
+        if isinstance(revision, changeset.GitChangeset):
             return revision
-        return GitChangeset(repository=self, revision=self._get_revision(revision))
+        return changeset.GitChangeset(repository=self, revision=self._get_revision(revision))
 
     def get_changesets(self, start=None, end=None, start_date=None,
            end_date=None, branch_name=None, reverse=False, max_revisions=None):
@@ -555,6 +594,58 @@ class GitRepository(BaseRepository):
 
         return CollectionGenerator(self, revs)
 
+    def get_diff_changesets(self, org_rev, other_repo, other_rev):
+        """
+        Returns lists of changesets that can be merged from this repo @org_rev
+        to other_repo @other_rev
+        ... and the other way
+        ... and the ancestors that would be used for merge
+
+        :param org_rev: the revision we want our compare to be made
+        :param other_repo: repo object, most likely the fork of org_repo. It has
+            all changesets that we need to obtain
+        :param other_rev: revision we want out compare to be made on other_repo
+        """
+        org_changesets = []
+        ancestors = None
+        if org_rev == other_rev:
+            other_changesets = []
+        elif self != other_repo:
+            gitrepo = Repo(self.path)
+            SubprocessGitClient(thin_packs=False).fetch(other_repo.path, gitrepo)
+
+            gitrepo_remote = Repo(other_repo.path)
+            SubprocessGitClient(thin_packs=False).fetch(self.path, gitrepo_remote)
+
+            revs = [
+                ascii_str(x.commit.id)
+                for x in gitrepo_remote.get_walker(include=[ascii_bytes(other_rev)],
+                                                   exclude=[ascii_bytes(org_rev)])
+            ]
+            other_changesets = [other_repo.get_changeset(rev) for rev in reversed(revs)]
+            if other_changesets:
+                ancestors = [other_changesets[0].parents[0].raw_id]
+            else:
+                # no changesets from other repo, ancestor is the other_rev
+                ancestors = [other_rev]
+
+            gitrepo.close()
+            gitrepo_remote.close()
+
+        else:
+            so = self.run_git_command(
+                ['log', '--reverse', '--pretty=format:%H',
+                 '-s', '%s..%s' % (org_rev, other_rev)]
+            )
+            other_changesets = [self.get_changeset(cs)
+                          for cs in re.findall(r'[0-9a-fA-F]{40}', so)]
+            so = self.run_git_command(
+                ['merge-base', org_rev, other_rev]
+            )
+            ancestors = [re.findall(r'[0-9a-fA-F]{40}', so)[0]]
+
+        return other_changesets, org_changesets, ancestors
+
     def get_diff(self, rev1, rev2, path=None, ignore_whitespace=False,
                  context=3):
         """
@@ -627,7 +718,7 @@ class GitRepository(BaseRepository):
         """
         Returns ``GitInMemoryChangeset`` object for this repository.
         """
-        return GitInMemoryChangeset(self)
+        return inmemory.GitInMemoryChangeset(self)
 
     def clone(self, url, update_after_clone=True, bare=False):
         """
@@ -664,7 +755,7 @@ class GitRepository(BaseRepository):
         url = self._get_url(url)
         so = self.run_git_command(['ls-remote', '-h', url])
         cmd = ['fetch', url, '--']
-        for line in (x for x in so.splitlines()):
+        for line in so.splitlines():
             sha, ref = line.split('\t')
             cmd.append('+%s:%s' % (ref, ref))
         self.run_git_command(cmd)
@@ -673,7 +764,6 @@ class GitRepository(BaseRepository):
         """
         runs gits update-server-info command in this repo instance
         """
-        from dulwich.server import update_server_info
         try:
             update_server_info(self._repo)
         except OSError as e:
@@ -687,7 +777,7 @@ class GitRepository(BaseRepository):
         """
         Returns ``Workdir`` instance for this repository.
         """
-        return GitWorkdir(self)
+        return workdir.GitWorkdir(self)
 
     def get_config_value(self, section, name, config_file=None):
         """

@@ -32,11 +32,10 @@ import re
 from tg import request
 from tg.i18n import ugettext as _
 
-from kallithea.lib import helpers as h
-from kallithea.lib.utils2 import ascii_bytes, extract_mentioned_users
-from kallithea.model.db import ChangesetStatus, PullRequest, PullRequestReviewer, User
-from kallithea.model.meta import Session
-from kallithea.model.notification import NotificationModel
+from kallithea.lib import auth, hooks, webutils
+from kallithea.lib.utils import extract_mentioned_users
+from kallithea.lib.utils2 import ascii_bytes, short_ref_name
+from kallithea.model import changeset_status, comment, db, meta, notification
 
 
 log = logging.getLogger(__name__)
@@ -58,22 +57,27 @@ class PullRequestModel(object):
             mention_recipients = set(mention_recipients) - reviewers
             _assert_valid_reviewers(mention_recipients)
 
-        # members
+        redundant_reviewers = set(db.User.query() \
+            .join(db.PullRequestReviewer) \
+            .filter(db.PullRequestReviewer.pull_request == pr) \
+            .filter(db.PullRequestReviewer.user_id.in_(r.user_id for r in reviewers))
+            .all())
+
+        if redundant_reviewers:
+            log.debug('Following reviewers were already part of pull request %s: %s', pr.pull_request_id, redundant_reviewers)
+
+            reviewers -= redundant_reviewers
+
+        log.debug('Adding reviewers to pull request %s: %s', pr.pull_request_id, reviewers)
         for reviewer in reviewers:
-            prr = PullRequestReviewer(reviewer, pr)
-            Session().add(prr)
+            prr = db.PullRequestReviewer(reviewer, pr)
+            meta.Session().add(prr)
 
         # notification to reviewers
         pr_url = pr.url(canonical=True)
         threading = ['%s-pr-%s@%s' % (pr.other_repo.repo_name,
                                       pr.pull_request_id,
-                                      h.canonical_hostname())]
-        subject = h.link_to(
-            _('%(user)s wants you to review pull request %(pr_nice_id)s: %(pr_title)s') %
-                {'user': user.username,
-                 'pr_title': pr.title,
-                 'pr_nice_id': pr.nice_id()},
-            pr_url)
+                                      webutils.canonical_hostname())]
         body = pr.description
         _org_ref_type, org_ref_name, _org_rev = pr.org_ref.split(':')
         _other_ref_type, other_ref_name, _other_rev = pr.other_ref.split(':')
@@ -81,18 +85,18 @@ class PullRequestModel(object):
                          for x in map(pr.org_repo.get_changeset, pr.revisions)]
         email_kwargs = {
             'pr_title': pr.title,
-            'pr_title_short': h.shorter(pr.title, 50),
+            'pr_title_short': webutils.shorter(pr.title, 50),
             'pr_user_created': user.full_name_and_username,
-            'pr_repo_url': h.canonical_url('summary_home', repo_name=pr.other_repo.repo_name),
+            'pr_repo_url': webutils.canonical_url('summary_home', repo_name=pr.other_repo.repo_name),
             'pr_url': pr_url,
             'pr_revisions': revision_data,
             'repo_name': pr.other_repo.repo_name,
             'org_repo_name': pr.org_repo.repo_name,
             'pr_nice_id': pr.nice_id(),
-            'pr_target_repo': h.canonical_url('summary_home',
+            'pr_target_repo': webutils.canonical_url('summary_home',
                                repo_name=pr.other_repo.repo_name),
             'pr_target_branch': other_ref_name,
-            'pr_source_repo': h.canonical_url('summary_home',
+            'pr_source_repo': webutils.canonical_url('summary_home',
                                repo_name=pr.org_repo.repo_name),
             'pr_source_branch': org_ref_name,
             'pr_owner': pr.owner,
@@ -102,19 +106,19 @@ class PullRequestModel(object):
             'is_mention': False,
             }
         if reviewers:
-            NotificationModel().create(created_by=user, subject=subject, body=body,
+            notification.NotificationModel().create(created_by=user, body=body,
                                        recipients=reviewers,
-                                       type_=NotificationModel.TYPE_PULL_REQUEST,
+                                       type_=notification.NotificationModel.TYPE_PULL_REQUEST,
                                        email_kwargs=email_kwargs)
 
         if mention_recipients:
             email_kwargs['is_mention'] = True
-            subject = _('[Mention]') + ' ' + subject
-            # FIXME: this subject is wrong and unused!
-            NotificationModel().create(created_by=user, subject=subject, body=body,
+            notification.NotificationModel().create(created_by=user, body=body,
                                        recipients=mention_recipients,
-                                       type_=NotificationModel.TYPE_PULL_REQUEST,
+                                       type_=notification.NotificationModel.TYPE_PULL_REQUEST,
                                        email_kwargs=email_kwargs)
+
+        return reviewers, redundant_reviewers
 
     def mention_from_description(self, user, pr, old_description=''):
         mention_recipients = (extract_mentioned_users(pr.description) -
@@ -128,14 +132,14 @@ class PullRequestModel(object):
         if not reviewers:
             return # avoid SQLAlchemy warning about empty sequence for IN-predicate
 
-        PullRequestReviewer.query() \
+        db.PullRequestReviewer.query() \
             .filter_by(pull_request=pull_request) \
-            .filter(PullRequestReviewer.user_id.in_(r.user_id for r in reviewers)) \
+            .filter(db.PullRequestReviewer.user_id.in_(r.user_id for r in reviewers)) \
             .delete(synchronize_session='fetch') # the default of 'evaluate' is not available
 
     def delete(self, pull_request):
-        pull_request = PullRequest.guess_instance(pull_request)
-        Session().delete(pull_request)
+        pull_request = db.PullRequest.guess_instance(pull_request)
+        meta.Session().delete(pull_request)
         if pull_request.org_repo.scm_instance.alias == 'git':
             # remove a ref under refs/pull/ so that commits can be garbage-collected
             try:
@@ -144,8 +148,8 @@ class PullRequestModel(object):
                 pass
 
     def close_pull_request(self, pull_request):
-        pull_request = PullRequest.guess_instance(pull_request)
-        pull_request.status = PullRequest.STATUS_CLOSED
+        pull_request = db.PullRequest.guess_instance(pull_request)
+        pull_request.status = db.PullRequest.STATUS_CLOSED
         pull_request.updated_on = datetime.datetime.now()
 
 
@@ -169,22 +173,21 @@ class CreatePullRequestAction(object):
         information needed for such a check, rather than a full command
         object.
         """
-        if (h.HasRepoPermissionLevel('read')(org_repo.repo_name) and
-            h.HasRepoPermissionLevel('read')(other_repo.repo_name)
+        if (auth.HasRepoPermissionLevel('read')(org_repo.repo_name) and
+            auth.HasRepoPermissionLevel('read')(other_repo.repo_name)
         ):
             return True
 
         return False
 
     def __init__(self, org_repo, other_repo, org_ref, other_ref, title, description, owner, reviewers):
-        from kallithea.controllers.compare import CompareController
         reviewers = set(reviewers)
         _assert_valid_reviewers(reviewers)
 
         (org_ref_type,
          org_ref_name,
          org_rev) = org_ref.split(':')
-        org_display = h.short_ref(org_ref_type, org_ref_name)
+        org_display = short_ref_name(org_ref_type, org_ref_name)
         if org_ref_type == 'rev':
             cs = org_repo.scm_instance.get_changeset(org_rev)
             org_ref = 'branch:%s:%s' % (cs.branch, cs.raw_id)
@@ -196,13 +199,10 @@ class CreatePullRequestAction(object):
             cs = other_repo.scm_instance.get_changeset(other_rev)
             other_ref_name = cs.raw_id[:12]
             other_ref = '%s:%s:%s' % (other_ref_type, other_ref_name, cs.raw_id)
-        other_display = h.short_ref(other_ref_type, other_ref_name)
+        other_display = short_ref_name(other_ref_type, other_ref_name)
 
         cs_ranges, _cs_ranges_not, ancestor_revs = \
-            CompareController._get_changesets(org_repo.scm_instance.alias,
-                                              other_repo.scm_instance, other_rev, # org and other "swapped"
-                                              org_repo.scm_instance, org_rev,
-                                              )
+            org_repo.scm_instance.get_diff_changesets(other_rev, org_repo.scm_instance, org_rev) # org and other "swapped"
         if not cs_ranges:
             raise self.Empty(_('Cannot create empty pull request'))
 
@@ -243,9 +243,9 @@ class CreatePullRequestAction(object):
             raise self.Unauthorized(_('You are not authorized to create the pull request'))
 
     def execute(self):
-        created_by = User.get(request.authuser.user_id)
+        created_by = db.User.get(request.authuser.user_id)
 
-        pr = PullRequest()
+        pr = db.PullRequest()
         pr.org_repo = self.org_repo
         pr.org_ref = self.org_ref
         pr.other_repo = self.other_repo
@@ -254,34 +254,34 @@ class CreatePullRequestAction(object):
         pr.title = self.title
         pr.description = self.description
         pr.owner = self.owner
-        Session().add(pr)
-        Session().flush() # make database assign pull_request_id
+        meta.Session().add(pr)
+        meta.Session().flush() # make database assign pull_request_id
 
         if self.org_repo.scm_instance.alias == 'git':
             # create a ref under refs/pull/ so that commits don't get garbage-collected
             self.org_repo.scm_instance._repo[b"refs/pull/%d/head" % pr.pull_request_id] = ascii_bytes(self.org_rev)
 
         # reset state to under-review
-        from kallithea.model.changeset_status import ChangesetStatusModel
-        from kallithea.model.comment import ChangesetCommentsModel
-        comment = ChangesetCommentsModel().create(
+        new_comment = comment.ChangesetCommentsModel().create(
             text='',
             repo=self.org_repo,
             author=created_by,
             pull_request=pr,
             send_email=False,
-            status_change=ChangesetStatus.STATUS_UNDER_REVIEW,
+            status_change=db.ChangesetStatus.STATUS_UNDER_REVIEW,
         )
-        ChangesetStatusModel().set_status(
+        changeset_status.ChangesetStatusModel().set_status(
             self.org_repo,
-            ChangesetStatus.STATUS_UNDER_REVIEW,
+            db.ChangesetStatus.STATUS_UNDER_REVIEW,
             created_by,
-            comment,
+            new_comment,
             pull_request=pr,
         )
 
         mention_recipients = extract_mentioned_users(self.description)
         PullRequestModel().add_reviewers(created_by, pr, self.reviewers, mention_recipients)
+
+        hooks.log_create_pullrequest(pr.get_dict(), created_by)
 
         return pr
 
@@ -293,7 +293,7 @@ class CreatePullRequestIterationAction(object):
         information needed for such a check, rather than a full command
         object.
         """
-        if h.HasPermissionAny('hg.admin')():
+        if auth.HasPermissionAny('hg.admin')():
             return True
 
         # Authorized to edit the old PR?
@@ -329,7 +329,7 @@ class CreatePullRequestIterationAction(object):
         lost = old_revisions.difference(revisions)
 
         infos = ['This is a new iteration of %s "%s".' %
-                 (h.canonical_url('pullrequest_show', repo_name=old_pull_request.other_repo.repo_name,
+                 (webutils.canonical_url('pullrequest_show', repo_name=old_pull_request.other_repo.repo_name,
                       pull_request_id=old_pull_request.pull_request_id),
                   old_pull_request.title)]
 
@@ -338,21 +338,21 @@ class CreatePullRequestIterationAction(object):
             for r in old_pull_request.revisions:
                 if r in lost:
                     rev_desc = org_repo.get_changeset(r).message.split('\n')[0]
-                    infos.append('  %s %s' % (h.short_id(r), rev_desc))
+                    infos.append('  %s %s' % (r[:12], rev_desc))
 
         if new_revisions:
             infos.append(_('New changesets on %s %s since the previous iteration:') % (org_ref_type, org_ref_name))
             for r in reversed(revisions):
                 if r in new_revisions:
                     rev_desc = org_repo.get_changeset(r).message.split('\n')[0]
-                    infos.append('  %s %s' % (h.short_id(r), h.shorter(rev_desc, 80)))
+                    infos.append('  %s %s' % (r[:12], webutils.shorter(rev_desc, 80)))
 
             if self.create_action.other_ref == old_pull_request.other_ref:
                 infos.append(_("Ancestor didn't change - diff since previous iteration:"))
-                infos.append(h.canonical_url('compare_url',
+                infos.append(webutils.canonical_url('compare_url',
                                  repo_name=org_repo.repo_name, # other_repo is always same as repo_name
-                                 org_ref_type='rev', org_ref_name=h.short_id(org_rev), # use old org_rev as base
-                                 other_ref_type='rev', other_ref_name=h.short_id(new_org_rev),
+                                 org_ref_type='rev', org_ref_name=org_rev[:12], # use old org_rev as base
+                                 other_ref_type='rev', other_ref_name=new_org_rev[:12],
                                  )) # note: linear diff, merge or not doesn't matter
             else:
                 infos.append(_('This iteration is based on another %s revision and there is no simple diff.') % other_ref_name)
@@ -381,8 +381,7 @@ class CreatePullRequestIterationAction(object):
         pull_request = self.create_action.execute()
 
         # Close old iteration
-        from kallithea.model.comment import ChangesetCommentsModel
-        ChangesetCommentsModel().create(
+        comment.ChangesetCommentsModel().create(
             text=_('Closed, next iteration: %s .') % pull_request.url(canonical=True),
             repo=self.old_pull_request.other_repo_id,
             author=request.authuser.user_id,

@@ -30,24 +30,24 @@ import os
 import posixpath
 import re
 import sys
+import tempfile
 import traceback
 
 import pkg_resources
 from tg.i18n import ugettext as _
 
 import kallithea
-from kallithea import BACKENDS
+from kallithea.lib import hooks
 from kallithea.lib.auth import HasPermissionAny, HasRepoGroupPermissionLevel, HasRepoPermissionLevel, HasUserGroupPermissionLevel
 from kallithea.lib.exceptions import IMCCommitError, NonRelativePathError
-from kallithea.lib.hooks import process_pushed_raw_ids
-from kallithea.lib.utils import action_logger, get_filesystem_repos, make_ui
-from kallithea.lib.utils2 import safe_bytes, set_hook_environment
-from kallithea.lib.vcs import get_backend
+from kallithea.lib.utils import get_filesystem_repos, make_ui
+from kallithea.lib.utils2 import safe_bytes, safe_str, set_hook_environment, umask
+from kallithea.lib.vcs import get_repo
 from kallithea.lib.vcs.backends.base import EmptyChangeset
-from kallithea.lib.vcs.exceptions import RepositoryError
+from kallithea.lib.vcs.exceptions import RepositoryError, VCSError
 from kallithea.lib.vcs.nodes import FileNode
 from kallithea.lib.vcs.utils.lazy import LazyProperty
-from kallithea.model.db import PullRequest, RepoGroup, Repository, Session, Ui, User, UserFollowing, UserLog
+from kallithea.model import db, meta, userlog
 
 
 log = logging.getLogger(__name__)
@@ -136,7 +136,7 @@ class ScmModel(object):
     """
 
     def __get_repo(self, instance):
-        cls = Repository
+        cls = db.Repository
         if isinstance(instance, cls):
             return instance
         elif isinstance(instance, int):
@@ -145,9 +145,8 @@ class ScmModel(object):
             if instance.isdigit():
                 return cls.get(int(instance))
             return cls.get_by_repo_name(instance)
-        elif instance is not None:
-            raise Exception('given object must be int, basestr or Instance'
-                            ' of %s got %s' % (type(cls), type(instance)))
+        raise Exception('given object must be int, basestr or Instance'
+                        ' of %s got %s' % (type(cls), type(instance)))
 
     @LazyProperty
     def repos_path(self):
@@ -155,7 +154,7 @@ class ScmModel(object):
         Gets the repositories root path from database
         """
 
-        q = Ui.query().filter(Ui.ui_key == '/').one()
+        q = db.Ui.query().filter(db.Ui.ui_key == '/').one()
 
         return q.ui_value
 
@@ -173,28 +172,20 @@ class ScmModel(object):
 
         log.info('scanning for repositories in %s', repos_path)
 
-        baseui = make_ui()
         repos = {}
 
         for name, path in get_filesystem_repos(repos_path):
             # name need to be decomposed and put back together using the /
             # since this is internal storage separator for kallithea
-            name = Repository.normalize_repo_name(name)
+            name = db.Repository.normalize_repo_name(name)
 
             try:
                 if name in repos:
                     raise RepositoryError('Duplicate repository name %s '
                                           'found in %s' % (name, path))
                 else:
-
-                    klass = get_backend(path[0])
-
-                    if path[0] == 'hg' and path[0] in BACKENDS:
-                        repos[name] = klass(path[1], baseui=baseui)
-
-                    if path[0] == 'git' and path[0] in BACKENDS:
-                        repos[name] = klass(path[1])
-            except OSError:
+                    repos[name] = get_repo(path[1], baseui=make_ui(path[1]))
+            except (OSError, VCSError):
                 continue
         log.debug('found %s paths with repositories', len(repos))
         return repos
@@ -208,8 +199,8 @@ class ScmModel(object):
         If no groups are specified, use top level groups.
         """
         if groups is None:
-            groups = RepoGroup.query() \
-                .filter(RepoGroup.parent_group_id == None).all()
+            groups = db.RepoGroup.query() \
+                .filter(db.RepoGroup.parent_group_id == None).all()
         return RepoGroupList(groups, perm_level='read')
 
     def mark_for_invalidation(self, repo_name):
@@ -219,21 +210,21 @@ class ScmModel(object):
         :param repo_name: the repo for which caches should be marked invalid
         """
         log.debug("Marking %s as invalidated and update cache", repo_name)
-        repo = Repository.get_by_repo_name(repo_name)
+        repo = db.Repository.get_by_repo_name(repo_name)
         if repo is not None:
             repo.set_invalidate()
             repo.update_changeset_cache()
 
     def toggle_following_repo(self, follow_repo_id, user_id):
 
-        f = UserFollowing.query() \
-            .filter(UserFollowing.follows_repository_id == follow_repo_id) \
-            .filter(UserFollowing.user_id == user_id).scalar()
+        f = db.UserFollowing.query() \
+            .filter(db.UserFollowing.follows_repository_id == follow_repo_id) \
+            .filter(db.UserFollowing.user_id == user_id).scalar()
 
         if f is not None:
             try:
-                Session().delete(f)
-                action_logger(UserTemp(user_id),
+                meta.Session().delete(f)
+                userlog.action_logger(UserTemp(user_id),
                               'stopped_following_repo',
                               RepoTemp(follow_repo_id))
                 return
@@ -242,12 +233,12 @@ class ScmModel(object):
                 raise
 
         try:
-            f = UserFollowing()
+            f = db.UserFollowing()
             f.user_id = user_id
             f.follows_repository_id = follow_repo_id
-            Session().add(f)
+            meta.Session().add(f)
 
-            action_logger(UserTemp(user_id),
+            userlog.action_logger(UserTemp(user_id),
                           'started_following_repo',
                           RepoTemp(follow_repo_id))
         except Exception:
@@ -255,62 +246,62 @@ class ScmModel(object):
             raise
 
     def toggle_following_user(self, follow_user_id, user_id):
-        f = UserFollowing.query() \
-            .filter(UserFollowing.follows_user_id == follow_user_id) \
-            .filter(UserFollowing.user_id == user_id).scalar()
+        f = db.UserFollowing.query() \
+            .filter(db.UserFollowing.follows_user_id == follow_user_id) \
+            .filter(db.UserFollowing.user_id == user_id).scalar()
 
         if f is not None:
             try:
-                Session().delete(f)
+                meta.Session().delete(f)
                 return
             except Exception:
                 log.error(traceback.format_exc())
                 raise
 
         try:
-            f = UserFollowing()
+            f = db.UserFollowing()
             f.user_id = user_id
             f.follows_user_id = follow_user_id
-            Session().add(f)
+            meta.Session().add(f)
         except Exception:
             log.error(traceback.format_exc())
             raise
 
     def is_following_repo(self, repo_name, user_id):
-        r = Repository.query() \
-            .filter(Repository.repo_name == repo_name).scalar()
+        r = db.Repository.query() \
+            .filter(db.Repository.repo_name == repo_name).scalar()
 
-        f = UserFollowing.query() \
-            .filter(UserFollowing.follows_repository == r) \
-            .filter(UserFollowing.user_id == user_id).scalar()
+        f = db.UserFollowing.query() \
+            .filter(db.UserFollowing.follows_repository == r) \
+            .filter(db.UserFollowing.user_id == user_id).scalar()
 
         return f is not None
 
     def is_following_user(self, username, user_id):
-        u = User.get_by_username(username)
+        u = db.User.get_by_username(username)
 
-        f = UserFollowing.query() \
-            .filter(UserFollowing.follows_user == u) \
-            .filter(UserFollowing.user_id == user_id).scalar()
+        f = db.UserFollowing.query() \
+            .filter(db.UserFollowing.follows_user == u) \
+            .filter(db.UserFollowing.user_id == user_id).scalar()
 
         return f is not None
 
     def get_followers(self, repo):
-        repo = Repository.guess_instance(repo)
+        repo = db.Repository.guess_instance(repo)
 
-        return UserFollowing.query() \
-                .filter(UserFollowing.follows_repository == repo).count()
+        return db.UserFollowing.query() \
+                .filter(db.UserFollowing.follows_repository == repo).count()
 
     def get_forks(self, repo):
-        repo = Repository.guess_instance(repo)
-        return Repository.query() \
-                .filter(Repository.fork == repo).count()
+        repo = db.Repository.guess_instance(repo)
+        return db.Repository.query() \
+                .filter(db.Repository.fork == repo).count()
 
     def get_pull_requests(self, repo):
-        repo = Repository.guess_instance(repo)
-        return PullRequest.query() \
-                .filter(PullRequest.other_repo == repo) \
-                .filter(PullRequest.status != PullRequest.STATUS_CLOSED).count()
+        repo = db.Repository.guess_instance(repo)
+        return db.PullRequest.query() \
+                .filter(db.PullRequest.other_repo == repo) \
+                .filter(db.PullRequest.status != db.PullRequest.STATUS_CLOSED).count()
 
     def mark_as_fork(self, repo, fork, user):
         repo = self.__get_repo(repo)
@@ -336,24 +327,7 @@ class ScmModel(object):
         :param revisions: list of revisions that we pushed
         """
         set_hook_environment(username, ip_addr, repo_name, repo_alias=repo.alias, action=action)
-        process_pushed_raw_ids(revisions) # also calls mark_for_invalidation
-
-    def _get_IMC_module(self, scm_type):
-        """
-        Returns InMemoryCommit class based on scm_type
-
-        :param scm_type:
-        """
-        if scm_type == 'hg':
-            from kallithea.lib.vcs.backends.hg import MercurialInMemoryChangeset
-            return MercurialInMemoryChangeset
-
-        if scm_type == 'git':
-            from kallithea.lib.vcs.backends.git import GitInMemoryChangeset
-            return GitInMemoryChangeset
-
-        raise Exception('Invalid scm_type, must be one of hg,git got %s'
-                        % (scm_type,))
+        hooks.process_pushed_raw_ids(revisions) # also calls mark_for_invalidation
 
     def pull_changes(self, repo, username, ip_addr, clone_uri=None):
         """
@@ -394,9 +368,8 @@ class ScmModel(object):
 
         :param repo: a db_repo.scm_instance
         """
-        user = User.guess_instance(user)
-        IMC = self._get_IMC_module(repo.alias)
-        imc = IMC(repo)
+        user = db.User.guess_instance(user)
+        imc = repo.in_memory_changeset
         imc.change(FileNode(f_path, content, mode=cs.get_file_mode(f_path)))
         try:
             tip = imc.commit(message=message, author=author,
@@ -466,7 +439,7 @@ class ScmModel(object):
         :returns: new committed changeset
         """
 
-        user = User.guess_instance(user)
+        user = db.User.guess_instance(user)
         scm_instance = repo.scm_instance_no_cache()
 
         processed_nodes = []
@@ -477,13 +450,9 @@ class ScmModel(object):
                 content = content.read()
             processed_nodes.append((f_path, content))
 
-        message = message
         committer = user.full_contact
         if not author:
             author = committer
-
-        IMC = self._get_IMC_module(scm_instance.alias)
-        imc = IMC(scm_instance)
 
         if not parent_cs:
             parent_cs = EmptyChangeset(alias=scm_instance.alias)
@@ -494,6 +463,7 @@ class ScmModel(object):
         else:
             parents = [parent_cs]
         # add multiple nodes
+        imc = scm_instance.in_memory_changeset
         for path, content in processed_nodes:
             imc.add(FileNode(path, content=content))
 
@@ -518,16 +488,12 @@ class ScmModel(object):
         """
         Commits specified nodes to repo. Again.
         """
-        user = User.guess_instance(user)
+        user = db.User.guess_instance(user)
         scm_instance = repo.scm_instance_no_cache()
 
-        message = message
         committer = user.full_contact
         if not author:
             author = committer
-
-        imc_class = self._get_IMC_module(scm_instance.alias)
-        imc = imc_class(scm_instance)
 
         if not parent_cs:
             parent_cs = EmptyChangeset(alias=scm_instance.alias)
@@ -539,6 +505,7 @@ class ScmModel(object):
             parents = [parent_cs]
 
         # add multiple nodes
+        imc = scm_instance.in_memory_changeset
         for _filename, data in nodes.items():
             # new filename, can be renamed from the old one
             filename = self._sanitize_path(data['filename'])
@@ -591,7 +558,7 @@ class ScmModel(object):
         :returns: new committed changeset after deletion
         """
 
-        user = User.guess_instance(user)
+        user = db.User.guess_instance(user)
         scm_instance = repo.scm_instance_no_cache()
 
         processed_nodes = []
@@ -602,13 +569,9 @@ class ScmModel(object):
             content = nodes[f_path].get('content')
             processed_nodes.append((f_path, content))
 
-        message = message
         committer = user.full_contact
         if not author:
             author = committer
-
-        IMC = self._get_IMC_module(scm_instance.alias)
-        imc = IMC(scm_instance)
 
         if not parent_cs:
             parent_cs = EmptyChangeset(alias=scm_instance.alias)
@@ -619,6 +582,7 @@ class ScmModel(object):
         else:
             parents = [parent_cs]
         # add multiple nodes
+        imc = scm_instance.in_memory_changeset
         for path, content in processed_nodes:
             imc.remove(FileNode(path, content=content))
 
@@ -639,7 +603,7 @@ class ScmModel(object):
         return tip
 
     def get_unread_journal(self):
-        return UserLog.query().count()
+        return db.UserLog.query().count()
 
     def get_repo_landing_revs(self, repo=None):
         """
@@ -651,12 +615,12 @@ class ScmModel(object):
 
         hist_l = []
         choices = []
-        repo = self.__get_repo(repo)
         hist_l.append(('rev:tip', _('latest tip')))
         choices.append('rev:tip')
         if repo is None:
             return choices, hist_l
 
+        repo = self.__get_repo(repo)
         repo = repo.scm_instance
 
         branches_group = ([('branch:%s' % k, k) for k, v in
@@ -691,77 +655,81 @@ class ScmModel(object):
                 or sys.executable
                 or '/usr/bin/env python3')
 
-    def install_git_hooks(self, repo, force_create=False):
+    def install_git_hooks(self, repo, force=False):
         """
         Creates a kallithea hook inside a git repository
 
         :param repo: Instance of VCS repo
-        :param force_create: Create even if same name hook exists
+        :param force: Overwrite existing non-Kallithea hooks
         """
 
-        loc = os.path.join(repo.path, 'hooks')
+        hooks_path = os.path.join(repo.path, 'hooks')
         if not repo.bare:
-            loc = os.path.join(repo.path, '.git', 'hooks')
-        if not os.path.isdir(loc):
-            os.makedirs(loc)
+            hooks_path = os.path.join(repo.path, '.git', 'hooks')
+        if not os.path.isdir(hooks_path):
+            os.makedirs(hooks_path)
 
         tmpl_post = b"#!%s\n" % safe_bytes(self._get_git_hook_interpreter())
         tmpl_post += pkg_resources.resource_string(
-            'kallithea', os.path.join('config', 'post_receive_tmpl.py')
-        )
-        tmpl_pre = b"#!%s\n" % safe_bytes(self._get_git_hook_interpreter())
-        tmpl_pre += pkg_resources.resource_string(
-            'kallithea', os.path.join('config', 'pre_receive_tmpl.py')
+            'kallithea', os.path.join('templates', 'py', 'git_post_receive_hook.py')
         )
 
-        for h_type, tmpl in [('pre', tmpl_pre), ('post', tmpl_post)]:
-            _hook_file = os.path.join(loc, '%s-receive' % h_type)
-            has_hook = False
-            log.debug('Installing git hook in repo %s', repo)
-            if os.path.exists(_hook_file):
-                # let's take a look at this hook, maybe it's kallithea ?
-                log.debug('hook exists, checking if it is from kallithea')
-                with open(_hook_file, 'rb') as f:
+        for h_type, tmpl in [('pre-receive', None), ('post-receive', tmpl_post)]:
+            hook_file = os.path.join(hooks_path, h_type)
+            other_hook = False
+            log.debug('Installing git hook %s in repo %s', h_type, repo.path)
+            if os.path.islink(hook_file):
+                log.debug("Found symlink hook at %s", hook_file)
+                other_hook = True
+            elif os.path.isfile(hook_file):
+                log.debug('hook file %s exists, checking if it is from kallithea', hook_file)
+                with open(hook_file, 'rb') as f:
                     data = f.read()
                     matches = re.search(br'^KALLITHEA_HOOK_VER\s*=\s*(.*)$', data, flags=re.MULTILINE)
                     if matches:
-                        try:
-                            ver = matches.groups()[0]
-                            log.debug('Found Kallithea hook - it has KALLITHEA_HOOK_VER %r', ver)
-                            has_hook = True
-                        except Exception:
-                            log.error(traceback.format_exc())
-            else:
-                # there is no hook in this dir, so we want to create one
-                has_hook = True
-
-            if has_hook or force_create:
-                log.debug('writing %s hook file !', h_type)
+                        ver = safe_str(matches.group(1))
+                        log.debug('Found Kallithea hook - it has KALLITHEA_HOOK_VER %s', ver)
+                    else:
+                        log.debug('Found non-Kallithea hook at %s', hook_file)
+                        other_hook = True
+            elif os.path.exists(hook_file):
+                log.debug("Found hook that isn't a regular file at %s", hook_file)
+                other_hook = True
+            if other_hook and not force:
+                log.warning('skipping overwriting hook file %s', hook_file)
+            elif h_type == 'post-receive':
+                log.debug('writing hook file %s', hook_file)
+                if other_hook:
+                    backup_file = hook_file + '.bak'
+                    log.warning('moving existing hook to %s', backup_file)
+                    os.rename(hook_file, backup_file)
                 try:
-                    with open(_hook_file, 'wb') as f:
-                        tmpl = tmpl.replace(b'_TMPL_', safe_bytes(kallithea.__version__))
-                        f.write(tmpl)
-                    os.chmod(_hook_file, 0o755)
-                except IOError as e:
-                    log.error('error writing %s: %s', _hook_file, e)
-            else:
-                log.debug('skipping writing hook file')
+                    fh, fn = tempfile.mkstemp(prefix=hook_file + '.tmp.')
+                    os.write(fh, tmpl.replace(b'_TMPL_', safe_bytes(kallithea.__version__)))
+                    os.close(fh)
+                    os.chmod(fn, 0o777 & ~umask)
+                    os.rename(fn, hook_file)
+                except (OSError, IOError) as e:
+                    log.error('error writing hook %s: %s', hook_file, e)
+            elif h_type == 'pre-receive':  # no longer used, so just remove any existing Kallithea hook
+                if os.path.lexists(hook_file) and not other_hook:
+                    os.remove(hook_file)
 
 
-def AvailableRepoGroupChoices(top_perms, repo_group_perm_level, extras=()):
+def AvailableRepoGroupChoices(repo_group_perm_level, extras=()):
     """Return group_id,string tuples with choices for all the repo groups where
     the user has the necessary permissions.
 
     Top level is -1.
     """
-    groups = RepoGroup.query().all()
+    groups = db.RepoGroup.query().all()
     if HasPermissionAny('hg.admin')('available repo groups'):
         groups.append(None)
     else:
         groups = list(RepoGroupList(groups, perm_level=repo_group_perm_level))
-        if top_perms and HasPermissionAny(*top_perms)('available repo groups'):
+        if HasPermissionAny('hg.create.repository')('available repo groups'):
             groups.append(None)
         for extra in extras:
             if not any(rg == extra for rg in groups):
                 groups.append(extra)
-    return RepoGroup.groups_choices(groups=groups)
+    return db.RepoGroup.groups_choices(groups=groups)

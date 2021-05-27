@@ -29,6 +29,8 @@ from collections import defaultdict
 
 from pygments import lexers
 
+import kallithea
+
 
 def get_extension_descriptions():
     """
@@ -69,10 +71,9 @@ def get_index_filenames():
 
 def get_custom_lexer(extension):
     """
-    returns a custom lexer if it's defined in rcextensions module, or None
+    returns a custom lexer if it's defined in the extensions module, or None
     if there's no custom lexer defined
     """
-    import kallithea
     lexer_name = getattr(kallithea.EXTENSIONS, 'EXTRA_LEXERS', {}).get(extension)
     if lexer_name is None:
         return None

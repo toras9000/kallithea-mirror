@@ -9,6 +9,10 @@ import datetime
 import re
 import time
 
+import chardet
+
+from kallithea.lib.vcs.conf import settings
+
 
 def makedate():
     lt = time.localtime()
@@ -81,7 +85,6 @@ def safe_str(s):
     if not isinstance(s, bytes):  # use __str__ and don't expect UnicodeDecodeError
         return str(s)
 
-    from kallithea.lib.vcs.conf import settings
     for enc in settings.DEFAULT_ENCODINGS:
         try:
             return str(s, enc)
@@ -89,11 +92,10 @@ def safe_str(s):
             pass
 
     try:
-        import chardet
         encoding = chardet.detect(s)['encoding']
         if encoding is not None:
             return s.decode(encoding)
-    except (ImportError, UnicodeDecodeError):
+    except UnicodeDecodeError:
         pass
 
     return str(s, settings.DEFAULT_ENCODINGS[0], 'replace')
@@ -110,7 +112,6 @@ def safe_bytes(s):
 
     assert isinstance(s, str), repr(s)  # bytes cannot coerse with __str__ or handle None or int
 
-    from kallithea.lib.vcs.conf import settings
     for enc in settings.DEFAULT_ENCODINGS:
         try:
             return s.encode(enc)

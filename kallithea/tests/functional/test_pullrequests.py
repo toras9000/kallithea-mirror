@@ -3,8 +3,7 @@ import re
 import pytest
 
 from kallithea.controllers.pullrequests import PullrequestsController
-from kallithea.model.db import PullRequest, User
-from kallithea.model.meta import Session
+from kallithea.model import db, meta
 from kallithea.tests import base
 from kallithea.tests.fixture import Fixture
 
@@ -91,9 +90,9 @@ class TestPullrequestsController(base.TestController):
 
     def test_update_reviewers(self):
         self.log_user()
-        regular_user = User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
-        regular_user2 = User.get_by_username(base.TEST_USER_REGULAR2_LOGIN)
-        admin_user = User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
+        regular_user = db.User.get_by_username(base.TEST_USER_REGULAR_LOGIN)
+        regular_user2 = db.User.get_by_username(base.TEST_USER_REGULAR2_LOGIN)
+        admin_user = db.User.get_by_username(base.TEST_USER_ADMIN_LOGIN)
 
         # create initial PR
         response = self.app.post(base.url(controller='pullrequests', action='create',
@@ -251,12 +250,12 @@ class TestPullrequestsController(base.TestController):
             },
             status=302)
         pr1_id = int(re.search(r'/pull-request/(\d+)/', response.location).group(1))
-        pr1 = PullRequest.get(pr1_id)
+        pr1 = db.PullRequest.get(pr1_id)
 
         assert pr1.org_ref == 'branch:webvcs:9e6119747791ff886a5abe1193a730b6bf874e1c'
         assert pr1.other_ref == 'branch:default:948da46b29c125838a717f6a8496eb409717078d'
 
-        Session().rollback() # invalidate loaded PR objects before issuing next request.
+        meta.Session().rollback() # invalidate loaded PR objects before issuing next request.
 
         # create PR 2 (new iteration with same ancestor)
         response = self.app.post(
@@ -270,15 +269,15 @@ class TestPullrequestsController(base.TestController):
              },
              status=302)
         pr2_id = int(re.search(r'/pull-request/(\d+)/', response.location).group(1))
-        pr1 = PullRequest.get(pr1_id)
-        pr2 = PullRequest.get(pr2_id)
+        pr1 = db.PullRequest.get(pr1_id)
+        pr2 = db.PullRequest.get(pr2_id)
 
         assert pr2_id != pr1_id
-        assert pr1.status == PullRequest.STATUS_CLOSED
+        assert pr1.status == db.PullRequest.STATUS_CLOSED
         assert pr2.org_ref == 'branch:webvcs:5ec21f21aafe95220f1fc4843a4a57c378498b71'
         assert pr2.other_ref == pr1.other_ref
 
-        Session().rollback() # invalidate loaded PR objects before issuing next request.
+        meta.Session().rollback() # invalidate loaded PR objects before issuing next request.
 
         # create PR 3 (new iteration with new ancestor)
         response = self.app.post(
@@ -292,11 +291,11 @@ class TestPullrequestsController(base.TestController):
              },
              status=302)
         pr3_id = int(re.search(r'/pull-request/(\d+)/', response.location).group(1))
-        pr2 = PullRequest.get(pr2_id)
-        pr3 = PullRequest.get(pr3_id)
+        pr2 = db.PullRequest.get(pr2_id)
+        pr3 = db.PullRequest.get(pr3_id)
 
         assert pr3_id != pr2_id
-        assert pr2.status == PullRequest.STATUS_CLOSED
+        assert pr2.status == db.PullRequest.STATUS_CLOSED
         assert pr3.org_ref == 'branch:webvcs:fb95b340e0d03fa51f33c56c991c08077c99303e'
         assert pr3.other_ref == 'branch:default:41d2568309a05f422cffb8008e599d385f8af439'
 
@@ -308,13 +307,13 @@ class TestPullrequestsGetRepoRefs(base.TestController):
         self.repo_name = 'main'
         repo = fixture.create_repo(self.repo_name, repo_type='hg')
         self.repo_scm_instance = repo.scm_instance
-        Session().commit()
+        meta.Session().commit()
         self.c = PullrequestsController()
 
     def teardown_method(self, method):
         fixture.destroy_repo('main')
-        Session().commit()
-        Session.remove()
+        meta.Session().commit()
+        meta.Session.remove()
 
     def test_repo_refs_empty_repo(self):
         # empty repo with no commits, no branches, no bookmarks, just one tag

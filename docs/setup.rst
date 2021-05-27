@@ -5,35 +5,72 @@ Setup
 =====
 
 
-Setting up Kallithea
---------------------
+Setting up a Kallithea instance
+-------------------------------
 
-First, you will need to create a Kallithea configuration file. Run the
-following command to do so::
+Some further details to the steps mentioned in the overview.
 
-    kallithea-cli config-create my.ini
+Create low level configuration file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This will create the file ``my.ini`` in the current directory. This
-configuration file contains the various settings for Kallithea, e.g.
-proxy port, email settings, usage of static files, cache, Celery
-settings, and logging. Extra settings can be specified like::
+First, you will need to create a Kallithea configuration file. The
+configuration file is a ``.ini`` file that contains various low level settings
+for Kallithea, e.g. configuration of how to use database, web server, email,
+and logging.
+
+Change to the desired directory (such as ``/srv/kallithea``) as the right user
+and run the following command to create the file ``my.ini`` in the current
+directory::
+
+    kallithea-cli config-create my.ini http_server=waitress
+
+To get a good starting point for your configuration, specify the http server
+you intend to use. It can be ``waitress``, ``gearbox``, ``gevent``,
+``gunicorn``, or ``uwsgi``. (Apache ``mod_wsgi`` will not use this
+configuration file, and it is fine to keep the default http_server configuration
+unused. ``mod_wsgi`` is configured using ``httpd.conf`` directives and a WSGI
+wrapper script.)
+
+Extra custom settings can be specified like::
 
     kallithea-cli config-create my.ini host=8.8.8.8 "[handler_console]" formatter=color_formatter
 
-Next, you need to create the databases used by Kallithea. It is recommended to
-use PostgreSQL or SQLite (default). If you choose a database other than the
-default, ensure you properly adjust the database URL in your ``my.ini``
-configuration file to use this other database. Kallithea currently supports
-PostgreSQL, SQLite and MariaDB/MySQL databases. Create the database by running
-the following command::
+Populate the database
+^^^^^^^^^^^^^^^^^^^^^
+
+Next, you need to create the databases used by Kallithea. Kallithea currently
+supports PostgreSQL, SQLite and MariaDB/MySQL databases. It is recommended to
+start out using SQLite (the default) and move to PostgreSQL if it becomes a
+bottleneck or to get a "proper" database. MariaDB/MySQL is also supported.
+
+For PostgreSQL, run ``pip install psycopg2`` to get the database driver. Make
+sure the PostgreSQL server is initialized and running. Make sure you have a
+database user with password authentication with permissions to create databases
+- for example by running::
+
+    sudo -u postgres createuser 'kallithea' --pwprompt --createdb
+
+For MariaDB/MySQL, run ``pip install mysqlclient`` to get the ``MySQLdb``
+database driver. Make sure the database server is initialized and running. Make
+sure you have a database user with password authentication with permissions to
+create the database - for example by running::
+
+    echo 'CREATE USER "kallithea"@"localhost" IDENTIFIED BY "password"' | sudo -u mysql mysql
+    echo 'GRANT ALL PRIVILEGES ON `kallithea`.* TO "kallithea"@"localhost"' | sudo -u mysql mysql
+
+Check and adjust ``sqlalchemy.url`` in your ``my.ini`` configuration file to use
+this database.
+
+Create the database, tables, and initial content by running the following
+command::
 
     kallithea-cli db-create -c my.ini
 
-This will prompt you for a "root" path. This "root" path is the location where
-Kallithea will store all of its repositories on the current machine. After
-entering this "root" path ``db-create`` will also prompt you for a username
-and password for the initial admin account which ``db-create`` sets
-up for you.
+This will first prompt you for a "root" path. This "root" path is the location
+where Kallithea will store all of its repositories on the current machine. This
+location must be writable for the running Kallithea application. Next,
+``db-create`` will prompt you for a username and password for the initial admin
+account it sets up for you.
 
 The ``db-create`` values can also be given on the command line.
 Example::
@@ -48,19 +85,20 @@ repositories Kallithea will add all of the repositories at the chosen
 location to its database.  (Note: make sure you specify the correct
 path to the root).
 
-.. note:: the given path for Mercurial_ repositories **must** be write
-          accessible for the application. It's very important since
-          the Kallithea web interface will work without write access,
-          but when trying to do a push it will fail with permission
-          denied errors unless it has write access.
+.. note:: It is also possible to use an existing database. For example,
+          when using PostgreSQL without granting general createdb privileges to
+          the PostgreSQL kallithea user, set ``sqlalchemy.url =
+          postgresql://kallithea:password@localhost/kallithea`` and create the
+          database like::
 
-Finally, the front-end files must be prepared. This requires ``npm`` version 6
-or later, which needs ``node.js`` (version 12 or later). Prepare the front-end
-by running::
+              sudo -u postgres createdb 'kallithea' --owner 'kallithea'
+              kallithea-cli db-create -c my.ini --reuse
 
-    kallithea-cli front-end-build
+Running
+^^^^^^^
 
-You are now ready to use Kallithea. To run it simply execute::
+You are now ready to use Kallithea. To run it using a gearbox web server,
+simply execute::
 
     gearbox serve -c my.ini
 
@@ -186,7 +224,7 @@ Setting up Whoosh full text search
 
 Kallithea provides full text search of repositories using `Whoosh`__.
 
-.. __: https://whoosh.readthedocs.io/en/latest/
+.. __: https://whoosh.readthedocs.io/
 
 For an incremental index build, run::
 
@@ -300,14 +338,20 @@ the supported syntax in ``issue_pat``, ``issue_server_link`` and ``issue_sub``.
 Hook management
 ---------------
 
-Hooks can be managed in similar way to that used in ``.hgrc`` files.
+Custom Mercurial hooks can be managed in a similar way to that used in ``.hgrc`` files.
 To manage hooks, choose *Admin > Settings > Hooks*.
-
-The built-in hooks cannot be modified, though they can be enabled or disabled in the *VCS* section.
 
 To add another custom hook simply fill in the first textbox with
 ``<name>.<hook_type>`` and the second with the hook path. Example hooks
 can be found in ``kallithea.lib.hooks``.
+
+Kallithea will also use some hooks internally. They cannot be modified, but
+some of them can be enabled or disabled in the *VCS* section.
+
+Kallithea does not actively support custom Git hooks, but hooks can be installed
+manually in the file system. Kallithea will install and use the
+``post-receive`` Git hook internally, but it will then invoke
+``post-receive-custom`` if present.
 
 
 Changing default encoding
@@ -362,6 +406,38 @@ for more info.
    user that Kallithea runs.
 
 
+Proxy setups
+------------
+
+When Kallithea is processing HTTP requests from a user, it will see and use
+some of the basic properties of the connection, both at the TCP/IP level and at
+the HTTP level. The WSGI server will provide this information to Kallithea in
+the "environment".
+
+In some setups, a proxy server will take requests from users and forward
+them to the actual Kallithea server. The proxy server will thus be the
+immediate client of the Kallithea WSGI server, and Kallithea will basically see
+it as such. To make sure Kallithea sees the request as it arrived from the
+client to the proxy server, the proxy server must be configured to
+somehow pass the original information on to Kallithea, and Kallithea must be
+configured to pick that information up and trust it.
+
+Kallithea will by default rely on its WSGI server to provide the IP of the
+client in the WSGI environment as ``REMOTE_ADDR``, but it can be configured to
+get it from an HTTP header that has been set by the proxy server. For
+example, if the proxy server puts the client IP in the ``X-Forwarded-For``
+HTTP header, set::
+
+    remote_addr_variable = HTTP_X_FORWARDED_FOR
+
+Kallithea will by default rely on finding the protocol (``http`` or ``https``)
+in the WSGI environment as ``wsgi.url_scheme``. If the proxy server puts
+the protocol of the client request in the ``X-Forwarded-Proto`` HTTP header,
+Kallithea can be configured to trust that header by setting::
+
+    url_scheme_variable = HTTP_X_FORWARDED_PROTO
+
+
 HTTPS support
 -------------
 
@@ -370,10 +446,9 @@ Kallithea will by default generate URLs based on the WSGI environment.
 Alternatively, you can use some special configuration settings to control
 directly which scheme/protocol Kallithea will use when generating URLs:
 
-- With ``https_fixup = true``, the scheme will be taken from the
-  ``X-Url-Scheme``, ``X-Forwarded-Scheme`` or ``X-Forwarded-Proto`` HTTP header
-  (default ``http``).
-- With ``force_https = true`` the default will be ``https``.
+- With ``url_scheme_variable`` set, the scheme will be taken from that HTTP
+  header.
+- With ``force_https = true``, the scheme will be seen as ``https``.
 - With ``use_htsts = true``, Kallithea will set ``Strict-Transport-Security`` when using https.
 
 .. _nginx_virtual_host:
@@ -556,38 +631,14 @@ that, you'll need to:
 
     WSGIRestrictEmbedded On
 
-- Create a WSGI dispatch script, like the one below. Make sure you
-  check that the paths correctly point to where you installed Kallithea
-  and its Python Virtual Environment.
+- Create a WSGI dispatch script, like the one below. The ``WSGIDaemonProcess``
+  ``python-home`` directive will make sure it uses the right Python Virtual
+  Environment and that paste thus can pick up the right Kallithea
+  application.
 
   .. code-block:: python
-
-      import os
-      os.environ['PYTHON_EGG_CACHE'] = '/srv/kallithea/.egg-cache'
-
-      # sometimes it's needed to set the current dir
-      os.chdir('/srv/kallithea/')
-
-      import site
-      site.addsitedir("/srv/kallithea/venv/lib/python3.7/site-packages")
 
       ini = '/srv/kallithea/my.ini'
-      from logging.config import fileConfig
-      fileConfig(ini, {'__file__': ini, 'here': '/srv/kallithea'})
-      from paste.deploy import loadapp
-      application = loadapp('config:' + ini)
-
-  Or using proper virtualenv activation:
-
-  .. code-block:: python
-
-      activate_this = '/srv/kallithea/venv/bin/activate_this.py'
-      execfile(activate_this, dict(__file__=activate_this))
-
-      import os
-      os.environ['HOME'] = '/srv/kallithea'
-
-      ini = '/srv/kallithea/kallithea.ini'
       from logging.config import fileConfig
       fileConfig(ini, {'__file__': ini, 'here': '/srv/kallithea'})
       from paste.deploy import loadapp
@@ -613,15 +664,6 @@ that, you'll need to:
 
       WSGIDaemonProcess kallithea processes=5 threads=1 maximum-requests=100 \
           python-home=/srv/kallithea/venv lang=C.UTF-8
-      WSGIProcessGroup kallithea
-      WSGIScriptAlias / /srv/kallithea/dispatch.wsgi
-      WSGIPassAuthorization On
-
-  Or if using a dispatcher WSGI script with proper virtualenv activation:
-
-  .. code-block:: apache
-
-      WSGIDaemonProcess kallithea processes=5 threads=1 maximum-requests=100 lang=en_US.utf8
       WSGIProcessGroup kallithea
       WSGIScriptAlias / /srv/kallithea/dispatch.wsgi
       WSGIPassAuthorization On

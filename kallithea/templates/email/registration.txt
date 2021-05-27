@@ -1,0 +1,13 @@
+<%block name="header">\
+<% title = _('New User Registration') %>\
+<%include file="header.txt" args="title=title,link=registered_user_url"/>\
+</%block>\
+
+${_('Username')|n}: ${new_username|n}
+
+${_('Full Name')|n}: ${new_full_name|n}
+
+${_('Email')|n}: ${new_email|n}
+
+<% title = _('View User Profile') %>\
+<%include file="button.txt" args="url=registered_user_url,title=title"/>\

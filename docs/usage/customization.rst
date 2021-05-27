@@ -39,13 +39,14 @@ running::
 .. _less: http://lesscss.org/
 
 
-Behavioral customization: rcextensions
---------------------------------------
+Behavioral customization: Kallithea extensions
+----------------------------------------------
 
-Some behavioral customization can be done in Python using ``rcextensions``, a
-custom Python package that can extend Kallithea functionality.
+Some behavioral customization can be done in Python using Kallithea
+``extensions``, a custom Python file you can create to extend Kallithea
+functionality.
 
-With ``rcextensions`` it's possible to add additional mappings for Whoosh
+With ``extensions`` it's possible to add additional mappings for Whoosh
 indexing and statistics, to add additional code into the push/pull/create/delete
 repository hooks (for example to send signals to build bots such as Jenkins) and
 even to monkey-patch certain parts of the Kallithea source code (for example
@@ -55,9 +56,14 @@ To generate a skeleton extensions package, run::
 
     kallithea-cli extensions-create -c my.ini
 
-This will create an ``rcextensions`` package next to the specified ``ini`` file.
-See the ``__init__.py`` file inside the generated ``rcextensions`` package
-for more details.
+This will create an ``extensions.py`` file next to the specified ``ini`` file.
+You can find more details inside this file.
+
+For compatibility with previous releases of Kallithea, a directory named
+``rcextensions`` with a file ``__init__.py`` inside of it can also be used. If
+both an ``extensions.py`` file and an ``rcextensions`` directory are found, only
+``extensions.py`` will be loaded. Note that the name ``rcextensions`` is
+deprecated and support for it will be removed in a future release.
 
 
 Behavioral customization: code changes

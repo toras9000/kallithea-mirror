@@ -1,20 +1,8 @@
-<div class="form">
-      <div class="form-group">
-      <h4>${_('Built-in Mercurial Hooks (Read-Only)')}</h4>
-      % for hook in c.hooks:
-        <% input_id = hook.ui_key.replace('.', '_') %>
-            <label class="control-label" for="${input_id}" title="${hook.ui_key}">${hook.ui_key}</label>
-            <div>
-              ${h.text(hook.ui_key,hook.ui_value,id=input_id,size=60,readonly="readonly",class_='form-control')}
-            </div>
-      % endfor
-      </div>
-</div>
-
 % if c.visual.allow_custom_hooks_settings:
 ${h.form(url('admin_settings_hooks'), method='post')}
 <div class="form">
-        <h4>${_('Custom Hooks')}</h4>
+      <div class="form-group">
+        <h4>${_('Custom Global Mercurial Hooks')}</h4>
         <span class="help-block">${_('Hooks can be used to trigger actions on certain events such as push / pull. They can trigger Python functions or external applications.')}</span>
         %for hook in c.custom_hooks:
             <div class="form-group form-inline" id="${'id%s' % hook.ui_id }">
@@ -46,11 +34,22 @@ ${h.form(url('admin_settings_hooks'), method='post')}
                 ${h.submit('save',_('Save'),class_="btn btn-default")}
             </div>
         </div>
+      </div>
 </div>
 ${h.end_form()}
+
+<div class="form">
+      <div class="form-group">
+      <h4>${_('Git Hooks')}</h4>
+      <span class="help-block">${h.HTML(_('Kallithea has no support for custom Git hooks. Kallithea will use Git post-receive hooks internally. Installation of these hooks is managed in %s.')) % (h.literal('''<a href="%s">%s</a>''') % (h.url('admin_settings_mapping'), _('Remap and Rescan')))}</span>
+</div>
+
+% else:
+      <h4>${_('Custom Hooks are not enabled')}</h4>
 % endif
 
-<script>'use strict';
+<script>
+'use strict';
 function delete_hook(hook_id, field_id) {
     var sUrl = ${h.js(h.url('admin_settings_hooks_delete'))};
     function success() {

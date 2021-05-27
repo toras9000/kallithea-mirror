@@ -34,15 +34,10 @@ import traceback
 
 from kallithea.lib import ext_json
 from kallithea.lib.utils2 import AttributeDict, ascii_bytes, safe_int, time_to_datetime
-from kallithea.model.db import Gist, Session, User
-from kallithea.model.repo import RepoModel
-from kallithea.model.scm import ScmModel
+from kallithea.model import db, meta, repo, scm
 
 
 log = logging.getLogger(__name__)
-
-GIST_STORE_LOC = '.rc_gist_store'
-GIST_METADATA_FILE = '.rc_gist_metadata'
 
 
 def make_gist_access_id():
@@ -61,12 +56,12 @@ class GistModel(object):
 
         :param gist: gist object
         """
-        root_path = RepoModel().repos_path
-        rm_path = os.path.join(root_path, GIST_STORE_LOC, gist.gist_access_id)
+        root_path = repo.RepoModel().repos_path
+        rm_path = os.path.join(root_path, db.Gist.GIST_STORE_LOC, gist.gist_access_id)
         log.info("Removing %s", rm_path)
         shutil.rmtree(rm_path)
 
-    def _store_metadata(self, repo, gist_id, gist_access_id, user_id, gist_type,
+    def _store_metadata(self, fs_repo, gist_id, gist_access_id, user_id, gist_type,
                         gist_expires):
         """
         store metadata inside the gist, this can be later used for imports
@@ -81,11 +76,11 @@ class GistModel(object):
             'gist_expires': gist_expires,
             'gist_updated': time.time(),
         }
-        with open(os.path.join(repo.path, '.hg', GIST_METADATA_FILE), 'wb') as f:
+        with open(os.path.join(fs_repo.path, '.hg', db.Gist.GIST_METADATA_FILE), 'wb') as f:
             f.write(ascii_bytes(ext_json.dumps(metadata)))
 
     def get_gist(self, gist):
-        return Gist.guess_instance(gist)
+        return db.Gist.guess_instance(gist)
 
     def get_gist_files(self, gist_access_id, revision=None):
         """
@@ -93,12 +88,12 @@ class GistModel(object):
 
         :param gist_access_id:
         """
-        repo = Gist.get_by_access_id(gist_access_id)
-        cs = repo.scm_instance.get_changeset(revision)
+        gist_repo = db.Gist.get_by_access_id(gist_access_id)
+        cs = gist_repo.scm_instance.get_changeset(revision)
         return cs, [n for n in cs.get_node('/')]
 
     def create(self, description, owner, ip_addr, gist_mapping,
-               gist_type=Gist.GIST_PUBLIC, lifetime=-1):
+               gist_type=db.Gist.GIST_PUBLIC, lifetime=-1):
         """
 
         :param description: description of the gist
@@ -107,7 +102,7 @@ class GistModel(object):
         :param gist_type: type of gist private/public
         :param lifetime: in minutes, -1 == forever
         """
-        owner = User.guess_instance(owner)
+        owner = db.User.guess_instance(owner)
         gist_access_id = make_gist_access_id()
         lifetime = safe_int(lifetime, -1)
         gist_expires = time.time() + (lifetime * 60) if lifetime != -1 else -1
@@ -115,21 +110,21 @@ class GistModel(object):
                   time_to_datetime(gist_expires)
                    if gist_expires != -1 else 'forever')
         # create the Database version
-        gist = Gist()
+        gist = db.Gist()
         gist.gist_description = description
         gist.gist_access_id = gist_access_id
         gist.owner_id = owner.user_id
         gist.gist_expires = gist_expires
         gist.gist_type = gist_type
-        Session().add(gist)
-        Session().flush() # make database assign gist.gist_id
-        if gist_type == Gist.GIST_PUBLIC:
+        meta.Session().add(gist)
+        meta.Session().flush() # make database assign gist.gist_id
+        if gist_type == db.Gist.GIST_PUBLIC:
             # use DB ID for easy to use GIST ID
             gist.gist_access_id = str(gist.gist_id)
 
         log.debug('Creating new %s GIST repo %s', gist_type, gist.gist_access_id)
-        repo = RepoModel()._create_filesystem_repo(
-            repo_name=gist.gist_access_id, repo_type='hg', repo_group=GIST_STORE_LOC)
+        fs_repo = repo.RepoModel()._create_filesystem_repo(
+            repo_name=gist.gist_access_id, repo_type='hg', repo_group=db.Gist.GIST_STORE_LOC)
 
         processed_mapping = {}
         for filename in gist_mapping:
@@ -153,10 +148,10 @@ class GistModel(object):
 
         # fake Kallithea Repository object
         fake_repo = AttributeDict(dict(
-            repo_name=os.path.join(GIST_STORE_LOC, gist.gist_access_id),
-            scm_instance_no_cache=lambda: repo,
+            repo_name=os.path.join(db.Gist.GIST_STORE_LOC, gist.gist_access_id),
+            scm_instance_no_cache=lambda: fs_repo,
         ))
-        ScmModel().create_nodes(
+        scm.ScmModel().create_nodes(
             user=owner.user_id,
             ip_addr=ip_addr,
             repo=fake_repo,
@@ -165,14 +160,14 @@ class GistModel(object):
             trigger_push_hook=False
         )
 
-        self._store_metadata(repo, gist.gist_id, gist.gist_access_id,
+        self._store_metadata(fs_repo, gist.gist_id, gist.gist_access_id,
                              owner.user_id, gist.gist_type, gist.gist_expires)
         return gist
 
     def delete(self, gist, fs_remove=True):
-        gist = Gist.guess_instance(gist)
+        gist = db.Gist.guess_instance(gist)
         try:
-            Session().delete(gist)
+            meta.Session().delete(gist)
             if fs_remove:
                 self.__delete_gist(gist)
             else:
@@ -183,7 +178,7 @@ class GistModel(object):
 
     def update(self, gist, description, owner, ip_addr, gist_mapping, gist_type,
                lifetime):
-        gist = Gist.guess_instance(gist)
+        gist = db.Gist.guess_instance(gist)
         gist_repo = gist.scm_instance
 
         lifetime = safe_int(lifetime, -1)
@@ -217,14 +212,14 @@ class GistModel(object):
 
         # fake Kallithea Repository object
         fake_repo = AttributeDict(dict(
-            repo_name=os.path.join(GIST_STORE_LOC, gist.gist_access_id),
+            repo_name=os.path.join(db.Gist.GIST_STORE_LOC, gist.gist_access_id),
             scm_instance_no_cache=lambda: gist_repo,
         ))
 
         self._store_metadata(gist_repo, gist.gist_id, gist.gist_access_id,
                              owner.user_id, gist.gist_type, gist.gist_expires)
 
-        ScmModel().update_nodes(
+        scm.ScmModel().update_nodes(
             user=owner.user_id,
             ip_addr=ip_addr,
             repo=fake_repo,

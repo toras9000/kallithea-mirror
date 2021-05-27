@@ -1,0 +1,17 @@
+<%block name="header">\
+<% title = _('Mention in Comment on Changeset "%s"') % webutils.shorter(message, 200, firstline=True) if is_mention else _('Comment on Changeset "%s"') % webutils.shorter(message, 200, firstline=True) %>\
+<%include file="header.txt" args="title=title,link=cs_comment_url"/>\
+</%block>\
+
+<%include file="comment.txt" args="text=body,author=cs_comment_user,status=status_change"/>\
+
+${_('Changeset on')|n} \
+${cs_target_repo|n} \
+${_('branch')|n} \
+${branch|n}:
+"${webutils.shorter(message, 60, firstline=True)|n}" \
+${_('by')|n} \
+${cs_author.full_name_and_username|n}.
+
+<% title = _('View Comment') %>\
+<%include file="button.txt" args="url=cs_comment_url,title=title"/>\

@@ -33,19 +33,19 @@ from tg import response
 from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 
-from kallithea import CONFIG
-from kallithea.lib import feeds
-from kallithea.lib import helpers as h
+import kallithea
+import kallithea.lib.helpers as h
+from kallithea.controllers import base
+from kallithea.lib import feeds, webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
-from kallithea.lib.base import BaseRepoController
 from kallithea.lib.diffs import DiffProcessor
-from kallithea.lib.utils2 import safe_int, safe_str, str2bool
+from kallithea.lib.utils2 import asbool, safe_int, safe_str
 
 
 log = logging.getLogger(__name__)
 
 
-class FeedController(BaseRepoController):
+class FeedController(base.BaseRepoController):
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
@@ -53,11 +53,11 @@ class FeedController(BaseRepoController):
         super(FeedController, self)._before(*args, **kwargs)
 
     def _get_title(self, cs):
-        return h.shorter(cs.message, 160)
+        return webutils.shorter(cs.message, 160)
 
     def __get_desc(self, cs):
         desc_msg = [(_('%s committed on %s')
-                     % (h.person(cs.author), h.fmt_date(cs.date))) + '<br/>']
+                     % (h.person(cs.author), webutils.fmt_date(cs.date))) + '<br/>']
         # branches, tags, bookmarks
         for branch in cs.branches:
             desc_msg.append('branch: %s<br/>' % branch)
@@ -67,11 +67,11 @@ class FeedController(BaseRepoController):
             desc_msg.append('tag: %s<br/>' % tag)
 
         changes = []
-        diff_limit = safe_int(CONFIG.get('rss_cut_off_limit', 32 * 1024))
+        diff_limit = safe_int(kallithea.CONFIG.get('rss_cut_off_limit', 32 * 1024))
         raw_diff = cs.diff()
         diff_processor = DiffProcessor(raw_diff,
                                        diff_limit=diff_limit,
-                                       inline_diff=False)
+                                       html=False)
 
         for st in diff_processor.parsed:
             st.update({'added': st['stats']['added'],
@@ -84,15 +84,15 @@ class FeedController(BaseRepoController):
                                  _('Changeset was too big and was cut off...')]
 
         # rev link
-        _url = h.canonical_url('changeset_home', repo_name=c.db_repo.repo_name,
+        _url = webutils.canonical_url('changeset_home', repo_name=c.db_repo.repo_name,
                    revision=cs.raw_id)
         desc_msg.append('changeset: <a href="%s">%s</a>' % (_url, cs.raw_id[:8]))
 
         desc_msg.append('<pre>')
-        desc_msg.append(h.urlify_text(cs.message))
+        desc_msg.append(webutils.urlify_text(cs.message))
         desc_msg.append('\n')
         desc_msg.extend(changes)
-        if str2bool(CONFIG.get('rss_include_diff', False)):
+        if asbool(kallithea.CONFIG.get('rss_include_diff', False)):
             desc_msg.append('\n\n')
             desc_msg.append(safe_str(raw_diff))
         desc_msg.append('</pre>')
@@ -105,16 +105,16 @@ class FeedController(BaseRepoController):
         def _get_feed_from_cache(*_cache_keys):  # parameters are not really used - only as caching key
             header = dict(
                 title=_('%s %s feed') % (c.site_name, repo_name),
-                link=h.canonical_url('summary_home', repo_name=repo_name),
+                link=webutils.canonical_url('summary_home', repo_name=repo_name),
                 description=_('Changes on %s repository') % repo_name,
             )
 
-            rss_items_per_page = safe_int(CONFIG.get('rss_items_per_page', 20))
+            rss_items_per_page = safe_int(kallithea.CONFIG.get('rss_items_per_page', 20))
             entries=[]
             for cs in reversed(list(c.db_repo_scm_instance[-rss_items_per_page:])):
                 entries.append(dict(
                     title=self._get_title(cs),
-                    link=h.canonical_url('changeset_home', repo_name=repo_name, revision=cs.raw_id),
+                    link=webutils.canonical_url('changeset_home', repo_name=repo_name, revision=cs.raw_id),
                     author_email=cs.author_email,
                     author_name=cs.author_name,
                     description=''.join(self.__get_desc(cs)),

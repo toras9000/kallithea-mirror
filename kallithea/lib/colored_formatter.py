@@ -13,6 +13,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import sys
 
 
 BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE = range(30, 38)
@@ -65,15 +66,18 @@ class ColorFormatter(logging.Formatter):
     def __init__(self, *args, **kwargs):
         # can't do super(...) here because Formatter is an old school class
         logging.Formatter.__init__(self, *args, **kwargs)
+        self.plain = not getattr(sys.stderr, 'isatty', lambda: False)()
 
     def format(self, record):
         """
         Changes record's levelname to use with COLORS enum
         """
+        def_record = logging.Formatter.format(self, record)
+        if self.plain:
+            return def_record
 
         levelname = record.levelname
         start = COLOR_SEQ % (COLORS[levelname])
-        def_record = logging.Formatter.format(self, record)
         end = RESET_SEQ
 
         colored_record = ''.join([start, def_record, end])
@@ -85,14 +89,17 @@ class ColorFormatterSql(logging.Formatter):
     def __init__(self, *args, **kwargs):
         # can't do super(...) here because Formatter is an old school class
         logging.Formatter.__init__(self, *args, **kwargs)
+        self.plain = not getattr(sys.stderr, 'isatty', lambda: False)()
 
     def format(self, record):
         """
         Changes record's levelname to use with COLORS enum
         """
+        def_record = format_sql(logging.Formatter.format(self, record))
+        if self.plain:
+            return def_record
 
         start = COLOR_SEQ % (COLORS['SQL'])
-        def_record = format_sql(logging.Formatter.format(self, record))
         end = RESET_SEQ
 
         colored_record = ''.join([start, def_record, end])

@@ -43,12 +43,19 @@ Troubleshooting
 |
 
 :Q: **How can I use hooks in Kallithea?**
-:A: It's easy if they are Python hooks: just use advanced link in
-    hooks section in Admin panel, that works only for Mercurial. If
-    you want to use Git hooks, just install th proper one in the repository,
-    e.g., create a file `/gitrepo/hooks/pre-receive`. You can also use
-    Kallithea-extensions to connect to callback hooks, for both Git
-    and Mercurial.
+:A: If using Mercurial, use *Admin > Settings > Hooks* to install
+    global hooks. Inside the hooks, you can use the current working directory to
+    control different behaviour for different repositories.
+
+    If using Git, install the hooks manually in each repository, for example by
+    creating a file ``gitrepo/hooks/pre-receive``.
+    Note that Kallithea uses the ``post-receive`` hook internally.
+    Kallithea will not work properly if another post-receive hook is installed instead.
+    You might also accidentally overwrite your own post-receive hook with the Kallithea hook.
+    Instead, put your post-receive hook in ``post-receive-custom``, and the Kallithea hook will invoke it.
+
+    You can also use Kallithea-extensions to connect to callback hooks,
+    for both Git and Mercurial.
 
 |
 

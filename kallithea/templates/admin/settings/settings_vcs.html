@@ -1,17 +1,17 @@
 ${h.form(url('admin_settings'), method='post')}
     <div class="form">
             <div class="form-group">
-                <label class="control-label">${_('Hooks')}:</label>
+                <label class="control-label">${_('Mercurial Push Hooks')}:</label>
                 <div>
                     <div class="checkbox">
                         <label>
-                            ${h.checkbox('hooks_changegroup_repo_size','True')}
+                            ${h.checkbox('hooks_changegroup_kallithea_repo_size','True')}
                             ${_('Show repository size after push')}
                         </label>
                     </div>
                     <div class="checkbox">
                         <label>
-                            ${h.checkbox('hooks_changegroup_update','True')}
+                            ${h.checkbox('hooks_changegroup_kallithea_update','True')}
                             ${_('Update repository after push (hg update)')}
                         </label>
                     </div>
@@ -26,13 +26,6 @@ ${h.form(url('admin_settings'), method='post')}
                             ${_('Enable largefiles extension')}
                         </label>
                     </div>
-                    <div class="checkbox">
-                        <label>
-                            ${h.checkbox('extensions_hgsubversion','True')}
-                            ${_('Enable hgsubversion extension')}
-                        </label>
-                    </div>
-                    <span class="help-block">${_('Requires hgsubversion library to be installed. Enables cloning of remote Subversion repositories while converting them to Mercurial.')}</span>
                     ##<div class="checkbox">
                     ##    <label>
                     ##        ${h.checkbox('extensions_hggit','True')}
@@ -65,11 +58,12 @@ ${h.form(url('admin_settings'), method='post')}
                     ${h.submit('save',_('Save Settings'),class_="btn btn-default")}
                     ${h.reset('reset',_('Reset'),class_="btn btn-default")}
                 </div>
-           </div>
+            </div>
     </div>
     ${h.end_form()}
 
-    <script>'use strict';
+    <script>
+        'use strict';
         $(document).ready(function(){
             $('#path_unlock').on('click', function(){
                 $('#path_unlock_icon').removeClass('icon-lock');

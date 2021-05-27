@@ -29,8 +29,7 @@ import logging
 import time
 
 from kallithea.lib.utils2 import generate_api_key
-from kallithea.model.db import User, UserApiKeys
-from kallithea.model.meta import Session
+from kallithea.model import db, meta
 
 
 log = logging.getLogger(__name__)
@@ -44,14 +43,14 @@ class ApiKeyModel(object):
         :param description: description of ApiKey
         :param lifetime: expiration time in seconds
         """
-        user = User.guess_instance(user)
+        user = db.User.guess_instance(user)
 
-        new_api_key = UserApiKeys()
+        new_api_key = db.UserApiKeys()
         new_api_key.api_key = generate_api_key()
         new_api_key.user_id = user.user_id
         new_api_key.description = description
         new_api_key.expires = time.time() + (lifetime * 60) if lifetime != -1 else -1
-        Session().add(new_api_key)
+        meta.Session().add(new_api_key)
 
         return new_api_key
 
@@ -60,19 +59,19 @@ class ApiKeyModel(object):
         Deletes given api_key, if user is set it also filters the object for
         deletion by given user.
         """
-        api_key = UserApiKeys.query().filter(UserApiKeys.api_key == api_key)
+        api_key = db.UserApiKeys.query().filter(db.UserApiKeys.api_key == api_key)
 
         if user is not None:
-            user = User.guess_instance(user)
-            api_key = api_key.filter(UserApiKeys.user_id == user.user_id)
+            user = db.User.guess_instance(user)
+            api_key = api_key.filter(db.UserApiKeys.user_id == user.user_id)
 
         api_key = api_key.scalar()
-        Session().delete(api_key)
+        meta.Session().delete(api_key)
 
     def get_api_keys(self, user, show_expired=True):
-        user = User.guess_instance(user)
-        user_api_keys = UserApiKeys.query() \
-            .filter(UserApiKeys.user_id == user.user_id)
+        user = db.User.guess_instance(user)
+        user_api_keys = db.UserApiKeys.query() \
+            .filter(db.UserApiKeys.user_id == user.user_id)
         if not show_expired:
             user_api_keys = user_api_keys.filter_by(is_expired=False)
         return user_api_keys

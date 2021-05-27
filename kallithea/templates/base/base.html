@@ -23,7 +23,7 @@
             <a class="navbar-link" href="${h.url('kallithea_project_url')}" target="_blank">Kallithea</a>,
         %endif
         which is
-        <a class="navbar-link" href="${h.canonical_url('about')}#copyright">&copy; 2010&ndash;2020 by various authors &amp; licensed under GPLv3</a>.
+        <a class="navbar-link" href="${h.canonical_url('about')}#copyright">&copy; 2010&ndash;2021 by various authors &amp; licensed under GPLv3</a>.
         %if c.issues_url:
             &ndash; <a class="navbar-link" href="${c.issues_url}" target="_blank">${_('Support')}</a>
         %endif
@@ -81,11 +81,11 @@
   </ul>
 </%def>
 
-<%def name="repolabel(repo)">
-  %if h.is_hg(repo):
+<%def name="repolabel(repo_type)">
+  %if repo_type == 'hg':
     <span class="label label-repo" title="${_('Mercurial repository')}">hg</span>
   %endif
-  %if h.is_git(repo):
+  %if repo_type == 'git':
     <span class="label label-repo" title="${_('Git repository')}">git</span>
   %endif
 </%def>
@@ -97,7 +97,7 @@
     <div class="container-fluid">
     <div class="navbar-header">
       <div class="navbar-brand">
-        ${repolabel(c.db_repo)}
+        ${repolabel(c.db_repo.repo_type)}
 
         ## public/private
         %if c.db_repo.private:
@@ -171,13 +171,14 @@
                   <li><a href="${h.url('repo_fork_home',repo_name=c.repo_name)}"><i class="icon-fork"></i>${_('Fork')}</a></li>
                   <li><a href="${h.url('pullrequest_home',repo_name=c.repo_name)}"><i class="icon-git-pull-request"></i>${_('Create Pull Request')}</a></li>
               %endif
-             </ul>
+          </ul>
         </li>
     </ul>
     </div>
     </div>
   </nav>
-  <script>'use strict';
+  <script>
+    'use strict';
     $(document).ready(function() {
       var bcache = {};
 
@@ -399,7 +400,8 @@
     </li>
   </ul>
 
-    <script>'use strict';
+    <script>
+        'use strict';
         $(document).ready(function(){
             var visual_show_public_icon = ${h.js(c.visual.show_public_icon)};
             var cache = {}
@@ -527,7 +529,8 @@
         </div>
     </div>
 
-    <script>'use strict';
+    <script>
+      'use strict';
       $(document).ready(function(){
           activate_parent_child_links();
       });

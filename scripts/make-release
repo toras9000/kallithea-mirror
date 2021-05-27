@@ -75,7 +75,7 @@ echo "Rebuild readthedocs for docs.kallithea-scm.org"
 xdg-open https://readthedocs.org/projects/kallithea/
 curl -X POST http://readthedocs.org/build/kallithea
 xdg-open https://readthedocs.org/projects/kallithea/builds
-xdg-open http://docs.kallithea-scm.org/en/latest/ # or whatever the branch is
+xdg-open https://docs.kallithea-scm.org/en/latest/ # or whatever the branch is
 
 twine upload dist/*
 xdg-open https://pypi.python.org/pypi/Kallithea

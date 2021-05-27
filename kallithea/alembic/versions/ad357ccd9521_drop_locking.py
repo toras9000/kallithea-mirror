@@ -30,7 +30,7 @@ import sqlalchemy as sa
 from alembic import op
 from sqlalchemy import MetaData, Table
 
-from kallithea.model.db import Ui
+from kallithea.model import db
 
 
 meta = MetaData()
@@ -45,7 +45,7 @@ def upgrade():
         batch_op.drop_column('enable_locking')
 
     meta.bind = op.get_bind()
-    ui = Table(Ui.__tablename__, meta, autoload=True)
+    ui = Table(db.Ui.__tablename__, meta, autoload=True)
     ui.delete().where(ui.c.ui_key == 'prechangegroup.push_lock_handling').execute()
     ui.delete().where(ui.c.ui_key == 'preoutgoing.pull_lock_handling').execute()
 

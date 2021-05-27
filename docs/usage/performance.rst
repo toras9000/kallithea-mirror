@@ -48,42 +48,37 @@ database platform.
 Horizontal scaling
 ------------------
 
-Scaling horizontally means running several Kallithea instances and let them
-share the load. That can give huge performance benefits when dealing with large
-amounts of traffic (many users, CI servers, etc.). Kallithea can be scaled
-horizontally on one (recommended) or multiple machines.
+Scaling horizontally means running several Kallithea instances (also known as
+worker processes) and let them share the load. That is essential to serve other
+users while processing a long-running request from a user. Usually, the
+bottleneck on a Kallithea server is not CPU but I/O speed - especially network
+speed. It is thus a good idea to run multiple worker processes on one server.
 
-It is generally possible to run WSGI applications multithreaded, so that
-several HTTP requests are served from the same Python process at once. That can
-in principle give better utilization of internal caches and less process
-overhead.
+.. note::
 
-One danger of running multithreaded is that program execution becomes much more
-complex; programs must be written to consider all combinations of events and
-problems might depend on timing and be impossible to reproduce.
+    Kallithea and the embedded Mercurial backend are not thread-safe. Each
+    worker process must thus be single-threaded.
 
-Kallithea can't promise to be thread-safe, just like the embedded Mercurial
-backend doesn't make any strong promises when used as Kallithea uses it.
-Instead, we recommend scaling by using multiple server processes.
+Web servers can usually launch multiple worker processes - for example ``mod_wsgi`` with the
+``WSGIDaemonProcess`` ``processes`` parameter or ``uWSGI`` or ``gunicorn`` with
+their ``workers`` setting.
 
-Web servers with multiple worker processes (such as ``mod_wsgi`` with the
-``WSGIDaemonProcess`` ``processes`` parameter) will work out of the box.
-
+Kallithea can also be scaled horizontally across multiple machines.
 In order to scale horizontally on multiple machines, you need to do the
 following:
 
-    - Each instance's ``data`` storage needs to be configured to be stored on a
-      shared disk storage, preferably together with repositories. This ``data``
-      dir contains template caches, sessions, whoosh index and is used for
-      task locking (so it is safe across multiple instances). Set the
-      ``cache_dir``, ``index_dir``, ``beaker.cache.data_dir``, ``beaker.cache.lock_dir``
-      variables in each .ini file to a shared location across Kallithea instances
-    - If using several Celery instances,
-      the message broker should be common to all of them (e.g.,  one
-      shared RabbitMQ server)
-    - Load balance using round robin or IP hash, recommended is writing LB rules
-      that will separate regular user traffic from automated processes like CI
-      servers or build bots.
+- Each instance's ``data`` storage needs to be configured to be stored on a
+  shared disk storage, preferably together with repositories. This ``data``
+  dir contains template caches, sessions, whoosh index and is used for
+  task locking (so it is safe across multiple instances). Set the
+  ``cache_dir``, ``index_dir``, ``beaker.cache.data_dir``, ``beaker.cache.lock_dir``
+  variables in each .ini file to a shared location across Kallithea instances
+- If using several Celery instances,
+  the message broker should be common to all of them (e.g.,  one
+  shared RabbitMQ server)
+- Load balance using round robin or IP hash, recommended is writing LB rules
+  that will separate regular user traffic from automated processes like CI
+  servers or build bots.
 
 
 Serve static files directly from the web server
@@ -125,3 +120,6 @@ response. See the documentation for your web server.
 
 
 .. _SQLAlchemyGrate: https://github.com/shazow/sqlalchemygrate
+.. _mod_wsgi: https://modwsgi.readthedocs.io/
+.. _uWSGI: https://uwsgi-docs.readthedocs.io/
+.. _gunicorn: http://pypi.python.org/pypi/gunicorn

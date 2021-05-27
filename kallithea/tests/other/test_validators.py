@@ -2,8 +2,8 @@
 import formencode
 import pytest
 
+from kallithea.model import meta
 from kallithea.model import validators as v
-from kallithea.model.meta import Session
 from kallithea.model.repo_group import RepoGroupModel
 from kallithea.model.user_group import UserGroupModel
 from kallithea.tests import base
@@ -17,7 +17,7 @@ fixture = Fixture()
 class TestRepoGroups(base.TestController):
 
     def teardown_method(self, method):
-        Session.remove()
+        meta.Session.remove()
 
     def test_Message_extractor(self):
         validator = v.ValidUsername()
@@ -60,7 +60,7 @@ class TestRepoGroups(base.TestController):
 
         gr = fixture.create_user_group('test')
         gr2 = fixture.create_user_group('tes2')
-        Session().commit()
+        meta.Session().commit()
         with pytest.raises(formencode.Invalid):
             validator.to_python('test')
         assert gr.users_group_id is not None
@@ -76,7 +76,7 @@ class TestRepoGroups(base.TestController):
             validator.to_python('TEST')
         UserGroupModel().delete(gr)
         UserGroupModel().delete(gr2)
-        Session().commit()
+        meta.Session().commit()
 
     def test_ValidRepoGroup(self):
         validator = v.ValidRepoGroup()

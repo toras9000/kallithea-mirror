@@ -11,23 +11,20 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 
+msgid "Repository not found in the filesystem"
+msgstr "Рэпазітар не знойдзены на файлавай сістэме"
+
 msgid "There are no changesets yet"
 msgstr "Яшчэ не было змен"
+
+msgid "Changeset for %s %s not found in %s"
+msgstr "Набор змен для %s %s не знойдзены ў %s"
 
 msgid "None"
 msgstr "Нічога"
 
 msgid "(closed)"
 msgstr "(зачынена)"
-
-msgid "Show whitespace"
-msgstr "Паказваць прабелы"
-
-msgid "Ignore whitespace"
-msgstr "Ігнараваць прабелы"
-
-msgid "Increase diff context to %(num)s lines"
-msgstr "Павялічыць кантэкст да %(num)s радкоў"
 
 msgid "Successfully deleted pull request %s"
 msgstr "Pull-запыт %s паспяхова выдалены"
@@ -462,13 +459,6 @@ msgstr "Адбылася памылка пры выдаленні статыст
 msgid "Updated VCS settings"
 msgstr "Абноўлены налады VCS"
 
-msgid ""
-"Unable to activate hgsubversion support. The \"hgsubversion\" library is "
-"missing"
-msgstr ""
-"Немагчыма ўключыць падтрымку hgsubversion. Бібліятэка hgsubversion "
-"адсутнічае"
-
 msgid "Error occurred while updating application settings"
 msgstr "Памылка пры абнаўленні наладаў праграмы"
 
@@ -566,12 +556,6 @@ msgstr ""
 msgid "You need to be signed in to view this page"
 msgstr "Старонка даступная толькі аўтарызаваным карыстальнікам"
 
-msgid "Repository not found in the filesystem"
-msgstr "Рэпазітар не знойдзены на файлавай сістэме"
-
-msgid "Changeset for %s %s not found in %s"
-msgstr "Набор змен для %s %s не знойдзены ў %s"
-
 msgid "Binary file"
 msgstr "Двайковы файл"
 
@@ -583,6 +567,9 @@ msgstr ""
 
 msgid "No changes detected"
 msgstr "Змен не выяўлена"
+
+msgid "Increase diff context to %(num)s lines"
+msgstr "Павялічыць кантэкст да %(num)s радкоў"
 
 msgid "Deleted branch: %s"
 msgstr "Выдаленая галіна: %s"
@@ -695,15 +682,6 @@ msgstr "пераназваны"
 msgid "chmod"
 msgstr "chmod"
 
-msgid ""
-"%s repository is not mapped to db perhaps it was created or renamed from "
-"the filesystem please run the application again in order to rescan "
-"repositories"
-msgstr ""
-"Рэпазітар %s адсутнічае ў базе дадзеных; магчыма, ён быў створаны ці "
-"пераназваны з файлавай сістэмы. Калі ласка, перазапусціце прыкладанне для "
-"сканавання рэпазітароў"
-
 msgid "%d year"
 msgid_plural "%d years"
 msgstr[0] "%d год"
@@ -755,23 +733,11 @@ msgstr "%s і %s назад"
 msgid "just now"
 msgstr "цяпер"
 
-msgid "on line %s"
-msgstr "на радку %s"
-
-msgid "[Mention]"
-msgstr "[Згадванне]"
-
 msgid "top level"
 msgstr "верхні ўзровень"
 
 msgid "Kallithea Administrator"
 msgstr "Адміністратар Kallithea"
-
-msgid "Only admins can create repository groups"
-msgstr "Толькі адміністратары могуць ствараць групы репазітароў"
-
-msgid "Non-admins can create repository groups"
-msgstr "Неадміністратары могуць ствараць групы репазітароў"
 
 msgid "Only admins can create user groups"
 msgstr "Толькі адміністратары могуць ствараць групы карыстальнікаў"
@@ -827,16 +793,8 @@ msgstr "Новы карыстальнік \"%(new_username)s\" зарэгіст�
 msgid "Closing"
 msgstr "Зачынены"
 
-msgid ""
-"%(user)s wants you to review pull request %(pr_nice_id)s: %(pr_title)s"
-msgstr ""
-"%(user)s просіць вас разгледзець pull request %(pr_nice_id)s: %(pr_title)s"
-
 msgid "latest tip"
 msgstr "апошняя версія"
-
-msgid "New user registration"
-msgstr "Рэгістрацыя новага карыстальніка"
 
 msgid ""
 "You can't remove this user since it is crucial for the entire application"
@@ -944,13 +902,6 @@ msgstr "Група рэпазітароў \"%(repo)s\" ужо існуе"
 msgid "Invalid repository URL"
 msgstr "Няслушны URL рэпазітара"
 
-msgid ""
-"Invalid repository URL. It must be a valid http, https, ssh, svn+http or "
-"svn+https URL"
-msgstr ""
-"Няслушны URL рэпазітара. Ён мусіць быць карэктным URL http, https, ssh, "
-"svn+http ці svn+https"
-
 msgid "Fork has to be the same type as parent"
 msgstr "Тып форка будзе супадаць з бацькоўскім"
 
@@ -1042,10 +993,10 @@ msgstr "Імя карыстальніка"
 msgid "Password"
 msgstr "Пароль"
 
-msgid "Forgot your password ?"
+msgid "Forgot your password?"
 msgstr "Забыліся на пароль?"
 
-msgid "Don't have an account ?"
+msgid "Don't have an account?"
 msgstr "Няма акаўнта?"
 
 msgid "Sign In"
@@ -1627,9 +1578,6 @@ msgstr "Прывітанне для HTTP-аўтэнтыфікацыі"
 msgid "Save Settings"
 msgstr "Захаваць налады"
 
-msgid "Custom Hooks"
-msgstr "Карыстальніцкія хукі"
-
 msgid "Failed to remove hook"
 msgstr "Не атрымалася выдаліць хук"
 
@@ -1674,9 +1622,6 @@ msgstr "Пашырэнні Mercurial"
 
 msgid "Enable largefiles extension"
 msgstr "Уключыць падтрымку вялікіх файлаў"
-
-msgid "Enable hgsubversion extension"
-msgstr "Уключыць падтрымку hgsubversion"
 
 msgid "Location of repositories"
 msgstr "Месцазнаходжанне рэпазітароў"
@@ -1967,8 +1912,8 @@ msgstr "Няма рэвізій"
 msgid "Failed to revoke permission"
 msgstr "Не атрымалася адклікаць прывілеі"
 
-msgid "Confirm to revoke permission for {0}: {1} ?"
-msgstr "Пацвердзіце выдаленне прывілею для {0}: {1} ?"
+msgid "Confirm to revoke permission for {0}: {1}?"
+msgstr "Пацвердзіце выдаленне прывілею для {0}: {1}?"
 
 msgid "Select changeset"
 msgstr "Выбраць набор змен"
@@ -2213,6 +2158,9 @@ msgstr "Мы атрымалі запыт на скіданне пароля дл
 
 msgid "File diff"
 msgstr "Параўнанне файлаў"
+
+msgid "Ignore whitespace"
+msgstr "Ігнараваць прабелы"
 
 msgid "%s File Diff"
 msgstr "Параўнанне файла %s"

@@ -32,13 +32,13 @@ from tg import config, expose, request
 from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 
-from kallithea.lib.base import BaseController
+from kallithea.controllers import base
 
 
 log = logging.getLogger(__name__)
 
 
-class ErrorController(BaseController):
+class ErrorController(base.BaseController):
     """Generates error documents as and when they are required.
 
     The errorpage middleware renders /error/document when error

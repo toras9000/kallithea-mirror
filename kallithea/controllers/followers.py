@@ -30,28 +30,28 @@ import logging
 from tg import request
 from tg import tmpl_context as c
 
+from kallithea.controllers import base
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
-from kallithea.lib.base import BaseRepoController, render
 from kallithea.lib.page import Page
 from kallithea.lib.utils2 import safe_int
-from kallithea.model.db import UserFollowing
+from kallithea.model import db
 
 
 log = logging.getLogger(__name__)
 
 
-class FollowersController(BaseRepoController):
+class FollowersController(base.BaseRepoController):
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
     def followers(self, repo_name):
         p = safe_int(request.GET.get('page'), 1)
         repo_id = c.db_repo.repo_id
-        d = UserFollowing.get_repo_followers(repo_id) \
-            .order_by(UserFollowing.follows_from)
+        d = db.UserFollowing.get_repo_followers(repo_id) \
+            .order_by(db.UserFollowing.follows_from)
         c.followers_pager = Page(d, page=p, items_per_page=20)
 
         if request.environ.get('HTTP_X_PARTIAL_XHR'):
-            return render('/followers/followers_data.html')
+            return base.render('/followers/followers_data.html')
 
-        return render('/followers/followers.html')
+        return base.render('/followers/followers.html')

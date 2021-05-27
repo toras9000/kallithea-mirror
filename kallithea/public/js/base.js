@@ -528,7 +528,7 @@ function move_comments($anchorcomments) {
         var line_no = $anchorcomment.data('line_no');
         if ($comment_div[0]) {
             $comment_div.append($anchorcomment.children());
-            if (f_path && line_no) {
+            if (f_path && line_no !== '') {
                 _comment_div_append_add($comment_div, f_path, line_no);
             } else {
                 _comment_div_append_form($comment_div, f_path, line_no);
@@ -667,7 +667,7 @@ function _comment_div_append_form($comment_div, f_path, line_no) {
             }
         }
         function failure(x, s, e) {
-            $preview.removeClass('submitting').addClass('failed');
+            $preview.removeClass('submitting').children('.panel').addClass('panel-danger');
             var $status = $preview.find('.comment-submission-status');
             $('<span>', {
                 'title': e,
@@ -681,7 +681,7 @@ function _comment_div_append_form($comment_div, f_path, line_no) {
                     text: _TM['Retry']
                 }).click(function() {
                     $status.text(_TM['Submitting ...']);
-                    $preview.addClass('submitting').removeClass('failed');
+                    $preview.addClass('submitting').children('.panel').removeClass('panel-danger');
                     ajaxPOST(AJAX_COMMENT_URL, postData, success, failure);
                 }),
                 $('<button>', {

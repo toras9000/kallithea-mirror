@@ -37,17 +37,17 @@ from subprocess import PIPE, Popen
 from paste.deploy import appconfig
 from sqlalchemy import engine_from_config
 
-from kallithea.config.environment import load_environment
-from kallithea.lib.auth import get_crypt_password
-from kallithea.model import meta
+import kallithea.config.application
+from kallithea.lib.utils2 import get_crypt_password
+from kallithea.model import db, meta
 from kallithea.model.base import init_model
-from kallithea.model.db import Repository, Ui, User
+from kallithea.model.repo import RepoModel
 from kallithea.tests.base import HG_REPO, TEST_USER_ADMIN_LOGIN, TEST_USER_ADMIN_PASS
 
 
 rel_path = dirname(dirname(dirname(dirname(os.path.abspath(__file__)))))
 conf = appconfig('config:development.ini', relative_to=rel_path)
-load_environment(conf.global_conf, conf.local_conf)
+kallithea.config.application.make_app(conf.global_conf, **conf.local_conf)
 
 USER = TEST_USER_ADMIN_LOGIN
 PASS = TEST_USER_ADMIN_PASS
@@ -88,18 +88,18 @@ def create_test_user(force=True):
     print('creating test user')
     sa = get_session()
 
-    user = sa.query(User).filter(User.username == USER).scalar()
+    user = sa.query(db.User).filter(db.User.username == USER).scalar()
 
     if force and user is not None:
         print('removing current user')
-        for repo in sa.query(Repository).filter(Repository.user == user).all():
+        for repo in sa.query(db.Repository).filter(db.Repository.user == user).all():
             sa.delete(repo)
         sa.delete(user)
         sa.commit()
 
     if user is None or force:
         print('creating new one')
-        new_usr = User()
+        new_usr = db.User()
         new_usr.username = USER
         new_usr.password = get_crypt_password(PASS)
         new_usr.email = 'mail@example.com'
@@ -115,14 +115,13 @@ def create_test_user(force=True):
 
 def create_test_repo(force=True):
     print('creating test repo')
-    from kallithea.model.repo import RepoModel
     sa = get_session()
 
-    user = sa.query(User).filter(User.username == USER).scalar()
+    user = sa.query(db.User).filter(db.User.username == USER).scalar()
     if user is None:
         raise Exception('user not found')
 
-    repo = sa.query(Repository).filter(Repository.repo_name == HG_REPO).scalar()
+    repo = sa.query(db.Repository).filter(db.Repository.repo_name == HG_REPO).scalar()
 
     if repo is None:
         print('repo not found creating')
@@ -140,7 +139,7 @@ def create_test_repo(force=True):
 
 def set_anonymous_access(enable=True):
     sa = get_session()
-    user = sa.query(User).filter(User.username == 'default').one()
+    user = sa.query(db.User).filter(db.User.username == 'default').one()
     user.active = enable
     sa.add(user)
     sa.commit()
@@ -148,7 +147,7 @@ def set_anonymous_access(enable=True):
 
 def get_anonymous_access():
     sa = get_session()
-    return sa.query(User).filter(User.username == 'default').one().active
+    return sa.query(db.User).filter(db.User.username == 'default').one().active
 
 
 #==============================================================================
@@ -156,7 +155,7 @@ def get_anonymous_access():
 #==============================================================================
 def test_clone_with_credentials(no_errors=False, repo=HG_REPO, method=METHOD,
                                 backend='hg'):
-    cwd = path = os.path.join(Ui.get_by_key('paths', '/').ui_value, repo)
+    cwd = path = os.path.join(db.Ui.get_by_key('paths', '/').ui_value, repo)
 
     try:
         shutil.rmtree(path, ignore_errors=True)
@@ -200,7 +199,7 @@ if __name__ == '__main__':
             backend = 'hg'
 
         if METHOD == 'pull':
-            seq = next(tempfile._RandomNameSequence())
+            seq = next(tempfile._RandomNameSequence())  # pytype: disable=module-attr
             test_clone_with_credentials(repo=sys.argv[1], method='clone',
                                         backend=backend)
         s = time.time()

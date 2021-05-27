@@ -28,7 +28,7 @@ Original author and date, and relevant copyright and licensing information is be
 import binascii
 import logging
 import traceback
-from collections import OrderedDict, defaultdict
+from collections import OrderedDict
 
 from tg import request, response
 from tg import tmpl_context as c
@@ -36,134 +36,20 @@ from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest, HTTPForbidden, HTTPNotFound
 
 import kallithea.lib.helpers as h
-from kallithea.lib import diffs
+from kallithea.controllers import base
+from kallithea.lib import auth, diffs, webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
-from kallithea.lib.base import BaseRepoController, jsonify, render
 from kallithea.lib.graphmod import graph_data
-from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import ascii_str, safe_str
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError, EmptyRepositoryError, RepositoryError
+from kallithea.model import db, meta, userlog
 from kallithea.model.changeset_status import ChangesetStatusModel
 from kallithea.model.comment import ChangesetCommentsModel
-from kallithea.model.db import ChangesetComment, ChangesetStatus
-from kallithea.model.meta import Session
 from kallithea.model.pull_request import PullRequestModel
 
 
 log = logging.getLogger(__name__)
-
-
-def _update_with_GET(params, GET):
-    for k in ['diff1', 'diff2', 'diff']:
-        params[k] += GET.getall(k)
-
-
-def anchor_url(revision, path, GET):
-    fid = h.FID(revision, path)
-    return h.url.current(anchor=fid, **dict(GET))
-
-
-def get_ignore_ws(fid, GET):
-    ig_ws_global = GET.get('ignorews')
-    ig_ws = [k for k in GET.getall(fid) if k.startswith('WS')]
-    if ig_ws:
-        try:
-            return int(ig_ws[0].split(':')[-1])
-        except ValueError:
-            raise HTTPBadRequest()
-    return ig_ws_global
-
-
-def _ignorews_url(GET, fileid=None):
-    fileid = str(fileid) if fileid else None
-    params = defaultdict(list)
-    _update_with_GET(params, GET)
-    lbl = _('Show whitespace')
-    ig_ws = get_ignore_ws(fileid, GET)
-    ln_ctx = get_line_ctx(fileid, GET)
-    # global option
-    if fileid is None:
-        if ig_ws is None:
-            params['ignorews'] += [1]
-            lbl = _('Ignore whitespace')
-        ctx_key = 'context'
-        ctx_val = ln_ctx
-    # per file options
-    else:
-        if ig_ws is None:
-            params[fileid] += ['WS:1']
-            lbl = _('Ignore whitespace')
-
-        ctx_key = fileid
-        ctx_val = 'C:%s' % ln_ctx
-    # if we have passed in ln_ctx pass it along to our params
-    if ln_ctx:
-        params[ctx_key] += [ctx_val]
-
-    params['anchor'] = fileid
-    icon = h.literal('<i class="icon-strike"></i>')
-    return h.link_to(icon, h.url.current(**params), title=lbl, **{'data-toggle': 'tooltip'})
-
-
-def get_line_ctx(fid, GET):
-    ln_ctx_global = GET.get('context')
-    if fid:
-        ln_ctx = [k for k in GET.getall(fid) if k.startswith('C')]
-    else:
-        _ln_ctx = [k for k in GET if k.startswith('C')]
-        ln_ctx = GET.get(_ln_ctx[0]) if _ln_ctx else ln_ctx_global
-        if ln_ctx:
-            ln_ctx = [ln_ctx]
-
-    if ln_ctx:
-        retval = ln_ctx[0].split(':')[-1]
-    else:
-        retval = ln_ctx_global
-
-    try:
-        return int(retval)
-    except Exception:
-        return 3
-
-
-def _context_url(GET, fileid=None):
-    """
-    Generates url for context lines
-
-    :param fileid:
-    """
-
-    fileid = str(fileid) if fileid else None
-    ig_ws = get_ignore_ws(fileid, GET)
-    ln_ctx = (get_line_ctx(fileid, GET) or 3) * 2
-
-    params = defaultdict(list)
-    _update_with_GET(params, GET)
-
-    # global option
-    if fileid is None:
-        if ln_ctx > 0:
-            params['context'] += [ln_ctx]
-
-        if ig_ws:
-            ig_ws_key = 'ignorews'
-            ig_ws_val = 1
-
-    # per file option
-    else:
-        params[fileid] += ['C:%s' % ln_ctx]
-        ig_ws_key = fileid
-        ig_ws_val = 'WS:%s' % 1
-
-    if ig_ws:
-        params[ig_ws_key] += [ig_ws_val]
-
-    lbl = _('Increase diff context to %(num)s lines') % {'num': ln_ctx}
-
-    params['anchor'] = fileid
-    icon = h.literal('<i class="icon-sort"></i>')
-    return h.link_to(icon, h.url.current(**params), title=lbl, **{'data-toggle': 'tooltip'})
 
 
 def create_cs_pr_comment(repo_name, revision=None, pull_request=None, allowed_to_change_status=True):
@@ -199,21 +85,21 @@ def create_cs_pr_comment(repo_name, revision=None, pull_request=None, allowed_to
 
     if not allowed_to_change_status:
         if status or close_pr:
-            h.flash(_('No permission to change status'), 'error')
+            webutils.flash(_('No permission to change status'), 'error')
             raise HTTPForbidden()
 
     if pull_request and delete == "delete":
         if (pull_request.owner_id == request.authuser.user_id or
-            h.HasPermissionAny('hg.admin')() or
-            h.HasRepoPermissionLevel('admin')(pull_request.org_repo.repo_name) or
-            h.HasRepoPermissionLevel('admin')(pull_request.other_repo.repo_name)
+            auth.HasPermissionAny('hg.admin')() or
+            auth.HasRepoPermissionLevel('admin')(pull_request.org_repo.repo_name) or
+            auth.HasRepoPermissionLevel('admin')(pull_request.other_repo.repo_name)
         ) and not pull_request.is_closed():
             PullRequestModel().delete(pull_request)
-            Session().commit()
-            h.flash(_('Successfully deleted pull request %s') % pull_request_id,
+            meta.Session().commit()
+            webutils.flash(_('Successfully deleted pull request %s') % pull_request_id,
                     category='success')
             return {
-               'location': h.url('my_pullrequests'), # or repo pr list?
+               'location': webutils.url('my_pullrequests'), # or repo pr list?
             }
         raise HTTPForbidden()
 
@@ -227,7 +113,7 @@ def create_cs_pr_comment(repo_name, revision=None, pull_request=None, allowed_to
         pull_request=pull_request_id,
         f_path=f_path or None,
         line_no=line_no or None,
-        status_change=ChangesetStatus.get_status_lbl(status) if status else None,
+        status_change=db.ChangesetStatus.get_status_lbl(status) if status else None,
         closing_pr=close_pr,
     )
 
@@ -245,30 +131,30 @@ def create_cs_pr_comment(repo_name, revision=None, pull_request=None, allowed_to
         action = 'user_commented_pull_request:%s' % pull_request_id
     else:
         action = 'user_commented_revision:%s' % revision
-    action_logger(request.authuser, action, c.db_repo, request.ip_addr)
+    userlog.action_logger(request.authuser, action, c.db_repo, request.ip_addr)
 
     if pull_request and close_pr:
         PullRequestModel().close_pull_request(pull_request_id)
-        action_logger(request.authuser,
+        userlog.action_logger(request.authuser,
                       'user_closed_pull_request:%s' % pull_request_id,
                       c.db_repo, request.ip_addr)
 
-    Session().commit()
+    meta.Session().commit()
 
     data = {
-       'target_id': h.safeid(request.POST.get('f_path')),
+       'target_id': webutils.safeid(request.POST.get('f_path')),
     }
     if comment is not None:
         c.comment = comment
         data.update(comment.get_dict())
         data.update({'rendered_text':
-                     render('changeset/changeset_comment_block.html')})
+                     base.render('changeset/changeset_comment_block.html')})
 
     return data
 
 def delete_cs_pr_comment(repo_name, comment_id):
     """Delete a comment from a changeset or pull request"""
-    co = ChangesetComment.get_or_404(comment_id)
+    co = db.ChangesetComment.get_or_404(comment_id)
     if co.repo.repo_name != repo_name:
         raise HTTPNotFound()
     if co.pull_request and co.pull_request.is_closed():
@@ -276,15 +162,15 @@ def delete_cs_pr_comment(repo_name, comment_id):
         raise HTTPForbidden()
 
     owner = co.author_id == request.authuser.user_id
-    repo_admin = h.HasRepoPermissionLevel('admin')(repo_name)
-    if h.HasPermissionAny('hg.admin')() or repo_admin or owner:
+    repo_admin = auth.HasRepoPermissionLevel('admin')(repo_name)
+    if auth.HasPermissionAny('hg.admin')() or repo_admin or owner:
         ChangesetCommentsModel().delete(comment=co)
-        Session().commit()
+        meta.Session().commit()
         return True
     else:
         raise HTTPForbidden()
 
-class ChangesetController(BaseRepoController):
+class ChangesetController(base.BaseRepoController):
 
     def _before(self, *args, **kwargs):
         super(ChangesetController, self)._before(*args, **kwargs)
@@ -292,17 +178,12 @@ class ChangesetController(BaseRepoController):
 
     def _index(self, revision, method):
         c.pull_request = None
-        c.anchor_url = anchor_url
-        c.ignorews_url = _ignorews_url
-        c.context_url = _context_url
         c.fulldiff = request.GET.get('fulldiff') # for reporting number of changed files
         # get ranges of revisions if preset
         rev_range = revision.split('...')[:2]
-        enable_comments = True
         c.cs_repo = c.db_repo
         try:
             if len(rev_range) == 2:
-                enable_comments = False
                 rev_start = rev_range[0]
                 rev_end = rev_range[1]
                 rev_ranges = c.db_repo_scm_instance.get_changesets(start=rev_start,
@@ -317,7 +198,7 @@ class ChangesetController(BaseRepoController):
         except (ChangesetDoesNotExistError, EmptyRepositoryError):
             log.debug(traceback.format_exc())
             msg = _('Such revision does not exist for this repository')
-            h.flash(msg, category='error')
+            webutils.flash(msg, category='error')
             raise HTTPNotFound()
 
         c.changes = OrderedDict()
@@ -325,7 +206,7 @@ class ChangesetController(BaseRepoController):
         c.lines_added = 0  # count of lines added
         c.lines_deleted = 0  # count of lines removes
 
-        c.changeset_statuses = ChangesetStatus.STATUSES
+        c.changeset_statuses = db.ChangesetStatus.STATUSES
         comments = dict()
         c.statuses = []
         c.inline_comments = []
@@ -357,11 +238,10 @@ class ChangesetController(BaseRepoController):
 
             cs2 = changeset.raw_id
             cs1 = changeset.parents[0].raw_id if changeset.parents else EmptyChangeset().raw_id
-            context_lcl = get_line_ctx('', request.GET)
-            ign_whitespace_lcl = get_ignore_ws('', request.GET)
-
+            ignore_whitespace_diff = h.get_ignore_whitespace_diff(request.GET)
+            diff_context_size = h.get_diff_context_size(request.GET)
             raw_diff = diffs.get_diff(c.db_repo_scm_instance, cs1, cs2,
-                ignore_whitespace=ign_whitespace_lcl, context=context_lcl)
+                ignore_whitespace=ignore_whitespace_diff, context=diff_context_size)
             diff_limit = None if c.fulldiff else self.cut_off_limit
             file_diff_data = []
             if method == 'show':
@@ -376,7 +256,7 @@ class ChangesetController(BaseRepoController):
                     filename = f['filename']
                     fid = h.FID(changeset.raw_id, filename)
                     url_fid = h.FID('', filename)
-                    html_diff = diffs.as_html(enable_comments=enable_comments, parsed_lines=[f])
+                    html_diff = diffs.as_html(parsed_lines=[f])
                     file_diff_data.append((fid, url_fid, f['operation'], f['old_filename'], filename, html_diff, st))
             else:
                 # downloads/raw we only need RAW diff nothing else
@@ -405,19 +285,19 @@ class ChangesetController(BaseRepoController):
         elif method == 'patch':
             response.content_type = 'text/plain'
             c.diff = safe_str(raw_diff)
-            return render('changeset/patch_changeset.html')
+            return base.render('changeset/patch_changeset.html')
         elif method == 'raw':
             response.content_type = 'text/plain'
             return raw_diff
         elif method == 'show':
             if len(c.cs_ranges) == 1:
-                return render('changeset/changeset.html')
+                return base.render('changeset/changeset.html')
             else:
                 c.cs_ranges_org = None
                 c.cs_comments = {}
                 revs = [ctx.revision for ctx in reversed(c.cs_ranges)]
                 c.jsdata = graph_data(c.db_repo_scm_instance, revs)
-                return render('changeset/changeset_range.html')
+                return base.render('changeset/changeset_range.html')
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
@@ -441,19 +321,19 @@ class ChangesetController(BaseRepoController):
 
     @LoginRequired()
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def comment(self, repo_name, revision):
         return create_cs_pr_comment(repo_name, revision=revision)
 
     @LoginRequired()
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def delete_comment(self, repo_name, comment_id):
         return delete_cs_pr_comment(repo_name, comment_id)
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def changeset_info(self, repo_name, revision):
         if request.is_xhr:
             try:
@@ -465,7 +345,7 @@ class ChangesetController(BaseRepoController):
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def changeset_children(self, repo_name, revision):
         if request.is_xhr:
             changeset = c.db_repo_scm_instance.get_changeset(revision)
@@ -478,7 +358,7 @@ class ChangesetController(BaseRepoController):
 
     @LoginRequired(allow_default_user=True)
     @HasRepoPermissionLevelDecorator('read')
-    @jsonify
+    @base.jsonify
     def changeset_parents(self, repo_name, revision):
         if request.is_xhr:
             changeset = c.db_repo_scm_instance.get_changeset(revision)

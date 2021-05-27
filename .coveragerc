@@ -8,9 +8,6 @@ omit =
     kallithea/lib/dbmigrate/*
     # the tests themselves should not be part of the coverage report
     kallithea/tests/*
-    # the scm hooks are not run in the kallithea process
-    kallithea/config/post_receive_tmpl.py
-    kallithea/config/pre_receive_tmpl.py
 
 # same omit lines should be present in sections 'run' and 'report'
 [report]
@@ -23,9 +20,6 @@ omit =
     kallithea/lib/dbmigrate/*
     # the tests themselves should not be part of the coverage report
     kallithea/tests/*
-    # the scm hooks are not run in the kallithea process
-    kallithea/config/post_receive_tmpl.py
-    kallithea/config/pre_receive_tmpl.py
 
 [paths]
 source =

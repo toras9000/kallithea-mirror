@@ -28,28 +28,21 @@ Original author and date, and relevant copyright and licensing information is be
 
 import logging
 import os
-import sys
 import traceback
-from os.path import dirname
 from shutil import rmtree
 from time import mktime
 
+from tg import config
 from whoosh.index import create_in, exists_in, open_dir
 from whoosh.qparser import QueryParser
 
-from kallithea.config.conf import INDEX_EXTENSIONS, INDEX_FILENAMES
+from kallithea.lib import celerylib
+from kallithea.lib.conf import INDEX_EXTENSIONS, INDEX_FILENAMES
 from kallithea.lib.indexers import CHGSET_IDX_NAME, CHGSETS_SCHEMA, IDX_NAME, SCHEMA
 from kallithea.lib.utils2 import safe_str
 from kallithea.lib.vcs.exceptions import ChangesetDoesNotExistError, ChangesetError, NodeDoesNotExistError, RepositoryError
-from kallithea.model.db import Repository
+from kallithea.model import db
 from kallithea.model.scm import ScmModel
-
-
-# Add location of top level folder to sys.path
-project_path = dirname(dirname(dirname(dirname(os.path.realpath(__file__)))))
-sys.path.append(project_path)
-
-
 
 
 log = logging.getLogger('whoosh_indexer')
@@ -109,7 +102,7 @@ class WhooshIndexingDaemon(object):
             self.initial = False
 
     def _get_index_revision(self, repo):
-        db_repo = Repository.get_by_repo_name(repo.name)
+        db_repo = db.Repository.get_by_repo_name(repo.name)
         landing_rev = 'tip'
         if db_repo:
             _rev_type, _rev = db_repo.landing_rev
@@ -195,7 +188,6 @@ class WhooshIndexingDaemon(object):
 
         writer.add_document(
             fileid=path,
-            owner=repo.contact,
             repository_rawname=repo_name,
             repository=repo_name,
             path=path,
@@ -234,7 +226,6 @@ class WhooshIndexingDaemon(object):
             log.debug('    >> %s %s/%s', cs, indexed, total)
             writer.add_document(
                 raw_id=cs.raw_id,
-                owner=repo.contact,
                 date=cs._timestamp,
                 repository_rawname=repo_name,
                 repository=repo_name,
@@ -455,3 +446,12 @@ class WhooshIndexingDaemon(object):
             self.build_indexes()
         else:
             self.update_indexes()
+
+
+@celerylib.task
+@celerylib.locked_task
+def whoosh_index(repo_location, full_index):
+    index_location = config['index_dir']
+    WhooshIndexingDaemon(index_location=index_location,
+                         repo_location=repo_location) \
+                         .run(full_index=full_index)

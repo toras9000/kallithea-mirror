@@ -37,16 +37,15 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPFound, HTTPInternalServerError
 
-from kallithea.config.routing import url
-from kallithea.lib import helpers as h
+import kallithea.lib.helpers as h
+from kallithea.controllers import base
+from kallithea.lib import webutils
 from kallithea.lib.auth import HasPermissionAnyDecorator, HasUserGroupPermissionLevelDecorator, LoginRequired
-from kallithea.lib.base import BaseController, render
 from kallithea.lib.exceptions import RepoGroupAssignmentError, UserGroupsAssignedException
-from kallithea.lib.utils import action_logger
 from kallithea.lib.utils2 import safe_int, safe_str
-from kallithea.model.db import User, UserGroup, UserGroupRepoGroupToPerm, UserGroupRepoToPerm, UserGroupToPerm
+from kallithea.lib.webutils import url
+from kallithea.model import db, meta, userlog
 from kallithea.model.forms import CustomDefaultPermissionsForm, UserGroupForm, UserGroupPermsForm
-from kallithea.model.meta import Session
 from kallithea.model.scm import UserGroupList
 from kallithea.model.user_group import UserGroupModel
 
@@ -54,8 +53,7 @@ from kallithea.model.user_group import UserGroupModel
 log = logging.getLogger(__name__)
 
 
-class UserGroupsController(BaseController):
-    """REST Controller styled on the Atom Publishing Protocol"""
+class UserGroupsController(base.BaseController):
 
     @LoginRequired(allow_default_user=True)
     def _before(self, *args, **kwargs):
@@ -67,7 +65,7 @@ class UserGroupsController(BaseController):
 
         c.group_members = [(x.user_id, x.username) for x in c.group_members_obj]
         c.available_members = sorted(((x.user_id, x.username) for x in
-                                      User.query().all()),
+                                      db.User.query().all()),
                                      key=lambda u: u[1].lower())
 
     def __load_defaults(self, user_group_id):
@@ -76,13 +74,13 @@ class UserGroupsController(BaseController):
 
         :param user_group_id:
         """
-        user_group = UserGroup.get_or_404(user_group_id)
+        user_group = db.UserGroup.get_or_404(user_group_id)
         data = user_group.get_dict()
         return data
 
     def index(self, format='html'):
-        _list = UserGroup.query() \
-                        .order_by(func.lower(UserGroup.users_group_name)) \
+        _list = db.UserGroup.query() \
+                        .order_by(func.lower(db.UserGroup.users_group_name)) \
                         .all()
         group_iter = UserGroupList(_list, perm_level='admin')
         user_groups_data = []
@@ -91,21 +89,21 @@ class UserGroupsController(BaseController):
 
         def user_group_name(user_group_id, user_group_name):
             return template.get_def("user_group_name") \
-                .render_unicode(user_group_id, user_group_name, _=_, h=h, c=c)
+                .render_unicode(user_group_id, user_group_name, _=_, webutils=webutils, c=c)
 
         def user_group_actions(user_group_id, user_group_name):
             return template.get_def("user_group_actions") \
-                .render_unicode(user_group_id, user_group_name, _=_, h=h, c=c)
+                .render_unicode(user_group_id, user_group_name, _=_, webutils=webutils, c=c)
 
         for user_gr in group_iter:
             user_groups_data.append({
                 "raw_name": user_gr.users_group_name,
                 "group_name": user_group_name(user_gr.users_group_id,
                                               user_gr.users_group_name),
-                "desc": h.escape(user_gr.user_group_description),
+                "desc": webutils.escape(user_gr.user_group_description),
                 "members": len(user_gr.members),
                 "active": h.boolicon(user_gr.users_group_active),
-                "owner": h.person(user_gr.owner.username),
+                "owner": user_gr.owner.username,
                 "action": user_group_actions(user_gr.users_group_id, user_gr.users_group_name)
             })
 
@@ -115,7 +113,7 @@ class UserGroupsController(BaseController):
             "records": user_groups_data
         }
 
-        return render('admin/user_groups/user_groups.html')
+        return base.render('admin/user_groups/user_groups.html')
 
     @HasPermissionAnyDecorator('hg.admin', 'hg.usergroup.create.true')
     def create(self):
@@ -128,15 +126,15 @@ class UserGroupsController(BaseController):
                                          active=form_result['users_group_active'])
 
             gr = form_result['users_group_name']
-            action_logger(request.authuser,
+            userlog.action_logger(request.authuser,
                           'admin_created_users_group:%s' % gr,
                           None, request.ip_addr)
-            h.flash(h.HTML(_('Created user group %s')) % h.link_to(gr, url('edit_users_group', id=ug.users_group_id)),
+            webutils.flash(webutils.HTML(_('Created user group %s')) % webutils.link_to(gr, url('edit_users_group', id=ug.users_group_id)),
                 category='success')
-            Session().commit()
+            meta.Session().commit()
         except formencode.Invalid as errors:
             return htmlfill.render(
-                render('admin/user_groups/user_group_add.html'),
+                base.render('admin/user_groups/user_group_add.html'),
                 defaults=errors.value,
                 errors=errors.error_dict or {},
                 prefix_error=False,
@@ -144,18 +142,18 @@ class UserGroupsController(BaseController):
                 force_defaults=False)
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('Error occurred during creation of user group %s')
+            webutils.flash(_('Error occurred during creation of user group %s')
                     % request.POST.get('users_group_name'), category='error')
 
         raise HTTPFound(location=url('users_groups'))
 
     @HasPermissionAnyDecorator('hg.admin', 'hg.usergroup.create.true')
     def new(self, format='html'):
-        return render('admin/user_groups/user_group_add.html')
+        return base.render('admin/user_groups/user_group_add.html')
 
     @HasUserGroupPermissionLevelDecorator('admin')
     def update(self, id):
-        c.user_group = UserGroup.get_or_404(id)
+        c.user_group = db.UserGroup.get_or_404(id)
         c.active = 'settings'
         self.__load_data(id)
 
@@ -169,11 +167,11 @@ class UserGroupsController(BaseController):
             form_result = users_group_form.to_python(request.POST)
             UserGroupModel().update(c.user_group, form_result)
             gr = form_result['users_group_name']
-            action_logger(request.authuser,
+            userlog.action_logger(request.authuser,
                           'admin_updated_users_group:%s' % gr,
                           None, request.ip_addr)
-            h.flash(_('Updated user group %s') % gr, category='success')
-            Session().commit()
+            webutils.flash(_('Updated user group %s') % gr, category='success')
+            meta.Session().commit()
         except formencode.Invalid as errors:
             ug_model = UserGroupModel()
             defaults = errors.value
@@ -186,7 +184,7 @@ class UserGroupsController(BaseController):
             })
 
             return htmlfill.render(
-                render('admin/user_groups/user_group_edit.html'),
+                base.render('admin/user_groups/user_group_edit.html'),
                 defaults=defaults,
                 errors=e,
                 prefix_error=False,
@@ -194,36 +192,36 @@ class UserGroupsController(BaseController):
                 force_defaults=False)
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('Error occurred during update of user group %s')
+            webutils.flash(_('Error occurred during update of user group %s')
                     % request.POST.get('users_group_name'), category='error')
 
         raise HTTPFound(location=url('edit_users_group', id=id))
 
     @HasUserGroupPermissionLevelDecorator('admin')
     def delete(self, id):
-        usr_gr = UserGroup.get_or_404(id)
+        usr_gr = db.UserGroup.get_or_404(id)
         try:
             UserGroupModel().delete(usr_gr)
-            Session().commit()
-            h.flash(_('Successfully deleted user group'), category='success')
+            meta.Session().commit()
+            webutils.flash(_('Successfully deleted user group'), category='success')
         except UserGroupsAssignedException as e:
-            h.flash(e, category='error')
+            webutils.flash(e, category='error')
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('An error occurred during deletion of user group'),
+            webutils.flash(_('An error occurred during deletion of user group'),
                     category='error')
         raise HTTPFound(location=url('users_groups'))
 
     @HasUserGroupPermissionLevelDecorator('admin')
     def edit(self, id, format='html'):
-        c.user_group = UserGroup.get_or_404(id)
+        c.user_group = db.UserGroup.get_or_404(id)
         c.active = 'settings'
         self.__load_data(id)
 
         defaults = self.__load_defaults(id)
 
         return htmlfill.render(
-            render('admin/user_groups/user_group_edit.html'),
+            base.render('admin/user_groups/user_group_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False
@@ -231,7 +229,7 @@ class UserGroupsController(BaseController):
 
     @HasUserGroupPermissionLevelDecorator('admin')
     def edit_perms(self, id):
-        c.user_group = UserGroup.get_or_404(id)
+        c.user_group = db.UserGroup.get_or_404(id)
         c.active = 'perms'
 
         defaults = {}
@@ -245,7 +243,7 @@ class UserGroupsController(BaseController):
                              p.permission.permission_name})
 
         return htmlfill.render(
-            render('admin/user_groups/user_group_edit.html'),
+            base.render('admin/user_groups/user_group_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False
@@ -258,7 +256,7 @@ class UserGroupsController(BaseController):
 
         :param id:
         """
-        user_group = UserGroup.get_or_404(id)
+        user_group = db.UserGroup.get_or_404(id)
         form = UserGroupPermsForm()().to_python(request.POST)
 
         # set the permissions !
@@ -266,13 +264,13 @@ class UserGroupsController(BaseController):
             UserGroupModel()._update_permissions(user_group, form['perms_new'],
                                                  form['perms_updates'])
         except RepoGroupAssignmentError:
-            h.flash(_('Target group cannot be the same'), category='error')
+            webutils.flash(_('Target group cannot be the same'), category='error')
             raise HTTPFound(location=url('edit_user_group_perms', id=id))
         # TODO: implement this
         #action_logger(request.authuser, 'admin_changed_repo_permissions',
         #              repo_name, request.ip_addr)
-        Session().commit()
-        h.flash(_('User group permissions updated'), category='success')
+        meta.Session().commit()
+        webutils.flash(_('User group permissions updated'), category='success')
         raise HTTPFound(location=url('edit_user_group_perms', id=id))
 
     @HasUserGroupPermissionLevelDecorator('admin')
@@ -288,7 +286,7 @@ class UserGroupsController(BaseController):
             if not request.authuser.is_admin:
                 if obj_type == 'user' and request.authuser.user_id == obj_id:
                     msg = _('Cannot revoke permission for yourself as admin')
-                    h.flash(msg, category='warning')
+                    webutils.flash(msg, category='warning')
                     raise Exception('revoke admin permission on self')
             if obj_type == 'user':
                 UserGroupModel().revoke_user_permission(user_group=id,
@@ -296,36 +294,36 @@ class UserGroupsController(BaseController):
             elif obj_type == 'user_group':
                 UserGroupModel().revoke_user_group_permission(target_user_group=id,
                                                               user_group=obj_id)
-            Session().commit()
+            meta.Session().commit()
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('An error occurred during revoking of permission'),
+            webutils.flash(_('An error occurred during revoking of permission'),
                     category='error')
             raise HTTPInternalServerError()
 
     @HasUserGroupPermissionLevelDecorator('admin')
     def edit_default_perms(self, id):
-        c.user_group = UserGroup.get_or_404(id)
+        c.user_group = db.UserGroup.get_or_404(id)
         c.active = 'default_perms'
 
         permissions = {
             'repositories': {},
             'repositories_groups': {}
         }
-        ugroup_repo_perms = UserGroupRepoToPerm.query() \
-            .options(joinedload(UserGroupRepoToPerm.permission)) \
-            .options(joinedload(UserGroupRepoToPerm.repository)) \
-            .filter(UserGroupRepoToPerm.users_group_id == id) \
+        ugroup_repo_perms = db.UserGroupRepoToPerm.query() \
+            .options(joinedload(db.UserGroupRepoToPerm.permission)) \
+            .options(joinedload(db.UserGroupRepoToPerm.repository)) \
+            .filter(db.UserGroupRepoToPerm.users_group_id == id) \
             .all()
 
         for gr in ugroup_repo_perms:
             permissions['repositories'][gr.repository.repo_name]  \
                 = gr.permission.permission_name
 
-        ugroup_group_perms = UserGroupRepoGroupToPerm.query() \
-            .options(joinedload(UserGroupRepoGroupToPerm.permission)) \
-            .options(joinedload(UserGroupRepoGroupToPerm.group)) \
-            .filter(UserGroupRepoGroupToPerm.users_group_id == id) \
+        ugroup_group_perms = db.UserGroupRepoGroupToPerm.query() \
+            .options(joinedload(db.UserGroupRepoGroupToPerm.permission)) \
+            .options(joinedload(db.UserGroupRepoGroupToPerm.group)) \
+            .filter(db.UserGroupRepoGroupToPerm.users_group_id == id) \
             .all()
 
         for gr in ugroup_group_perms:
@@ -346,7 +344,7 @@ class UserGroupsController(BaseController):
         })
 
         return htmlfill.render(
-            render('admin/user_groups/user_group_edit.html'),
+            base.render('admin/user_groups/user_group_edit.html'),
             defaults=defaults,
             encoding="UTF-8",
             force_defaults=False
@@ -354,7 +352,7 @@ class UserGroupsController(BaseController):
 
     @HasUserGroupPermissionLevelDecorator('admin')
     def update_default_perms(self, id):
-        user_group = UserGroup.get_or_404(id)
+        user_group = db.UserGroup.get_or_404(id)
 
         try:
             form = CustomDefaultPermissionsForm()()
@@ -362,11 +360,11 @@ class UserGroupsController(BaseController):
 
             usergroup_model = UserGroupModel()
 
-            defs = UserGroupToPerm.query() \
-                .filter(UserGroupToPerm.users_group == user_group) \
+            defs = db.UserGroupToPerm.query() \
+                .filter(db.UserGroupToPerm.users_group == user_group) \
                 .all()
             for ug in defs:
-                Session().delete(ug)
+                meta.Session().delete(ug)
 
             if form_result['create_repo_perm']:
                 usergroup_model.grant_perm(id, 'hg.create.repository')
@@ -381,29 +379,29 @@ class UserGroupsController(BaseController):
             else:
                 usergroup_model.grant_perm(id, 'hg.fork.none')
 
-            h.flash(_("Updated permissions"), category='success')
-            Session().commit()
+            webutils.flash(_("Updated permissions"), category='success')
+            meta.Session().commit()
         except Exception:
             log.error(traceback.format_exc())
-            h.flash(_('An error occurred during permissions saving'),
+            webutils.flash(_('An error occurred during permissions saving'),
                     category='error')
 
         raise HTTPFound(location=url('edit_user_group_default_perms', id=id))
 
     @HasUserGroupPermissionLevelDecorator('admin')
     def edit_advanced(self, id):
-        c.user_group = UserGroup.get_or_404(id)
+        c.user_group = db.UserGroup.get_or_404(id)
         c.active = 'advanced'
         c.group_members_obj = sorted((x.user for x in c.user_group.members),
                                      key=lambda u: u.username.lower())
-        return render('admin/user_groups/user_group_edit.html')
+        return base.render('admin/user_groups/user_group_edit.html')
 
     @HasUserGroupPermissionLevelDecorator('admin')
     def edit_members(self, id):
-        c.user_group = UserGroup.get_or_404(id)
+        c.user_group = db.UserGroup.get_or_404(id)
         c.active = 'members'
         c.group_members_obj = sorted((x.user for x in c.user_group.members),
                                      key=lambda u: u.username.lower())
 
         c.group_members = [(x.user_id, x.username) for x in c.group_members_obj]
-        return render('admin/user_groups/user_group_edit.html')
+        return base.render('admin/user_groups/user_group_edit.html')

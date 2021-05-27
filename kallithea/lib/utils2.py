@@ -29,17 +29,31 @@ Original author and date, and relevant copyright and licensing information is be
 
 import binascii
 import datetime
+import hashlib
 import json
+import logging
 import os
 import re
+import string
+import sys
 import time
 import urllib.parse
+from distutils.version import StrictVersion
 
+import bcrypt
 import urlobject
-from tg.i18n import ugettext as _
-from tg.i18n import ungettext
+from sqlalchemy.engine import url as sa_url
+from sqlalchemy.exc import ArgumentError
+from tg import tmpl_context
+from tg.support.converters import asbool, aslist
 from webhelpers2.text import collapse, remove_formatting, strip_tags
 
+import kallithea
+from kallithea.lib import webutils
+from kallithea.lib.vcs.backends.base import BaseRepository, EmptyChangeset
+from kallithea.lib.vcs.backends.git.repository import GitRepository
+from kallithea.lib.vcs.conf import settings
+from kallithea.lib.vcs.exceptions import RepositoryError
 from kallithea.lib.vcs.utils import ascii_bytes, ascii_str, safe_bytes, safe_str  # re-export
 from kallithea.lib.vcs.utils.lazy import LazyProperty
 
@@ -50,7 +64,12 @@ except ImportError:
     pass
 
 
+log = logging.getLogger(__name__)
+
+
 # mute pyflakes "imported but unused"
+assert asbool
+assert aslist
 assert ascii_bytes
 assert ascii_str
 assert safe_bytes
@@ -58,42 +77,9 @@ assert safe_str
 assert LazyProperty
 
 
-def str2bool(_str):
-    """
-    returns True/False value from given string, it tries to translate the
-    string into boolean
-
-    :param _str: string value to translate into boolean
-    :rtype: boolean
-    :returns: boolean from given string
-    """
-    if _str is None:
-        return False
-    if _str in (True, False):
-        return _str
-    _str = str(_str).strip().lower()
-    return _str in ('t', 'true', 'y', 'yes', 'on', '1')
-
-
-def aslist(obj, sep=None, strip=True):
-    """
-    Returns given string separated by sep as list
-
-    :param obj:
-    :param sep:
-    :param strip:
-    """
-    if isinstance(obj, (str)):
-        lst = obj.split(sep)
-        if strip:
-            lst = [v.strip() for v in lst]
-        return lst
-    elif isinstance(obj, (list, tuple)):
-        return obj
-    elif obj is None:
-        return []
-    else:
-        return [obj]
+# get current umask value without changing it
+umask = os.umask(0)
+os.umask(umask)
 
 
 def convert_line_endings(line, mode):
@@ -182,108 +168,6 @@ def remove_prefix(s, prefix):
     return s
 
 
-def age(prevdate, show_short_version=False, now=None):
-    """
-    turns a datetime into an age string.
-    If show_short_version is True, then it will generate a not so accurate but shorter string,
-    example: 2days ago, instead of 2 days and 23 hours ago.
-
-    :param prevdate: datetime object
-    :param show_short_version: if it should approximate the date and return a shorter string
-    :rtype: str
-    :returns: str words describing age
-    """
-    now = now or datetime.datetime.now()
-    order = ['year', 'month', 'day', 'hour', 'minute', 'second']
-    deltas = {}
-    future = False
-
-    if prevdate > now:
-        now, prevdate = prevdate, now
-        future = True
-    if future:
-        prevdate = prevdate.replace(microsecond=0)
-    # Get date parts deltas
-    from dateutil import relativedelta
-    for part in order:
-        d = relativedelta.relativedelta(now, prevdate)
-        deltas[part] = getattr(d, part + 's')
-
-    # Fix negative offsets (there is 1 second between 10:59:59 and 11:00:00,
-    # not 1 hour, -59 minutes and -59 seconds)
-    for num, length in [(5, 60), (4, 60), (3, 24)]:  # seconds, minutes, hours
-        part = order[num]
-        carry_part = order[num - 1]
-
-        if deltas[part] < 0:
-            deltas[part] += length
-            deltas[carry_part] -= 1
-
-    # Same thing for days except that the increment depends on the (variable)
-    # number of days in the month
-    month_lengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-    if deltas['day'] < 0:
-        if prevdate.month == 2 and (prevdate.year % 4 == 0 and
-            (prevdate.year % 100 != 0 or prevdate.year % 400 == 0)
-        ):
-            deltas['day'] += 29
-        else:
-            deltas['day'] += month_lengths[prevdate.month - 1]
-
-        deltas['month'] -= 1
-
-    if deltas['month'] < 0:
-        deltas['month'] += 12
-        deltas['year'] -= 1
-
-    # In short version, we want nicer handling of ages of more than a year
-    if show_short_version:
-        if deltas['year'] == 1:
-            # ages between 1 and 2 years: show as months
-            deltas['month'] += 12
-            deltas['year'] = 0
-        if deltas['year'] >= 2:
-            # ages 2+ years: round
-            if deltas['month'] > 6:
-                deltas['year'] += 1
-                deltas['month'] = 0
-
-    # Format the result
-    fmt_funcs = {
-        'year': lambda d: ungettext('%d year', '%d years', d) % d,
-        'month': lambda d: ungettext('%d month', '%d months', d) % d,
-        'day': lambda d: ungettext('%d day', '%d days', d) % d,
-        'hour': lambda d: ungettext('%d hour', '%d hours', d) % d,
-        'minute': lambda d: ungettext('%d minute', '%d minutes', d) % d,
-        'second': lambda d: ungettext('%d second', '%d seconds', d) % d,
-    }
-
-    for i, part in enumerate(order):
-        value = deltas[part]
-        if value == 0:
-            continue
-
-        if i < 5:
-            sub_part = order[i + 1]
-            sub_value = deltas[sub_part]
-        else:
-            sub_value = 0
-
-        if sub_value == 0 or show_short_version:
-            if future:
-                return _('in %s') % fmt_funcs[part](value)
-            else:
-                return _('%s ago') % fmt_funcs[part](value)
-        if future:
-            return _('in %s and %s') % (fmt_funcs[part](value),
-                fmt_funcs[sub_part](sub_value))
-        else:
-            return _('%s and %s ago') % (fmt_funcs[part](value),
-                fmt_funcs[sub_part](sub_value))
-
-    return _('just now')
-
-
 def uri_filter(uri):
     """
     Removes user:password from given url string
@@ -358,6 +242,31 @@ def get_clone_url(clone_uri_tmpl, prefix_url, repo_name, repo_id, username=None)
     return str(url_obj)
 
 
+def short_ref_name(ref_type, ref_name):
+    """Return short description of PR ref - revs will be truncated"""
+    if ref_type == 'rev':
+        return ref_name[:12]
+    return ref_name
+
+
+def link_to_ref(repo_name, ref_type, ref_name, rev=None):
+    """
+    Return full markup for a PR ref to changeset_home for a changeset.
+    If ref_type is 'branch', it will link to changelog.
+    ref_name is shortened if ref_type is 'rev'.
+    if rev is specified, show it too, explicitly linking to that revision.
+    """
+    txt = short_ref_name(ref_type, ref_name)
+    if ref_type == 'branch':
+        u = webutils.url('changelog_home', repo_name=repo_name, branch=ref_name)
+    else:
+        u = webutils.url('changeset_home', repo_name=repo_name, revision=ref_name)
+    l = webutils.link_to(repo_name + '#' + txt, u)
+    if rev and ref_type != 'rev':
+        l = webutils.literal('%s (%s)' % (l, webutils.link_to(rev[:12], webutils.url('changeset_home', repo_name=repo_name, revision=rev))))
+    return l
+
+
 def get_changeset_safe(repo, rev):
     """
     Safe version of get_changeset if this changeset doesn't exists for a
@@ -366,9 +275,6 @@ def get_changeset_safe(repo, rev):
     :param repo:
     :param rev:
     """
-    from kallithea.lib.vcs.backends.base import BaseRepository
-    from kallithea.lib.vcs.exceptions import RepositoryError
-    from kallithea.lib.vcs.backends.base import EmptyChangeset
     if not isinstance(repo, BaseRepository):
         raise Exception('You must pass an Repository '
                         'object as first argument got %s' % type(repo))
@@ -395,33 +301,6 @@ def time_to_datetime(tm):
         return datetime.datetime.fromtimestamp(tm)
 
 
-# Must match regexp in kallithea/public/js/base.js MentionsAutoComplete()
-# Check char before @ - it must not look like we are in an email addresses.
-# Matching is greedy so we don't have to look beyond the end.
-MENTIONS_REGEX = re.compile(r'(?:^|(?<=[^a-zA-Z0-9]))@([a-zA-Z0-9][-_.a-zA-Z0-9]*[a-zA-Z0-9])')
-
-
-def extract_mentioned_usernames(text):
-    r"""
-    Returns list of (possible) usernames @mentioned in given text.
-
-    >>> extract_mentioned_usernames('@1-2.a_X,@1234 not@not @ddd@not @n @ee @ff @gg, @gg;@hh @n\n@zz,')
-    ['1-2.a_X', '1234', 'ddd', 'ee', 'ff', 'gg', 'gg', 'hh', 'zz']
-    """
-    return MENTIONS_REGEX.findall(text)
-
-
-def extract_mentioned_users(text):
-    """ Returns set of actual database Users @mentioned in given text. """
-    from kallithea.model.db import User
-    result = set()
-    for name in extract_mentioned_usernames(text):
-        user = User.get_by_username(name, case_insensitive=True)
-        if user is not None and not user.is_default_user:
-            result.add(user)
-    return result
-
-
 class AttributeDict(dict):
     def __getattr__(self, attr):
         return self.get(attr, None)
@@ -430,8 +309,6 @@ class AttributeDict(dict):
 
 
 def obfuscate_url_pw(engine):
-    from sqlalchemy.engine import url as sa_url
-    from sqlalchemy.exc import ArgumentError
     try:
         _url = sa_url.make_url(engine or '')
     except ArgumentError:
@@ -478,14 +355,13 @@ def set_hook_environment(username, ip_addr, repo_name, repo_alias, action=None):
 
     Must always be called before anything with hooks are invoked.
     """
-    from kallithea import CONFIG
     extras = {
-        'ip': ip_addr, # used in log_push/pull_action action_logger
+        'ip': ip_addr, # used in action_logger
         'username': username,
-        'action': action or 'push_local', # used in log_push_action_raw_ids action_logger
+        'action': action or 'push_local', # used in process_pushed_raw_ids action_logger
         'repository': repo_name,
-        'scm': repo_alias, # used to pick hack in log_push_action_raw_ids
-        'config': CONFIG['__file__'], # used by git hook to read config
+        'scm': repo_alias,
+        'config': kallithea.CONFIG['__file__'], # used by git hook to read config
     }
     os.environ['KALLITHEA_EXTRAS'] = json.dumps(extras)
 
@@ -495,80 +371,10 @@ def get_current_authuser():
     Gets kallithea user from threadlocal tmpl_context variable if it's
     defined, else returns None.
     """
-    from tg import tmpl_context
     try:
         return getattr(tmpl_context, 'authuser', None)
     except TypeError:  # No object (name: context) has been registered for this thread
         return None
-
-
-class OptionalAttr(object):
-    """
-    Special Optional Option that defines other attribute. Example::
-
-        def test(apiuser, userid=Optional(OAttr('apiuser')):
-            user = Optional.extract(userid)
-            # calls
-
-    """
-
-    def __init__(self, attr_name):
-        self.attr_name = attr_name
-
-    def __repr__(self):
-        return '<OptionalAttr:%s>' % self.attr_name
-
-    def __call__(self):
-        return self
-
-
-# alias
-OAttr = OptionalAttr
-
-
-class Optional(object):
-    """
-    Defines an optional parameter::
-
-        param = param.getval() if isinstance(param, Optional) else param
-        param = param() if isinstance(param, Optional) else param
-
-    is equivalent of::
-
-        param = Optional.extract(param)
-
-    """
-
-    def __init__(self, type_):
-        self.type_ = type_
-
-    def __repr__(self):
-        return '<Optional:%s>' % self.type_.__repr__()
-
-    def __call__(self):
-        return self.getval()
-
-    def getval(self):
-        """
-        returns value from this Optional instance
-        """
-        if isinstance(self.type_, OAttr):
-            # use params name
-            return self.type_.attr_name
-        return self.type_
-
-    @classmethod
-    def extract(cls, val):
-        """
-        Extracts value from Optional() instance
-
-        :param val:
-        :return: original value if it's not Optional instance else
-            value of instance
-        """
-        if isinstance(val, cls):
-            return val.getval()
-        return val
 
 
 def urlreadable(s, _cleanstringsub=re.compile('[^-a-zA-Z0-9./]+').sub):
@@ -622,3 +428,118 @@ def ask_ok(prompt, retries=4, complaint='Yes or no please!'):
         if retries < 0:
             raise IOError
         print(complaint)
+
+
+class PasswordGenerator(object):
+    """
+    This is a simple class for generating password from different sets of
+    characters
+    usage::
+
+        passwd_gen = PasswordGenerator()
+        #print 8-letter password containing only big and small letters
+            of alphabet
+        passwd_gen.gen_password(8, passwd_gen.ALPHABETS_BIG_SMALL)
+    """
+    ALPHABETS_NUM = r'''1234567890'''
+    ALPHABETS_SMALL = r'''qwertyuiopasdfghjklzxcvbnm'''
+    ALPHABETS_BIG = r'''QWERTYUIOPASDFGHJKLZXCVBNM'''
+    ALPHABETS_SPECIAL = r'''`-=[]\;',./~!@#$%^&*()_+{}|:"<>?'''
+    ALPHABETS_FULL = ALPHABETS_BIG + ALPHABETS_SMALL \
+        + ALPHABETS_NUM + ALPHABETS_SPECIAL
+    ALPHABETS_ALPHANUM = ALPHABETS_BIG + ALPHABETS_SMALL + ALPHABETS_NUM
+    ALPHABETS_BIG_SMALL = ALPHABETS_BIG + ALPHABETS_SMALL
+    ALPHABETS_ALPHANUM_BIG = ALPHABETS_BIG + ALPHABETS_NUM
+    ALPHABETS_ALPHANUM_SMALL = ALPHABETS_SMALL + ALPHABETS_NUM
+
+    def gen_password(self, length, alphabet=ALPHABETS_FULL):
+        assert len(alphabet) <= 256, alphabet
+        l = []
+        while len(l) < length:
+            i = ord(os.urandom(1))
+            if i < len(alphabet):
+                l.append(alphabet[i])
+        return ''.join(l)
+
+
+def get_crypt_password(password):
+    """
+    Cryptographic function used for bcrypt password hashing.
+
+    :param password: password to hash
+    """
+    return ascii_str(bcrypt.hashpw(safe_bytes(password), bcrypt.gensalt(10)))
+
+
+def check_password(password, hashed):
+    """
+    Checks password match the hashed value using bcrypt.
+    Remains backwards compatible and accept plain sha256 hashes which used to
+    be used on Windows.
+
+    :param password: password
+    :param hashed: password in hashed form
+    """
+    # sha256 hashes will always be 64 hex chars
+    # bcrypt hashes will always contain $ (and be shorter)
+    if len(hashed) == 64 and all(x in string.hexdigits for x in hashed):
+        return hashlib.sha256(password).hexdigest() == hashed
+    try:
+        return bcrypt.checkpw(safe_bytes(password), ascii_bytes(hashed))
+    except ValueError as e:
+        # bcrypt will throw ValueError 'Invalid hashed_password salt' on all password errors
+        log.error('error from bcrypt checking password: %s', e)
+        return False
+    log.error('check_password failed - no method found for hash length %s', len(hashed))
+    return False
+
+
+git_req_ver = StrictVersion('1.7.4')
+
+def check_git_version():
+    """
+    Checks what version of git is installed on the system, and raise a system exit
+    if it's too old for Kallithea to work properly.
+    """
+    if 'git' not in kallithea.BACKENDS:
+        return None
+
+    if not settings.GIT_EXECUTABLE_PATH:
+        log.warning('No git executable configured - check "git_path" in the ini file.')
+        return None
+
+    try:
+        stdout, stderr = GitRepository._run_git_command(['--version'])
+    except RepositoryError as e:
+        # message will already have been logged as error
+        log.warning('No working git executable found - check "git_path" in the ini file.')
+        return None
+
+    if stderr:
+        log.warning('Error/stderr from "%s --version":\n%s', settings.GIT_EXECUTABLE_PATH, safe_str(stderr))
+
+    if not stdout:
+        log.warning('No working git executable found - check "git_path" in the ini file.')
+        return None
+
+    output = safe_str(stdout).strip()
+    m = re.search(r"\d+.\d+.\d+", output)
+    if m:
+        ver = StrictVersion(m.group(0))
+        log.debug('Git executable: "%s", version %s (parsed from: "%s")',
+                  settings.GIT_EXECUTABLE_PATH, ver, output)
+        if ver < git_req_ver:
+            log.error('Kallithea detected %s version %s, which is too old '
+                      'for the system to function properly. '
+                      'Please upgrade to version %s or later. '
+                      'If you strictly need Mercurial repositories, you can '
+                      'clear the "git_path" setting in the ini file.',
+                      settings.GIT_EXECUTABLE_PATH, ver, git_req_ver)
+            log.error("Terminating ...")
+            sys.exit(1)
+    else:
+        ver = StrictVersion('0.0.0')
+        log.warning('Error finding version number in "%s --version" stdout:\n%s',
+                    settings.GIT_EXECUTABLE_PATH, output)
+
+    return ver
