@@ -10,23 +10,29 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
 
+msgid ""
+"CSRF token leak has been detected - all form tokens have been expired"
+msgstr ""
+"Une fuite de jeton CSRF a été détectée - tous les jetons de formulaire "
+"sont considérés comme expirés"
+
+msgid "Repository not found in the filesystem"
+msgstr "Dépôt non trouvé sur le système de fichiers"
+
 msgid "There are no changesets yet"
 msgstr "Il n’y a aucun changement pour le moment"
+
+msgid "Changeset for %s %s not found in %s"
+msgstr "Ensemble de changements pour %s %s non trouvé dans %s"
+
+msgid "SSH access is disabled."
+msgstr "L'accès SSH est désactivé."
 
 msgid "None"
 msgstr "Aucun"
 
 msgid "(closed)"
 msgstr "(fermé)"
-
-msgid "Show whitespace"
-msgstr "Afficher les espaces et tabulations"
-
-msgid "Ignore whitespace"
-msgstr "Ignorer les espaces et tabulations"
-
-msgid "Increase diff context to %(num)s lines"
-msgstr "Augmenter le contexte du diff à %(num)s lignes"
 
 msgid "No permission to change status"
 msgstr "Permission manquante pour changer le statut"
@@ -580,11 +586,6 @@ msgstr "Tâche d'envoi d'e-mail créée"
 msgid "Hook already exists"
 msgstr "Le hook existe déjà"
 
-msgid "Builtin hooks are read-only. Please use another hook name."
-msgstr ""
-"Les hooks intégrés sont en lecture seule. Merci de choisir un autre nom "
-"pour le hook."
-
 msgid "Added new hook"
 msgstr "Le nouveau hook a été ajouté"
 
@@ -664,21 +665,6 @@ msgstr ""
 msgid "You need to be signed in to view this page"
 msgstr "Vous devez être connecté pour visualiser cette page"
 
-msgid ""
-"CSRF token leak has been detected - all form tokens have been expired"
-msgstr ""
-"Une fuite de jeton CSRF a été détectée - tous les jetons de formulaire "
-"sont considérés comme expirés"
-
-msgid "Repository not found in the filesystem"
-msgstr "Dépôt non trouvé sur le système de fichiers"
-
-msgid "Changeset for %s %s not found in %s"
-msgstr "Ensemble de changements pour %s %s non trouvé dans %s"
-
-msgid "SSH access is disabled."
-msgstr "L'accès SSH est désactivé."
-
 msgid "Binary file"
 msgstr "Fichier binaire"
 
@@ -690,6 +676,9 @@ msgstr ""
 
 msgid "No changes detected"
 msgstr "Aucun changement détecté"
+
+msgid "Increase diff context to %(num)s lines"
+msgstr "Augmenter le contexte du diff à %(num)s lignes"
 
 msgid "Deleted branch: %s"
 msgstr "Branche supprimée : %s"
@@ -802,40 +791,8 @@ msgstr "renommer"
 msgid "chmod"
 msgstr "chmod"
 
-msgid ""
-"%s repository is not mapped to db perhaps it was created or renamed from "
-"the filesystem please run the application again in order to rescan "
-"repositories"
-msgstr ""
-"Le dépôt %s n’est pas représenté dans la base de données. Il a "
-"probablement été créé ou renommé manuellement. Veuillez relancer "
-"l’application pour rescanner les dépôts"
-
 msgid "SSH key is missing"
 msgstr "La clé SSH est manquante"
-
-msgid ""
-"Incorrect SSH key - it must have both a key type and a base64 part, like "
-"'ssh-rsa ASRNeaZu4FA...xlJp='"
-msgstr ""
-"Clé SSH incorrecte – elle doit comporter à la fois un type de clé et une "
-"partie base64, comme 'ssh-rsa ASRNeaZu4FA...xlJp='"
-
-msgid "Incorrect SSH key - it must start with 'ssh-(rsa|dss|ed25519)'"
-msgstr ""
-"Clé SSH incorrecte – elle doit commencer par « ssh-(rsa|dss|ed25519) »"
-
-msgid "Incorrect SSH key - unexpected characters in base64 part %r"
-msgstr ""
-"Clé SSH incorrecte – caractères inattendus dans la partie base 64 %r"
-
-msgid "Incorrect SSH key - failed to decode base64 part %r"
-msgstr "Clé SSH incorrecte – échec du décodage de la partie base64 %r"
-
-msgid "Incorrect SSH key - base64 part is not %r as claimed but %r"
-msgstr ""
-"Clé SSH incorrecte – la partie base 64 n'est pas %r comme il est dit mais "
-"%r"
 
 msgid "%d year"
 msgid_plural "%d years"
@@ -881,12 +838,6 @@ msgstr "Il y a %s et %s"
 
 msgid "just now"
 msgstr "à l’instant"
-
-msgid "on line %s"
-msgstr "à la ligne %s"
-
-msgid "[Mention]"
-msgstr "[Mention]"
 
 msgid "top level"
 msgstr "niveau supérieur"
@@ -945,13 +896,6 @@ msgstr ""
 "L'utilisateur par défaut a un accès administrateur aux nouveaux groupes "
 "d'utilisateurs"
 
-msgid "Only admins can create repository groups"
-msgstr "Seul un administrateur peut créer un groupe de dépôts"
-
-msgid "Non-admins can create repository groups"
-msgstr ""
-"Les utilisateurs non-administrateurs peuvent créer des groupes de dépôts"
-
 msgid "Only admins can create user groups"
 msgstr "Seul un administrateur peut créer des groupes d'utilisateurs"
 
@@ -967,18 +911,6 @@ msgid "Non-admins can create top level repositories"
 msgstr ""
 "Les utilisateurs non-administrateurs peuvent créer des dépôts de niveau "
 "supérieur"
-
-msgid ""
-"Repository creation enabled with write permission to a repository group"
-msgstr ""
-"Création de dépôts activée avec l'accès en écriture vers un groupe de "
-"dépôts"
-
-msgid ""
-"Repository creation disabled with write permission to a repository group"
-msgstr ""
-"Création de dépôts désactivée avec l'accès en écriture vers un groupe de "
-"dépôts"
 
 msgid "Only admins can fork repositories"
 msgstr "Seul un administrateur peut faire un fork de dépôt"
@@ -1023,13 +955,6 @@ msgstr "Entrez au moins %(min)i caractères"
 msgid "Name must not contain only digits"
 msgstr "Le nom ne doit pas contenir seulement des chiffres"
 
-msgid ""
-"[Comment] %(repo_name)s changeset %(short_id)s \"%(message_short)s\" on "
-"%(branch)s"
-msgstr ""
-"[Commentaire] Changeset %(short_id)s « %(message_short)s » de "
-"%(repo_name)s dans %(branch)s"
-
 msgid "New user %(new_username)s registered"
 msgstr "Nouvel utilisateur %(new_username)s enregistré"
 
@@ -1049,12 +974,6 @@ msgstr ""
 
 msgid "Closing"
 msgstr "Fermeture"
-
-msgid ""
-"%(user)s wants you to review pull request %(pr_nice_id)s: %(pr_title)s"
-msgstr ""
-"%(user)s veut que vous regardiez la demande de pull %(pr_nice_id)s : "
-"%(pr_title)s"
 
 msgid "Cannot create empty pull request"
 msgstr "Impossible de créer une requête de pull vide"
@@ -1102,9 +1021,6 @@ msgstr "La clé SSH %s est déjà utilisée par %s"
 
 msgid "SSH key with fingerprint %r found"
 msgstr "Clé SSH avec l'empreinte %r trouvée"
-
-msgid "New user registration"
-msgstr "Nouveau enregistrement d'utilisateur"
 
 msgid ""
 "You can't remove this user since it is crucial for the entire application"
@@ -1322,6 +1238,9 @@ msgstr "Rester connecté après un redémarrage du navigateur"
 
 msgid "Forgot your password?"
 msgstr "Mot de passe oublié?"
+
+msgid "Don't have an account?"
+msgstr "Vous n’avez pas de compte ?"
 
 msgid "Sign In"
 msgstr "Connexion"
@@ -1809,26 +1728,6 @@ msgstr ""
 "Activer pour autoriser les non-administrateurs à créer des dépôts au "
 "niveau supérieur."
 
-msgid ""
-"Note: This will also give all users API access to create repositories "
-"everywhere. That might change in future versions."
-msgstr ""
-"Note : Cela autorisera également tous les utilisateurs à utiliser l'API "
-"pour créer des dépôts partout. Ce comportement peut changer dans des "
-"versions futures."
-
-msgid "Repository creation with group write access"
-msgstr "Création de dépôts avec l'accès en écriture du groupe"
-
-msgid ""
-"With this, write permission to a repository group allows creating "
-"repositories inside that group. Without this, group write permissions "
-"mean nothing."
-msgstr ""
-"Avec ceci, le droit d'écriture dans un groupe de dépôt donne le droit de "
-"créer des dépôts dans ce groupe. Sans ceci, le droit d'écriture pour les "
-"groupes n'a pas d'impact."
-
 msgid "User group creation"
 msgstr "Création de groupes d'utilisateurs"
 
@@ -2259,12 +2158,6 @@ msgstr ""
 msgid "Save Settings"
 msgstr "Enregistrer les options"
 
-msgid "Built-in Mercurial Hooks (Read-Only)"
-msgstr "Hooks Mercurial intégrés (lecture seule)"
-
-msgid "Custom Hooks"
-msgstr "Hooks personnalisés"
-
 msgid ""
 "Hooks can be used to trigger actions on certain events such as push / "
 "pull. They can trigger Python functions or external applications."
@@ -2299,25 +2192,6 @@ msgstr ""
 
 msgid "Install Git hooks"
 msgstr "Installer des hooks Git"
-
-msgid ""
-"Verify if Kallithea's Git hooks are installed for each repository. "
-"Current hooks will be updated to the latest version."
-msgstr ""
-"Vérifier si les hooks Git de Kallithea sont installés pour chaque dépôt. "
-"Les hooks actuels seront mis à jour vers la dernière version."
-
-msgid "Overwrite existing Git hooks"
-msgstr "Écraser les hooks Git existants"
-
-msgid ""
-"If installing Git hooks, overwrite any existing hooks, even if they do "
-"not seem to come from Kallithea. WARNING: This operation will destroy any "
-"custom git hooks you may have deployed by hand!"
-msgstr ""
-"Lors de l'installation des hooks Git, écraser tous les hooks existants, "
-"même s'ils ne semblent pas provenir de Kallithea. ATTENTION : cette "
-"opération détruira tous les hooks Git que vous avez déployés à la main !"
 
 msgid "Rescan Repositories"
 msgstr "Relancer le scan des dépôts"
@@ -2687,9 +2561,6 @@ msgstr "Connexion à votre compte"
 
 msgid "Forgot password?"
 msgstr "Mot de passe oublié ?"
-
-msgid "Don't have an account?"
-msgstr "Vous n’avez pas de compte ?"
 
 msgid "Log Out"
 msgstr "Se déconnecter"
@@ -3215,6 +3086,9 @@ msgstr "Diff côte-à-côte de fichier pour %s"
 
 msgid "File diff"
 msgstr "Diff de fichier"
+
+msgid "Ignore whitespace"
+msgstr "Ignorer les espaces et tabulations"
 
 msgid "%s File Diff"
 msgstr "Diff de fichier pour %s"

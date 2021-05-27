@@ -19,15 +19,6 @@ msgstr "Ninguno"
 msgid "(closed)"
 msgstr "(cerrado)"
 
-msgid "Show whitespace"
-msgstr "Mostrar espacios en blanco"
-
-msgid "Ignore whitespace"
-msgstr "Ignorar espacios en blanco"
-
-msgid "Increase diff context to %(num)s lines"
-msgstr "Aumentar el contexto del diff a %(num)s lineas"
-
 msgid "Successfully deleted pull request %s"
 msgstr "Petición de pull %s eliminada correctamente"
 
@@ -280,5 +271,11 @@ msgstr "Sin modificar"
 msgid "Successfully updated gist content"
 msgstr "Gist actualizado correctamente"
 
+msgid "Increase diff context to %(num)s lines"
+msgstr "Aumentar el contexto del diff a %(num)s lineas"
+
 msgid "Select changeset"
 msgstr "Seleccionar cambios"
+
+msgid "Ignore whitespace"
+msgstr "Ignorar espacios en blanco"

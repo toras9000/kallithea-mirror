@@ -15,6 +15,3 @@ msgstr "Yok"
 
 msgid "(closed)"
 msgstr "(kapalı)"
-
-msgid "Show whitespace"
-msgstr "Boşlukları göster"

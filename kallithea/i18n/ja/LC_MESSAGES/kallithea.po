@@ -10,6 +10,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
+msgid "Repository not found in the filesystem"
+msgstr "ファイルシステム内にリポジトリが見つかりません"
+
 msgid "There are no changesets yet"
 msgstr "まだチェンジセットがありません"
 
@@ -18,15 +21,6 @@ msgstr "なし"
 
 msgid "(closed)"
 msgstr "(閉鎖済み)"
-
-msgid "Show whitespace"
-msgstr "空白を表示"
-
-msgid "Ignore whitespace"
-msgstr "空白を無視"
-
-msgid "Increase diff context to %(num)s lines"
-msgstr "diff コンテキストを %(num)s 行増やす"
 
 msgid "Such revision does not exist for this repository"
 msgstr "お探しのリビジョンはこのリポジトリにはありません"
@@ -532,9 +526,6 @@ msgstr ""
 msgid "You need to be signed in to view this page"
 msgstr "このページを閲覧するためにはサインインが必要です"
 
-msgid "Repository not found in the filesystem"
-msgstr "ファイルシステム内にリポジトリが見つかりません"
-
 msgid "Binary file"
 msgstr "バイナリファイル"
 
@@ -546,6 +537,9 @@ msgstr ""
 
 msgid "No changes detected"
 msgstr "検出された変更はありません"
+
+msgid "Increase diff context to %(num)s lines"
+msgstr "diff コンテキストを %(num)s 行増やす"
 
 msgid "Deleted branch: %s"
 msgstr "削除されたブランチ: %s"
@@ -655,15 +649,6 @@ msgstr "リネーム"
 msgid "chmod"
 msgstr "chmod"
 
-msgid ""
-"%s repository is not mapped to db perhaps it was created or renamed from "
-"the filesystem please run the application again in order to rescan "
-"repositories"
-msgstr ""
-"%s リポジトリはDB内に見つかりませんでした。おそらくファイルシステム上で作"
-"られたか名前が変更されたためです。リポジトリをもう一度チェックするためにア"
-"プリケーションを再起動してください"
-
 msgid "%d year"
 msgid_plural "%d years"
 msgstr[0] "%d 年"
@@ -703,12 +688,6 @@ msgstr "%s と %s 前"
 msgid "just now"
 msgstr "たったいま"
 
-msgid "on line %s"
-msgstr "%s 行目"
-
-msgid "[Mention]"
-msgstr "[Mention]"
-
 msgid "top level"
 msgstr "top level"
 
@@ -726,12 +705,6 @@ msgid "Default user has write access to new repositories"
 msgstr ""
 "デフォルトユーザーは新しいリポジトリに書き込みアクセスする権限があります"
 
-msgid "Only admins can create repository groups"
-msgstr "管理者のみがリポジトリのグループを作成できます"
-
-msgid "Non-admins can create repository groups"
-msgstr "非管理者がリポジトリのグループを作成できます"
-
 msgid "Only admins can create user groups"
 msgstr "管理者だけがユーザー グループを作成することができます"
 
@@ -743,16 +716,6 @@ msgstr "管理者だけがトップレベルにリポジトリを作成するこ
 
 msgid "Non-admins can create top level repositories"
 msgstr "非管理者がトップレベルにリポジトリを作成することができます"
-
-msgid ""
-"Repository creation enabled with write permission to a repository group"
-msgstr ""
-"リポジトリグループの書き込みパーミッションを使ったリポジトリ作成が有効です"
-
-msgid ""
-"Repository creation disabled with write permission to a repository group"
-msgstr ""
-"リポジトリグループの書き込みパーミッションを使ったリポジトリ作成は無効です"
 
 msgid "Only admins can fork repositories"
 msgstr "管理者のみがリポジトリをフォークすることができます"
@@ -796,17 +759,8 @@ msgstr "新しいユーザー %(new_username)s が登録されました"
 msgid "Closing"
 msgstr "クローズ"
 
-msgid ""
-"%(user)s wants you to review pull request %(pr_nice_id)s: %(pr_title)s"
-msgstr ""
-"%(user)s がプリリクエスト #%(pr_nice_id)s: %(pr_title)s のレビューを求めて"
-"います"
-
 msgid "latest tip"
 msgstr "最新のtip"
-
-msgid "New user registration"
-msgstr "新規ユーザー登録"
 
 msgid ""
 "User \"%s\" still owns %s repositories and cannot be removed. Switch "
@@ -1350,9 +1304,6 @@ msgstr "ユーザーグループ"
 msgid "Top level repository creation"
 msgstr "トップレベルリポジトリの作成"
 
-msgid "Repository creation with group write access"
-msgstr "グループ書き込み権限でのリポジトリ作成"
-
 msgid "User group creation"
 msgstr "ユーザーグループ作成"
 
@@ -1704,12 +1655,6 @@ msgstr ""
 msgid "Save Settings"
 msgstr "設定を保存"
 
-msgid "Built-in Mercurial Hooks (Read-Only)"
-msgstr "組み込みのMercurialフック (編集不可)"
-
-msgid "Custom Hooks"
-msgstr "カスタムフック"
-
 msgid ""
 "Hooks can be used to trigger actions on certain events such as push / "
 "pull. They can trigger Python functions or external applications."
@@ -1729,25 +1674,6 @@ msgstr "すべてのリポジトリのキャッシュを無効化する"
 
 msgid "Install Git hooks"
 msgstr "Gitフックをインストール"
-
-msgid ""
-"Verify if Kallithea's Git hooks are installed for each repository. "
-"Current hooks will be updated to the latest version."
-msgstr ""
-"各リポジトリに Kallitheas の Gitフックがインストールされているか確認してく"
-"ださい。現在のフックは最新版に更新されます"
-
-msgid "Overwrite existing Git hooks"
-msgstr "既存のGitフックを上書きする"
-
-msgid ""
-"If installing Git hooks, overwrite any existing hooks, even if they do "
-"not seem to come from Kallithea. WARNING: This operation will destroy any "
-"custom git hooks you may have deployed by hand!"
-msgstr ""
-"GitフックをインストールするとKallitheaから設定されたものであっても既存の"
-"フックは全て上書きされます。警告: この操作はあなたが手動で配置したGitのカ"
-"スタムフックを全て破壊します!"
 
 msgid "Rescan Repositories"
 msgstr "リポジトリを再スキャン"
@@ -2390,6 +2316,9 @@ msgstr "%s ファイルの差分を並べて表示"
 
 msgid "File diff"
 msgstr "ファイル差分"
+
+msgid "Ignore whitespace"
+msgstr "空白を無視"
 
 msgid "%s File Diff"
 msgstr "%s ファイル差分"

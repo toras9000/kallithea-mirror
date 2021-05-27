@@ -16,15 +16,6 @@ msgstr "無"
 msgid "(closed)"
 msgstr "（已關閉）"
 
-msgid "Show whitespace"
-msgstr "顯示空格"
-
-msgid "Ignore whitespace"
-msgstr "忽略空格"
-
-msgid "Increase diff context to %(num)s lines"
-msgstr "增加 diff 上下文至 %(num)s 行"
-
 msgid "No response"
 msgstr "未回應"
 
@@ -135,6 +126,9 @@ msgstr "您必須登入後才能瀏覽這個頁面"
 
 msgid "No changes detected"
 msgstr "尚未有任何變更"
+
+msgid "Increase diff context to %(num)s lines"
+msgstr "增加 diff 上下文至 %(num)s 行"
 
 msgid "and"
 msgstr "和"
@@ -388,6 +382,9 @@ msgstr "訂閱 %s atom"
 
 msgid "File diff"
 msgstr "檔案差異"
+
+msgid "Ignore whitespace"
+msgstr "忽略空格"
 
 msgid "Location"
 msgstr "位置"

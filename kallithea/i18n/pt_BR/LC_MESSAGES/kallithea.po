@@ -19,12 +19,6 @@ msgstr "Nenhum"
 msgid "(closed)"
 msgstr "(fechado)"
 
-msgid "Show whitespace"
-msgstr "Mostrar espaços em branco"
-
-msgid "Ignore whitespace"
-msgstr "Ignorar espaços em branco"
-
 msgid ""
 "The request could not be understood by the server due to malformed syntax."
 msgstr ""
@@ -509,15 +503,6 @@ msgstr "renomear"
 msgid "chmod"
 msgstr "chmod"
 
-msgid ""
-"%s repository is not mapped to db perhaps it was created or renamed from "
-"the filesystem please run the application again in order to rescan "
-"repositories"
-msgstr ""
-"O repositório %s não está mapeado ao BD. Talvez ele tenha sido criado ou "
-"renomeado a partir do sistema de arquivos. Por favor, execute a aplicação "
-"outra vez para varrer novamente por repositórios"
-
 msgid "%d year"
 msgid_plural "%d years"
 msgstr[0] "%d ano"
@@ -563,12 +548,6 @@ msgstr "%s e %s atrás"
 msgid "just now"
 msgstr "agora há pouco"
 
-msgid "on line %s"
-msgstr "na linha %s"
-
-msgid "[Mention]"
-msgstr "[Menção]"
-
 msgid "top level"
 msgstr "nível superior"
 
@@ -595,9 +574,6 @@ msgstr "Entre com %(min)i caracteres ou mais"
 
 msgid "latest tip"
 msgstr "tip mais recente"
-
-msgid "New user registration"
-msgstr "Novo registro de usuário"
 
 msgid "Password reset link"
 msgstr "Link para trocar senha"
@@ -1349,6 +1325,9 @@ msgstr "Arquivo %s diff lado-a-lado"
 
 msgid "File diff"
 msgstr "Diff do arquivo"
+
+msgid "Ignore whitespace"
+msgstr "Ignorar espaços em branco"
 
 msgid "%s File Diff"
 msgstr "%s Diff de Arquivo"

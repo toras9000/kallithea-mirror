@@ -11,23 +11,24 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 
+msgid ""
+"CSRF token leak has been detected - all form tokens have been expired"
+msgstr "Виявлено витік токенів CSRF - всі маркери форми минули"
+
+msgid "Repository not found in the filesystem"
+msgstr "Репозиторій не знайдено у файловій системі"
+
 msgid "There are no changesets yet"
 msgstr "Наборів змін немає"
+
+msgid "Changeset for %s %s not found in %s"
+msgstr "Набір змін для %s %s не знайдено в %s"
 
 msgid "None"
 msgstr "Нічого"
 
 msgid "(closed)"
 msgstr "(закрито)"
-
-msgid "Show whitespace"
-msgstr "Відображати пробіли"
-
-msgid "Ignore whitespace"
-msgstr "Ігнорувати пробіли"
-
-msgid "Increase diff context to %(num)s lines"
-msgstr "Збільшити відмінність контексту для %(num)s рядків"
 
 msgid "No permission to change status"
 msgstr "У вас немає дозволу змінювати статус"
@@ -542,11 +543,6 @@ msgstr "Надіслати електронною поштою завдання 
 msgid "Hook already exists"
 msgstr "Hook вже існує"
 
-msgid "Builtin hooks are read-only. Please use another hook name."
-msgstr ""
-"Вбудовані hooks доступні лише для читання. Будь ласка, використовуйте "
-"інше ім'я hook."
-
 msgid "Added new hook"
 msgstr "Додано новий hook"
 
@@ -622,16 +618,6 @@ msgstr "Для виконання цієї дії потрібно бути за
 msgid "You need to be signed in to view this page"
 msgstr "Ви повинні бути зареєстровані для перегляду цієї сторінки"
 
-msgid ""
-"CSRF token leak has been detected - all form tokens have been expired"
-msgstr "Виявлено витік токенів CSRF - всі маркери форми минули"
-
-msgid "Repository not found in the filesystem"
-msgstr "Репозиторій не знайдено у файловій системі"
-
-msgid "Changeset for %s %s not found in %s"
-msgstr "Набір змін для %s %s не знайдено в %s"
-
 msgid "Binary file"
 msgstr "Двійковий файл"
 
@@ -643,6 +629,9 @@ msgstr ""
 
 msgid "No changes detected"
 msgstr "Не виявлено змін"
+
+msgid "Increase diff context to %(num)s lines"
+msgstr "Збільшити відмінність контексту для %(num)s рядків"
 
 msgid "Deleted branch: %s"
 msgstr "Видалено гілку: %s"
@@ -758,12 +747,6 @@ msgstr "%s і %s тому"
 msgid "just now"
 msgstr "прямо зараз"
 
-msgid "on line %s"
-msgstr "в рядку %s"
-
-msgid "[Mention]"
-msgstr "[Згадування]"
-
 msgid "top level"
 msgstr "верхній рівень"
 
@@ -788,6 +771,9 @@ msgstr ""
 msgid "Default user has no access to new repository groups"
 msgstr ""
 "Користувач за замовчуванням не має доступу до нових груп репозиторіїв"
+
+msgid "Don't have an account?"
+msgstr "Не маєте облікового запису?"
 
 msgid "Create Public Gist"
 msgstr "Створити публічний GIST"
@@ -954,9 +940,6 @@ msgstr "Застосувати до всіх існуючих груп кори�
 msgid "Permissions for the Default user on new user groups."
 msgstr ""
 "Дозволи для користувача за замовчуванням для нових груп користувачів."
-
-msgid "Repository creation with group write access"
-msgstr "Створення сховища з доступом до групового записування"
 
 msgid "User group creation"
 msgstr "Створення групи користувачів"
@@ -1314,12 +1297,6 @@ msgstr ""
 msgid "Save Settings"
 msgstr "Зберегти налаштування"
 
-msgid "Built-in Mercurial Hooks (Read-Only)"
-msgstr "Вбудовані хуки Mercurial (лише для читання)"
-
-msgid "Custom Hooks"
-msgstr "Користувацькі хуки"
-
 msgid "Failed to remove hook"
 msgstr "Не вдалося видалити хук"
 
@@ -1347,25 +1324,6 @@ msgstr ""
 
 msgid "Install Git hooks"
 msgstr "Встановити Git хуки"
-
-msgid ""
-"Verify if Kallithea's Git hooks are installed for each repository. "
-"Current hooks will be updated to the latest version."
-msgstr ""
-"Перевірити, чи є в Git хуки для кожного репозиторію. Поточні хуки буде "
-"оновлено до останньої версії."
-
-msgid "Overwrite existing Git hooks"
-msgstr "Перезаписати існуючі хуки Git"
-
-msgid ""
-"If installing Git hooks, overwrite any existing hooks, even if they do "
-"not seem to come from Kallithea. WARNING: This operation will destroy any "
-"custom git hooks you may have deployed by hand!"
-msgstr ""
-"При установці Git хуків, перезаписати будь-які існуючі хуки, навіть якщо "
-"вони, здається, не приходять з Каллітея. Увага: ця операція знищить будь-"
-"які користувацькі хуки Git які ви, можливо, розгорнули вручну!"
 
 msgid "Rescan Repositories"
 msgstr "Пересканувати Репозиторії"
@@ -1545,9 +1503,6 @@ msgstr "Увійти в свій аккаунт"
 msgid "Forgot password?"
 msgstr "Забули пароль?"
 
-msgid "Don't have an account?"
-msgstr "Не маєте облікового запису?"
-
 msgid "Log Out"
 msgstr "Вийти"
 
@@ -1682,6 +1637,9 @@ msgstr "Без назви"
 
 msgid "Status change:"
 msgstr "Зміна статусу:"
+
+msgid "Ignore whitespace"
+msgstr "Ігнорувати пробіли"
 
 msgid "files"
 msgstr "файли"
