@@ -12,6 +12,7 @@ include           conftest.py
 include           dev_requirements.txt
 include           development.ini
 include           pytest.ini
+include           pytype_requirements.txt
 include           requirements.txt
 include           tox.ini
 recursive-include docs *
