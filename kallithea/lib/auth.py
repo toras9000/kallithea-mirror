@@ -521,9 +521,9 @@ class LoginRequired(object):
             if self.allow_default_user:
                 log.info('default user @ %s', loc)
                 return func(*fargs, **fkwargs)
-            log.info('default user is not accepted here @ %s', loc)
+            log.info('default user is redirected to login @ %s', loc)
         elif user.is_anonymous: # default user is disabled and no proper authentication
-            log.warning('user is anonymous and NOT authenticated with regular auth @ %s', loc)
+            log.info('anonymous user is redirected to login @ %s', loc)
         else: # regular authentication
             log.info('user %s authenticated with regular auth @ %s', user, loc)
             return func(*fargs, **fkwargs)
