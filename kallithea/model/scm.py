@@ -713,6 +713,7 @@ class ScmModel(object):
                     log.error('error writing hook %s: %s', hook_file, e)
             elif h_type == 'pre-receive':  # no longer used, so just remove any existing Kallithea hook
                 if os.path.lexists(hook_file) and not other_hook:
+                    log.warning('removing existing unused Kallithea hook %s', hook_file)
                     os.remove(hook_file)
 
 
