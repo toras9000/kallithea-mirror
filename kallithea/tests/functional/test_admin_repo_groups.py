@@ -1,23 +1,23 @@
 from kallithea.model import meta
 from kallithea.model.repo_group import RepoGroupModel
-from kallithea.tests.base import TestController, url
+from kallithea.tests import base
 from kallithea.tests.fixture import Fixture
 
 
 fixture = Fixture()
 
 
-class TestRepoGroupsController(TestController):
+class TestRepoGroupsController(base.TestController):
 
     def test_case_insensitivity(self):
         self.log_user()
         group_name = 'newgroup'
-        response = self.app.post(url('repos_groups'),
+        response = self.app.post(base.url('repos_groups'),
                                  fixture._get_repo_group_create_params(group_name=group_name,
                                                                  _session_csrf_secret_token=self.session_csrf_secret_token()))
         # try to create repo group with swapped case
         swapped_group_name = group_name.swapcase()
-        response = self.app.post(url('repos_groups'),
+        response = self.app.post(base.url('repos_groups'),
                                  fixture._get_repo_group_create_params(group_name=swapped_group_name,
                                                                  _session_csrf_secret_token=self.session_csrf_secret_token()))
         response.mustcontain('already exists')
