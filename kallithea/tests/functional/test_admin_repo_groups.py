@@ -1,4 +1,4 @@
-from kallithea.model import meta
+from kallithea.model import db, meta
 from kallithea.model.repo_group import RepoGroupModel
 from kallithea.tests import base
 from kallithea.tests.fixture import Fixture
@@ -97,3 +97,54 @@ class TestRepoGroupsController(base.TestController):
 
         RepoGroupModel().delete(group_name)
         meta.Session().commit()
+
+    def test_subgroup_deletion(self):
+        self.log_user()
+        parent = None
+        parent_name = 'parent'
+        sub = None
+        sub_name = 'sub'
+        sub_path = 'parent/sub'
+
+        try:
+            # create parent group
+            assert db.RepoGroup.guess_instance(parent_name) is None
+            response = self.app.post(
+                base.url('repos_groups'),
+                fixture._get_repo_group_create_params(
+                    group_name=parent_name,
+                    _session_csrf_secret_token=self.session_csrf_secret_token()
+                )
+            )
+            parent = db.RepoGroup.guess_instance(parent_name)
+            assert parent is not None
+
+            # create sub group
+            assert db.RepoGroup.guess_instance(sub_path) is None
+            response = self.app.post(
+                base.url('repos_groups'),
+                fixture._get_repo_group_create_params(
+                    group_name=sub_name,
+                    parent_group_id=parent.group_id,
+                    _session_csrf_secret_token=self.session_csrf_secret_token()
+                )
+            )
+            sub = db.RepoGroup.guess_instance(sub_path)
+            assert sub is not None
+
+            # delete sub group
+            response = self.app.post(
+                base.url('delete_repo_group', group_name=sub_path),
+                params={
+                    '_session_csrf_secret_token': self.session_csrf_secret_token()
+                },
+            )
+            sub = db.RepoGroup.guess_instance(sub_path)
+            assert sub is None
+
+        finally:
+            if sub:
+                RepoGroupModel().delete(sub)
+            if parent:
+                RepoGroupModel().delete(parent)
+            meta.Session().commit()

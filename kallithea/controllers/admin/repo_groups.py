@@ -245,6 +245,7 @@ class RepoGroupsController(base.BaseController):
     @HasRepoGroupPermissionLevelDecorator('admin')
     def delete(self, group_name):
         gr = c.repo_group = db.RepoGroup.guess_instance(group_name)
+        parent_group = gr.parent_group
         repos = gr.repositories.all()
         if repos:
             webutils.flash(_('This group contains %s repositories and cannot be '
@@ -268,8 +269,8 @@ class RepoGroupsController(base.BaseController):
             webutils.flash(_('Error occurred during deletion of repository group %s')
                     % group_name, category='error')
 
-        if gr.parent_group:
-            raise HTTPFound(location=url('repos_group_home', group_name=gr.parent_group.group_name))
+        if parent_group:
+            raise HTTPFound(location=url('repos_group_home', group_name=parent_group.group_name))
         raise HTTPFound(location=url('repos_groups'))
 
     def show_by_name(self, group_name):
