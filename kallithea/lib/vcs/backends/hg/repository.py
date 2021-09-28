@@ -212,7 +212,7 @@ class MercurialRepository(BaseRepository):
         local = False
 
         try:
-            mercurial.tags.tag(self._repo, safe_bytes(name), mercurial.commands.nullid, safe_bytes(message), local, safe_bytes(user), date)
+            mercurial.tags.tag(self._repo, safe_bytes(name), mercurial.node.nullid, safe_bytes(message), local, safe_bytes(user), date)
             self.tags = self._get_tags()
         except mercurial.error.Abort as e:
             raise RepositoryError(e.args[0])
