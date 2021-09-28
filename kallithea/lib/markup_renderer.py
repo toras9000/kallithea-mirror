@@ -117,7 +117,7 @@ class MarkupRenderer(object):
         At last it will just do a simple html replacing new lines with <br/>
 
         >>> MarkupRenderer.render('''<img id="a" style="margin-top:-1000px;color:red" src="http://example.com/test.jpg">''', '.md')
-        '<p><img id="a" src="http://example.com/test.jpg" style="color: red;"></p>'
+        '<p><img id="a" src="http://example.com/test.jpg" style=""></p>'
         >>> MarkupRenderer.render('''<img class="c d" src="file://localhost/test.jpg">''', 'b.mkd')
         '<p><img class="c d"></p>'
         >>> MarkupRenderer.render('''<a href="foo">foo</a>''', 'c.mkdn')
