@@ -114,7 +114,7 @@ class ChangelogController(base.BaseRepoController):
                         webutils.flash(e, category='warning')
                         raise HTTPFound(location=webutils.url('changelog_home', repo_name=repo_name))
             else:
-                collection = c.db_repo_scm_instance.get_changesets(start=0, end=revision,
+                collection = c.db_repo_scm_instance.get_changesets(end=revision,
                                                         branch_name=branch_name, reverse=True)
             c.total_cs = len(collection)
 
