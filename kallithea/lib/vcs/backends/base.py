@@ -171,7 +171,7 @@ class BaseRepository(object):
         :param start_date:
         :param end_date:
         :param branch_name:
-        :param reversed:
+        :param reverse:
         """
         raise NotImplementedError
 

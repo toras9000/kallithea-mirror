@@ -528,7 +528,7 @@ class MercurialRepository(BaseRepository):
         :param start_date:
         :param end_date:
         :param branch_name:
-        :param reversed: return changesets in reversed order
+        :param reverse: return changesets in reversed order
         """
         start_raw_id = self._get_revision(start)
         start_pos = None if start is None else self.revisions.index(start_raw_id)
