@@ -34,7 +34,12 @@ import mercurial.sshpeer
 import mercurial.tags
 import mercurial.ui
 import mercurial.unionrepo
-import mercurial.util
+
+
+try:
+    from mercurial.utils.urlutil import url as hg_url
+except ImportError:  # urlutil was introduced in Mercurial 5.8
+    from mercurial.util import url as hg_url
 
 from kallithea.lib.vcs.backends.base import BaseRepository, CollectionGenerator
 from kallithea.lib.vcs.exceptions import (BranchDoesNotExistError, ChangesetDoesNotExistError, EmptyRepositoryError, RepositoryError, TagAlreadyExistError,
@@ -336,7 +341,7 @@ class MercurialRepository(BaseRepository):
         if '+' in parsed_url.scheme:  # strip 'git+' for hg-git URLs
             url = url.split(b'+', 1)[1]
 
-        url_obj = mercurial.util.url(url)
+        url_obj = hg_url(url)
         test_uri, handlers = get_urllib_request_handlers(url_obj)
 
         url_obj.passwd = b'*****'

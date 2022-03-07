@@ -245,7 +245,7 @@ def get_urllib_request_handlers(url_obj):
     if authinfo:
         # authinfo is a tuple (realm, uris, user, password) where 'uris' itself
         # is a tuple of URIs.
-        # If url_obj is obtained via mercurial.util.url, the obtained authinfo
+        # If url_obj is obtained via mercurial urlutil, the obtained authinfo
         # values will be bytes, e.g.
         #    (None, (b'http://127.0.0.1/repo', b'127.0.0.1'), b'user', b'pass')
         # However, urllib expects strings, not bytes, so we must convert them.

@@ -19,7 +19,12 @@ import urllib.parse
 import urllib.request
 from collections import OrderedDict
 
-import mercurial.util  # import url as hg_url
+
+try:
+    from mercurial.utils.urlutil import url as hg_url
+except ImportError:  # urlutil was introduced in Mercurial 5.8
+    from mercurial.util import url as hg_url
+
 from dulwich.client import SubprocessGitClient
 from dulwich.config import ConfigFile
 from dulwich.objects import Tag
@@ -226,7 +231,7 @@ class GitRepository(BaseRepository):
         if parsed_url.scheme not in ['http', 'https']:
             raise urllib.error.URLError("Unsupported protocol in URL %r" % url)
 
-        url_obj = mercurial.util.url(safe_bytes(url))
+        url_obj = hg_url(safe_bytes(url))
         test_uri, handlers = get_urllib_request_handlers(url_obj)
         if not test_uri.endswith(b'info/refs'):
             test_uri = test_uri.rstrip(b'/') + b'/info/refs'
