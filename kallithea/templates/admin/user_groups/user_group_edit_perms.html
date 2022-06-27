@@ -67,7 +67,7 @@ ${h.form(url('edit_user_group_perms_update', id=c.user_group.users_group_id))}
                             %endif
                         </td>
                         <td>
-                            <button class="btn btn-default btn-xs" onclick="ajaxActionRevoke(${g2p.user_group.users_group_id}, 'user_group', '${'id%s'%id(g2p.user_group.users_group_name)}', '${g2p.user_group.users_group_name}')">
+                            <button type="button" class="btn btn-default btn-xs" onclick="ajaxActionRevoke(${g2p.user_group.users_group_id}, 'user_group', '${'id%s'%id(g2p.user_group.users_group_name)}', '${g2p.user_group.users_group_name}')">
                             <i class="icon-minus-circled"></i>${_('Revoke')}
                             </button>
                         </td>

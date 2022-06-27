@@ -677,6 +677,7 @@ function _comment_div_append_form($comment_div, f_path, line_no) {
                 'class': 'btn-group'
             }).append(
                 $('<button>', {
+                    'type': 'button',
                     'class': 'btn btn-default btn-xs',
                     text: _TM['Retry']
                 }).click(function() {
@@ -685,6 +686,7 @@ function _comment_div_append_form($comment_div, f_path, line_no) {
                     ajaxPOST(AJAX_COMMENT_URL, postData, success, failure);
                 }),
                 $('<button>', {
+                    'type': 'button',
                     'class': 'btn btn-default btn-xs',
                     text: _TM['Cancel']
                 }).click(function() {
