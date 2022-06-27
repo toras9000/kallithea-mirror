@@ -1,6 +1,5 @@
 ${h.form(url('edit_user_group_perms_update', id=c.user_group.users_group_id))}
 <div class="form">
-   <div>
         <div>
             <table id="permissions_manage" class="table">
                 <tr>
@@ -31,7 +30,7 @@ ${h.form(url('edit_user_group_perms_update', id=c.user_group.users_group_id))}
                         <td>
                           %if r2p.user.username !='default':
                             <button type="button" class="btn btn-default btn-xs" onclick="ajaxActionRevoke(${r2p.user.user_id}, 'user', '${'id%s'%id(r2p.user.username)}', '${r2p.user.username}')">
-                             <i class="icon-minus-circled"></i>${_('Revoke')}
+                            <i class="icon-minus-circled"></i>${_('Revoke')}
                             </button>
                           %endif
                         </td>
@@ -88,7 +87,6 @@ ${h.form(url('edit_user_group_perms_update', id=c.user_group.users_group_id))}
             ${h.submit('save',_('Save'),class_="btn btn-default")}
             ${h.reset('reset',_('Reset'),class_="btn btn-default")}
         </div>
-   </div>
 </div>
 ${h.end_form()}
 
