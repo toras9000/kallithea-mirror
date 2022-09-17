@@ -20,6 +20,7 @@ thread-local "global" variables. It should have few dependencies so it can be
 imported anywhere - just like the global variables can be used everywhere.
 """
 
+import collections
 import datetime
 import json
 import logging
@@ -64,6 +65,10 @@ assert text
 assert textarea
 assert truncate
 assert wrap_paragraphs
+
+
+# work around webhelpers2 being a dead project that doesn't support Python 3.10
+collections.Sequence = collections.abc.Sequence
 
 
 #

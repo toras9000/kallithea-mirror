@@ -44,7 +44,7 @@ from kallithea.controllers import base
 from kallithea.lib import diffs, webutils
 from kallithea.lib.auth import HasRepoPermissionLevelDecorator, LoginRequired
 from kallithea.lib.exceptions import NonRelativePathError
-from kallithea.lib.utils2 import asbool, convert_line_endings, detect_mode, safe_str
+from kallithea.lib.utils2 import asbool, convert_line_endings, detect_mode, safe_bytes, safe_str
 from kallithea.lib.vcs.backends.base import EmptyChangeset
 from kallithea.lib.vcs.conf import settings
 from kallithea.lib.vcs.exceptions import (ChangesetDoesNotExistError, ChangesetError, EmptyRepositoryError, ImproperArchiveTypeError, NodeAlreadyExistsError,
@@ -233,7 +233,7 @@ class FilesController(base.BaseRepoController):
         file_node = self.__get_filenode(cs, f_path)
 
         response.content_disposition = \
-            'attachment; filename=%s' % f_path.split(kallithea.URL_SEP)[-1]
+            'attachment; filename=%s' % safe_bytes(f_path.split(kallithea.URL_SEP)[-1]).decode('latin1')
 
         response.content_type = file_node.mimetype
         return file_node.content

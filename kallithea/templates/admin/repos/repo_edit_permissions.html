@@ -57,7 +57,9 @@ ${h.form(url('edit_repo_perms_update', repo_name=c.repo_name))}
                         <td>
                             <i class="icon-users"></i>
                             %if h.HasPermissionAny('hg.admin')():
-                             <a href="${h.url('edit_users_group',id=g2p.users_group.users_group_id)}">${g2p.users_group.users_group_name}</a>
+                             <a href="${h.url('edit_users_group',id=g2p.users_group.users_group_id)}">
+                                 ${g2p.users_group.users_group_name}
+                             </a>
                             %else:
                              ${g2p.users_group.users_group_name}
                             %endif
@@ -80,7 +82,7 @@ ${h.form(url('edit_repo_perms_update', repo_name=c.repo_name))}
                 </tr>
             </table>
         </div>
-        <div class="form-group">
+        <div class="buttons">
             ${h.submit('save',_('Save'),class_="btn btn-default")}
             ${h.reset('reset',_('Reset'),class_="btn btn-default")}
         </div>

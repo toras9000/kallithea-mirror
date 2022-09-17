@@ -34,7 +34,12 @@ import mercurial.sshpeer
 import mercurial.tags
 import mercurial.ui
 import mercurial.unionrepo
-import mercurial.util
+
+
+try:
+    from mercurial.utils.urlutil import url as hg_url
+except ImportError:  # urlutil was introduced in Mercurial 5.8
+    from mercurial.util import url as hg_url
 
 from kallithea.lib.vcs.backends.base import BaseRepository, CollectionGenerator
 from kallithea.lib.vcs.exceptions import (BranchDoesNotExistError, ChangesetDoesNotExistError, EmptyRepositoryError, RepositoryError, TagAlreadyExistError,
@@ -212,7 +217,7 @@ class MercurialRepository(BaseRepository):
         local = False
 
         try:
-            mercurial.tags.tag(self._repo, safe_bytes(name), mercurial.commands.nullid, safe_bytes(message), local, safe_bytes(user), date)
+            mercurial.tags.tag(self._repo, safe_bytes(name), mercurial.node.nullid, safe_bytes(message), local, safe_bytes(user), date)
             self.tags = self._get_tags()
         except mercurial.error.Abort as e:
             raise RepositoryError(e.args[0])
@@ -336,7 +341,7 @@ class MercurialRepository(BaseRepository):
         if '+' in parsed_url.scheme:  # strip 'git+' for hg-git URLs
             url = url.split(b'+', 1)[1]
 
-        url_obj = mercurial.util.url(url)
+        url_obj = hg_url(url)
         test_uri, handlers = get_urllib_request_handlers(url_obj)
 
         url_obj.passwd = b'*****'
@@ -523,7 +528,7 @@ class MercurialRepository(BaseRepository):
         :param start_date:
         :param end_date:
         :param branch_name:
-        :param reversed: return changesets in reversed order
+        :param reverse: return changesets in reversed order
         """
         start_raw_id = self._get_revision(start)
         start_pos = None if start is None else self.revisions.index(start_raw_id)

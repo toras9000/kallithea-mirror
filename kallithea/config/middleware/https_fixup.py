@@ -26,7 +26,6 @@ Original author and date, and relevant copyright and licensing information is be
 """
 
 
-import kallithea
 from kallithea.lib.utils2 import asbool
 
 
@@ -62,7 +61,7 @@ class HttpsFixup(object):
             proto = 'https'
         else:
             # get protocol from configured WSGI environment variable
-            url_scheme_variable = kallithea.CONFIG.get('url_scheme_variable')
+            url_scheme_variable = self.config.get('url_scheme_variable')
             if url_scheme_variable:
                 proto = environ.get(url_scheme_variable)
 
