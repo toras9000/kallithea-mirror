@@ -341,10 +341,12 @@ class ApiController(JSONRPCController):
 
           id : <id_given_in_input>
           result : {
-            'modules': [<module name>,...]
+            'modules': [ [<module name>, <module version>], ...]
             'py_version': <python version>,
             'platform': <platform type>,
-            'kallithea_version': <kallithea version>
+            'kallithea_version': <kallithea version>,
+            'git_version': '<git version>',
+            'git_path': '<git path>'
           }
           error :  null
         """
@@ -367,25 +369,20 @@ class ApiController(JSONRPCController):
             result: None if user does not exist or
                     {
                         "user_id" :     "<user_id>",
-                        "api_key" :     "<api_key>",
-                        "api_keys":     "[<list of all API keys including additional ones>]"
                         "username" :    "<username>",
                         "firstname":    "<firstname>",
                         "lastname" :    "<lastname>",
                         "email" :       "<email>",
                         "emails":       "[<list of all emails including additional ones>]",
-                        "ip_addresses": "[<ip_address_for_user>,...]",
                         "active" :      "<bool: user active>",
-                        "admin" :       "<bool: user is admin>",
-                        "extern_name" : "<extern_name>",
-                        "extern_type" : "<extern type>
-                        "last_login":   "<last_login>",
+                        "admin" :       "<bool: user is admin>",
                         "permissions": {
                             "global": ["hg.create.repository",
                                        "repository.read",
                                        "hg.register.manual_activate"],
                             "repositories": {"repo1": "repository.none"},
-                            "repositories_groups": {"Group1": "group.read"}
+                            "repositories_groups": {"Group1": "group.read"},
+                            "user_groups": { "usrgrp1": "usergroup.admin" }
                          },
                     }
 
@@ -446,9 +443,9 @@ class ApiController(JSONRPCController):
         :param password: password
         :type password: Optional(str)
         :param firstname: firstname
-        :type firstname: Optional(str)
+        :type firstname: str
         :param lastname: lastname
-        :type lastname: Optional(str)
+        :type lastname: str
         :param active: active
         :type active: Optional(bool)
         :param admin: admin
@@ -522,9 +519,9 @@ class ApiController(JSONRPCController):
         :param userid: userid to update
         :type userid: str or int
         :param username: new username
-        :type username: str or int
+        :type username: Optional(str or int)
         :param email: email
-        :type email: str
+        :type email: Optional(str)
         :param password: password
         :type password: Optional(str)
         :param firstname: firstname
@@ -649,7 +646,9 @@ class ApiController(JSONRPCController):
                      {
                        "users_group_id" : "<id>",
                        "group_name" :     "<groupname>",
+                       "group_description": "<description>"
                        "active":          "<bool>",
+                       "owner":           "<username>"
                        "members" :  [<user_obj>,...]
                      }
             error : null
@@ -694,7 +693,7 @@ class ApiController(JSONRPCController):
         :param group_name: name of new user group
         :type group_name: str
         :param description: group description
-        :type description: str
+        :type description: Optional(str)
         :param owner: owner of group. If not passed apiuser is the owner
         :type owner: Optional(str or int)
         :param active: group is active
@@ -810,7 +809,7 @@ class ApiController(JSONRPCController):
         belonging to user with admin rights or an admin of given user group
 
         :param usergroupid:
-        :type usergroupid: int
+        :type usergroupid: str or int
 
         OUTPUT::
 
@@ -862,9 +861,9 @@ class ApiController(JSONRPCController):
         belonging to user with admin rights  or an admin of given user group
 
         :param usergroupid:
-        :type usergroupid: int
+        :type usergroupid: str or int
         :param userid:
-        :type userid: int
+        :type userid: str or int
 
         OUTPUT::
 
@@ -1205,8 +1204,7 @@ class ApiController(JSONRPCController):
             id : <id_given_in_input>
             result: {
                       "msg": "Created new repository `<reponame>`",
-                      "success": true,
-                      "task": "<celery task id or None if done sync>"
+                      "success": true
                     }
             error:  null
 
@@ -1393,8 +1391,7 @@ class ApiController(JSONRPCController):
             id : <id_given_in_input>
             result: {
                       "msg": "Created fork of `<reponame>` as `<forkname>`",
-                      "success": true,
-                      "task": "<celery task id or None if done sync>"
+                      "success": true
                     }
             error:  null
 
@@ -2219,14 +2216,14 @@ class ApiController(JSONRPCController):
         :param lifetime: time in minutes of gist lifetime
         :type lifetime: Optional(int)
         :param description: gist description
-        :type description: Optional(str)
+        :type description: str
 
         OUTPUT::
 
           id : <id_given_in_input>
           result : {
             "msg": "created new gist",
-            "gist": {}
+            "gist": <gist_object>
           }
           error :  null
 
@@ -2272,7 +2269,7 @@ class ApiController(JSONRPCController):
 
           id : <id_given_in_input>
           result : {
-            "deleted gist ID: <gist_id>",
+            "msg": "deleted gist ID: <gist_id>",
             "gist": null
           }
           error :  null
