@@ -182,7 +182,7 @@ OUTPUT::
 
     id : <id_given_in_input>
     result : {
-                 "ip_addr_server": <ip_from_clien>",
+                 "ip_addr_server": <ip_from_client>",
                  "user_ips": [
                                 {
                                    "ip_addr": "<ip_with_mask>",
@@ -225,7 +225,7 @@ OUTPUT::
                 "emails":       "<list_of_all_additional_emails>",
                 "ip_addresses": "<list_of_ip_addresses_for_user>",
                 "active" :      "<bool>",
-                "admin" :       "<bool>",
+                "admin" :       "<bool>",
                 "ldap_dn" :     "<ldap_dn>",
                 "last_login":   "<last_login>",
                 "permissions": {
@@ -265,7 +265,7 @@ OUTPUT::
                 "emails":       "<list_of_all_additional_emails>",
                 "ip_addresses": "<list_of_ip_addresses_for_user>",
                 "active" :      "<bool>",
-                "admin" :       "<bool>",
+                "admin" :       "<bool>",
                 "ldap_dn" :     "<ldap_dn>",
                 "last_login":   "<last_login>",
               },
@@ -310,7 +310,7 @@ OUTPUT::
                 "email" :    "<email>",
                 "emails":    "<list_of_all_additional_emails>",
                 "active" :   "<bool>",
-                "admin" :    "<bool>",
+                "admin" :    "<bool>",
                 "ldap_dn" :  "<ldap_dn>",
                 "last_login": "<last_login>",
               },
@@ -358,7 +358,7 @@ OUTPUT::
                 "email" :    "<email>",
                 "emails":    "<list_of_all_additional_emails>",
                 "active" :   "<bool>",
-                "admin" :    "<bool>",
+                "admin" :    "<bool>",
                 "ldap_dn" :  "<ldap_dn>",
                 "last_login": "<last_login>",
               },
@@ -422,7 +422,7 @@ OUTPUT::
                                 "email" :    "<email>",
                                 "emails":    "<list_of_all_additional_emails>",
                                 "active" :   "<bool>",
-                                "admin" :    "<bool>",
+                                "admin" :    "<bool>",
                                 "ldap_dn" :  "<ldap_dn>",
                                 "last_login": "<last_login>",
                               },
@@ -596,7 +596,7 @@ OUTPUT::
                                     "email" :      "<email>",
                                     "emails":      "<list_of_all_additional_emails>",
                                     "active" :     "<bool>",
-                                    "admin" :      "<bool>",
+                                    "admin" :      "<bool>",
                                     "ldap_dn" :    "<ldap_dn>",
                                     "last_login":  "<last_login>",
                                     "permission" : "repository.(read|write|admin)"
@@ -622,7 +622,7 @@ OUTPUT::
                                     "emails":       "<list_of_all_additional_emails>",
                                     "ip_addresses": "<list_of_ip_addresses_for_user>",
                                     "active" :      "<bool>",
-                                    "admin" :       "<bool>",
+                                    "admin" :       "<bool>",
                                     "ldap_dn" :     "<ldap_dn>",
                                     "last_login":   "<last_login>",
                                   },
@@ -1062,7 +1062,7 @@ OUTPUT::
     result: [
     {
       "raw_id": "<raw_id>",
-      "short_id": "short_id": "<short_id>",
+      "short_id": "<short_id>",
       "author": "<full_author>",
       "date": "<date_time_of_commit>",
       "message": "<commit_message>",

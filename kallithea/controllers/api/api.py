@@ -308,7 +308,7 @@ class ApiController(JSONRPCController):
 
             id : <id_given_in_input>
             result : {
-                         "server_ip_addr": "<ip_from_clien>",
+                         "server_ip_addr": "<ip_from_client>",
                          "user_ips": [
                                         {
                                            "ip_addr": "<ip_with_mask>",
@@ -317,7 +317,7 @@ class ApiController(JSONRPCController):
                                         ...
                                      ]
             }
-
+            error : null
         """
         if userid is None:
             userid = request.authuser.user_id
@@ -858,7 +858,7 @@ class ApiController(JSONRPCController):
         """
         Adds a user to a user group. If user exists in that group success will be
         `false`. This command can be executed only using api_key
-        belonging to user with admin rights  or an admin of given user group
+        belonging to user with admin rights or an admin of a given user group
 
         :param usergroupid:
         :type usergroupid: str or int
@@ -870,7 +870,7 @@ class ApiController(JSONRPCController):
           id : <id_given_in_input>
           result : {
               "success": True|False # depends on if member is in group
-              "msg": "added member `<username>` to user group `<groupname>` |
+              "msg": "added member `<username>` to a user group `<groupname>` |
                       User is already in that group"
 
           }
@@ -973,7 +973,6 @@ class ApiController(JSONRPCController):
 
           id : <id_given_in_input>
           result : {
-            {
                 "repo_id" :          "<repo_id>",
                 "repo_name" :        "<reponame>"
                 "repo_type" :        "<repo_type>",
@@ -1022,7 +1021,6 @@ class ApiController(JSONRPCController):
                             "<bookmarkname>": "<raw_id>",
                             ...
                          },
-            }
           }
           error :  null
 
@@ -1082,7 +1080,7 @@ class ApiController(JSONRPCController):
                         "repo_name" :        "<reponame>"
                         "repo_type" :        "<repo_type>",
                         "clone_uri" :        "<clone_uri>",
-                        "private": :         "<bool>",
+                        "private" :          "<bool>",
                         "created_on" :       "<datetimecreated>",
                         "description" :      "<description>",
                         "landing_rev":       "<landing_rev>",
@@ -1376,6 +1374,7 @@ class ApiController(JSONRPCController):
 
             id : <id_for_response>
             api_key : "<api_key>"
+            method :  "fork_repo"
             args:     {
                         "repoid" :          "<reponame or repo_id>",
                         "fork_name":        "<forkname>",
