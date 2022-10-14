@@ -174,10 +174,10 @@ class ApiController(JSONRPCController):
 
             id : <id_given_in_input>
             result : {
-                "msg": "Pulled from `<repository name>`"
-                "repository": "<repository name>"
+                "msg" : "Pulled from `<repository name>`"
+                "repository" : "<repository name>"
             }
-            error :  null
+            error : null
 
         ERROR OUTPUT::
 
@@ -223,7 +223,7 @@ class ApiController(JSONRPCController):
                 'added': [<added repository name>,...]
                 'removed': [<removed repository name>,...]
             }
-            error :  null
+            error : null
 
         ERROR OUTPUT::
 
@@ -260,7 +260,7 @@ class ApiController(JSONRPCController):
                 'msg': Cache for repository `<repository name>` was invalidated,
                 'repository': <repository name>
             }
-            error :  null
+            error : null
 
         ERROR OUTPUT::
 
@@ -303,14 +303,14 @@ class ApiController(JSONRPCController):
 
             id : <id_given_in_input>
             result : {
-                         "server_ip_addr": "<ip_from_client>",
-                         "user_ips": [
+                         "server_ip_addr" : "<ip_from_client>",
+                         "user_ips" : [
                                         {
-                                           "ip_addr": "<ip_with_mask>",
-                                           "ip_range": ["<start_ip>", "<end_ip>"],
+                                           "ip_addr" : "<ip_with_mask>",
+                                           "ip_range" : ["<start_ip>", "<end_ip>"],
                                         },
                                         ...
-                                     ]
+                                      ]
             }
             error : null
         """
@@ -335,12 +335,12 @@ class ApiController(JSONRPCController):
 
             id : <id_given_in_input>
             result : {
-                'modules': [ [<module name>, <module version>], ...]
-                'py_version': <python version>,
-                'platform': <platform type>,
-                'kallithea_version': <kallithea version>,
-                'git_version': '<git version>',
-                'git_path': '<git path>'
+                'modules' : [ [<module name>, <module version>], ...]
+                'py_version' : <python version>,
+                'platform' : <platform type>,
+                'kallithea_version' : <kallithea version>,
+                'git_version' : '<git version>',
+                'git_path' : '<git path>'
             }
             error : null
         """
@@ -360,26 +360,26 @@ class ApiController(JSONRPCController):
         OUTPUT::
 
             id : <id_given_in_input>
-            result: None if user does not exist or
-                    {
+            result : None if user does not exist or
+                     {
                         "user_id" :     "<user_id>",
                         "username" :    "<username>",
-                        "firstname":    "<firstname>",
+                        "firstname" :   "<firstname>",
                         "lastname" :    "<lastname>",
                         "email" :       "<email>",
-                        "emails":       "[<list of all emails including additional ones>]",
+                        "emails" :      "[<list of all emails including additional ones>]",
                         "active" :      "<bool: user active>",
                         "admin" :       "<bool: user is admin>",
-                        "permissions": {
-                            "global": ["hg.create.repository",
-                                       "repository.read",
-                                       "hg.register.manual_activate"],
-                            "repositories": {"repo1": "repository.none"},
-                            "repositories_groups": {"Group1": "group.read"},
-                            "user_groups": { "usrgrp1": "usergroup.admin" }
+                        "permissions" : {
+                            "global" : ["hg.create.repository",
+                                        "repository.read",
+                                        "hg.register.manual_activate"],
+                            "repositories" : {"repo1" : "repository.none"},
+                            "repositories_groups" : {"Group1" : "group.read"},
+                            "user_groups" : { "usrgrp1" : "usergroup.admin" }
                          },
-                    }
-            error:  null
+                     }
+            error : null
         """
         if not HasPermissionAny('hg.admin')():
             # make sure normal user does not pass someone else userid,
@@ -406,8 +406,8 @@ class ApiController(JSONRPCController):
         OUTPUT::
 
             id : <id_given_in_input>
-            result: [<user_object>, ...]
-            error:  null
+            result : [<user_object>, ...]
+            error : null
         """
         return [
             user.get_api_data()
@@ -448,11 +448,11 @@ class ApiController(JSONRPCController):
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
+            result : {
                       "msg" : "created new user `<username>`",
-                      "user": <user_obj>
-                    }
-            error:  null
+                      "user" : <user_obj>
+                     }
+            error : null
 
         ERROR OUTPUT::
 
@@ -527,11 +527,11 @@ class ApiController(JSONRPCController):
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
+            result : {
                       "msg" : "updated user ID:<userid> <username>",
-                      "user": <user_object>,
-                    }
-            error:  null
+                      "user" : <user_object>,
+                     }
+            error : null
 
         ERROR OUTPUT::
 
@@ -583,11 +583,11 @@ class ApiController(JSONRPCController):
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
+            result : {
                       "msg" : "deleted user ID:<userid> <username>",
-                      "user": null
-                    }
-            error:  null
+                      "user" : null
+                     }
+            error : null
 
         ERROR OUTPUT::
 
@@ -629,10 +629,10 @@ class ApiController(JSONRPCController):
                      {
                        "users_group_id" : "<id>",
                        "group_name" :     "<groupname>",
-                       "group_description": "<description>"
-                       "active":          "<bool>",
-                       "owner":           "<username>"
-                       "members" :  [<user_obj>,...]
+                       "group_description" : "<description>"
+                       "active" :         "<bool>",
+                       "owner" :          "<username>"
+                       "members" :        [<user_obj>,...]
                      }
             error : null
         """
@@ -682,11 +682,11 @@ class ApiController(JSONRPCController):
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
-                      "msg": "created new user group `<groupname>`",
-                      "user_group": <user_group_object>
-                    }
-            error:  null
+            result : {
+                      "msg" : "created new user group `<groupname>`",
+                      "user_group" : <user_group_object>
+                     }
+            error : null
 
         ERROR OUTPUT::
 
@@ -740,10 +740,10 @@ class ApiController(JSONRPCController):
 
           id : <id_given_in_input>
           result : {
-            "msg": 'updated user group ID:<user group id> <user group name>',
-            "user_group": <user_group_object>
+            "msg" : 'updated user group ID:<user group id> <user group name>',
+            "user_group" : <user_group_object>
           }
-          error :  null
+          error : null
 
         ERROR OUTPUT::
 
@@ -792,9 +792,9 @@ class ApiController(JSONRPCController):
 
           id : <id_given_in_input>
           result : {
-            "msg": "deleted user group ID:<user_group_id> <user_group_name>"
+            "msg" : "deleted user group ID:<user_group_id> <user_group_name>"
           }
-          error :  null
+          error : null
 
         ERROR OUTPUT::
 
@@ -845,11 +845,11 @@ class ApiController(JSONRPCController):
 
             id : <id_given_in_input>
             result : {
-                "success": True|False # depends on if member is in group
-                "msg": "added member `<username>` to a user group `<groupname>` |
-                        User is already in that group"
+                "success" : True|False # depends on if member is in group
+                "msg" : "added member `<username>` to a user group `<groupname>` |
+                         User is already in that group"
             }
-            error :  null
+            error : null
 
         ERROR OUTPUT::
 
@@ -899,12 +899,12 @@ class ApiController(JSONRPCController):
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
-                      "success":  True|False,  # depends on if member is in group
-                      "msg": "removed member <username> from user group <groupname> |
-                              User wasn't in group"
-                    }
-            error:  null
+            result : {
+                      "success" : True|False,  # depends on if member is in group
+                      "msg" : "removed member <username> from user group <groupname> |
+                               User wasn't in group"
+                     }
+            error : null
         """
         user = get_user_or_error(userid)
         user_group = get_user_group_or_error(usergroupid)
@@ -949,52 +949,52 @@ class ApiController(JSONRPCController):
                         "repo_name" :        "<reponame>"
                         "repo_type" :        "<repo_type>",
                         "clone_uri" :        "<clone_uri>",
-                        "enable_downloads":  "<bool>",
+                        "enable_downloads" : "<bool>",
                         "enable_statistics": "<bool>",
-                        "private":           "<bool>",
+                        "private" :          "<bool>",
                         "created_on" :       "<date_time_created>",
                         "description" :      "<description>",
-                        "landing_rev":       "<landing_rev>",
-                        "last_changeset":    {
-                                                 "author":   "<full_author>",
-                                                 "date":     "<date_time_of_commit>",
-                                                 "message":  "<commit_message>",
-                                                 "raw_id":   "<raw_id>",
+                        "landing_rev" :      "<landing_rev>",
+                        "last_changeset" :   {
+                                                 "author" :  "<full_author>",
+                                                 "date" :    "<date_time_of_commit>",
+                                                 "message" : "<commit_message>",
+                                                 "raw_id" :  "<raw_id>",
                                                  "revision": "<numeric_revision>",
                                                  "short_id": "<short_id>"
                                              }
-                        "owner":             "<repo_owner>",
-                        "fork_of":           "<name_of_fork_parent>",
+                        "owner" :            "<repo_owner>",
+                        "fork_of" :          "<name_of_fork_parent>",
                         "members" :     [
                                             {
-                                                "name":     "<username>",
+                                                "name" :    "<username>",
                                                 "type" :    "user",
                                                 "permission" : "repository.(read|write|admin)"
                                             },
                                             …
                                             {
-                                                "name":     "<usergroup name>",
+                                                "name" :    "<usergroup name>",
                                                 "type" :    "user_group",
                                                 "permission" : "usergroup.(read|write|admin)"
                                             },
                                             …
                                         ]
-                        "followers":   [<user_obj>, ...],
+                        "followers" :  [<user_obj>, ...],
                         <if with_revision_names == True>
-                        "tags": {
-                                    "<tagname>": "<raw_id>",
+                        "tags" : {
+                                    "<tagname>" : "<raw_id>",
                                     ...
                                 },
-                        "branches": {
-                                    "<branchname>": "<raw_id>",
+                        "branches" : {
+                                    "<branchname>" : "<raw_id>",
                                     ...
                                 },
-                        "bookmarks": {
-                                    "<bookmarkname>": "<raw_id>",
+                        "bookmarks" : {
+                                    "<bookmarkname>" : "<raw_id>",
                                     ...
                                 },
-                    }
-            error :  null
+                     }
+            error : null
         """
         repo = get_repo_or_error(repoid)
 
@@ -1044,7 +1044,7 @@ class ApiController(JSONRPCController):
         OUTPUT::
 
             id : <id_given_in_input>
-            result: [
+            result : [
                       {
                         "repo_id" :          "<repo_id>",
                         "repo_name" :        "<reponame>"
@@ -1053,15 +1053,15 @@ class ApiController(JSONRPCController):
                         "private" :          "<bool>",
                         "created_on" :       "<datetimecreated>",
                         "description" :      "<description>",
-                        "landing_rev":       "<landing_rev>",
-                        "owner":             "<repo_owner>",
-                        "fork_of":           "<name_of_fork_parent>",
-                        "enable_downloads":  "<bool>",
+                        "landing_rev" :      "<landing_rev>",
+                        "owner" :            "<repo_owner>",
+                        "fork_of" :          "<name_of_fork_parent>",
+                        "enable_downloads" : "<bool>",
                         "enable_statistics": "<bool>",
                       },
                       …
-                    ]
-            error:  null
+                     ]
+            error : null
         """
         if not HasPermissionAny('hg.admin')():
             repos = request.authuser.get_all_user_repos()
@@ -1094,14 +1094,14 @@ class ApiController(JSONRPCController):
         OUTPUT::
 
             id : <id_given_in_input>
-            result: [
+            result : [
                       {
                         "name" :        "<name>"
                         "type" :        "<type>",
                       },
                       …
-                    ]
-            error:  null
+                     ]
+            error : null
         """
         repo = get_repo_or_error(repoid)
 
@@ -1169,11 +1169,11 @@ class ApiController(JSONRPCController):
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
-                      "msg": "Created new repository `<reponame>`",
-                      "success": true
-                    }
-            error:  null
+            result : {
+                      "msg" : "Created new repository `<reponame>`",
+                      "success" : true
+                     }
+            error : null
 
         ERROR OUTPUT::
 
@@ -1342,24 +1342,24 @@ class ApiController(JSONRPCController):
             id : <id_for_response>
             api_key : "<api_key>"
             method :  "fork_repo"
-            args:     {
+            args :    {
                         "repoid" :          "<reponame or repo_id>",
-                        "fork_name":        "<forkname>",
-                        "owner":            "<username or user_id = Optional(=apiuser)>",
-                        "description":      "<description>",
+                        "fork_name" :       "<forkname>",
+                        "owner" :           "<username or user_id = Optional(=apiuser)>",
+                        "description" :     "<description>",
                         "copy_permissions": "<bool>",
-                        "private":          "<bool>",
-                        "landing_rev":      "<landing_rev>"
+                        "private" :         "<bool>",
+                        "landing_rev" :     "<landing_rev>"
                       }
 
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
-                      "msg": "Created fork of `<reponame>` as `<forkname>`",
-                      "success": true
-                    }
-            error:  null
+            result : {
+                      "msg" : "Created fork of `<reponame>` as `<forkname>`",
+                      "success" : true
+                     }
+            error : null
         """
         repo = get_repo_or_error(repoid)
         repo_name = repo.repo_name
@@ -1442,11 +1442,11 @@ class ApiController(JSONRPCController):
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
-                      "msg": "Deleted repository `<reponame>`",
-                      "success": true
-                    }
-            error:  null
+            result : {
+                      "msg" : "Deleted repository `<reponame>`",
+                      "success" : true
+                     }
+            error : null
         """
         repo = get_repo_or_error(repoid)
 
@@ -1496,11 +1496,11 @@ class ApiController(JSONRPCController):
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
+            result : {
                       "msg" : "Granted perm: `<perm>` for user: `<username>` in repo: `<reponame>`",
-                      "success": true
-                    }
-            error:  null
+                      "success" : true
+                     }
+            error : null
         """
         repo = get_repo_or_error(repoid)
         user = get_user_or_error(userid)
@@ -1538,11 +1538,11 @@ class ApiController(JSONRPCController):
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
+            result : {
                       "msg" : "Revoked perm for user: `<username>` in repo: `<reponame>`",
-                      "success": true
-                    }
-            error:  null
+                      "success" : true
+                     }
+            error : null
         """
         repo = get_repo_or_error(repoid)
         user = get_user_or_error(userid)
@@ -1582,9 +1582,9 @@ class ApiController(JSONRPCController):
             id : <id_given_in_input>
             result : {
                 "msg" : "Granted perm: `<perm>` for group: `<usersgroupname>` in repo: `<reponame>`",
-                "success": true
+                "success" : true
             }
-            error :  null
+            error : null
 
         ERROR OUTPUT::
 
@@ -1639,11 +1639,11 @@ class ApiController(JSONRPCController):
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
+            result : {
                       "msg" : "Revoked perm for group: `<usersgroupname>` in repo: `<reponame>`",
-                      "success": true
-                    }
-            error:  null
+                      "success" : true
+                     }
+            error : null
         """
         repo = get_repo_or_error(repoid)
         user_group = get_user_group_or_error(usergroupid)
@@ -1744,10 +1744,10 @@ class ApiController(JSONRPCController):
 
           id : <id_given_in_input>
           result : {
-              "msg": "created new repo group `<repo_group_name>`"
-              "repo_group": <repogroup_object>
+              "msg" : "created new repo group `<repo_group_name>`"
+              "repo_group" : <repogroup_object>
           }
-          error :  null
+          error : null
 
         ERROR OUTPUT::
 
@@ -1820,10 +1820,10 @@ class ApiController(JSONRPCController):
 
           id : <id_given_in_input>
           result : {
-            'msg': 'deleted repo group ID:<repogroupid> <repogroupname>
-            'repo_group': null
+            'msg' : 'deleted repo group ID:<repogroupid> <repogroupname>
+            'repo_group' : null
           }
-          error :  null
+          error : null
 
         ERROR OUTPUT::
 
@@ -1869,11 +1869,11 @@ class ApiController(JSONRPCController):
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
+            result : {
                       "msg" : "Granted perm: `<perm>` (recursive:<apply_to_children>) for user: `<username>` in repo group: `<repo_group_name>`",
-                      "success": true
-                    }
-            error:  null
+                      "success" : true
+                     }
+            error : null
 
         ERROR OUTPUT::
 
@@ -1929,11 +1929,11 @@ class ApiController(JSONRPCController):
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
+            result : {
                       "msg" : "Revoked perm (recursive:<apply_to_children>) for user: `<username>` in repo group: `<repo_group_name>`",
-                      "success": true
-                    }
-            error:  null
+                      "success" : true
+                     }
+            error : null
 
         ERROR OUTPUT::
 
@@ -1994,9 +1994,9 @@ class ApiController(JSONRPCController):
           id : <id_given_in_input>
           result : {
             "msg" : "Granted perm: `<perm>` (recursive:<apply_to_children>) for user group: `<usersgroupname>` in repo group: `<repo_group_name>`",
-            "success": true
+            "success" : true
           }
-          error :  null
+          error : null
 
         ERROR OUTPUT::
 
@@ -2059,11 +2059,11 @@ class ApiController(JSONRPCController):
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
+            result : {
                       "msg" : "Revoked perm (recursive:<apply_to_children>) for user group: `<usersgroupname>` in repo group: `<repo_group_name>`",
-                      "success": true
-                    }
-            error:  null
+                      "success" : true
+                     }
+            error : null
 
         ERROR OUTPUT::
 
@@ -2169,10 +2169,10 @@ class ApiController(JSONRPCController):
 
           id : <id_given_in_input>
           result : {
-            "msg": "created new gist",
-            "gist": <gist_object>
+            "msg" : "created new gist",
+            "gist" : <gist_object>
           }
-          error :  null
+          error : null
 
         ERROR OUTPUT::
 
@@ -2215,10 +2215,10 @@ class ApiController(JSONRPCController):
 
           id : <id_given_in_input>
           result : {
-            "msg": "deleted gist ID: <gist_id>",
-            "gist": null
+            "msg" : "deleted gist ID: <gist_id>",
+            "gist" : null
           }
-          error :  null
+          error : null
 
         ERROR OUTPUT::
 
