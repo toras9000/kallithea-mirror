@@ -175,7 +175,7 @@ INPUT::
     api_key : "<api_key>"
     method :  "get_ip"
     args :    {
-                "userid" : "<user_id or username>",
+                "userid" : "<user_id or username>"
               }
 
 OUTPUT::
@@ -186,7 +186,7 @@ OUTPUT::
                  "user_ips" : [
                                 {
                                    "ip_addr" : "<ip_with_mask>",
-                                   "ip_range" : ["<start_ip>", "<end_ip>"],
+                                   "ip_range" : ["<start_ip>", "<end_ip>"]
                                 },
                                 ...
                               ]
@@ -233,7 +233,7 @@ OUTPUT::
                                "hg.register.manual_activate"],
                     "repositories" : {"repo1" : "repository.none"},
                     "repositories_groups" : {"Group1" : "group.read"}
-                 },
+                 }
              }
     error : null
 
@@ -266,7 +266,7 @@ OUTPUT::
                 "active" :      "<bool>",
                 "admin" :       "<bool>",
                 "ldap_dn" :     "<ldap_dn>",
-                "last_login" :  "<last_login>",
+                "last_login" :  "<last_login>"
               },
               …
              ]
@@ -311,8 +311,8 @@ OUTPUT::
                 "active" :   "<bool>",
                 "admin" :    "<bool>",
                 "ldap_dn" :  "<ldap_dn>",
-                "last_login": "<last_login>",
-              },
+                "last_login": "<last_login>"
+              }
              }
     error : null
 
@@ -359,8 +359,8 @@ OUTPUT::
                 "active" :   "<bool>",
                 "admin" :    "<bool>",
                 "ldap_dn" :  "<ldap_dn>",
-                "last_login": "<last_login>",
-              },
+                "last_login": "<last_login>"
+              }
              }
     error : null
 
@@ -376,7 +376,7 @@ INPUT::
     api_key : "<api_key>"
     method :  "delete_user"
     args :    {
-                "userid" : "<user_id or username>",
+                "userid" : "<user_id or username>"
               }
 
 OUTPUT::
@@ -423,7 +423,7 @@ OUTPUT::
                                 "active" :   "<bool>",
                                 "admin" :    "<bool>",
                                 "ldap_dn" :  "<ldap_dn>",
-                                "last_login": "<last_login>",
+                                "last_login": "<last_login>"
                               },
                               …
                             ]
@@ -450,7 +450,7 @@ OUTPUT::
                {
                "users_group_id" : "<id>",
                "group_name" :     "<groupname>",
-               "active" :         "<bool>",
+               "active" :         "<bool>"
                },
                …
               ]
@@ -481,8 +481,8 @@ OUTPUT::
               "users_group" : {
                      "users_group_id" : "<id>",
                      "group_name" :     "<groupname>",
-                     "active" :         "<bool>",
-               },
+                     "active" :         "<bool>"
+               }
              }
     error : null
 
@@ -500,14 +500,14 @@ INPUT::
     method :  "add_user_user_group"
     args :    {
                 "usersgroupid" : "<user group id or name>",
-                "userid" : "<user_id or username>",
+                "userid" : "<user_id or username>"
               }
 
 OUTPUT::
 
     id : <id_given_in_input>
     result : {
-              "success" : True|False # depends on if member is in group
+              "success" : True|False,  # depends on if member is in group
               "msg" : "added member `<username>` to a user group `<groupname>` |
                        User is already in that group"
              }
@@ -527,7 +527,7 @@ INPUT::
     method :  "remove_user_from_user_group"
     args :    {
                 "usersgroupid" : "<user group id or name>",
-                "userid" : "<user_id or username>",
+                "userid" : "<user_id or username>"
               }
 
 OUTPUT::
@@ -556,7 +556,7 @@ INPUT::
     args :    {
                 "repoid" : "<reponame or repo_id>",
                 "with_revision_names" : "<bool> = Optional(False)",
-                "with_pullrequests" : "<bool> = Optional(False)",
+                "with_pullrequests" : "<bool> = Optional(False)"
               }
 
 OUTPUT::
@@ -565,7 +565,7 @@ OUTPUT::
     result : None if repository does not exist or
              {
                 "repo_id" :          "<repo_id>",
-                "repo_name" :        "<reponame>"
+                "repo_name" :        "<reponame>",
                 "repo_type" :        "<repo_type>",
                 "clone_uri" :        "<clone_uri>",
                 "enable_downloads" : "<bool>",
@@ -623,7 +623,7 @@ OUTPUT::
                                     "active" :      "<bool>",
                                     "admin" :       "<bool>",
                                     "ldap_dn" :     "<ldap_dn>",
-                                    "last_login" :  "<last_login>",
+                                    "last_login" :  "<last_login>"
                                   },
                                   …
                               ],
@@ -650,7 +650,7 @@ OUTPUT::
                     "url" : "<pull_request_url>",
                     "reviewers" : [
                       {
-                        "username" : "<user_id>",
+                        "username" : "<user_id>"
                       },
                       ...
                     ],
@@ -669,7 +669,7 @@ OUTPUT::
                       {
                         "username" : "<user_id>",
                         "text" : "<comment text>",
-                        "comment_id" : "<comment_id>",
+                        "comment_id" : "<comment_id>"
                       },
                       ...
                     ],
@@ -712,7 +712,7 @@ OUTPUT::
     result : [
               {
                 "repo_id" :          "<repo_id>",
-                "repo_name" :        "<reponame>"
+                "repo_name" :        "<reponame>",
                 "repo_type" :        "<repo_type>",
                 "clone_uri" :        "<clone_uri>",
                 "private" :          "<bool>",
@@ -722,7 +722,7 @@ OUTPUT::
                 "owner" :            "<repo_owner>",
                 "fork_of" :          "<name_of_fork_parent>",
                 "enable_downloads" : "<bool>",
-                "enable_statistics": "<bool>",
+                "enable_statistics": "<bool>"
               },
               …
              ]
@@ -741,7 +741,7 @@ INPUT::
     api_key : "<api_key>"
     method :  "get_repo_nodes"
     args :    {
-                "repoid" : "<reponame or repo_id>"
+                "repoid" : "<reponame or repo_id>",
                 "revision" :  "<revision>",
                 "root_path" : "<root_path>",
                 "ret_type" :  "<ret_type> = Optional('all')"
@@ -752,8 +752,8 @@ OUTPUT::
     id : <id_given_in_input>
     result : [
               {
-                "name" :        "<name>"
-                "type" :        "<type>",
+                "name" :        "<name>",
+                "type" :        "<type>"
               },
               …
              ]
@@ -786,7 +786,7 @@ INPUT::
                 "clone_uri" :        "<clone_uri> = Optional(None)",
                 "landing_rev" :      "<landing_rev> = Optional('tip')",
                 "enable_downloads" : "<bool> = Optional(False)",
-                "enable_statistics": "<bool> = Optional(False)",
+                "enable_statistics": "<bool> = Optional(False)"
               }
 
 OUTPUT::
@@ -796,7 +796,7 @@ OUTPUT::
               "msg" : "Created new repository `<reponame>`",
               "repo" : {
                 "repo_id" :          "<repo_id>",
-                "repo_name" :        "<reponame>"
+                "repo_name" :        "<reponame>",
                 "repo_type" :        "<repo_type>",
                 "clone_uri" :        "<clone_uri>",
                 "private" :          "<bool>",
@@ -806,8 +806,8 @@ OUTPUT::
                 "owner" :            "<username or user_id>",
                 "fork_of" :          "<name_of_fork_parent>",
                 "enable_downloads" : "<bool>",
-                "enable_statistics": "<bool>",
-              },
+                "enable_statistics": "<bool>"
+              }
              }
     error : null
 
@@ -825,7 +825,7 @@ INPUT::
     api_key : "<api_key>"
     method :  "update_repo"
     args :    {
-                "repoid" :           "<reponame or repo_id>"
+                "repoid" :           "<reponame or repo_id>",
                 "name" :             "<reponame> = Optional('')",
                 "group" :            "<group_id> = Optional(None)",
                 "owner" :            "<owner_name_or_id = Optional(=apiuser)>",
@@ -834,7 +834,7 @@ INPUT::
                 "clone_uri" :        "<clone_uri> = Optional(None)",
                 "landing_rev" :      "<landing_rev> = Optional('tip')",
                 "enable_downloads" : "<bool> = Optional(False)",
-                "enable_statistics": "<bool> = Optional(False)",
+                "enable_statistics": "<bool> = Optional(False)"
               }
 
 OUTPUT::
@@ -844,7 +844,7 @@ OUTPUT::
               "msg" : "updated repo ID:repo_id `<reponame>`",
               "repository" : {
                 "repo_id" :          "<repo_id>",
-                "repo_name" :        "<reponame>"
+                "repo_name" :        "<reponame>",
                 "repo_type" :        "<repo_type>",
                 "clone_uri" :        "<clone_uri>",
                 "private" :          "<bool>",
@@ -863,7 +863,7 @@ OUTPUT::
                                        "revision": "<numeric_revision>",
                                        "short_id": "<short_id>"
                                      }
-              },
+              }
              }
     error : null
 
@@ -941,9 +941,9 @@ INPUT::
     api_key : "<api_key>"
     method :  "grant_user_permission"
     args :    {
-                "repoid" : "<reponame or repo_id>"
-                "userid" : "<username or user_id>"
-                "perm" :       "(repository.(none|read|write|admin))",
+                "repoid" : "<reponame or repo_id>",
+                "userid" : "<username or user_id>",
+                "perm" :       "(repository.(none|read|write|admin))"
               }
 
 OUTPUT::
@@ -967,7 +967,7 @@ INPUT::
     api_key : "<api_key>"
     method :  "revoke_user_permission"
     args :    {
-                "repoid" : "<reponame or repo_id>"
+                "repoid" : "<reponame or repo_id>",
                 "userid" : "<username or user_id>"
               }
 
@@ -993,9 +993,9 @@ INPUT::
     api_key : "<api_key>"
     method :  "grant_user_group_permission"
     args :    {
-                "repoid" : "<reponame or repo_id>"
-                "usersgroupid" : "<user group id or name>"
-                "perm" : "(repository.(none|read|write|admin))",
+                "repoid" : "<reponame or repo_id>",
+                "usersgroupid" : "<user group id or name>",
+                "perm" : "(repository.(none|read|write|admin))"
               }
 
 OUTPUT::
@@ -1019,7 +1019,7 @@ INPUT::
     api_key : "<api_key>"
     method :  "revoke_user_group_permission"
     args :    {
-                "repoid" : "<reponame or repo_id>"
+                "repoid" : "<reponame or repo_id>",
                 "usersgroupid" : "<user group id or name>"
               }
 
@@ -1155,7 +1155,7 @@ INPUT::
     api_key : "<api_key>"
     method :  "get_pullrequest"
     args :    {
-                "pullrequest_id" : "<pullrequest_id>",
+                "pullrequest_id" : "<pullrequest_id>"
               }
 
 OUTPUT::
@@ -1169,7 +1169,7 @@ OUTPUT::
         "url" : "<pull_request_url>",
         "reviewers" : [
           {
-            "username" : "<user_name>",
+            "username" : "<user_name>"
           },
           ...
         ],
@@ -1188,7 +1188,7 @@ OUTPUT::
           {
             "username" : "<user_name>",
             "text" : "<comment text>",
-            "comment_id" : "<comment_id>",
+            "comment_id" : "<comment_id>"
           },
           ...
         ],
@@ -1223,7 +1223,7 @@ INPUT::
                 "pull_request_id" : "<pull_request_id>",
                 "comment_msg" :     Optional(''),
                 "status" :          Optional(None),     # "under_review", "approved" or "rejected"
-                "close_pr" :        Optional(False)",
+                "close_pr" :        Optional(False)"
               }
 
 OUTPUT::

@@ -174,7 +174,7 @@ class ApiController(JSONRPCController):
 
             id : <id_given_in_input>
             result : {
-                "msg" : "Pulled from `<repository name>`"
+                "msg" : "Pulled from `<repository name>`",
                 "repository" : "<repository name>"
             }
             error : null
@@ -307,7 +307,7 @@ class ApiController(JSONRPCController):
                          "user_ips" : [
                                         {
                                            "ip_addr" : "<ip_with_mask>",
-                                           "ip_range" : ["<start_ip>", "<end_ip>"],
+                                           "ip_range" : ["<start_ip>", "<end_ip>"]
                                         },
                                         ...
                                       ]
@@ -377,7 +377,7 @@ class ApiController(JSONRPCController):
                             "repositories" : {"repo1" : "repository.none"},
                             "repositories_groups" : {"Group1" : "group.read"},
                             "user_groups" : { "usrgrp1" : "usergroup.admin" }
-                         },
+                         }
                      }
             error : null
         """
@@ -529,7 +529,7 @@ class ApiController(JSONRPCController):
             id : <id_given_in_input>
             result : {
                       "msg" : "updated user ID:<userid> <username>",
-                      "user" : <user_object>,
+                      "user" : <user_object>
                      }
             error : null
 
@@ -629,9 +629,9 @@ class ApiController(JSONRPCController):
                      {
                        "users_group_id" : "<id>",
                        "group_name" :     "<groupname>",
-                       "group_description" : "<description>"
+                       "group_description" : "<description>",
                        "active" :         "<bool>",
-                       "owner" :          "<username>"
+                       "owner" :          "<username>",
                        "members" :        [<user_obj>,...]
                      }
             error : null
@@ -946,7 +946,7 @@ class ApiController(JSONRPCController):
             id : <id_given_in_input>
             result : {
                         "repo_id" :          "<repo_id>",
-                        "repo_name" :        "<reponame>"
+                        "repo_name" :        "<reponame>",
                         "repo_type" :        "<repo_type>",
                         "clone_uri" :        "<clone_uri>",
                         "enable_downloads" : "<bool>",
@@ -962,7 +962,7 @@ class ApiController(JSONRPCController):
                                                  "raw_id" :  "<raw_id>",
                                                  "revision": "<numeric_revision>",
                                                  "short_id": "<short_id>"
-                                             }
+                                             },
                         "owner" :            "<repo_owner>",
                         "fork_of" :          "<name_of_fork_parent>",
                         "members" :     [
@@ -978,7 +978,7 @@ class ApiController(JSONRPCController):
                                                 "permission" : "usergroup.(read|write|admin)"
                                             },
                                             …
-                                        ]
+                                        ],
                         "followers" :  [<user_obj>, ...],
                         <if with_revision_names == True>
                         "tags" : {
@@ -992,7 +992,7 @@ class ApiController(JSONRPCController):
                         "bookmarks" : {
                                     "<bookmarkname>" : "<raw_id>",
                                     ...
-                                },
+                                }
                      }
             error : null
         """
@@ -1047,7 +1047,7 @@ class ApiController(JSONRPCController):
             result : [
                       {
                         "repo_id" :          "<repo_id>",
-                        "repo_name" :        "<reponame>"
+                        "repo_name" :        "<reponame>",
                         "repo_type" :        "<repo_type>",
                         "clone_uri" :        "<clone_uri>",
                         "private" :          "<bool>",
@@ -1057,7 +1057,7 @@ class ApiController(JSONRPCController):
                         "owner" :            "<repo_owner>",
                         "fork_of" :          "<name_of_fork_parent>",
                         "enable_downloads" : "<bool>",
-                        "enable_statistics": "<bool>",
+                        "enable_statistics": "<bool>"
                       },
                       …
                      ]
@@ -1096,8 +1096,8 @@ class ApiController(JSONRPCController):
             id : <id_given_in_input>
             result : [
                       {
-                        "name" :        "<name>"
-                        "type" :        "<type>",
+                        "name" :        "<name>",
+                        "type" :        "<type>"
                       },
                       …
                      ]
@@ -1744,7 +1744,7 @@ class ApiController(JSONRPCController):
 
           id : <id_given_in_input>
           result : {
-              "msg" : "created new repo group `<repo_group_name>`"
+              "msg" : "created new repo group `<repo_group_name>`",
               "repo_group" : <repogroup_object>
           }
           error : null
