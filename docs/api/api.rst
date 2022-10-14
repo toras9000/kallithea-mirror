@@ -575,16 +575,16 @@ OUTPUT::
                 "description" :      "<description>",
                 "landing_rev":       "<landing_rev>",
                 "last_changeset":    {
-                                       "author":   "<full_author>",
-                                       "date":     "<date_time_of_commit>",
-                                       "message":  "<commit_message>",
-                                       "raw_id":   "<raw_id>",
-                                       "revision": "<numeric_revision>",
-                                       "short_id": "<short_id>"
+                                         "author":   "<full_author>",
+                                         "date":     "<date_time_of_commit>",
+                                         "message":  "<commit_message>",
+                                         "raw_id":   "<raw_id>",
+                                         "revision": "<numeric_revision>",
+                                         "short_id": "<short_id>"
                                      },
                 "owner":             "<repo_owner>",
                 "fork_of":           "<name_of_fork_parent>",
-                "members" :     [
+                "members" :   [
                                   {
                                     "type":        "user",
                                     "user_id" :    "<user_id>",
@@ -609,8 +609,8 @@ OUTPUT::
                                     "permission" : "repository.(read|write|admin)"
                                   },
                                   …
-                                ],
-                 "followers":   [
+                              ],
+                "followers":  [
                                   {
                                     "user_id" :     "<user_id>",
                                     "username" :    "<username>",
@@ -626,20 +626,20 @@ OUTPUT::
                                     "last_login":   "<last_login>",
                                   },
                                   …
-                                ],
-                 <if with_revision_names == True>
-                 "tags": {
+                              ],
+                <if with_revision_names == True>
+                "tags": {
                             "<tagname>": "<raw_id>",
                             ...
-                         },
-                 "branches": {
+                        },
+                "branches": {
                             "<branchname>": "<raw_id>",
                             ...
-                         },
-                 "bookmarks": {
+                        },
+                "bookmarks": {
                             "<bookmarkname>": "<raw_id>",
                             ...
-                         },
+                        },
                 <if with_pullrequests == True>
                 "pull_requests": [
                   {

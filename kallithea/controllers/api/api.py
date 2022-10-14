@@ -172,20 +172,20 @@ class ApiController(JSONRPCController):
 
         OUTPUT::
 
-          id : <id_given_in_input>
-          result : {
-            "msg": "Pulled from `<repository name>`"
-            "repository": "<repository name>"
-          }
-          error :  null
+            id : <id_given_in_input>
+            result : {
+                "msg": "Pulled from `<repository name>`"
+                "repository": "<repository name>"
+            }
+            error :  null
 
         ERROR OUTPUT::
 
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "Unable to pull changes from `<reponame>`"
-          }
+            id : <id_given_in_input>
+            result : null
+            error :  {
+                "Unable to pull changes from `<reponame>`"
+            }
         """
         repo = get_repo_or_error(repoid)
 
@@ -218,20 +218,20 @@ class ApiController(JSONRPCController):
 
         OUTPUT::
 
-          id : <id_given_in_input>
-          result : {
-            'added': [<added repository name>,...]
-            'removed': [<removed repository name>,...]
-          }
-          error :  null
+            id : <id_given_in_input>
+            result : {
+                'added': [<added repository name>,...]
+                'removed': [<removed repository name>,...]
+            }
+            error :  null
 
         ERROR OUTPUT::
 
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            'Error occurred during rescan repositories action'
-          }
+            id : <id_given_in_input>
+            result : null
+            error :  {
+                'Error occurred during rescan repositories action'
+            }
         """
         try:
             rm_obsolete = remove_obsolete
@@ -255,20 +255,20 @@ class ApiController(JSONRPCController):
 
         OUTPUT::
 
-          id : <id_given_in_input>
-          result : {
-            'msg': Cache for repository `<repository name>` was invalidated,
-            'repository': <repository name>
-          }
-          error :  null
+            id : <id_given_in_input>
+            result : {
+                'msg': Cache for repository `<repository name>` was invalidated,
+                'repository': <repository name>
+            }
+            error :  null
 
         ERROR OUTPUT::
 
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            'Error occurred during cache invalidation action'
-          }
+            id : <id_given_in_input>
+            result : null
+            error :  {
+                'Error occurred during cache invalidation action'
+            }
         """
         repo = get_repo_or_error(repoid)
         if not HasPermissionAny('hg.admin')():
@@ -333,16 +333,16 @@ class ApiController(JSONRPCController):
 
         OUTPUT::
 
-          id : <id_given_in_input>
-          result : {
-            'modules': [ [<module name>, <module version>], ...]
-            'py_version': <python version>,
-            'platform': <platform type>,
-            'kallithea_version': <kallithea version>,
-            'git_version': '<git version>',
-            'git_path': '<git path>'
-          }
-          error :  null
+            id : <id_given_in_input>
+            result : {
+                'modules': [ [<module name>, <module version>], ...]
+                'py_version': <python version>,
+                'platform': <platform type>,
+                'kallithea_version': <kallithea version>,
+                'git_version': '<git version>',
+                'git_path': '<git path>'
+            }
+            error : null
         """
         return db.Setting.get_server_info()
 
@@ -456,15 +456,15 @@ class ApiController(JSONRPCController):
 
         ERROR OUTPUT::
 
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "user `<username>` already exist"
-            or
-            "email `<email>` already exist"
-            or
-            "failed to create user `<username>`"
-          }
+            id : <id_given_in_input>
+            result : null
+            error :  {
+                "user `<username>` already exist"
+                or
+                "email `<email>` already exist"
+                or
+                "failed to create user `<username>`"
+            }
         """
         if db.User.get_by_username(username):
             raise JSONRPCError("user `%s` already exist" % (username,))
@@ -535,11 +535,11 @@ class ApiController(JSONRPCController):
 
         ERROR OUTPUT::
 
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to update user `<username>`"
-          }
+            id : <id_given_in_input>
+            result : null
+            error :  {
+                "failed to update user `<username>`"
+            }
         """
         user = get_user_or_error(userid)
 
@@ -591,11 +591,11 @@ class ApiController(JSONRPCController):
 
         ERROR OUTPUT::
 
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to delete user ID:<userid> <username>"
-          }
+            id : <id_given_in_input>
+            result : null
+            error :  {
+                "failed to delete user ID:<userid> <username>"
+            }
         """
         user = get_user_or_error(userid)
 
@@ -690,13 +690,13 @@ class ApiController(JSONRPCController):
 
         ERROR OUTPUT::
 
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "user group `<group name>` already exist"
-            or
-            "failed to create group `<group name>`"
-          }
+            id : <id_given_in_input>
+            result : null
+            error :  {
+                "user group `<group name>` already exist"
+                or
+                "failed to create group `<group name>`"
+            }
         """
         if UserGroupModel().get_by_name(group_name):
             raise JSONRPCError("user group `%s` already exist" % (group_name,))
@@ -843,21 +843,21 @@ class ApiController(JSONRPCController):
 
         OUTPUT::
 
-          id : <id_given_in_input>
-          result : {
-              "success": True|False # depends on if member is in group
-              "msg": "added member `<username>` to a user group `<groupname>` |
-                      User is already in that group"
-          }
-          error :  null
+            id : <id_given_in_input>
+            result : {
+                "success": True|False # depends on if member is in group
+                "msg": "added member `<username>` to a user group `<groupname>` |
+                        User is already in that group"
+            }
+            error :  null
 
         ERROR OUTPUT::
 
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to add member to user group `<user_group_name>`"
-          }
+            id : <id_given_in_input>
+            result : null
+            error :  {
+                "failed to add member to user group `<user_group_name>`"
+            }
         """
         user = get_user_or_error(userid)
         user_group = get_user_group_or_error(usergroupid)
@@ -943,58 +943,58 @@ class ApiController(JSONRPCController):
 
         OUTPUT::
 
-          id : <id_given_in_input>
-          result : {
-                "repo_id" :          "<repo_id>",
-                "repo_name" :        "<reponame>"
-                "repo_type" :        "<repo_type>",
-                "clone_uri" :        "<clone_uri>",
-                "enable_downloads":  "<bool>",
-                "enable_statistics": "<bool>",
-                "private":           "<bool>",
-                "created_on" :       "<date_time_created>",
-                "description" :      "<description>",
-                "landing_rev":       "<landing_rev>",
-                "last_changeset":    {
-                                       "author":   "<full_author>",
-                                       "date":     "<date_time_of_commit>",
-                                       "message":  "<commit_message>",
-                                       "raw_id":   "<raw_id>",
-                                       "revision": "<numeric_revision>",
-                                       "short_id": "<short_id>"
-                                     }
-                "owner":             "<repo_owner>",
-                "fork_of":           "<name_of_fork_parent>",
-                "members" :     [
-                                  {
-                                    "name":     "<username>",
-                                    "type" :    "user",
-                                    "permission" : "repository.(read|write|admin)"
-                                  },
-                                  …
-                                  {
-                                    "name":     "<usergroup name>",
-                                    "type" :    "user_group",
-                                    "permission" : "usergroup.(read|write|admin)"
-                                  },
-                                  …
-                                ]
-                 "followers":   [<user_obj>, ...],
-                 <if with_revision_names == True>
-                 "tags": {
-                            "<tagname>": "<raw_id>",
-                            ...
-                         },
-                 "branches": {
-                            "<branchname>": "<raw_id>",
-                            ...
-                         },
-                 "bookmarks": {
-                            "<bookmarkname>": "<raw_id>",
-                            ...
-                         },
-          }
-          error :  null
+            id : <id_given_in_input>
+            result : {
+                        "repo_id" :          "<repo_id>",
+                        "repo_name" :        "<reponame>"
+                        "repo_type" :        "<repo_type>",
+                        "clone_uri" :        "<clone_uri>",
+                        "enable_downloads":  "<bool>",
+                        "enable_statistics": "<bool>",
+                        "private":           "<bool>",
+                        "created_on" :       "<date_time_created>",
+                        "description" :      "<description>",
+                        "landing_rev":       "<landing_rev>",
+                        "last_changeset":    {
+                                                 "author":   "<full_author>",
+                                                 "date":     "<date_time_of_commit>",
+                                                 "message":  "<commit_message>",
+                                                 "raw_id":   "<raw_id>",
+                                                 "revision": "<numeric_revision>",
+                                                 "short_id": "<short_id>"
+                                             }
+                        "owner":             "<repo_owner>",
+                        "fork_of":           "<name_of_fork_parent>",
+                        "members" :     [
+                                            {
+                                                "name":     "<username>",
+                                                "type" :    "user",
+                                                "permission" : "repository.(read|write|admin)"
+                                            },
+                                            …
+                                            {
+                                                "name":     "<usergroup name>",
+                                                "type" :    "user_group",
+                                                "permission" : "usergroup.(read|write|admin)"
+                                            },
+                                            …
+                                        ]
+                        "followers":   [<user_obj>, ...],
+                        <if with_revision_names == True>
+                        "tags": {
+                                    "<tagname>": "<raw_id>",
+                                    ...
+                                },
+                        "branches": {
+                                    "<branchname>": "<raw_id>",
+                                    ...
+                                },
+                        "bookmarks": {
+                                    "<bookmarkname>": "<raw_id>",
+                                    ...
+                                },
+                    }
+            error :  null
         """
         repo = get_repo_or_error(repoid)
 
@@ -1177,11 +1177,11 @@ class ApiController(JSONRPCController):
 
         ERROR OUTPUT::
 
-          id : <id_given_in_input>
-          result : null
-          error :  {
-             'failed to create repository `<repo_name>`
-          }
+            id : <id_given_in_input>
+            result : null
+            error :  {
+                'failed to create repository `<repo_name>`
+            }
         """
         group_name = None
         repo_name_parts = repo_name.split('/')
@@ -1579,20 +1579,20 @@ class ApiController(JSONRPCController):
 
         OUTPUT::
 
-          id : <id_given_in_input>
-          result : {
-            "msg" : "Granted perm: `<perm>` for group: `<usersgroupname>` in repo: `<reponame>`",
-            "success": true
-          }
-          error :  null
+            id : <id_given_in_input>
+            result : {
+                "msg" : "Granted perm: `<perm>` for group: `<usersgroupname>` in repo: `<reponame>`",
+                "success": true
+            }
+            error :  null
 
         ERROR OUTPUT::
 
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to edit permission for user group: `<usergroup>` in repo `<repo>`'
-          }
+            id : <id_given_in_input>
+            result : null
+            error :  {
+                "failed to edit permission for user group: `<usergroup>` in repo `<repo>`'
+            }
         """
         repo = get_repo_or_error(repoid)
         perm = get_perm_or_error(perm)
