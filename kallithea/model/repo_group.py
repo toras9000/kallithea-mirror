@@ -281,6 +281,8 @@ class RepoGroupModel(object):
             old_path = repo_group.full_path
 
             # change properties
+            if 'owner' in repo_group_args:
+                repo_group.owner = db.User.get_by_username(repo_group_args['owner'])
             if 'group_description' in repo_group_args:
                 repo_group.group_description = repo_group_args['group_description']
             if 'parent_group_id' in repo_group_args:

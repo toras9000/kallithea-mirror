@@ -1851,7 +1851,7 @@ class _BaseTestApi(object):
         self._compare_error(id_, expected, given=response.body)
 
     @base.parametrize('changing_attr,updates', [
-        #('owner', {'owner': base.TEST_USER_REGULAR_LOGIN}),  # currently broken
+        ('owner', {'owner': base.TEST_USER_REGULAR_LOGIN}),
         ('description', {'description': 'new description'}),
         ('group_name', {'group_name': 'new_repo_name'}),
         ('parent', {'parent': 'test_group_for_update'}),
