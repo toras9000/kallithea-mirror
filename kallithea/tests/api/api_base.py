@@ -1850,6 +1850,47 @@ class _BaseTestApi(object):
         )
         self._compare_error(id_, expected, given=response.body)
 
+    @base.parametrize('changing_attr,updates', [
+        #('owner', {'owner': base.TEST_USER_REGULAR_LOGIN}),  # currently broken
+        ('description', {'description': 'new description'}),
+        ('group_name', {'group_name': 'new_repo_name'}),
+        #('parent', {'parent': 'test_group_for_update'}),  # currently broken
+    ])
+    def test_api_update_repo_group(self, changing_attr, updates):
+        group_name = 'lololo'
+        repo_group = fixture.create_repo_group(group_name)
+
+        new_group_name = group_name
+        if changing_attr == 'group_name':
+            assert repo_group.parent_group_id is None  # lazy assumption for this test
+            new_group_name = updates['group_name']
+        if changing_attr == 'parent':
+            new_group_name = '/'.join([updates['parent'], group_name.rsplit('/', 1)[-1]])
+
+        expected = {
+            'msg': 'updated repository group ID:%s %s' % (repo_group.group_id, new_group_name),
+            'repo_group': repo_group.get_api_data()
+        }
+        expected['repo_group'].update(updates)
+        if 'description' in updates:
+            expected['repo_group']['group_description'] = expected['repo_group'].pop('description')
+
+        if changing_attr == 'parent':
+            new_parent = fixture.create_repo_group(updates['parent'])
+            expected['repo_group']['parent_group'] = expected['repo_group'].pop('parent')
+            expected['repo_group']['group_name'] = new_group_name
+
+        id_, params = _build_data(self.apikey, 'update_repo_group',
+                                  repogroupid=group_name, **updates)
+        response = api_call(self, params)
+
+        try:
+            self._compare_ok(id_, expected, given=response.body)
+        finally:
+            if changing_attr == 'parent':
+                fixture.destroy_repo_group(new_parent.group_id)
+            fixture.destroy_repo_group(new_group_name)
+
     @base.parametrize('name,perm,apply_to_children', [
         ('none', 'group.none', 'none'),
         ('read', 'group.read', 'none'),
