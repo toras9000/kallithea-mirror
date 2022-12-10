@@ -259,7 +259,7 @@ class _BaseTestApi(object):
         self._compare_error(id_, expected, given=response.body)
 
     def test_api_pull_remote(self):
-        # Note: pulling from local repos is a mis-feature - it will bypass access control
+        # Note: pulling from local repos is a misfeature - it will bypass access control
         # ... but ok, if the path already has been set in the database
         repo_name = 'test_pull'
         r = fixture.create_repo(repo_name, repo_type=self.REPO_TYPE)
@@ -826,7 +826,7 @@ class _BaseTestApi(object):
         fixture.destroy_repo(repo_name)
 
     def test_api_create_repo_clone_uri_local(self):
-        # cloning from local repos was a mis-feature - it would bypass access control
+        # cloning from local repos was a misfeature - it would bypass access control
         # TODO: introduce other test coverage of actual remote cloning
         clone_uri = os.path.join(base.TESTS_TMP_PATH, self.REPO)
         repo_name = 'api-repo'
@@ -1003,9 +1003,10 @@ class _BaseTestApi(object):
         ('owner', {'owner': base.TEST_USER_REGULAR_LOGIN}),
         ('description', {'description': 'new description'}),
         ('clone_uri', {'clone_uri': 'http://example.com/repo'}), # will fail - pulling from non-existing repo should fail
-        ('clone_uri', {'clone_uri': '/repo'}), # will fail - pulling from local repo was a mis-feature - it would bypass access control
+        ('clone_uri', {'clone_uri': '/repo'}), # will fail - pulling from local repo was a misfeature - it would bypass access control
         ('clone_uri', {'clone_uri': None}),
         ('landing_rev', {'landing_rev': 'branch:master'}),
+        ('private', {'private': True}),
         ('enable_statistics', {'enable_statistics': True}),
         ('enable_downloads', {'enable_downloads': True}),
         ('name', {'name': 'new_repo_name'}),
@@ -1019,20 +1020,32 @@ class _BaseTestApi(object):
 
         id_, params = _build_data(self.apikey, 'update_repo',
                                   repoid=repo_name, **updates)
-        response = api_call(self, params)
+
         if changing_attr == 'name':
             repo_name = updates['name']
         if changing_attr == 'repo_group':
             repo_name = '/'.join([updates['group'], repo_name])
+        expected = {
+            'msg': 'updated repo ID:%s %s' % (repo.repo_id, repo_name),
+            'repository': repo.get_api_data()
+        }
+        expected['repository'].update(updates)
+        if changing_attr == 'clone_uri' and updates['clone_uri'] is None:
+            expected['repository']['clone_uri'] = ''
+        if changing_attr == 'landing_rev':
+            expected['repository']['landing_rev'] = expected['repository']['landing_rev'].split(':', 1)
+        if changing_attr == 'name':
+            expected['repository']['repo_name'] = expected['repository'].pop('name')
+        if changing_attr == 'repo_group':
+            expected['repository']['repo_name'] = expected['repository'].pop('group') + '/' + repo.repo_name
+
+        response = api_call(self, params)
+
         try:
             if changing_attr == 'clone_uri' and updates['clone_uri']:
                 expected = 'failed to update repo `%s`' % repo_name
                 self._compare_error(id_, expected, given=response.body)
             else:
-                expected = {
-                    'msg': 'updated repo ID:%s %s' % (repo.repo_id, repo_name),
-                    'repository': repo.get_api_data()
-                }
                 self._compare_ok(id_, expected, given=response.body)
         finally:
             fixture.destroy_repo(repo_name)
@@ -1043,7 +1056,7 @@ class _BaseTestApi(object):
         ('owner', {'owner': base.TEST_USER_REGULAR_LOGIN}),
         ('description', {'description': 'new description'}),
         ('clone_uri', {'clone_uri': 'http://example.com/repo'}), # will fail - pulling from non-existing repo should fail
-        ('clone_uri', {'clone_uri': '/repo'}), # will fail - pulling from local repo was a mis-feature - it would bypass access control
+        ('clone_uri', {'clone_uri': '/repo'}), # will fail - pulling from local repo was a misfeature - it would bypass access control
         ('clone_uri', {'clone_uri': None}),
         ('landing_rev', {'landing_rev': 'branch:master'}),
         ('enable_statistics', {'enable_statistics': True}),
