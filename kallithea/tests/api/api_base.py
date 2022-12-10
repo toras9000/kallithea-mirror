@@ -1854,7 +1854,7 @@ class _BaseTestApi(object):
         #('owner', {'owner': base.TEST_USER_REGULAR_LOGIN}),  # currently broken
         ('description', {'description': 'new description'}),
         ('group_name', {'group_name': 'new_repo_name'}),
-        #('parent', {'parent': 'test_group_for_update'}),  # currently broken
+        ('parent', {'parent': 'test_group_for_update'}),
     ])
     def test_api_update_repo_group(self, changing_attr, updates):
         group_name = 'lololo'

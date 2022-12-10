@@ -1791,13 +1791,14 @@ class ApiController(JSONRPCController):
                           owner=None,
                           parent=None):
         repo_group = get_repo_group_or_error(repogroupid)
+        parent_repo_group_id = None if parent is None else get_repo_group_or_error(parent).group_id
 
         updates = {}
         try:
             store_update(updates, group_name, 'group_name')
             store_update(updates, description, 'group_description')
             store_update(updates, owner, 'owner')
-            store_update(updates, parent, 'parent_group')
+            store_update(updates, parent_repo_group_id, 'parent_group_id')
             repo_group = RepoGroupModel().update(repo_group, updates)
             meta.Session().commit()
             return dict(
