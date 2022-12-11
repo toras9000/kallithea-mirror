@@ -58,6 +58,20 @@ ${h.form(url('repos'))}
             </div>
         </div>
         <div class="form-group">
+            <label class="control-label" for="repo_enable_statistics">${_('Enable statistics')}:</label>
+            <div>
+                ${h.checkbox('repo_enable_statistics',value="True")}
+                <span class="help-block">${_('Enable statistics window on summary page.')}</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label" for="repo_enable_downloads">${_('Enable downloads')}:</label>
+            <div>
+                ${h.checkbox('repo_enable_downloads',value="True")}
+                <span class="help-block">${_('Enable download menu on summary page.')}</span>
+            </div>
+        </div>
+        <div class="form-group">
             <div class="buttons">
                 ${h.submit('add',_('Add'),class_="btn btn-default")}
             </div>

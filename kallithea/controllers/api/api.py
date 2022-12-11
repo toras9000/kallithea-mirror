@@ -1230,8 +1230,8 @@ class ApiController(JSONRPCController):
                 clone_uri=clone_uri,
                 repo_group=group_name,
                 repo_landing_rev=landing_rev,
-                enable_statistics=enable_statistics,
-                enable_downloads=enable_downloads,
+                repo_enable_statistics=enable_statistics,
+                repo_enable_downloads=enable_downloads,
                 repo_copy_permissions=copy_permissions,
             )
 

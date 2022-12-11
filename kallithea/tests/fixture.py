@@ -95,6 +95,8 @@ class Fixture(object):
             repo_group='-1',
             repo_description='DESC',
             repo_private=False,
+            repo_enable_statistics=False,
+            repo_enable_downloads=False,
             repo_landing_rev='rev:tip',
             repo_copy_permissions=False,
             repo_state=db.Repository.STATE_CREATED,

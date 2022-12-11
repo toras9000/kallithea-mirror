@@ -792,8 +792,8 @@ class _BaseTestApi(object):
         ('clone_uri', {'clone_uri': None}),
         ('landing_rev', {'landing_rev': 'branch:master'}),
         ('private', {'private': True}),
-        #('enable_statistics', {'enable_statistics': True}),  # currently broken
-        #('enable_downloads', {'enable_downloads': True}),  # currently broken
+        ('enable_statistics', {'enable_statistics': True}),
+        ('enable_downloads', {'enable_downloads': True}),
         ('repo_group', {'group': 'test_group_for_update'}),
     ])
     def test_api_create_repo(self, changing_attr, updates):
