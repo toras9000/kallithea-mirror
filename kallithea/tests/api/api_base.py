@@ -16,6 +16,7 @@
 Tests for the JSON-RPC web api.
 """
 
+import datetime
 import os
 import random
 import re
@@ -783,24 +784,73 @@ class _BaseTestApi(object):
         finally:
             RepoModel().revoke_user_permission(self.REPO, self.TEST_USER_LOGIN)
 
-    def test_api_create_repo(self):
-        repo_name = 'api-repo'
+    @base.parametrize('changing_attr,updates', [
+        ('owner', {'owner': base.TEST_USER_REGULAR_LOGIN}),
+        ('description', {'description': 'new description'}),
+        ('clone_uri', {'clone_uri': 'http://example.com/repo'}), # will fail - pulling from non-existing repo should fail
+        ('clone_uri', {'clone_uri': '/repo'}), # will fail - pulling from local repo was a misfeature - it would bypass access control
+        ('clone_uri', {'clone_uri': None}),
+        ('landing_rev', {'landing_rev': 'branch:master'}),
+        ('private', {'private': True}),
+        #('enable_statistics', {'enable_statistics': True}),  # currently broken
+        #('enable_downloads', {'enable_downloads': True}),  # currently broken
+        ('repo_group', {'group': 'test_group_for_update'}),
+    ])
+    def test_api_create_repo(self, changing_attr, updates):
+        repo_name = repo_name_full = 'new_repo'
+
+        if changing_attr == 'repo_group':
+            group_name = updates['group']
+            fixture.create_repo_group(group_name)
+            repo_name_full = '/'.join([group_name, repo_name])
+            updates = {}
+
         id_, params = _build_data(self.apikey, 'create_repo',
-                                  repo_name=repo_name,
-                                  owner=base.TEST_USER_ADMIN_LOGIN,
-                                  repo_type=self.REPO_TYPE,
-        )
+                                  repo_type=self.REPO_TYPE, repo_name=repo_name_full, **updates)
         response = api_call(self, params)
 
-        repo = RepoModel().get_by_repo_name(repo_name)
-        assert repo is not None
-        ret = {
-            'msg': 'Created new repository `%s`' % repo_name,
-            'success': True,
-        }
-        expected = ret
-        self._compare_ok(id_, expected, given=response.body)
-        fixture.destroy_repo(repo_name)
+        try:
+            expected = {
+                'msg': 'Created new repository `%s`' % repo_name_full,
+                'success': True}
+            if changing_attr == 'clone_uri' and updates['clone_uri']:
+                expected = 'failed to create repository `%s`' % repo_name
+                self._compare_error(id_, expected, given=response.body)
+                return
+            else:
+                self._compare_ok(id_, expected, given=response.body)
+
+            repo = db.Repository.get_by_repo_name(repo_name_full)
+            assert repo is not None
+
+            expected_data = {
+                    'clone_uri': None,
+                    'created_on': repo.created_on,
+                    'description': repo_name,
+                    'enable_downloads': False,
+                    'enable_statistics': False,
+                    'fork_of': None,
+                    'landing_rev': ['rev', 'tip'],
+                    'last_changeset': {'author': '',
+                                       'date': datetime.datetime(1970, 1, 1, 0, 0),
+                                       'message': '',
+                                       'raw_id': '0000000000000000000000000000000000000000',
+                                       'revision': -1,
+                                       'short_id': '000000000000'},
+                    'owner': 'test_admin',
+                    'private': False,
+                    'repo_id': repo.repo_id,
+                    'repo_name': repo_name_full,
+                    'repo_type': self.REPO_TYPE,
+            }
+            expected_data.update(updates)
+            if changing_attr == 'landing_rev':
+                expected_data['landing_rev'] = expected_data['landing_rev'].split(':', 1)
+            assert repo.get_api_data() == expected_data
+        finally:
+            fixture.destroy_repo(repo_name_full)
+            if changing_attr == 'repo_group':
+                fixture.destroy_repo_group(group_name)
 
     @base.parametrize('repo_name', [
         '',
