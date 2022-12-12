@@ -715,15 +715,15 @@ msgid "Confirm to delete this group: %s with %s repository"
 msgid_plural "Confirm to delete this group: %s with %s repositories"
 msgstr[0] "确认删除这个版本库组：%s包含%s个版本库"
 
+msgid "Type of repository to create."
+msgstr "要创建的版本库类型。"
+
 msgid ""
 "Keep it short and to the point. Use a README file for longer descriptions."
 msgstr "保持简短。用README文件来写更长的描述。"
 
 msgid "Optionally select a group to put this repository into."
 msgstr "可选的选择一个组将版本库放到其中。"
-
-msgid "Type of repository to create."
-msgstr "要创建的版本库类型。"
 
 msgid "Landing revision"
 msgstr "默认修订"
@@ -742,9 +742,6 @@ msgstr "确认删除版本库：%s"
 
 msgid "Key"
 msgstr "键"
-
-msgid "Default revision for files page, downloads, whoosh and readme"
-msgstr "文件浏览、下载、whoosh和README的默认修订版本"
 
 msgid "Change owner of this repository."
 msgstr "修改这个版本库的所有者。"

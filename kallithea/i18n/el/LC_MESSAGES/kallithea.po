@@ -1823,6 +1823,9 @@ msgstr ""
 "συμπεριλαμβανομένων των μη ιδιωτικών αποθετηρίων και άλλων ομάδων, εάν "
 "επιλεγεί."
 
+msgid "Type name of user"
+msgstr "Πληκτρολογήστε το όνομα του χρήστη"
+
 msgid "Remove this group"
 msgstr "Κατάργηση αυτής της ομάδας"
 
@@ -1838,8 +1841,14 @@ msgstr "Διαχείριση Ομάδων Αποθετηρίου"
 msgid "Number of Top-level Repositories"
 msgstr "Αριθμός αποθετηρίων ανώτατου επιπέδου"
 
+msgid "Type of repository to create."
+msgstr "Τύπος αποθετηρίου προς δημιουργία."
+
 msgid "Clone remote repository"
 msgstr "Κλωνοποίηση απομακρυσμένου αποθετηρίου"
+
+msgid "Repository URL"
+msgstr "URL Αποθετηρίου"
 
 msgid ""
 "Optional: URL of a remote repository. If set, the repository will be "
@@ -1857,9 +1866,6 @@ msgstr ""
 msgid "Optionally select a group to put this repository into."
 msgstr ""
 "Προαιρετικά, επιλέξτε μια ομάδα για να τοποθετήσετε αυτό το αποθετήριο."
-
-msgid "Type of repository to create."
-msgstr "Τύπος αποθετηρίου προς δημιουργία."
 
 msgid "Landing revision"
 msgstr "Αναθεώρηση εκφόρτωσης"
@@ -2008,28 +2014,8 @@ msgstr ""
 msgid "Permanent URL"
 msgstr "Μόνιμη διεύθυνση URL"
 
-msgid ""
-"In case this repository is renamed or moved into another group the "
-"repository URL changes.\n"
-"                               Using the above permanent URL guarantees "
-"that this repository always will be accessible on that URL.\n"
-"                               This is useful for CI systems, or any "
-"other cases that you need to hardcode the URL into a 3rd party service."
-msgstr ""
-"Η διεύθυνση URL του αποθετηρίου αλλάζει όταν αυτό μετονομαστεί ή "
-"μετακινηθεί σε άλλη ομάδα.\n"
-"                               Η χρήση της παραπάνω μόνιμης διεύθυνσης "
-"URL εγγυάται ότι αυτό το αποθετήριο θα είναι πάντα προσβάσιμο σε αυτήν τη "
-"διεύθυνση URL.\n"
-"                               Αυτό είναι χρήσιμο για συστήματα CI ή για "
-"άλλες περιπτώσεις που χρειάζεστε να κωδικοποιήσετε τη διεύθυνση URL σε "
-"κάποια υπηρεσία τρίτου μέρους."
-
 msgid "Remote repository"
 msgstr "Απομακρυσμένο αποθετήριο"
-
-msgid "Repository URL"
-msgstr "URL Αποθετηρίου"
 
 msgid ""
 "Optional: URL of a remote repository. If set, the repository can be "
@@ -2037,13 +2023,6 @@ msgid ""
 msgstr ""
 "Προαιρετικό: Διεύθυνση URL ενός απομακρυσμένου αποθετηρίου. Εάν οριστεί, "
 "το αποθετήριο μπορεί να τραβηχτεί από αυτήν τη διεύθυνση URL."
-
-msgid "Default revision for files page, downloads, whoosh and readme"
-msgstr ""
-"Προεπιλεγμένη αναθεώρηση για τη σελίδα αρχείων, λήψεων, Whoosh και readme"
-
-msgid "Type name of user"
-msgstr "Πληκτρολογήστε το όνομα του χρήστη"
 
 msgid "Change owner of this repository."
 msgstr "Αλλάξτε τον κάτοχο αυτού του αποθετηρίου."

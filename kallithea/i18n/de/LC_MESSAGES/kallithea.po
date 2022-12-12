@@ -958,8 +958,8 @@ msgstr "Es gibt bereits ein Repository mit \"%(repo)s\""
 
 msgid "Repository \"%(repo)s\" already exists in group \"%(group)s\""
 msgstr ""
-"Es gibt bereits ein Repository mit \"%(repo)s\" in der Gruppe \"%(group)s"
-"\""
+"Es gibt bereits ein Repository mit \"%(repo)s\" in der Gruppe "
+"\"%(group)s\""
 
 msgid "Repository group with name \"%(repo)s\" already exists"
 msgstr "Eine Repositorygruppe mit dem Namen \"%(repo)s\" existiert bereits"
@@ -1615,6 +1615,9 @@ msgstr ""
 "untergeordneten Elemente, einschließlich nicht-privater Repositories und "
 "anderer Gruppen, falls ausgewählt."
 
+msgid "Type name of user"
+msgstr "Typname des Benutzers"
+
 msgid "Remove this group"
 msgstr "Diese Gruppe löschen"
 
@@ -1630,8 +1633,14 @@ msgstr "Repositorygruppenverwaltung"
 msgid "Number of Top-level Repositories"
 msgstr "Anzahl der Repositories oberster Ebene"
 
+msgid "Type of repository to create."
+msgstr "Repository Typ der erstellt werden soll."
+
 msgid "Clone remote repository"
 msgstr "Entferntes Repository clonen"
+
+msgid "Repository URL"
+msgstr "Repository URL"
 
 msgid ""
 "Optional: URL of a remote repository. If set, the repository will be "
@@ -1650,9 +1659,6 @@ msgid "Optionally select a group to put this repository into."
 msgstr ""
 "Wähle bei Bedarf eine Gruppe, der dieses Repository zugeordnet werden "
 "soll."
-
-msgid "Type of repository to create."
-msgstr "Repository Typ der erstellt werden soll."
 
 msgid "Landing revision"
 msgstr "Start Revision"
@@ -1794,26 +1800,8 @@ msgstr "Bestätige die Abholung von Änderungen vom entfernten Repository."
 msgid "This repository does not have a remote repository URL."
 msgstr "Für dieses Repository ist keine nicht-lokale URL angegeben."
 
-msgid ""
-"In case this repository is renamed or moved into another group the "
-"repository URL changes.\n"
-"                               Using the above permanent URL guarantees "
-"that this repository always will be accessible on that URL.\n"
-"                               This is useful for CI systems, or any "
-"other cases that you need to hardcode the URL into a 3rd party service."
-msgstr ""
-"Falls dieses Repository umbenannt oder in eine andere Gruppe verschoben "
-"wird, ändert sich seine URL.\n"
-"Die Verwendung der permanenten URL garantiert, dass dieses Repository "
-"immer über diese URL erreichbar sein wird.\n"
-"Dies ist insbesondere für CI-Systeme oder in Fällen nützlich, in denen "
-"die URL des Repositories bei Dritten dauerhaft eingetragen wird."
-
 msgid "Remote repository"
 msgstr "Entferntes Repository"
-
-msgid "Repository URL"
-msgstr "Repository URL"
 
 msgid ""
 "Optional: URL of a remote repository. If set, the repository can be "
@@ -1821,12 +1809,6 @@ msgid ""
 msgstr ""
 "Optional: URL eines entfernten Repositories. Falls gesetzt, dann kann das "
 "Repository von dieser URL bezogen werden."
-
-msgid "Default revision for files page, downloads, whoosh and readme"
-msgstr "Standardrevision für Dateiseite, Downloads, Whoosh und Readme"
-
-msgid "Type name of user"
-msgstr "Typname des Benutzers"
 
 msgid "Change owner of this repository."
 msgstr "Besitzer des Repositorys ändern."

@@ -1412,8 +1412,14 @@ msgstr "リポジトリグループ管理"
 msgid "Number of Top-level Repositories"
 msgstr "トップレベルリポジトリ数"
 
+msgid "Type of repository to create."
+msgstr "作成するリポジトリの種別を指定します"
+
 msgid "Clone remote repository"
 msgstr "リモートリポジトリをクローン"
+
+msgid "Repository URL"
+msgstr "リポジトリURL"
 
 msgid ""
 "Keep it short and to the point. Use a README file for longer descriptions."
@@ -1422,9 +1428,6 @@ msgstr ""
 
 msgid "Optionally select a group to put this repository into."
 msgstr "オプション：このリポジトリが属するグループを選択します"
-
-msgid "Type of repository to create."
-msgstr "作成するリポジトリの種別を指定します"
 
 msgid "Landing revision"
 msgstr "ランディングリビジョン"
@@ -1547,25 +1550,8 @@ msgstr "リモートリポジトリから変更を取り込んでもよろしい
 msgid "This repository does not have a remote repository URL."
 msgstr "このリポジトリにリモートURLは設定されていません"
 
-msgid ""
-"In case this repository is renamed or moved into another group the "
-"repository URL changes.\n"
-"                               Using the above permanent URL guarantees "
-"that this repository always will be accessible on that URL.\n"
-"                               This is useful for CI systems, or any "
-"other cases that you need to hardcode the URL into a 3rd party service."
-msgstr ""
-"通常、リポジトリの名前を変更したり、別のグループに移動すると、リポジトリの"
-"URLが変わります。\n"
-"上のURLを使えば、常にリポジトリにアクセスできます。\n"
-"この機能は、CIを使っている場合や、3rd pirtyのサービス向けにURLを固定化した"
-"いときに便利です。"
-
 msgid "Remote repository"
 msgstr "リモートリポジトリ"
-
-msgid "Repository URL"
-msgstr "リポジトリURL"
 
 msgid ""
 "Optional: URL of a remote repository. If set, the repository can be "
@@ -1573,11 +1559,6 @@ msgid ""
 msgstr ""
 "オプション: リモートリポジトリのURLです。設定した場合、このURLから変更を取"
 "得することができます。"
-
-msgid "Default revision for files page, downloads, whoosh and readme"
-msgstr ""
-"ファイルページ、ダウンロード、検索、READMEのデフォルトのリビジョンを指定し"
-"ます"
 
 msgid "Change owner of this repository."
 msgstr "リポジトリの所有者を変更"
