@@ -3585,8 +3585,5 @@ msgstr "Отправить новый репозиторий"
 msgid "Existing repository?"
 msgstr "Существующий репозиторий?"
 
-msgid "Readme file from revision %s:%s"
-msgstr "Файл readme из ревизии %s:%s"
-
 msgid "Download %s as %s"
 msgstr "Скачать %s как %s"

@@ -2478,8 +2478,5 @@ msgstr "Schnelleinstieg"
 msgid "Add or upload files directly via Kallithea"
 msgstr "Dateien direkt über Kallithea hinzufügen oder hochladen"
 
-msgid "Readme file from revision %s:%s"
-msgstr "Liesmich-Datei von Revision %s:%s"
-
 msgid "Download %s as %s"
 msgstr "%s als %s herunterladen"

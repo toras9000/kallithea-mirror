@@ -224,7 +224,7 @@ hg push ${c.clone_repo_url}
 <div id="readme" class="anchor">
 </div>
 <div class="panel panel-primary">
-    <div class="panel-heading" title="${_('Readme file from revision %s:%s') % (c.db_repo.landing_rev[0], c.db_repo.landing_rev[1])}">
+    <div class="panel-heading" title="${_('Readme file from %s') % (c.db_repo.landing_rev[1])}">
         <div class="panel-title">
             <a href="${h.url('files_home',repo_name=c.repo_name,revision='tip',f_path=c.readme_file)}">${c.readme_file}</a>
         </div>

@@ -2738,8 +2738,5 @@ msgstr "新しいリポジトリをプッシュ"
 msgid "Existing repository?"
 msgstr "存在するリポジトリをプッシュ"
 
-msgid "Readme file from revision %s:%s"
-msgstr "リビジョン %s:%s の README ファイル"
-
 msgid "Download %s as %s"
 msgstr "%s を %s でダウンロード"

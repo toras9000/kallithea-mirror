@@ -3745,8 +3745,5 @@ msgstr "Pusher le nouveau dépôt"
 msgid "Existing repository?"
 msgstr "Le dépôt existe déjà ?"
 
-msgid "Readme file from revision %s:%s"
-msgstr "Fichier Lisez-moi de la revision %s:%s"
-
 msgid "Download %s as %s"
 msgstr "Télécharge %s comme %s"

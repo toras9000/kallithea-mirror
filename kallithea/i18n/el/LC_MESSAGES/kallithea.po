@@ -3710,8 +3710,5 @@ msgstr "Ώθηση νέου αποθετηρίου"
 msgid "Existing repository?"
 msgstr "Υπάρχον αποθετήριο;"
 
-msgid "Readme file from revision %s:%s"
-msgstr "Αρχείο Readme από την αναθεώρηση %s:%s"
-
 msgid "Download %s as %s"
 msgstr "Λήψη %s ως %s"
