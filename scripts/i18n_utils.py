@@ -168,7 +168,7 @@ def _normalize_po(raw_content):
 
 def _normalize_po_file(po_file, merge_pot_file=None, strip=False):
     if merge_pot_file:
-        runcmd(['msgmerge', '--width=76', '--backup=none', '--previous',
+        runcmd(['msgmerge', '--width=76', '--backup=none', '--previous', '--no-fuzzy-matching',
                 '--update', po_file, '-q', merge_pot_file])
     if strip:
         po_tmp = po_file + '.tmp'
