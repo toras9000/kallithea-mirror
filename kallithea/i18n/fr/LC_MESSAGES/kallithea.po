@@ -561,7 +561,7 @@ msgstr ""
 "l'application"
 
 msgid "Repositories successfully rescanned. Added: %s. Removed: %s."
-msgstr "Dépôts ré-analysés avec succès. Ajouté : %s. Supprimé : %s."
+msgstr "Dépôts ré-analysés avec succès. Ajouté : %s. Supprimé : %s."
 
 msgid "Invalidated %s repositories"
 msgstr "%s dépôts invalidés"
@@ -694,10 +694,10 @@ msgid "Increase diff context to %(num)s lines"
 msgstr "Augmenter le contexte du diff à %(num)s lignes"
 
 msgid "Deleted branch: %s"
-msgstr "Branche supprimée : %s"
+msgstr "Branche supprimée : %s"
 
 msgid "Created tag: %s"
-msgstr "Étiquette créée : %s"
+msgstr "Étiquette créée : %s"
 
 msgid "Changeset %s not found"
 msgstr "Ensemble de changements %s non trouvé"
@@ -1158,7 +1158,7 @@ msgid "Invalid user group name"
 msgstr "Nom de groupe d'utilisateurs invalide"
 
 msgid "User group \"%(usergroup)s\" already exists"
-msgstr "Le groupe d'utilisateurs « %(usergroup)s » existe déjà"
+msgstr "Le groupe d'utilisateurs « %(usergroup)s » existe déjà"
 
 msgid ""
 "user group name may only contain alphanumeric characters underscores, "
@@ -1199,7 +1199,7 @@ msgid "Repository \"%(repo)s\" already exists in group \"%(group)s\""
 msgstr "Le dépôt « %(repo)s » existe déjà dans le groupe « %(group)s »"
 
 msgid "Repository group with name \"%(repo)s\" already exists"
-msgstr "Un groupe de dépôts avec le nom « %(repo)s » existe déjà"
+msgstr "Un groupe de dépôts avec le nom « %(repo)s » existe déjà"
 
 msgid "Invalid repository URL"
 msgstr "URL de dépôt invalide"
@@ -1313,7 +1313,7 @@ msgid "Forgot your password?"
 msgstr "Mot de passe oublié?"
 
 msgid "Don't have an account?"
-msgstr "Vous n’avez pas de compte ?"
+msgstr "Vous n’avez pas de compte ?"
 
 msgid "Sign In"
 msgstr "Connexion"
@@ -1598,13 +1598,13 @@ msgid "Built-in"
 msgstr "Inclus"
 
 msgid "Confirm to reset this API key: %s"
-msgstr "Confirmer la remise à zéro de cette clé d'API : %s"
+msgstr "Confirmer la remise à zéro de cette clé d'API : %s"
 
 msgid "Expired"
 msgstr "a expiré"
 
 msgid "Confirm to remove this API key: %s"
-msgstr "Confirmer la suppression de cette clé d'API : %s"
+msgstr "Confirmer la suppression de cette clé d'API : %s"
 
 msgid "Remove"
 msgstr "Supprimer"
@@ -1697,7 +1697,7 @@ msgid "Last Used"
 msgstr "Dernière utilisation"
 
 msgid "Confirm to remove this SSH key: %s"
-msgstr "Confirmer la suppression de cette clé SSH : %s"
+msgstr "Confirmer la suppression de cette clé SSH : %s"
 
 msgid "No SSH keys have been added"
 msgstr "Aucune clé SSH n'a été ajoutée"
@@ -1823,7 +1823,7 @@ msgid "External auth account activation"
 msgstr "Activation de l'authentification externe"
 
 msgid "Confirm to delete this IP address: %s"
-msgstr "Confirmer la suppression de cette adresse IP : %s"
+msgstr "Confirmer la suppression de cette adresse IP : %s"
 
 msgid "All IP addresses are allowed."
 msgstr "Toutes les adresses IP sont autorisées."
@@ -1862,7 +1862,7 @@ msgid "Permissions"
 msgstr "Permissions"
 
 msgid "Repository Group: %s"
-msgstr "Groupe de dépôts : %s"
+msgstr "Groupe de dépôts : %s"
 
 msgid "Top level repositories"
 msgstr "Dépôts de niveau supérieur"
@@ -1878,8 +1878,8 @@ msgstr "Créé le"
 
 msgid "Confirm to delete this group: %s with %s repository"
 msgid_plural "Confirm to delete this group: %s with %s repositories"
-msgstr[0] "Confirmer la suppression de ce groupe : %s avec %s dépôt"
-msgstr[1] "Confirmer la suppression de ce groupe : %s avec %s dépôts"
+msgstr[0] "Confirmer la suppression de ce groupe : %s avec %s dépôt"
+msgstr[1] "Confirmer la suppression de ce groupe : %s avec %s dépôts"
 
 msgid "Delete this repository group"
 msgstr "Supprimer ce groupe de dépôts"
@@ -2696,7 +2696,7 @@ msgid "Login to Your Account"
 msgstr "Connexion à votre compte"
 
 msgid "Forgot password?"
-msgstr "Mot de passe oublié ?"
+msgstr "Mot de passe oublié ?"
 
 msgid "Log Out"
 msgstr "Se déconnecter"
