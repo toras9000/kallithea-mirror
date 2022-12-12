@@ -934,6 +934,13 @@ msgstr "Введите не менее %(min)i символов"
 msgid "Name must not contain only digits"
 msgstr "Имя не может состоять только из цифр"
 
+msgid ""
+"[Comment] %(repo_name)s changeset %(short_id)s \"%(message_short)s\" on "
+"%(branch)s by %(cs_author_username)s"
+msgstr ""
+"[Комментарий] к набору изменений %(short_id)s «%(message_short)s» "
+"репозитория %(repo_name)s в %(branch)s от %(cs_author_username)s"
+
 msgid "New user %(new_username)s registered"
 msgstr "Новый пользователь \"%(new_username)s\" зарегистрирован"
 
