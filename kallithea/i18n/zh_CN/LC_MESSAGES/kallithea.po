@@ -569,7 +569,7 @@ msgstr "不是一个合法的路径"
 msgid ""
 "The LDAP Login attribute of the CN must be specified - this is the name "
 "of the attribute that is equivalent to \"username\""
-msgstr "LDAP 登陆属性的 CN 必须指定 - 这个名字作为用户名"
+msgstr "LDAP 登录属性的 CN 必须指定 - 这个名字作为用户名"
 
 msgid "Repository"
 msgstr "版本库"
@@ -943,7 +943,7 @@ msgid "You need to be logged in to comment."
 msgstr "您必须登录才能评论。"
 
 msgid "Login now"
-msgstr "现在登陆"
+msgstr "现在登录"
 
 msgid "Hide"
 msgstr "隐藏"
