@@ -176,6 +176,9 @@ msgstr "Nieprawidłowy token resetowania hasła"
 msgid "Successfully updated password"
 msgstr "Pomyślnie zaktualizowano hasło"
 
+msgid "Invalid reviewer \"%s\" specified"
+msgstr "Podano nieprawidłowego recenzenta \"%s\""
+
 msgid "%s (closed)"
 msgstr "%s (zamknięty)"
 
