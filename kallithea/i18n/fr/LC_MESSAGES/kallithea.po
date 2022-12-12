@@ -1158,7 +1158,7 @@ msgid "Invalid user group name"
 msgstr "Nom de groupe d'utilisateurs invalide"
 
 msgid "User group \"%(usergroup)s\" already exists"
-msgstr "Le groupe d'utilisateurs « %(usergroup)s » existe déjà"
+msgstr "Le groupe d'utilisateurs « %(usergroup)s » existe déjà"
 
 msgid ""
 "user group name may only contain alphanumeric characters underscores, "
@@ -1199,7 +1199,7 @@ msgid "Repository \"%(repo)s\" already exists in group \"%(group)s\""
 msgstr "Le dépôt « %(repo)s » existe déjà dans le groupe « %(group)s »"
 
 msgid "Repository group with name \"%(repo)s\" already exists"
-msgstr "Un groupe de dépôts avec le nom « %(repo)s » existe déjà"
+msgstr "Un groupe de dépôts avec le nom « %(repo)s » existe déjà"
 
 msgid "Invalid repository URL"
 msgstr "URL de dépôt invalide"
