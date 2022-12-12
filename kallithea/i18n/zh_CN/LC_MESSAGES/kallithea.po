@@ -860,8 +860,8 @@ msgstr "开始关注该版本库"
 msgid "Group"
 msgstr "组"
 
-msgid "Show Selected Changesets {0} &rarr; {1}"
-msgstr "显示选中的修订集 {0} &rarr; {1}"
+msgid "Show Selected Changesets {0}"
+msgstr "显示选中的修订集 {0}"
 
 msgid "Select changeset"
 msgstr "选择修订集"

@@ -109,13 +109,13 @@ ${self.repo_context_bar('changelog', c.first_revision.raw_id if c.first_revision
                                 pyroutes.url('changeset_home', {'repo_name': ${h.js(c.repo_name)},
                                                                 'revision': rev_start + '...' + rev_end}));
                             $('#rev_range_container').html(
-                                 _TM['Show Selected Changesets {0} &rarr; {1}'].format(rev_start.substr(0, 12), rev_end.substr(0, 12)));
+                                 _TM['Show Selected Changesets {0}'].format(rev_start.substr(0, 12) + ' &rarr; ' + rev_end.substr(0, 12)));
                             $('#rev_range_container').show();
                             $('#open_new_pr').prop('href', pyroutes.url('pullrequest_home',
                                                                         {'repo_name': ${h.js(c.repo_name)},
                                                                          'rev_start': rev_start,
                                                                          'rev_end': rev_end}));
-                            $('#open_new_pr').html(_TM['Open New Pull Request for {0} &rarr; {1}'].format(rev_start.substr(0, 12), rev_end.substr(0, 12)));
+                            $('#open_new_pr').html(_TM['Open New Pull Request for {0}'].format(rev_start.substr(0, 12) + ' &rarr; ' + rev_end.substr(0, 12)));
                         } else {
                             $('#open_new_pr').prop('href', pyroutes.url('pullrequest_home',
                                                                         {'repo_name': ${h.js(c.repo_name)},

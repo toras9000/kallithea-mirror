@@ -2782,11 +2782,11 @@ msgstr "Aucun fichier correspondant"
 msgid "Open New Pull Request from {0}"
 msgstr "Ouvrir une nouvelle requête de pull à partir de {0}"
 
-msgid "Open New Pull Request for {0} &rarr; {1}"
-msgstr "Ouvrir une nouvelle requête de pull pour {0} &rarr; {1}"
+msgid "Open New Pull Request for {0}"
+msgstr "Ouvrir une nouvelle requête de pull pour {0}"
 
-msgid "Show Selected Changesets {0} &rarr; {1}"
-msgstr "Afficher les changesets sélectionnés {0} &rarr; {1}"
+msgid "Show Selected Changesets {0}"
+msgstr "Afficher les changesets sélectionnés {0}"
 
 msgid "Selection Link"
 msgstr "Lien vers la sélection"

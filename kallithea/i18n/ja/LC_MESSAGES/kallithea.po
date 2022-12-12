@@ -2038,10 +2038,10 @@ msgstr "マッチするファイルはありません"
 msgid "Open New Pull Request from {0}"
 msgstr "新しいプルリクエストを{0}から作成"
 
-msgid "Open New Pull Request for {0} &rarr; {1}"
+msgid "Open New Pull Request for {0}"
 msgstr "{0} &rarr; {1}から新しいプルリクエストを作成する"
 
-msgid "Show Selected Changesets {0} &rarr; {1}"
+msgid "Show Selected Changesets {0}"
 msgstr "選択したチェンジセット{0} &rarr; {0}を表示"
 
 msgid "Collapse Diff"

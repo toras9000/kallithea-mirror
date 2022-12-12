@@ -2746,11 +2746,11 @@ msgstr "Δεν υπάρχουν αρχεία που να ταιριάζουν"
 msgid "Open New Pull Request from {0}"
 msgstr "Άνοιγμα νέας αίτησης έλξης από {0}"
 
-msgid "Open New Pull Request for {0} &rarr; {1}"
-msgstr "Άνοιγμα νέου αιτήματος έλξης για {0} &rarr; {1}"
+msgid "Open New Pull Request for {0}"
+msgstr "Άνοιγμα νέου αιτήματος έλξης για {0}"
 
-msgid "Show Selected Changesets {0} &rarr; {1}"
-msgstr "Εμφάνιση Επιλεγμένων Σετ Αλλαγών {0} &rarr; {1}"
+msgid "Show Selected Changesets {0}"
+msgstr "Εμφάνιση Επιλεγμένων Σετ Αλλαγών {0}"
 
 msgid "Selection Link"
 msgstr "Σύνδεσμος Επιλογής"

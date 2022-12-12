@@ -1887,11 +1887,11 @@ msgstr "Няма супадзенняў"
 msgid "Open New Pull Request from {0}"
 msgstr "Стварыць новы pull-запыт з {0}"
 
-msgid "Open New Pull Request for {0} &rarr; {1}"
-msgstr "Стварыць новы pull-запыт для {0} &rarr; {1}"
+msgid "Open New Pull Request for {0}"
+msgstr "Стварыць новы pull-запыт для {0}"
 
-msgid "Show Selected Changesets {0} &rarr; {1}"
-msgstr "Паказаць выбраныя наборы змен: {0} &rarr; {1}"
+msgid "Show Selected Changesets {0}"
+msgstr "Паказаць выбраныя наборы змен {0}"
 
 msgid "Selection Link"
 msgstr "Спасылка выбару"
