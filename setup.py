@@ -75,6 +75,8 @@ requirements = [
     "pip >= 20.0, < 999",
     "chardet >= 3",
 ]
+if sys.version_info < (3, 8):
+    requirements.append("importlib-metadata < 5")
 
 dependency_links = [
 ]
