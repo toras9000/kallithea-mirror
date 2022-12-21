@@ -303,13 +303,11 @@ class RepoGroupModel(object):
             for obj in repo_group.recursive_groups_and_repos():
                 if isinstance(obj, db.RepoGroup):
                     new_name = obj.get_new_name(obj.name)
-                    log.debug('Fixing group %s to new name %s'
-                                % (obj.group_name, new_name))
+                    log.debug('Fixing repo group %s to new name %s', obj.group_name, new_name)
                     obj.group_name = new_name
                 elif isinstance(obj, db.Repository):
                     new_name = obj.get_new_name(obj.just_name)
-                    log.debug('Fixing repo %s to new name %s'
-                                % (obj.repo_name, new_name))
+                    log.debug('Fixing repo %s to new name %s', obj.repo_name, new_name)
                     obj.repo_name = new_name
 
             # Rename in file system
