@@ -913,7 +913,7 @@ class Repository(meta.Base, BaseDbModel):
     STATE_ERROR = 'repo_state_error'
 
     repo_id = Column(Integer(), primary_key=True)
-    repo_name = Column(Unicode(255), nullable=False, unique=True)
+    repo_name = Column(Unicode(255), nullable=False, unique=True)  # full path, must be updated (based on get_new_name) when name or path changes
     repo_state = Column(String(255), nullable=False)
 
     clone_uri = Column(String(255), nullable=True) # FIXME: not nullable?
@@ -1337,7 +1337,7 @@ class RepoGroup(meta.Base, BaseDbModel):
     SEP = ' &raquo; '
 
     group_id = Column(Integer(), primary_key=True)
-    group_name = Column(Unicode(255), nullable=False, unique=True) # full path
+    group_name = Column(Unicode(255), nullable=False, unique=True)  # full path, must be updated (based on get_new_name) when name or path changes
     parent_group_id = Column('group_parent_id', Integer(), ForeignKey('groups.group_id'), nullable=True)
     group_description = Column(Unicode(10000), nullable=False)
     owner_id = Column('user_id', Integer(), ForeignKey('users.user_id'), nullable=False)

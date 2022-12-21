@@ -278,9 +278,8 @@ class RepoGroupModel(object):
     def update(self, repo_group, repo_group_args):
         try:
             repo_group = db.RepoGroup.guess_instance(repo_group)
-            old_path = repo_group.full_path
+            old_path = repo_group.full_path  # aka .group_name
 
-            # change properties
             if 'owner' in repo_group_args:
                 repo_group.owner = db.User.get_by_username(repo_group_args['owner'])
             if 'group_description' in repo_group_args:
@@ -297,26 +296,23 @@ class RepoGroupModel(object):
             new_path = repo_group.full_path
             meta.Session().add(repo_group)
 
-            # iterate over all members of this groups and do fixes
-            # if obj is a repoGroup also fix the name of the group according
-            # to the parent
-            # if obj is a Repo fix it's name
-            # this can be potentially heavy operation
+            # Iterate over all members of this repo group and update the full
+            # path (repo_name and group_name) based on the (already updated)
+            # full path of the parent.
+            # This can potentially be a heavy operation.
             for obj in repo_group.recursive_groups_and_repos():
-                # set the value from it's parent
                 if isinstance(obj, db.RepoGroup):
                     new_name = obj.get_new_name(obj.name)
                     log.debug('Fixing group %s to new name %s'
                                 % (obj.group_name, new_name))
                     obj.group_name = new_name
                 elif isinstance(obj, db.Repository):
-                    # we need to get all repositories from this new group and
-                    # rename them accordingly to new group path
                     new_name = obj.get_new_name(obj.just_name)
                     log.debug('Fixing repo %s to new name %s'
                                 % (obj.repo_name, new_name))
                     obj.repo_name = new_name
 
+            # Rename in file system
             self._rename_group(old_path, new_path)
 
             return repo_group
