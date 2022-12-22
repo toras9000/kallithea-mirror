@@ -286,13 +286,18 @@ class RepoGroupModel(object):
                 repo_group.group_description = repo_group_args['group_description']
             if 'parent_group_id' in repo_group_args:
                 assert repo_group_args['parent_group_id'] != '-1', repo_group_args  # RepoGroupForm should have converted to None
-                repo_group.parent_group = db.RepoGroup.get(repo_group_args['parent_group_id'])
-                repo_group.group_name = repo_group.get_new_name(repo_group.name)
+                new_parent_group = db.RepoGroup.get(repo_group_args['parent_group_id'])
+                if new_parent_group is not repo_group.parent_group:
+                    repo_group.parent_group = new_parent_group
+                    repo_group.group_name = repo_group.get_new_name(repo_group.name)
+                    log.debug('Moving repo group %s to %s', old_path, repo_group.group_name)
             if 'group_name' in repo_group_args:
                 group_name = repo_group_args['group_name']
                 if kallithea.lib.utils2.repo_name_slug(group_name) != group_name:
                     raise Exception('invalid repo group name %s' % group_name)
-                repo_group.group_name = repo_group.get_new_name(group_name)
+                if repo_group.name != group_name:
+                    repo_group.group_name = repo_group.get_new_name(group_name)
+                    log.debug('Renaming repo group %s to %s', old_path, repo_group.group_name)
             new_path = repo_group.full_path
             meta.Session().add(repo_group)
 
@@ -301,6 +306,8 @@ class RepoGroupModel(object):
             # full path of the parent.
             # This can potentially be a heavy operation.
             for obj in repo_group.recursive_groups_and_repos():
+                if obj is repo_group:
+                    continue  # already updated and logged
                 if isinstance(obj, db.RepoGroup):
                     new_name = obj.get_new_name(obj.name)
                     log.debug('Fixing repo group %s to new name %s', obj.group_name, new_name)
