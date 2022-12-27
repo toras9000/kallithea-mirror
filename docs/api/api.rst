@@ -23,7 +23,7 @@ API access
 Clients must send JSON encoded JSON-RPC requests::
 
     {
-        "id: "<id>",
+        "id": "<id>",
         "api_key": "<api_key>",
         "method": "<method_name>",
         "args": {"<arg_key>": "<arg_val>"}
@@ -489,7 +489,7 @@ OUTPUT::
 add_user_to_user_group
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Adds a user to a user group. If the user already is in that group, success will be
+Add a user to a user group. If the user already is in that group, success will be
 ``false``.
 This command can only be executed using the api_key of a user with admin rights.
 
