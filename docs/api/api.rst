@@ -540,6 +540,167 @@ OUTPUT::
              }
     error : null
 
+get_repo_group
+^^^^^^^^^^^^^^
+
+Get an existing repository group.
+This command can only be executed using the api_key of a user with admin rights.
+
+INPUT::
+
+    id : <id_for_response>
+    api_key : "<api_key>"
+    method :  "get_repo_group"
+    args :    {
+                "repogroupid" : "<repo group id or name>"
+              }
+
+OUTPUT::
+
+    id : <id_given_in_input>
+    result :
+               {
+               "group_id" :          "<id>",
+               "group_name" :        "<groupname>",
+               "group_description" : "<groupdescription>",
+               "parent_group" :      "<groupid>"|null,
+               "repositories" :      "<list_of_all_repo_names_in_group>",
+               "owner" :             "<owner>",
+               "members" :           [
+                                       {
+                                         "name" : "<name>",
+                                         "type" : "user",
+                                         "permission" : "group.(none|read|write|admin)"
+                                       },
+                                       {
+                                         "name" : "<name>",
+                                         "type" : "user_group",
+                                         "permission" : "group.(none|read|write|admin)"
+                                       },
+                                       …
+                                     ]
+
+               },
+    error : null
+
+get_repo_groups
+^^^^^^^^^^^^^^^
+
+List all existing repository groups.
+This command can only be executed using the api_key of a user with admin rights.
+
+INPUT::
+
+    id : <id_for_response>
+    api_key : "<api_key>"
+    method :  "get_repo_groups"
+    args :    { }
+
+OUTPUT::
+
+    id : <id_given_in_input>
+    result : [
+               {
+               "group_id" :          "<id>",
+               "group_name" :        "<groupname>",
+               "group_description" : "<groupdescription>",
+               "parent_group" :      "<groupid>"|null,
+               "repositories" :      "<list_of_all_repo_names_in_group>",
+               "owner" :             "<owner>"
+               },
+               …
+              ]
+    error : null
+
+create_repo_group
+^^^^^^^^^^^^^^^^^
+
+Create a new repository group.
+This command can only be executed using the api_key of a user with admin rights.
+
+INPUT::
+
+    id : <id_for_response>
+    api_key : "<api_key>"
+    method :  "create_repo_group"
+    args :    {
+                "group_name" :       "<group_name>",
+                "description" :      "<description> = Optional("")",
+                "owner" :            "<username or user_id> = Optional(None)",
+                "parent" :           "<reponame or id> = Optional(None)",
+                "copy_permissions" : "<bool> = Optional(False)"
+              }
+
+OUTPUT::
+
+    id : <id_given_in_input>
+    result : {
+                "msg" : "created new repo group `<group_name>`",
+                "repo_group" : {
+                                 "group_id" :          <id>,
+                                 "group_name" :        "<parent_group>/<group_name>",
+                                 "group_description" : "<description>",
+                                 "parent_group" :      <id>|null,
+                                 "repositories" :      <list of repositories>,
+                                 "owner" :             "<user_name>"
+                                }
+
+update_repo_group
+^^^^^^^^^^^^^^^^^
+
+Update a repository group.
+This command can only be executed using the api_key of a user with admin rights.
+
+INPUT::
+
+    id : <id_for_response>
+    api_key : "<api_key>"
+    method :  "update_repo_group"
+    args :    {
+                "repogroupid" :         "<id>",
+                "group_name" :       "<group_name> = Optional(None)",
+                "description" :      "<description> = Optional(None)",
+                "owner" :            "<username or user_id> = Optional(None)",
+                "parent" :           "<reponame or id> = Optional(None)"
+              }
+
+OUTPUT::
+
+    id : <id_given_in_input>
+    result : {
+                "msg" : "updated repository group ID:<id> <group_name>",
+                "repo_group" : {
+                                 "group_id" :          <id>,
+                                 "group_name" :        "<parent_group>/<group_name>",
+                                 "group_description" : "<description>",
+                                 "parent_group" :      <id>|null,
+                                 "repositories" :      <list of repositories>,
+                                 "owner" :             "<user_name>"
+                                }
+
+delete_repo_group
+^^^^^^^^^^^^^^^^^
+
+Delete a repository group.
+This command can only be executed using the api_key of a user with admin rights.
+
+INPUT::
+
+    id : <id_for_response>
+    api_key : "<api_key>"
+    method :  "delete_repo_group"
+    args :    {
+                "repogroupid" : "<id>"
+              }
+
+OUTPUT::
+
+    id : <id_given_in_input>
+    result : {
+                "msg" : "deleted repo group ID:<id> <group_name>",
+                "repo_group" : null
+              }
+
 get_repo
 ^^^^^^^^
 
