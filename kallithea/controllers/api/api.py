@@ -161,14 +161,6 @@ class ApiController(JSONRPCController):
                 "repository" : "<repository name>"
             }
             error : null
-
-        ERROR OUTPUT::
-
-            id : <id_given_in_input>
-            result : null
-            error :  {
-                "Unable to pull changes from `<reponame>`"
-            }
         """
         repo = get_repo_or_error(repoid)
 
@@ -203,14 +195,6 @@ class ApiController(JSONRPCController):
                 'removed': [<removed repository name>,...]
             }
             error : null
-
-        ERROR OUTPUT::
-
-            id : <id_given_in_input>
-            result : null
-            error :  {
-                'Error occurred during rescan repositories action'
-            }
         """
         try:
             rm_obsolete = remove_obsolete
@@ -237,14 +221,6 @@ class ApiController(JSONRPCController):
                 'repository': <repository name>
             }
             error : null
-
-        ERROR OUTPUT::
-
-            id : <id_given_in_input>
-            result : null
-            error :  {
-                'Error occurred during cache invalidation action'
-            }
         """
         repo = get_repo_or_error(repoid)
         if not HasPermissionAny('hg.admin')():
@@ -404,18 +380,6 @@ class ApiController(JSONRPCController):
                       "user" : <user_obj>
                      }
             error : null
-
-        ERROR OUTPUT::
-
-            id : <id_given_in_input>
-            result : null
-            error :  {
-                "user `<username>` already exist"
-                or
-                "email `<email>` already exist"
-                or
-                "failed to create user `<username>`"
-            }
         """
         if db.User.get_by_username(username):
             raise JSONRPCError("user `%s` already exist" % (username,))
@@ -462,14 +426,6 @@ class ApiController(JSONRPCController):
                       "user" : <user_object>
                      }
             error : null
-
-        ERROR OUTPUT::
-
-            id : <id_given_in_input>
-            result : null
-            error :  {
-                "failed to update user `<username>`"
-            }
         """
         user = get_user_or_error(userid)
 
@@ -515,14 +471,6 @@ class ApiController(JSONRPCController):
                       "user" : null
                      }
             error : null
-
-        ERROR OUTPUT::
-
-            id : <id_given_in_input>
-            result : null
-            error :  {
-                "failed to delete user ID:<userid> <username>"
-            }
         """
         user = get_user_or_error(userid)
 
@@ -602,16 +550,6 @@ class ApiController(JSONRPCController):
                       "user_group" : <user_group_object>
                      }
             error : null
-
-        ERROR OUTPUT::
-
-            id : <id_given_in_input>
-            result : null
-            error :  {
-                "user group `<group name>` already exist"
-                or
-                "failed to create group `<group name>`"
-            }
         """
         if UserGroupModel().get_by_name(group_name):
             raise JSONRPCError("user group `%s` already exist" % (group_name,))
@@ -648,14 +586,6 @@ class ApiController(JSONRPCController):
             "user_group" : <user_group_object>
           }
           error : null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to update user group `<user group name>`"
-          }
         """
         user_group = get_user_group_or_error(usergroupid)
         if not HasPermissionAny('hg.admin')():
@@ -696,16 +626,6 @@ class ApiController(JSONRPCController):
             "msg" : "deleted user group ID:<user_group_id> <user_group_name>"
           }
           error : null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to delete user group ID:<user_group_id> <user_group_name>"
-            or
-            "RepoGroup assigned to <repo_groups_list>"
-          }
         """
         user_group = get_user_group_or_error(usergroupid)
         if not HasPermissionAny('hg.admin')():
@@ -746,14 +666,6 @@ class ApiController(JSONRPCController):
                          User is already in that group"
             }
             error : null
-
-        ERROR OUTPUT::
-
-            id : <id_given_in_input>
-            result : null
-            error :  {
-                "failed to add member to user group `<user_group_name>`"
-            }
         """
         user = get_user_or_error(userid)
         user_group = get_user_group_or_error(usergroupid)
@@ -1033,14 +945,6 @@ class ApiController(JSONRPCController):
                       "success" : true
                      }
             error : null
-
-        ERROR OUTPUT::
-
-            id : <id_given_in_input>
-            result : null
-            error :  {
-                'failed to create repository `<repo_name>`
-            }
         """
         group_name = None
         repo_name_parts = repo_name.split('/')
@@ -1401,14 +1305,6 @@ class ApiController(JSONRPCController):
                 "success" : true
             }
             error : null
-
-        ERROR OUTPUT::
-
-            id : <id_given_in_input>
-            result : null
-            error :  {
-                "failed to edit permission for user group: `<usergroup>` in repo `<repo>`'
-            }
         """
         repo = get_repo_or_error(repoid)
         perm = get_perm_or_error(perm)
@@ -1546,14 +1442,6 @@ class ApiController(JSONRPCController):
               "repo_group" : <repogroup_object>
           }
           error : null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            failed to create repo group `<repogroupid>`
-          }
         """
         if db.RepoGroup.get_by_group_name(group_name):
             raise JSONRPCError("repo group `%s` already exist" % (group_name,))
@@ -1620,14 +1508,6 @@ class ApiController(JSONRPCController):
             'repo_group' : null
           }
           error : null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to delete repo group ID:<repogroupid> <repogroupname>"
-          }
         """
         repo_group = get_repo_group_or_error(repogroupid)
 
@@ -1662,14 +1542,6 @@ class ApiController(JSONRPCController):
                       "success" : true
                      }
             error : null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to edit permission for user: `<userid>` in repo group: `<repo_group_name>`"
-          }
         """
         repo_group = get_repo_group_or_error(repogroupid)
 
@@ -1715,14 +1587,6 @@ class ApiController(JSONRPCController):
                       "success" : true
                      }
             error : null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to edit permission for user: `<userid>` in repo group: `<repo_group_name>`"
-          }
         """
         repo_group = get_repo_group_or_error(repogroupid)
 
@@ -1769,14 +1633,6 @@ class ApiController(JSONRPCController):
             "success" : true
           }
           error : null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to edit permission for user group: `<usergroup>` in repo group: `<repo_group_name>`"
-          }
         """
         repo_group = get_repo_group_or_error(repogroupid)
         perm = get_perm_or_error(perm, prefix='group.')
@@ -1830,14 +1686,6 @@ class ApiController(JSONRPCController):
                       "success" : true
                      }
             error : null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to edit permission for user group: `<usergroup>` in repo group: `<repo_group_name>`"
-          }
         """
         repo_group = get_repo_group_or_error(repogroupid)
         user_group = get_user_group_or_error(usergroupid)
@@ -1920,14 +1768,6 @@ class ApiController(JSONRPCController):
             "gist" : <gist_object>
           }
           error : null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to create gist"
-          }
         """
         try:
             if owner is None:
@@ -1963,14 +1803,6 @@ class ApiController(JSONRPCController):
             "gist" : null
           }
           error : null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to delete gist ID:<gist_id>"
-          }
         """
         gist = get_gist_or_error(gistid)
         if not HasPermissionAny('hg.admin')():
