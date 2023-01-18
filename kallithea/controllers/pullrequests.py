@@ -570,6 +570,9 @@ class PullrequestsController(base.BaseRepoController):
             if len(avail_revs) - 1 > rev_limit:
                 c.update_msg = _('%d additional changesets are not shown.') % (len(avail_revs) - 1)
                 avail_show = []
+            elif len(avail_show) - 1 > rev_limit:
+                c.update_msg = _('%d changesets available for merging are not shown.') % (len(avail_show) - len(avail_revs))
+                avail_show = sorted(avail_revs, reverse=True)
 
         c.avail_revs = avail_revs
         c.avail_cs = [org_scm_instance.get_changeset(r) for r in avail_show]
