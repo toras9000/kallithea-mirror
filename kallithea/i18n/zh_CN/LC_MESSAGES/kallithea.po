@@ -10,8 +10,18 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
+msgid ""
+"CSRF token leak has been detected - all form tokens have been expired"
+msgstr "已检测到CSRF令牌泄漏-所有表单令牌都已过期"
+
+msgid "Repository not found in the filesystem"
+msgstr "文件系统中找不到存储库"
+
 msgid "There are no changesets yet"
 msgstr "还没有修订集"
+
+msgid "SSH access is disabled."
+msgstr "SSH访问被禁用。"
 
 msgid "None"
 msgstr "无"
@@ -19,11 +29,32 @@ msgstr "无"
 msgid "(closed)"
 msgstr "(已关闭)"
 
+msgid "No permission to change status"
+msgstr "无权更改状态"
+
+msgid "Successfully deleted pull request %s"
+msgstr "成功删除拉取请求%s"
+
 msgid "Such revision does not exist for this repository"
 msgstr "在此代码库内，此修改并不存在"
 
 msgid "Could not find other repository %s"
 msgstr "找不到那个版本库 %s"
+
+msgid "Cannot compare repositories of different types"
+msgstr "不能比较不同类型的存储库"
+
+msgid "Cannot show empty diff"
+msgstr "不能显示空的差异"
+
+msgid "No ancestor found for merge diff"
+msgstr "找不到合并差异的祖先"
+
+msgid "Multiple merge ancestors found for merge compare"
+msgstr "在合并比较中发现多个合并祖先"
+
+msgid "Cannot compare repositories without using common ancestor"
+msgstr "如果不使用共同的祖先，就不能比较存储库"
 
 msgid "No response"
 msgstr "无响应"
@@ -61,6 +92,9 @@ msgstr "%s库的修改"
 msgid "Click here to add new file"
 msgstr "点击这里添加新文件"
 
+msgid "There are no files yet."
+msgstr "这里还没有文件。"
+
 msgid "%s at %s"
 msgstr "%s 在 %s"
 
@@ -96,6 +130,9 @@ msgstr "无内容"
 
 msgid "No filename"
 msgstr "无文件名"
+
+msgid "Location must be relative path and must not contain .. in path"
+msgstr "位置必须是相对路径，并且..不能在路径中"
 
 msgid "Downloads disabled"
 msgstr "下载已禁用"
@@ -145,6 +182,9 @@ msgstr "公共日志"
 msgid "Journal"
 msgstr "日志"
 
+msgid "Authentication failed."
+msgstr "认证失败。"
+
 msgid "Bad captcha"
 msgstr "验证码错误"
 
@@ -187,6 +227,15 @@ msgstr "创建拉取请求时发生错误"
 msgid "Successfully opened new pull request"
 msgstr "成功提交拉取请求"
 
+msgid "New pull request iteration created"
+msgstr "已创建新的拉取请求迭代"
+
+msgid "Meanwhile, the following reviewers have been added: %s"
+msgstr "同时，下列审查员已被加入：%s"
+
+msgid "Meanwhile, the following reviewers have been removed: %s"
+msgstr "同时，以下审查员已被删除：%s"
+
 msgid "No description"
 msgstr "无描述"
 
@@ -196,8 +245,35 @@ msgstr "拉取请求已更新"
 msgid "Successfully deleted pull request"
 msgstr "成功删除拉取请求"
 
+msgid "Revision %s not found in %s"
+msgstr "在 %s 中找不到修订集 %s"
+
+msgid "Error: changesets not found when displaying pull request from %s."
+msgstr "错误：当显示来自%s的拉动请求时，没有找到修订集。"
+
+msgid "This pull request has already been merged to %s."
+msgstr "这个拉取请求已经被合并到%s。"
+
+msgid "This pull request has been closed and can not be updated."
+msgstr "该拉取请求已被关闭，无法更新。"
+
+msgid "The following additional changes are available on %s:"
+msgstr "以下是对%s的额外修改:"
+
+msgid "Note: Branch %s has another head: %s."
+msgstr "注意：分支%s有另一个head：%s。"
+
+msgid "Git pull requests don't support iterating yet."
+msgstr "Git拉动请求还不支持迭代。"
+
+msgid "The diff can't be shown - the PR revisions could not be found."
+msgstr "不能显示差异-找不到PR的修订。"
+
 msgid "Invalid search query. Try quoting it."
 msgstr "错误的搜索。请尝试用引号包含它。"
+
+msgid "The server has no search index."
+msgstr "该服务器没有搜索索引。"
 
 msgid "An error occurred during search operation."
 msgstr "搜索操作期间发生错误。"
@@ -283,6 +359,12 @@ msgstr "API 密钥重置成功"
 msgid "API key successfully deleted"
 msgstr "API 密钥删除成功"
 
+msgid "SSH key %s successfully added"
+msgstr "成功添加SSH密钥%s"
+
+msgid "SSH key successfully deleted"
+msgstr "成功删除SSH密钥"
+
 msgid "Read"
 msgstr "读"
 
@@ -316,8 +398,41 @@ msgstr "全局权限更新成功"
 msgid "Error occurred during update of permissions"
 msgstr "权限更新时发生错误"
 
+msgid "Error occurred during creation of repository group %s"
+msgstr "在创建版本库组%s时发生错误"
+
+msgid "Created repository group %s"
+msgstr "成功创建版本库组 %s"
+
+msgid "Updated repository group %s"
+msgstr "成功更新版本库组%s"
+
+msgid "Error occurred during update of repository group %s"
+msgstr "在更新版本库组%s时发生错误"
+
 msgid "This group contains %s repositories and cannot be deleted"
 msgstr "这个组内有%s个版本库因而无法删除"
+
+msgid "This group contains %s subgroups and cannot be deleted"
+msgstr "此组包含%s个子组，不能被删除"
+
+msgid "Removed repository group %s"
+msgstr "删除了版本库组%s"
+
+msgid "Error occurred during deletion of repository group %s"
+msgstr "删除版本库组%s时发生错误"
+
+msgid "Repository group permissions updated"
+msgstr "版本库组的权限已更新"
+
+msgid "An error occurred during revoking of permission"
+msgstr "撤销许可的过程中发生了一个错误"
+
+msgid "Error creating repository %s"
+msgstr "创建版本库%s时出错"
+
+msgid "Created repository %s"
+msgstr "创建了版本库 %s"
 
 msgid "Repository %s updated successfully"
 msgstr "版本库%s成功更新"
@@ -367,6 +482,9 @@ msgstr "更新钩子"
 msgid "Whoosh reindex task scheduled"
 msgstr "Whoosh重新索引任务调度"
 
+msgid "Cannot revoke permission for yourself as admin"
+msgstr "不能以管理员身份撤销自己的权限"
+
 msgid "An error occurred during permissions saving"
 msgstr "保存权限时发生错误"
 
@@ -388,6 +506,9 @@ msgstr "修订集过大并已被截断，使用差异菜单查看此差异"
 
 msgid "No changes detected"
 msgstr "未发现差异"
+
+msgid "Ignore whitespace changes"
+msgstr "忽略空白的改变"
 
 msgid "Increase diff context to %(num)s lines"
 msgstr "增加差异上下文到 %(num)s 行"
@@ -508,6 +629,18 @@ msgstr "刚才"
 
 msgid "Kallithea Administrator"
 msgstr "Kallithea 管理员"
+
+msgid "Only admins can fork repositories"
+msgstr "只有管理员可以复刻版本库"
+
+msgid "Non-admins can fork repositories"
+msgstr "非管理员可以复刻版本库"
+
+msgid "Registration disabled"
+msgstr "禁止注册"
+
+msgid "Not approved"
+msgstr "未被批准"
 
 msgid "Approved"
 msgstr "已批准"
@@ -1076,6 +1209,9 @@ msgstr "修订"
 
 msgid "Closed"
 msgstr "已关闭"
+
+msgid "Delete Pull Request"
+msgstr "删除拉取请求"
 
 msgid "Confirm to delete this pull request"
 msgstr "确认删除拉取请求"
