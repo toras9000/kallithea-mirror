@@ -591,7 +591,8 @@ class TestVCSOperations(base.TestController):
             assert 'HTTP Error 500: INTERNAL SERVER ERROR' in stderr
         elif vt is HgSshVcsTest:
             assert 'remote: Exception: exception_test_hook threw an exception' in stdout
-        else: assert False
+        else:
+            assert False
         # there are still outgoing changesets
         stdout, stderr = _check_outgoing(vt.repo_type, dest_dir, clone_url)
         assert stdout != ''

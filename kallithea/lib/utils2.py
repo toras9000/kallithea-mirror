@@ -318,7 +318,8 @@ def obfuscate_url_pw(engine):
     return str(_url)
 
 
-class HookEnvironmentError(Exception): pass
+class HookEnvironmentError(Exception):
+    pass
 
 
 def get_hook_environment():
