@@ -63,7 +63,8 @@ def _build_data(apikey, method, **kw):
     })
 
 
-jsonify = lambda obj: ext_json.loads(ext_json.dumps(obj))
+def jsonify(obj):
+    return ext_json.loads(ext_json.dumps(obj))
 
 
 def api_call(test_obj, params):

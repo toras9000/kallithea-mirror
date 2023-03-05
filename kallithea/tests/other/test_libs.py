@@ -144,8 +144,7 @@ class TestLibs(base.TestController):
         from kallithea.lib.webutils import age
         with test_context(self.app):
             n = datetime.datetime(year=2012, month=5, day=17)
-            delt = lambda *args, **kwargs: relativedelta.relativedelta(*args, **kwargs)
-            assert age(n + delt(**age_args), now=n) == expected
+            assert age(n + relativedelta.relativedelta(**age_args), now=n) == expected
 
     @base.parametrize('age_args,expected', [
         (dict(), 'just now'),
@@ -168,8 +167,7 @@ class TestLibs(base.TestController):
         from kallithea.lib.webutils import age
         with test_context(self.app):
             n = datetime.datetime(year=2012, month=5, day=17)
-            delt = lambda *args, **kwargs: relativedelta.relativedelta(*args, **kwargs)
-            assert age(n + delt(**age_args), show_short_version=True, now=n) == expected
+            assert age(n + relativedelta.relativedelta(**age_args), show_short_version=True, now=n) == expected
 
     @base.parametrize('age_args,expected', [
         (dict(), 'just now'),
@@ -186,8 +184,7 @@ class TestLibs(base.TestController):
         from kallithea.lib.webutils import age
         with test_context(self.app):
             n = datetime.datetime(year=2012, month=5, day=17)
-            delt = lambda *args, **kwargs: relativedelta.relativedelta(*args, **kwargs)
-            assert age(n + delt(**age_args), now=n) == expected
+            assert age(n + relativedelta.relativedelta(**age_args), now=n) == expected
 
     def test_tag_extractor(self):
         sample = (
@@ -205,7 +202,8 @@ class TestLibs(base.TestController):
         assert '<div class="label label-meta" data-tag="tag">tag</div>' in res
 
     def test_alternative_gravatar(self):
-        _md5 = lambda s: hashlib.md5(safe_bytes(s)).hexdigest()
+        def _md5(s):
+            return hashlib.md5(safe_bytes(s)).hexdigest()
 
         # mock tg.tmpl_context
         def fake_tmpl_context(_url):

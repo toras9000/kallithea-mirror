@@ -758,7 +758,8 @@ class TestGitRegression(_BackendTestMixin):
 
     def test_similar_paths(self):
         cs = self.repo.get_changeset()
-        paths = lambda *n: [x.path for x in n]
+        def paths(*n):
+            return [x.path for x in n]
         assert paths(*cs.get_nodes('bot')) == ['bot/build', 'bot/templates', 'bot/__init__.py']
         assert paths(*cs.get_nodes('bot/build')) == ['bot/build/migrations', 'bot/build/static', 'bot/build/templates']
         assert paths(*cs.get_nodes('bot/build/static')) == ['bot/build/static/templates']
