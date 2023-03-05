@@ -179,7 +179,7 @@ session_csrf_secret_name = "_session_csrf_secret_token"
 
 def session_csrf_secret_token():
     """Return (and create) the current session's CSRF protection token."""
-    if not session_csrf_secret_name in session:
+    if session_csrf_secret_name not in session:
         session[session_csrf_secret_name] = str(random.getrandbits(128))
         session.save()
     return session[session_csrf_secret_name]
