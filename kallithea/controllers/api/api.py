@@ -1862,7 +1862,7 @@ class ApiController(JSONRPCController):
 
         if with_reviews:
             reviews = ChangesetStatusModel().get_statuses(
-                                repo.repo_name, raw_id)
+                                repo.repo_name, changeset.raw_id)
             info["reviews"] = reviews
 
         return info
