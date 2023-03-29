@@ -2517,6 +2517,7 @@ class _BaseTestApi(object):
             'comment_id': commentobj.comment_id,
             'text': 'example changeset comment',
             'username': 'test_admin',
+            'created_on': commentobj.created_on.replace(microsecond=0).isoformat(),
         }
         assert comment == expected
 
@@ -2537,6 +2538,7 @@ class _BaseTestApi(object):
                     'comment_id': commentobj.comment_id,
                     'text': 'example inline comment',
                     'username': 'test_admin',
+                    'created_on': commentobj.created_on.replace(microsecond=0).isoformat(),
                 }]
             }]
         ]
@@ -2584,7 +2586,8 @@ class _BaseTestApi(object):
             "org_ref_parts": ["branch", "stable", self.TEST_PR_SRC],
             "other_ref_parts": ["branch", "default", self.TEST_PR_DST],
             "comments": [{"username": base.TEST_USER_ADMIN_LOGIN, "text": "",
-                         "comment_id": pullrequest.comments[0].comment_id}],
+                          "comment_id": pullrequest.comments[0].comment_id,
+                          "created_on": "2000-01-01T00:00:00"}],
             "owner": base.TEST_USER_ADMIN_LOGIN,
             "statuses": [{"status": "under_review", "reviewer": base.TEST_USER_ADMIN_LOGIN, "modified_at": "2000-01-01T00:00:00"} for i in range(0, len(self.TEST_PR_REVISIONS))],
             "title": "get test",

@@ -1914,6 +1914,7 @@ class ChangesetComment(meta.Base, BaseDbModel):
         return dict(
             comment_id=self.comment_id,
             username=self.author.username,
+            created_on=self.created_on.replace(microsecond=0),
             text=self.text,
         )
 
