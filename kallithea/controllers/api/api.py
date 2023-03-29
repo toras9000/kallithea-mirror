@@ -1847,7 +1847,7 @@ class ApiController(JSONRPCController):
             raise JSONRPCError('Repository is empty')
 
     # permission check inside
-    def get_changeset(self, repoid, raw_id, with_reviews=False):
+    def get_changeset(self, repoid, raw_id, with_reviews=False, with_comments=False, with_inline_comments=False):
         """
         TODO
         """
@@ -1864,6 +1864,16 @@ class ApiController(JSONRPCController):
             reviews = ChangesetStatusModel().get_statuses(
                                 repo.repo_name, changeset.raw_id)
             info["reviews"] = reviews
+
+        if with_comments:
+            comments = ChangesetCommentsModel().get_comments(
+                                repo.repo_id, changeset.raw_id)
+            info["comments"] = comments
+
+        if with_inline_comments:
+            inline_comments = ChangesetCommentsModel().get_inline_comments(
+                                repo.repo_id, changeset.raw_id)
+            info["inline_comments"] = inline_comments
 
         return info
 

@@ -2478,6 +2478,8 @@ class _BaseTestApi(object):
         result = ext_json.loads(response.body)["result"]
         assert result["raw_id"] == self.TEST_REVISION
         assert "reviews" not in result
+        assert "comments" not in result
+        assert "inline_comments" not in result
 
     def test_api_get_changeset_with_reviews(self):
         reviewobjs = fixture.review_changeset(self.REPO, self.TEST_REVISION, "approved")
@@ -2488,6 +2490,8 @@ class _BaseTestApi(object):
         result = ext_json.loads(response.body)["result"]
         assert result["raw_id"] == self.TEST_REVISION
         assert "reviews" in result
+        assert "comments" not in result
+        assert "inline_comments" not in result
         assert len(result["reviews"]) == 1
         review = result["reviews"][0]
         expected = {
@@ -2496,6 +2500,47 @@ class _BaseTestApi(object):
             'reviewer': 'test_admin',
         }
         assert review == expected
+
+    def test_api_get_changeset_with_comments(self):
+        commentobj = fixture.add_changeset_comment(self.REPO, self.TEST_REVISION, "example changeset comment")
+        id_, params = _build_data(self.apikey, 'get_changeset',
+                                  repoid=self.REPO, raw_id=self.TEST_REVISION,
+                                  with_comments=True)
+        response = api_call(self, params)
+        result = ext_json.loads(response.body)["result"]
+        assert result["raw_id"] == self.TEST_REVISION
+        assert "reviews" not in result
+        assert "comments" in result
+        assert "inline_comments" not in result
+        comment = result["comments"][-1]
+        expected = {
+            'comment_id': commentobj.comment_id,
+            'text': 'example changeset comment',
+            'username': 'test_admin',
+        }
+        assert comment == expected
+
+    def test_api_get_changeset_with_inline_comments(self):
+        commentobj = fixture.add_changeset_comment(self.REPO, self.TEST_REVISION, "example inline comment", f_path='vcs/__init__.py', line_no="n3")
+        id_, params = _build_data(self.apikey, 'get_changeset',
+                                  repoid=self.REPO, raw_id=self.TEST_REVISION,
+                                  with_inline_comments=True)
+        response = api_call(self, params)
+        result = ext_json.loads(response.body)["result"]
+        assert result["raw_id"] == self.TEST_REVISION
+        assert "reviews" not in result
+        assert "comments" not in result
+        assert "inline_comments" in result
+        expected = [
+            ['vcs/__init__.py', {
+                'n3': [{
+                    'comment_id': commentobj.comment_id,
+                    'text': 'example inline comment',
+                    'username': 'test_admin',
+                }]
+            }]
+        ]
+        assert result["inline_comments"] == expected
 
     def test_api_get_changeset_that_does_not_exist(self):
         """ Fetch changeset status for non-existant changeset.

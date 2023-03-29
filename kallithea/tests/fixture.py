@@ -329,6 +329,11 @@ class Fixture(object):
         meta.Session().commit()
         return csm
 
+    def add_changeset_comment(self, repo, revision, text, author=TEST_USER_ADMIN_LOGIN, f_path=None, line_no=None):
+        comment = ChangesetCommentsModel().create(text, repo, author, revision=revision, f_path=f_path, line_no=line_no, send_email=False)
+        meta.Session().commit()
+        return comment
+
     def create_pullrequest(self, testcontroller, repo_name, pr_src_rev, pr_dst_rev, title='title'):
         org_ref = 'branch:stable:%s' % pr_src_rev
         other_ref = 'branch:default:%s' % pr_dst_rev
