@@ -150,6 +150,8 @@ class Command(object):
         testenv['LANGUAGE'] = 'en_US:en'
         testenv['HGPLAIN'] = ''
         testenv['HGRCPATH'] = ''
+        testenv['GIT_CONFIG_SYSTEM'] = '/dev/null'
+        testenv['GIT_CONFIG_GLOBAL'] = '/dev/null'
         testenv['GIT_COMMITTER_NAME'] = base.TEST_USER_ADMIN_LOGIN
         testenv['GIT_COMMITTER_EMAIL'] = base.TEST_USER_ADMIN_EMAIL
         testenv['GIT_AUTHOR_NAME'] = base.TEST_USER_REGULAR_LOGIN
