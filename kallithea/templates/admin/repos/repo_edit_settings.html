@@ -1,115 +1,112 @@
 ${h.form(url('update_repo', repo_name=c.repo_info.repo_name))}
     <div class="form">
-            <div class="form-group">
-                <label class="control-label" for="repo_name">${_('Name')}:</label>
-                <div>
-                    ${h.text('repo_name',class_='form-control')}
-                </div>
+        <div class="form-group">
+            <label class="control-label" for="repo_name">${_('Name')}:</label>
+            <div>
+                ${h.text('repo_name',class_='form-control')}
             </div>
-            <div class="form-group">
-                <label class="control-label" for="permanent_url">${_('Permanent URL')}:</label>
-                <div>
-                    ${h.text('permanent_url',class_='form-control', readonly='1')}
-                    <span class="help-block">
-                        ${_('''In case this repository is renamed or moved into another group the repository URL changes.
-                               Using the above permanent URL guarantees that this repository always will be accessible on that URL.
-                               This is useful for CI systems, or any other cases that you need to hardcode the URL into a 3rd party service.''')}
-                    </span>
-                </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label" for="permanent_url">${_('Permanent URL')}:</label>
+            <div>
+                ${h.text('permanent_url',class_='form-control', readonly='1')}
+                <span class="help-block">
+                    ${_('''In case this repository is renamed or moved into another group the repository URL changes.
+                           Using the above permanent URL guarantees that this repository always will be accessible on that URL.
+                           This is useful for CI systems, or any other cases that you need to hardcode the URL into a 3rd party service.''')}
+                </span>
             </div>
-            <div class="form-group">
-                <label class="control-label" for="clone_uri">${_('Remote repository')}:</label>
-                <div>
-                  <div id="alter_clone_uri">
-                        ${h.text('clone_uri',class_='form-control', placeholder=_('Repository URL'))}
-                        ${h.hidden('clone_uri_hidden', c.repo_info.clone_uri_hidden)}
-                  </div>
-                  <span id="alter_clone_uri_help_block" class="help-block">
+        </div>
+        <div class="form-group">
+            <label class="control-label" for="clone_uri">${_('Remote repository')}:</label>
+            <div>
+                ${h.text('clone_uri',class_='form-control', placeholder=_('Repository URL'))}
+                ${h.hidden('clone_uri_hidden', c.repo_info.clone_uri_hidden)}
+                <span class="help-block">
                     ${_('Optional: URL of a remote repository. If set, the repository can be pulled from this URL.')}
-                  </span>
-                </div>
+                </span>
             </div>
-            <div class="form-group">
-                <label class="control-label" for="repo_group">${_('Repository group')}:</label>
-                <div>
-                    ${h.select('repo_group','',c.repo_groups,class_='form-control')}
-                    <span class="help-block">${_('Optionally select a group to put this repository into.')}</span>
-                </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label" for="repo_description">${_('Description')}:</label>
+            <div>
+                ${h.textarea('repo_description',class_='form-control')}
+                <span class="help-block">${_('Keep it short and to the point. Use a README file for longer descriptions.')}</span>
             </div>
-            <div class="form-group">
-                <label class="control-label" for="repo_landing_rev">${_('Landing revision')}:</label>
-                <div>
-                    ${h.select('repo_landing_rev','',c.landing_revs,class_='form-control')}
-                    <span class="help-block">${_('Default revision for files page, downloads, whoosh and readme')}</span>
-                </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label" for="repo_group">${_('Repository group')}:</label>
+            <div>
+                ${h.select('repo_group',None,c.repo_groups,class_='form-control')}
+                <span class="help-block">${_('Optionally select a group to put this repository into.')}</span>
             </div>
-            <div class="form-group">
-                <label class="control-label" for="owner">${_('Owner')}:</label>
-                <div>
-                   ${h.text('owner',class_='form-control', placeholder=_('Type name of user'))}
-                   <span class="help-block">${_('Change owner of this repository.')}</span>
-                </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label" for="repo_landing_rev">${_('Landing revision')}:</label>
+            <div>
+                ${h.select('repo_landing_rev',None,c.landing_revs,class_='form-control')}
+                <span class="help-block">${_('Default revision for files page, downloads, full text search index and readme generation')}</span>
             </div>
-            <div class="form-group">
-                <label class="control-label" for="repo_description">${_('Description')}:</label>
-                <div>
-                    ${h.textarea('repo_description',class_='form-control')}
-                    <span class="help-block">${_('Keep it short and to the point. Use a README file for longer descriptions.')}</span>
-                </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label" for="owner">${_('Owner')}:</label>
+            <div>
+                ${h.text('owner',class_='form-control', placeholder=_('Type name of user'))}
+                <span class="help-block">${_('Change owner of this repository.')}</span>
             </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label" for="repo_private">${_('Private repository')}:</label>
+            <div>
+                ${h.checkbox('repo_private',value="True")}
+                <span class="help-block">${_('Private repositories are only visible to people explicitly added as collaborators.')}</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label" for="repo_enable_statistics">${_('Enable statistics')}:</label>
+            <div>
+                ${h.checkbox('repo_enable_statistics',value="True")}
+                <span class="help-block">${_('Enable statistics window on summary page.')}</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label" for="repo_enable_downloads">${_('Enable downloads')}:</label>
+            <div>
+                ${h.checkbox('repo_enable_downloads',value="True")}
+                <span class="help-block">${_('Enable download menu on summary page.')}</span>
+            </div>
+        </div>
 
+        %if c.visual.repository_fields:
+          ## EXTRA FIELDS
+          %for field in c.repo_fields:
             <div class="form-group">
-                <label class="control-label" for="repo_private">${_('Private repository')}:</label>
+                <label class="control-label" for="${field.field_key_prefixed}">${field.field_label} (${field.field_key}):</label>
                 <div>
-                    ${h.checkbox('repo_private',value="True")}
-                    <span class="help-block">${_('Private repositories are only visible to people explicitly added as collaborators.')}</span>
+                    ${h.text(field.field_key_prefixed, field.field_value, class_='form-control')}
+                    %if field.field_desc:
+                      <span class="help-block">${field.field_desc}</span>
+                    %endif
                 </div>
             </div>
-            <div class="form-group">
-                <label class="control-label" for="repo_enable_statistics">${_('Enable statistics')}:</label>
-                <div>
-                    ${h.checkbox('repo_enable_statistics',value="True")}
-                    <span class="help-block">${_('Enable statistics window on summary page.')}</span>
-                </div>
+          %endfor
+        %endif
+        <div class="form-group">
+            <div class="buttons">
+                ${h.submit('save',_('Save'),class_="btn btn-default")}
+                ${h.reset('reset',_('Reset'),class_="btn btn-default")}
             </div>
-            <div class="form-group">
-                <label class="control-label" for="repo_enable_downloads">${_('Enable downloads')}:</label>
-                <div>
-                    ${h.checkbox('repo_enable_downloads',value="True")}
-                    <span class="help-block">${_('Enable download menu on summary page.')}</span>
-                </div>
-            </div>
-
-            %if c.visual.repository_fields:
-              ## EXTRA FIELDS
-              %for field in c.repo_fields:
-                <div class="form-group">
-                    <label class="control-label" for="${field.field_key_prefixed}">${field.field_label} (${field.field_key}):</label>
-                    <div>
-                        ${h.text(field.field_key_prefixed, field.field_value, class_='form-control')}
-                        %if field.field_desc:
-                          <span class="help-block">${field.field_desc}</span>
-                        %endif
-                    </div>
-                </div>
-              %endfor
-            %endif
-            <div class="form-group">
-                <div class="buttons">
-                    ${h.submit('save',_('Save'),class_="btn btn-default")}
-                    ${h.reset('reset',_('Reset'),class_="btn btn-default")}
-                </div>
-            </div>
+        </div>
     </div>
-    ${h.end_form()}
+${h.end_form()}
 
 <script>
     'use strict';
     $(document).ready(function(){
-        $('#repo_landing_rev').select2({
+        $('#repo_group').select2({
             'dropdownAutoWidth': true
         });
-        $('#repo_group').select2({
+        $('#repo_landing_rev').select2({
             'dropdownAutoWidth': true
         });
 

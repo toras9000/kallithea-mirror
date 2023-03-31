@@ -23,7 +23,7 @@ API access
 Clients must send JSON encoded JSON-RPC requests::
 
     {
-        "id: "<id>",
+        "id": "<id>",
         "api_key": "<api_key>",
         "method": "<method_name>",
         "args": {"<arg_key>": "<arg_val>"}
@@ -115,7 +115,7 @@ OUTPUT::
 
     id : <id_given_in_input>
     result : "Pulled from `<reponame>`"
-    error :  null
+    error : null
 
 rescan_repos
 ^^^^^^^^^^^^
@@ -138,7 +138,7 @@ OUTPUT::
     id : <id_given_in_input>
     result : "{'added': [<list of names of added repos>],
                'removed': [<list of names of removed repos>]}"
-    error :  null
+    error : null
 
 invalidate_cache
 ^^^^^^^^^^^^^^^^
@@ -160,7 +160,7 @@ OUTPUT::
 
     id : <id_given_in_input>
     result : "Caches of repository `<reponame>`"
-    error :  null
+    error : null
 
 get_ip
 ^^^^^^
@@ -175,24 +175,23 @@ INPUT::
     api_key : "<api_key>"
     method :  "get_ip"
     args :    {
-                "userid" : "<user_id or username>",
+                "userid" : "<user_id or username>"
               }
 
 OUTPUT::
 
     id : <id_given_in_input>
     result : {
-                 "ip_addr_server": <ip_from_clien>",
-                 "user_ips": [
+                 "ip_addr_server" : <ip_from_client>",
+                 "user_ips" : [
                                 {
-                                   "ip_addr": "<ip_with_mask>",
-                                   "ip_range": ["<start_ip>", "<end_ip>"],
+                                   "ip_addr" : "<ip_with_mask>",
+                                   "ip_range" : ["<start_ip>", "<end_ip>"]
                                 },
                                 ...
-                             ]
+                              ]
              }
-
-    error :  null
+    error : null
 
 get_user
 ^^^^^^^^
@@ -214,29 +213,29 @@ INPUT::
 OUTPUT::
 
     id : <id_given_in_input>
-    result: None if user does not exist or
-            {
+    result : None if user does not exist or
+             {
                 "user_id" :     "<user_id>",
                 "api_key" :     "<api_key>",
                 "username" :    "<username>",
-                "firstname":    "<firstname>",
+                "firstname" :   "<firstname>",
                 "lastname" :    "<lastname>",
                 "email" :       "<email>",
-                "emails":       "<list_of_all_additional_emails>",
+                "emails" :      "<list_of_all_additional_emails>",
                 "ip_addresses": "<list_of_ip_addresses_for_user>",
                 "active" :      "<bool>",
-                "admin" :       "<bool>",
+                "admin" :       "<bool>",
                 "ldap_dn" :     "<ldap_dn>",
-                "last_login":   "<last_login>",
+                "last_login" :  "<last_login>",
                 "permissions": {
                     "global": ["hg.create.repository",
                                "repository.read",
                                "hg.register.manual_activate"],
-                    "repositories": {"repo1": "repository.none"},
-                    "repositories_groups": {"Group1": "group.read"}
-                 },
-            }
-    error:  null
+                    "repositories" : {"repo1" : "repository.none"},
+                    "repositories_groups" : {"Group1" : "group.read"}
+                 }
+             }
+    error : null
 
 get_users
 ^^^^^^^^^
@@ -254,24 +253,24 @@ INPUT::
 OUTPUT::
 
     id : <id_given_in_input>
-    result: [
+    result : [
               {
                 "user_id" :     "<user_id>",
                 "api_key" :     "<api_key>",
                 "username" :    "<username>",
-                "firstname":    "<firstname>",
+                "firstname" :   "<firstname>",
                 "lastname" :    "<lastname>",
                 "email" :       "<email>",
-                "emails":       "<list_of_all_additional_emails>",
+                "emails" :      "<list_of_all_additional_emails>",
                 "ip_addresses": "<list_of_ip_addresses_for_user>",
                 "active" :      "<bool>",
-                "admin" :       "<bool>",
+                "admin" :       "<bool>",
                 "ldap_dn" :     "<ldap_dn>",
-                "last_login":   "<last_login>",
+                "last_login" :  "<last_login>"
               },
               …
-            ]
-    error:  null
+             ]
+    error : null
 
 .. _create-user:
 
@@ -300,22 +299,22 @@ INPUT::
 OUTPUT::
 
     id : <id_given_in_input>
-    result: {
+    result : {
               "msg" : "created new user `<username>`",
-              "user": {
+              "user" : {
                 "user_id" :  "<user_id>",
                 "username" : "<username>",
                 "firstname": "<firstname>",
                 "lastname" : "<lastname>",
                 "email" :    "<email>",
-                "emails":    "<list_of_all_additional_emails>",
+                "emails" :   "<list_of_all_additional_emails>",
                 "active" :   "<bool>",
-                "admin" :    "<bool>",
+                "admin" :    "<bool>",
                 "ldap_dn" :  "<ldap_dn>",
-                "last_login": "<last_login>",
-              },
-            }
-    error:  null
+                "last_login": "<last_login>"
+              }
+             }
+    error : null
 
 Example::
 
@@ -347,23 +346,23 @@ INPUT::
 OUTPUT::
 
     id : <id_given_in_input>
-    result: {
+    result : {
               "msg" : "updated user ID:<userid> <username>",
-              "user": {
+              "user" : {
                 "user_id" :  "<user_id>",
                 "api_key" :  "<api_key>",
                 "username" : "<username>",
                 "firstname": "<firstname>",
                 "lastname" : "<lastname>",
                 "email" :    "<email>",
-                "emails":    "<list_of_all_additional_emails>",
+                "emails" :   "<list_of_all_additional_emails>",
                 "active" :   "<bool>",
-                "admin" :    "<bool>",
+                "admin" :    "<bool>",
                 "ldap_dn" :  "<ldap_dn>",
-                "last_login": "<last_login>",
-              },
-            }
-    error:  null
+                "last_login": "<last_login>"
+              }
+             }
+    error : null
 
 delete_user
 ^^^^^^^^^^^
@@ -377,17 +376,17 @@ INPUT::
     api_key : "<api_key>"
     method :  "delete_user"
     args :    {
-                "userid" : "<user_id or username>",
+                "userid" : "<user_id or username>"
               }
 
 OUTPUT::
 
     id : <id_given_in_input>
-    result: {
+    result : {
               "msg" : "deleted user ID:<userid> <username>",
-              "user": null
-            }
-    error:  null
+              "user" : null
+             }
+    error : null
 
 get_user_group
 ^^^^^^^^^^^^^^
@@ -411,7 +410,7 @@ OUTPUT::
              {
                "users_group_id" : "<id>",
                "group_name" :     "<groupname>",
-               "active":          "<bool>",
+               "active" :         "<bool>",
                "members" :  [
                               {
                                 "user_id" :  "<user_id>",
@@ -420,11 +419,11 @@ OUTPUT::
                                 "firstname": "<firstname>",
                                 "lastname" : "<lastname>",
                                 "email" :    "<email>",
-                                "emails":    "<list_of_all_additional_emails>",
+                                "emails" :   "<list_of_all_additional_emails>",
                                 "active" :   "<bool>",
-                                "admin" :    "<bool>",
+                                "admin" :    "<bool>",
                                 "ldap_dn" :  "<ldap_dn>",
-                                "last_login": "<last_login>",
+                                "last_login": "<last_login>"
                               },
                               …
                             ]
@@ -451,7 +450,7 @@ OUTPUT::
                {
                "users_group_id" : "<id>",
                "group_name" :     "<groupname>",
-               "active":          "<bool>",
+               "active" :         "<bool>"
                },
                …
               ]
@@ -468,29 +467,29 @@ INPUT::
     id : <id_for_response>
     api_key : "<api_key>"
     method :  "create_user_group"
-    args:     {
+    args :    {
                 "group_name": "<groupname>",
                 "owner" :     "<owner_name_or_id = Optional(=apiuser)>",
-                "active":     "<bool> = Optional(True)"
+                "active" :    "<bool> = Optional(True)"
               }
 
 OUTPUT::
 
     id : <id_given_in_input>
-    result: {
-              "msg": "created new user group `<groupname>`",
-              "users_group": {
+    result : {
+              "msg" : "created new user group `<groupname>`",
+              "users_group" : {
                      "users_group_id" : "<id>",
                      "group_name" :     "<groupname>",
-                     "active":          "<bool>",
-               },
-            }
-    error:  null
+                     "active" :         "<bool>"
+               }
+             }
+    error : null
 
 add_user_to_user_group
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Adds a user to a user group. If the user already is in that group, success will be
+Add a user to a user group. If the user already is in that group, success will be
 ``false``.
 This command can only be executed using the api_key of a user with admin rights.
 
@@ -499,20 +498,20 @@ INPUT::
     id : <id_for_response>
     api_key : "<api_key>"
     method :  "add_user_user_group"
-    args:     {
+    args :    {
                 "usersgroupid" : "<user group id or name>",
-                "userid" : "<user_id or username>",
+                "userid" : "<user_id or username>"
               }
 
 OUTPUT::
 
     id : <id_given_in_input>
-    result: {
-              "success": True|False # depends on if member is in group
-              "msg": "added member `<username>` to a user group `<groupname>` |
-                      User is already in that group"
-            }
-    error:  null
+    result : {
+              "success" : True|False,  # depends on if member is in group
+              "msg" : "added member `<username>` to a user group `<groupname>` |
+                       User is already in that group"
+             }
+    error : null
 
 remove_user_from_user_group
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -526,20 +525,181 @@ INPUT::
     id : <id_for_response>
     api_key : "<api_key>"
     method :  "remove_user_from_user_group"
-    args:     {
+    args :    {
                 "usersgroupid" : "<user group id or name>",
-                "userid" : "<user_id or username>",
+                "userid" : "<user_id or username>"
               }
 
 OUTPUT::
 
     id : <id_given_in_input>
-    result: {
-              "success":  True|False,  # depends on if member is in group
-              "msg": "removed member <username> from user group <groupname> |
-                      User wasn't in group"
-            }
-    error:  null
+    result : {
+              "success" : True|False,  # depends on if member is in group
+              "msg" : "removed member <username> from user group <groupname> |
+                       User wasn't in group"
+             }
+    error : null
+
+get_repo_group
+^^^^^^^^^^^^^^
+
+Get an existing repository group.
+This command can only be executed using the api_key of a user with admin rights.
+
+INPUT::
+
+    id : <id_for_response>
+    api_key : "<api_key>"
+    method :  "get_repo_group"
+    args :    {
+                "repogroupid" : "<repo group id or name>"
+              }
+
+OUTPUT::
+
+    id : <id_given_in_input>
+    result :
+               {
+               "group_id" :          "<id>",
+               "group_name" :        "<groupname>",
+               "group_description" : "<groupdescription>",
+               "parent_group" :      "<groupid>"|null,
+               "repositories" :      "<list_of_all_repo_names_in_group>",
+               "owner" :             "<owner>",
+               "members" :           [
+                                       {
+                                         "name" : "<name>",
+                                         "type" : "user",
+                                         "permission" : "group.(none|read|write|admin)"
+                                       },
+                                       {
+                                         "name" : "<name>",
+                                         "type" : "user_group",
+                                         "permission" : "group.(none|read|write|admin)"
+                                       },
+                                       …
+                                     ]
+
+               },
+    error : null
+
+get_repo_groups
+^^^^^^^^^^^^^^^
+
+List all existing repository groups.
+This command can only be executed using the api_key of a user with admin rights.
+
+INPUT::
+
+    id : <id_for_response>
+    api_key : "<api_key>"
+    method :  "get_repo_groups"
+    args :    { }
+
+OUTPUT::
+
+    id : <id_given_in_input>
+    result : [
+               {
+               "group_id" :          "<id>",
+               "group_name" :        "<groupname>",
+               "group_description" : "<groupdescription>",
+               "parent_group" :      "<groupid>"|null,
+               "repositories" :      "<list_of_all_repo_names_in_group>",
+               "owner" :             "<owner>"
+               },
+               …
+              ]
+    error : null
+
+create_repo_group
+^^^^^^^^^^^^^^^^^
+
+Create a new repository group.
+This command can only be executed using the api_key of a user with admin rights.
+
+INPUT::
+
+    id : <id_for_response>
+    api_key : "<api_key>"
+    method :  "create_repo_group"
+    args :    {
+                "group_name" :       "<group_name>",
+                "description" :      "<description> = Optional("")",
+                "owner" :            "<username or user_id> = Optional(None)",
+                "parent" :           "<reponame or id> = Optional(None)",
+                "copy_permissions" : "<bool> = Optional(False)"
+              }
+
+OUTPUT::
+
+    id : <id_given_in_input>
+    result : {
+                "msg" : "created new repo group `<group_name>`",
+                "repo_group" : {
+                                 "group_id" :          <id>,
+                                 "group_name" :        "<parent_group>/<group_name>",
+                                 "group_description" : "<description>",
+                                 "parent_group" :      <id>|null,
+                                 "repositories" :      <list of repositories>,
+                                 "owner" :             "<user_name>"
+                                }
+
+update_repo_group
+^^^^^^^^^^^^^^^^^
+
+Update a repository group.
+This command can only be executed using the api_key of a user with admin rights.
+
+INPUT::
+
+    id : <id_for_response>
+    api_key : "<api_key>"
+    method :  "update_repo_group"
+    args :    {
+                "repogroupid" :         "<id>",
+                "group_name" :       "<group_name> = Optional(None)",
+                "description" :      "<description> = Optional(None)",
+                "owner" :            "<username or user_id> = Optional(None)",
+                "parent" :           "<reponame or id> = Optional(None)"
+              }
+
+OUTPUT::
+
+    id : <id_given_in_input>
+    result : {
+                "msg" : "updated repository group ID:<id> <group_name>",
+                "repo_group" : {
+                                 "group_id" :          <id>,
+                                 "group_name" :        "<parent_group>/<group_name>",
+                                 "group_description" : "<description>",
+                                 "parent_group" :      <id>|null,
+                                 "repositories" :      <list of repositories>,
+                                 "owner" :             "<user_name>"
+                                }
+
+delete_repo_group
+^^^^^^^^^^^^^^^^^
+
+Delete a repository group.
+This command can only be executed using the api_key of a user with admin rights.
+
+INPUT::
+
+    id : <id_for_response>
+    api_key : "<api_key>"
+    method :  "delete_repo_group"
+    args :    {
+                "repogroupid" : "<id>"
+              }
+
+OUTPUT::
+
+    id : <id_given_in_input>
+    result : {
+                "msg" : "deleted repo group ID:<id> <group_name>",
+                "repo_group" : null
+              }
 
 get_repo
 ^^^^^^^^
@@ -554,144 +714,144 @@ INPUT::
     id : <id_for_response>
     api_key : "<api_key>"
     method :  "get_repo"
-    args:     {
+    args :    {
                 "repoid" : "<reponame or repo_id>",
-                "with_revision_names": "<bool> = Optional(False)",
-                "with_pullrequests": "<bool> = Optional(False)",
+                "with_revision_names" : "<bool> = Optional(False)",
+                "with_pullrequests" : "<bool> = Optional(False)"
               }
 
 OUTPUT::
 
     id : <id_given_in_input>
-    result: None if repository does not exist or
-            {
+    result : None if repository does not exist or
+             {
                 "repo_id" :          "<repo_id>",
-                "repo_name" :        "<reponame>"
+                "repo_name" :        "<reponame>",
                 "repo_type" :        "<repo_type>",
                 "clone_uri" :        "<clone_uri>",
-                "enable_downloads":  "<bool>",
+                "enable_downloads" : "<bool>",
                 "enable_statistics": "<bool>",
-                "private":           "<bool>",
+                "private" :          "<bool>",
                 "created_on" :       "<date_time_created>",
                 "description" :      "<description>",
-                "landing_rev":       "<landing_rev>",
-                "last_changeset":    {
-                                       "author":   "<full_author>",
-                                       "date":     "<date_time_of_commit>",
-                                       "message":  "<commit_message>",
-                                       "raw_id":   "<raw_id>",
-                                       "revision": "<numeric_revision>",
-                                       "short_id": "<short_id>"
+                "landing_rev" :      "<landing_rev>",
+                "last_changeset" :   {
+                                         "author" :  "<full_author>",
+                                         "date" :    "<date_time_of_commit>",
+                                         "message" : "<commit_message>",
+                                         "raw_id" :  "<raw_id>",
+                                         "revision": "<numeric_revision>",
+                                         "short_id": "<short_id>"
                                      },
-                "owner":             "<repo_owner>",
-                "fork_of":           "<name_of_fork_parent>",
-                "members" :     [
+                "owner" :            "<repo_owner>",
+                "fork_of" :          "<name_of_fork_parent>",
+                "members" :   [
                                   {
-                                    "type":        "user",
+                                    "type" :       "user",
                                     "user_id" :    "<user_id>",
                                     "api_key" :    "<api_key>",
                                     "username" :   "<username>",
-                                    "firstname":   "<firstname>",
+                                    "firstname" :  "<firstname>",
                                     "lastname" :   "<lastname>",
                                     "email" :      "<email>",
-                                    "emails":      "<list_of_all_additional_emails>",
+                                    "emails" :     "<list_of_all_additional_emails>",
                                     "active" :     "<bool>",
-                                    "admin" :      "<bool>",
+                                    "admin" :      "<bool>",
                                     "ldap_dn" :    "<ldap_dn>",
-                                    "last_login":  "<last_login>",
+                                    "last_login" : "<last_login>",
                                     "permission" : "repository.(read|write|admin)"
                                   },
                                   …
                                   {
-                                    "type":      "users_group",
+                                    "type" :     "users_group",
                                     "id" :       "<usersgroupid>",
                                     "name" :     "<usersgroupname>",
-                                    "active":    "<bool>",
+                                    "active" :   "<bool>",
                                     "permission" : "repository.(read|write|admin)"
                                   },
                                   …
-                                ],
-                 "followers":   [
+                              ],
+                "followers" : [
                                   {
                                     "user_id" :     "<user_id>",
                                     "username" :    "<username>",
                                     "api_key" :     "<api_key>",
-                                    "firstname":    "<firstname>",
+                                    "firstname" :   "<firstname>",
                                     "lastname" :    "<lastname>",
                                     "email" :       "<email>",
-                                    "emails":       "<list_of_all_additional_emails>",
+                                    "emails" :      "<list_of_all_additional_emails>",
                                     "ip_addresses": "<list_of_ip_addresses_for_user>",
                                     "active" :      "<bool>",
-                                    "admin" :       "<bool>",
+                                    "admin" :       "<bool>",
                                     "ldap_dn" :     "<ldap_dn>",
-                                    "last_login":   "<last_login>",
+                                    "last_login" :  "<last_login>"
                                   },
                                   …
-                                ],
-                 <if with_revision_names == True>
-                 "tags": {
-                            "<tagname>": "<raw_id>",
+                              ],
+                <if with_revision_names == True>
+                "tags" : {
+                            "<tagname>" : "<raw_id>",
                             ...
-                         },
-                 "branches": {
-                            "<branchname>": "<raw_id>",
+                        },
+                "branches" : {
+                            "<branchname>" : "<raw_id>",
                             ...
-                         },
-                 "bookmarks": {
-                            "<bookmarkname>": "<raw_id>",
+                        },
+                "bookmarks" : {
+                            "<bookmarkname>" : "<raw_id>",
                             ...
-                         },
+                        },
                 <if with_pullrequests == True>
-                "pull_requests": [
+                "pull_requests" : [
                   {
-                    "status": "<pull_request_status>",
-                    "pull_request_id": <pull_request_id>,
-                    "description": "<pull_request_description>",
-                    "title": "<pull_request_title>",
-                    "url": "<pull_request_url>",
-                    "reviewers": [
+                    "status" : "<pull_request_status>",
+                    "pull_request_id" : <pull_request_id>,
+                    "description" : "<pull_request_description>",
+                    "title" : "<pull_request_title>",
+                    "url" : "<pull_request_url>",
+                    "reviewers" : [
                       {
-                        "username": "<user_id>",
+                        "username" : "<user_id>"
                       },
                       ...
                     ],
-                    "org_repo_url": "<repo_url>",
-                    "org_ref_parts": [
+                    "org_repo_url" : "<repo_url>",
+                    "org_ref_parts" : [
                       "<ref_type>",
                       "<ref_name>",
                       "<raw_id>"
                     ],
-                    "other_ref_parts": [
+                    "other_ref_parts" : [
                       "<ref_type>",
                       "<ref_name>",
                       "<raw_id>"
                     ],
-                    "comments": [
+                    "comments" : [
                       {
-                        "username": "<user_id>",
-                        "text": "<comment text>",
-                        "comment_id": "<comment_id>",
+                        "username" : "<user_id>",
+                        "text" : "<comment text>",
+                        "comment_id" : "<comment_id>"
                       },
                       ...
                     ],
-                    "owner": "<username>",
-                    "statuses": [
+                    "owner" : "<username>",
+                    "statuses" : [
                       {
-                        "status": "<status_of_review>",        # "under_review", "approved" or "rejected"
-                        "reviewer": "<user_id>",
-                        "modified_at": "<date_time_of_review>" # iso 8601 date, server's timezone
+                        "status" : "<status_of_review>",        # "under_review", "approved" or "rejected"
+                        "reviewer" : "<user_id>",
+                        "modified_at" : "<date_time_of_review>" # iso 8601 date, server's timezone
                       },
                       ...
                     ],
-                    "revisions": [
+                    "revisions" : [
                       "<raw_id>",
                       ...
                     ]
                   },
                   ...
                 ]
-            }
-    error:  null
+             }
+    error : null
 
 get_repos
 ^^^^^^^^^
@@ -705,29 +865,29 @@ INPUT::
     id : <id_for_response>
     api_key : "<api_key>"
     method :  "get_repos"
-    args:     { }
+    args :    { }
 
 OUTPUT::
 
     id : <id_given_in_input>
-    result: [
+    result : [
               {
                 "repo_id" :          "<repo_id>",
-                "repo_name" :        "<reponame>"
+                "repo_name" :        "<reponame>",
                 "repo_type" :        "<repo_type>",
                 "clone_uri" :        "<clone_uri>",
                 "private" :          "<bool>",
                 "created_on" :       "<datetimecreated>",
                 "description" :      "<description>",
-                "landing_rev":       "<landing_rev>",
-                "owner":             "<repo_owner>",
-                "fork_of":           "<name_of_fork_parent>",
-                "enable_downloads":  "<bool>",
-                "enable_statistics": "<bool>",
+                "landing_rev" :      "<landing_rev>",
+                "owner" :            "<repo_owner>",
+                "fork_of" :          "<name_of_fork_parent>",
+                "enable_downloads" : "<bool>",
+                "enable_statistics": "<bool>"
               },
               …
-            ]
-    error:  null
+             ]
+    error : null
 
 get_repo_nodes
 ^^^^^^^^^^^^^^
@@ -741,24 +901,24 @@ INPUT::
     id : <id_for_response>
     api_key : "<api_key>"
     method :  "get_repo_nodes"
-    args:     {
-                "repoid" : "<reponame or repo_id>"
-                "revision"  : "<revision>",
+    args :    {
+                "repoid" : "<reponame or repo_id>",
+                "revision" :  "<revision>",
                 "root_path" : "<root_path>",
-                "ret_type"  : "<ret_type> = Optional('all')"
+                "ret_type" :  "<ret_type> = Optional('all')"
               }
 
 OUTPUT::
 
     id : <id_given_in_input>
-    result: [
+    result : [
               {
-                "name" :        "<name>"
-                "type" :        "<type>",
+                "name" :        "<name>",
+                "type" :        "<type>"
               },
               …
-            ]
-    error:  null
+             ]
+    error : null
 
 create_repo
 ^^^^^^^^^^^
@@ -778,7 +938,7 @@ INPUT::
     id : <id_for_response>
     api_key : "<api_key>"
     method :  "create_repo"
-    args:     {
+    args :    {
                 "repo_name" :        "<reponame>",
                 "owner" :            "<owner_name_or_id = Optional(=apiuser)>",
                 "repo_type" :        "<repo_type> = Optional('hg')",
@@ -786,31 +946,31 @@ INPUT::
                 "private" :          "<bool> = Optional(False)",
                 "clone_uri" :        "<clone_uri> = Optional(None)",
                 "landing_rev" :      "<landing_rev> = Optional('tip')",
-                "enable_downloads":  "<bool> = Optional(False)",
-                "enable_statistics": "<bool> = Optional(False)",
+                "enable_downloads" : "<bool> = Optional(False)",
+                "enable_statistics": "<bool> = Optional(False)"
               }
 
 OUTPUT::
 
     id : <id_given_in_input>
-    result: {
-              "msg": "Created new repository `<reponame>`",
-              "repo": {
+    result : {
+              "msg" : "Created new repository `<reponame>`",
+              "repo" : {
                 "repo_id" :          "<repo_id>",
-                "repo_name" :        "<reponame>"
+                "repo_name" :        "<reponame>",
                 "repo_type" :        "<repo_type>",
                 "clone_uri" :        "<clone_uri>",
                 "private" :          "<bool>",
                 "created_on" :       "<datetimecreated>",
                 "description" :      "<description>",
-                "landing_rev":       "<landing_rev>",
-                "owner":             "<username or user_id>",
-                "fork_of":           "<name_of_fork_parent>",
-                "enable_downloads":  "<bool>",
-                "enable_statistics": "<bool>",
-              },
-            }
-    error:  null
+                "landing_rev" :      "<landing_rev>",
+                "owner" :            "<username or user_id>",
+                "fork_of" :          "<name_of_fork_parent>",
+                "enable_downloads" : "<bool>",
+                "enable_statistics": "<bool>"
+              }
+             }
+    error : null
 
 update_repo
 ^^^^^^^^^^^
@@ -825,8 +985,8 @@ INPUT::
     id : <id_for_response>
     api_key : "<api_key>"
     method :  "update_repo"
-    args:     {
-                "repoid" :           "<reponame or repo_id>"
+    args :    {
+                "repoid" :           "<reponame or repo_id>",
                 "name" :             "<reponame> = Optional('')",
                 "group" :            "<group_id> = Optional(None)",
                 "owner" :            "<owner_name_or_id = Optional(=apiuser)>",
@@ -834,39 +994,39 @@ INPUT::
                 "private" :          "<bool> = Optional(False)",
                 "clone_uri" :        "<clone_uri> = Optional(None)",
                 "landing_rev" :      "<landing_rev> = Optional('tip')",
-                "enable_downloads":  "<bool> = Optional(False)",
-                "enable_statistics": "<bool> = Optional(False)",
+                "enable_downloads" : "<bool> = Optional(False)",
+                "enable_statistics": "<bool> = Optional(False)"
               }
 
 OUTPUT::
 
     id : <id_given_in_input>
-    result: {
-              "msg": "updated repo ID:repo_id `<reponame>`",
-              "repository": {
+    result : {
+              "msg" : "updated repo ID:repo_id `<reponame>`",
+              "repository" : {
                 "repo_id" :          "<repo_id>",
-                "repo_name" :        "<reponame>"
+                "repo_name" :        "<reponame>",
                 "repo_type" :        "<repo_type>",
                 "clone_uri" :        "<clone_uri>",
-                "private":           "<bool>",
+                "private" :          "<bool>",
                 "created_on" :       "<datetimecreated>",
                 "description" :      "<description>",
-                "landing_rev":       "<landing_rev>",
-                "owner":             "<username or user_id>",
-                "fork_of":           "<name_of_fork_parent>",
-                "enable_downloads":  "<bool>",
+                "landing_rev" :      "<landing_rev>",
+                "owner" :            "<username or user_id>",
+                "fork_of" :          "<name_of_fork_parent>",
+                "enable_downloads" : "<bool>",
                 "enable_statistics": "<bool>",
-                "last_changeset":    {
-                                       "author":   "<full_author>",
-                                       "date":     "<date_time_of_commit>",
-                                       "message":  "<commit_message>",
-                                       "raw_id":   "<raw_id>",
+                "last_changeset" :   {
+                                       "author" :  "<full_author>",
+                                       "date" :    "<date_time_of_commit>",
+                                       "message" : "<commit_message>",
+                                       "raw_id" :  "<raw_id>",
                                        "revision": "<numeric_revision>",
                                        "short_id": "<short_id>"
                                      }
-              },
-            }
-    error:  null
+              }
+             }
+    error : null
 
 fork_repo
 ^^^^^^^^^
@@ -884,25 +1044,24 @@ INPUT::
     id : <id_for_response>
     api_key : "<api_key>"
     method :  "fork_repo"
-    args:     {
+    args :    {
                 "repoid" :          "<reponame or repo_id>",
-                "fork_name":        "<forkname>",
-                "owner":            "<username or user_id = Optional(=apiuser)>",
-                "description":      "<description>",
+                "fork_name" :       "<forkname>",
+                "owner" :           "<username or user_id = Optional(=apiuser)>",
+                "description" :     "<description>",
                 "copy_permissions": "<bool>",
-                "private":          "<bool>",
-                "landing_rev":      "<landing_rev>"
-
+                "private" :         "<bool>",
+                "landing_rev" :     "<landing_rev>"
               }
 
 OUTPUT::
 
     id : <id_given_in_input>
-    result: {
-              "msg": "Created fork of `<reponame>` as `<forkname>`",
-              "success": true
-            }
-    error:  null
+    result : {
+              "msg" : "Created fork of `<reponame>` as `<forkname>`",
+              "success" : true
+             }
+    error : null
 
 delete_repo
 ^^^^^^^^^^^
@@ -917,19 +1076,19 @@ INPUT::
     id : <id_for_response>
     api_key : "<api_key>"
     method :  "delete_repo"
-    args:     {
+    args :    {
                 "repoid" : "<reponame or repo_id>",
-                "forks"  : "`delete` or `detach` = Optional(None)"
+                "forks" :  "`delete` or `detach` = Optional(None)"
               }
 
 OUTPUT::
 
     id : <id_given_in_input>
-    result: {
-              "msg": "Deleted repository `<reponame>`",
-              "success": true
-            }
-    error:  null
+    result : {
+              "msg" : "Deleted repository `<reponame>`",
+              "success" : true
+             }
+    error : null
 
 grant_user_permission
 ^^^^^^^^^^^^^^^^^^^^^
@@ -942,20 +1101,20 @@ INPUT::
     id : <id_for_response>
     api_key : "<api_key>"
     method :  "grant_user_permission"
-    args:     {
-                "repoid" : "<reponame or repo_id>"
-                "userid" : "<username or user_id>"
-                "perm" :       "(repository.(none|read|write|admin))",
+    args :    {
+                "repoid" : "<reponame or repo_id>",
+                "userid" : "<username or user_id>",
+                "perm" :       "(repository.(none|read|write|admin))"
               }
 
 OUTPUT::
 
     id : <id_given_in_input>
-    result: {
+    result : {
               "msg" : "Granted perm: `<perm>` for user: `<username>` in repo: `<reponame>`",
-              "success": true
-            }
-    error:  null
+              "success" : true
+             }
+    error : null
 
 revoke_user_permission
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -967,20 +1126,20 @@ INPUT::
 
     id : <id_for_response>
     api_key : "<api_key>"
-    method  : "revoke_user_permission"
-    args:     {
-                "repoid" : "<reponame or repo_id>"
+    method :  "revoke_user_permission"
+    args :    {
+                "repoid" : "<reponame or repo_id>",
                 "userid" : "<username or user_id>"
               }
 
 OUTPUT::
 
     id : <id_given_in_input>
-    result: {
+    result : {
               "msg" : "Revoked perm for user: `<username>` in repo: `<reponame>`",
-              "success": true
-            }
-    error:  null
+              "success" : true
+             }
+    error : null
 
 grant_user_group_permission
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -994,20 +1153,20 @@ INPUT::
     id : <id_for_response>
     api_key : "<api_key>"
     method :  "grant_user_group_permission"
-    args:     {
-                "repoid" : "<reponame or repo_id>"
-                "usersgroupid" : "<user group id or name>"
-                "perm" : "(repository.(none|read|write|admin))",
+    args :    {
+                "repoid" : "<reponame or repo_id>",
+                "usersgroupid" : "<user group id or name>",
+                "perm" : "(repository.(none|read|write|admin))"
               }
 
 OUTPUT::
 
     id : <id_given_in_input>
-    result: {
+    result : {
               "msg" : "Granted perm: `<perm>` for group: `<usersgroupname>` in repo: `<reponame>`",
-              "success": true
-            }
-    error:  null
+              "success" : true
+             }
+    error : null
 
 revoke_user_group_permission
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1019,20 +1178,20 @@ INPUT::
 
     id : <id_for_response>
     api_key : "<api_key>"
-    method  : "revoke_user_group_permission"
-    args:     {
-                "repoid" : "<reponame or repo_id>"
+    method :  "revoke_user_group_permission"
+    args :    {
+                "repoid" : "<reponame or repo_id>",
                 "usersgroupid" : "<user group id or name>"
               }
 
 OUTPUT::
 
     id : <id_given_in_input>
-    result: {
+    result : {
               "msg" : "Revoked perm for group: `<usersgroupname>` in repo: `<reponame>`",
-              "success": true
-            }
-    error:  null
+              "success" : true
+             }
+    error : null
 
 get_changesets
 ^^^^^^^^^^^^^^
@@ -1044,37 +1203,37 @@ INPUT::
 
     id : <id_for_response>
     api_key : "<api_key>"
-    method  : "get_changesets"
-    args:     {
+    method :  "get_changesets"
+    args :    {
                 "repoid" : "<reponame or repo_id>",
-                "start": "<revision number> = Optional(None)",
-                "end": "<revision number> = Optional(None)",
-                "start_date": "<date> = Optional(None)",    # in "%Y-%m-%dT%H:%M:%S" format
-                "end_date": "<date> = Optional(None)",      # in "%Y-%m-%dT%H:%M:%S" format
-                "branch_name": "<branch name filter> = Optional(None)",
-                "reverse": "<bool> = Optional(False)",
-                "with_file_list": "<bool> = Optional(False)"
+                "start" : "<revision number> = Optional(None)",
+                "end" : "<revision number> = Optional(None)",
+                "start_date" : "<date> = Optional(None)",    # in "%Y-%m-%dT%H:%M:%S" format
+                "end_date" : "<date> = Optional(None)",      # in "%Y-%m-%dT%H:%M:%S" format
+                "branch_name" : "<branch name filter> = Optional(None)",
+                "reverse" : "<bool> = Optional(False)",
+                "with_file_list" : "<bool> = Optional(False)"
               }
 
 OUTPUT::
 
     id : <id_given_in_input>
-    result: [
+    result : [
     {
-      "raw_id": "<raw_id>",
-      "short_id": "short_id": "<short_id>",
-      "author": "<full_author>",
-      "date": "<date_time_of_commit>",
-      "message": "<commit_message>",
-      "revision": "<numeric_revision>",
+      "raw_id" : "<raw_id>",
+      "short_id" : "<short_id>",
+      "author" : "<full_author>",
+      "date" : "<date_time_of_commit>",
+      "message" : "<commit_message>",
+      "revision" : "<numeric_revision>",
       <if with_file_list == True>
-      "added": [<list of added files>],
-      "changed": [<list of changed files>],
-      "removed": [<list of removed files>]
+      "added" : [<list of added files>],
+      "changed" : [<list of changed files>],
+      "removed" : [<list of removed files>]
     },
     ...
     ]
-    error:  null
+    error : null
 
 get_changeset
 ^^^^^^^^^^^^^
@@ -1087,32 +1246,32 @@ INPUT::
 
     id : <id_for_response>
     api_key : "<api_key>"
-    method  : "get_changeset"
-    args:     {
+    method :  "get_changeset"
+    args :    {
                 "repoid" : "<reponame or repo_id>",
                 "raw_id" : "<raw_id>",
-                "with_reviews": "<bool> = Optional(False)"
+                "with_reviews" : "<bool> = Optional(False)"
               }
 
 OUTPUT::
 
     id : <id_given_in_input>
-    result: {
-              "author":   "<full_author>",
-              "date":     "<date_time_of_commit>",
-              "message":  "<commit_message>",
-              "raw_id":   "<raw_id>",
+    result : {
+              "author" :  "<full_author>",
+              "date" :    "<date_time_of_commit>",
+              "message" : "<commit_message>",
+              "raw_id" :  "<raw_id>",
               "revision": "<numeric_revision>",
               "short_id": "<short_id>",
-              "reviews": [{
-                    "reviewer":   "<username>",
-                    "modified_at": "<date_time_of_review>",  # iso 8601 date, server's timezone
-                    "status":   "<status_of_review>",        # "under_review", "approved" or "rejected"
+              "reviews" : [{
+                    "reviewer" :  "<username>",
+                    "modified_at" : "<date_time_of_review>",  # iso 8601 date, server's timezone
+                    "status" :  "<status_of_review>",        # "under_review", "approved" or "rejected"
                  },
                  ...
               ]
-            }
-    error:  null
+             }
+    error : null
 
 Example output::
 
@@ -1155,60 +1314,60 @@ INPUT::
 
     id : <id_for_response>
     api_key : "<api_key>"
-    method  : "get_pullrequest"
-    args:     {
-                "pullrequest_id" : "<pullrequest_id>",
+    method :  "get_pullrequest"
+    args :    {
+                "pullrequest_id" : "<pullrequest_id>"
               }
 
 OUTPUT::
 
     id : <id_given_in_input>
-    result: {
-        "status": "<pull_request_status>",
-        "pull_request_id": <pull_request_id>,
-        "description": "<pull_request_description>",
-        "title": "<pull_request_title>",
-        "url": "<pull_request_url>",
-        "reviewers": [
+    result : {
+        "status" : "<pull_request_status>",
+        "pull_request_id" : <pull_request_id>,
+        "description" : "<pull_request_description>",
+        "title" : "<pull_request_title>",
+        "url" : "<pull_request_url>",
+        "reviewers" : [
           {
-            "username": "<user_name>",
+            "username" : "<user_name>"
           },
           ...
         ],
-        "org_repo_url": "<repo_url>",
-        "org_ref_parts": [
+        "org_repo_url" : "<repo_url>",
+        "org_ref_parts" : [
           "<ref_type>",
           "<ref_name>",
           "<raw_id>"
         ],
-        "other_ref_parts": [
+        "other_ref_parts" : [
           "<ref_type>",
           "<ref_name>",
           "<raw_id>"
         ],
-        "comments": [
+        "comments" : [
           {
-            "username": "<user_name>",
-            "text": "<comment text>",
-            "comment_id": "<comment_id>",
+            "username" : "<user_name>",
+            "text" : "<comment text>",
+            "comment_id" : "<comment_id>"
           },
           ...
         ],
-        "owner": "<username>",
-        "statuses": [
+        "owner" : "<username>",
+        "statuses" : [
           {
-            "status": "<status_of_review>",        # "under_review", "approved" or "rejected"
-            "reviewer": "<user_name>",
-            "modified_at": "<date_time_of_review>" # iso 8601 date, server's timezone
+            "status" : "<status_of_review>",        # "under_review", "approved" or "rejected"
+            "reviewer" : "<user_name>",
+            "modified_at" : "<date_time_of_review>" # iso 8601 date, server's timezone
           },
           ...
         ],
-        "revisions": [
+        "revisions" : [
           "<raw_id>",
           ...
         ]
     },
-    error:  null
+    error : null
 
 comment_pullrequest
 ^^^^^^^^^^^^^^^^^^^
@@ -1220,19 +1379,19 @@ INPUT::
 
     id : <id_for_response>
     api_key : "<api_key>"
-    method  : "comment_pullrequest"
-    args:     {
-                "pull_request_id":  "<pull_request_id>",
-                "comment_msg":      Optional(''),
-                "status":           Optional(None),     # "under_review", "approved" or "rejected"
-                "close_pr":         Optional(False)",
+    method :  "comment_pullrequest"
+    args :    {
+                "pull_request_id" : "<pull_request_id>",
+                "comment_msg" :     Optional(''),
+                "status" :          Optional(None),     # "under_review", "approved" or "rejected"
+                "close_pr" :        Optional(False)"
               }
 
 OUTPUT::
 
     id : <id_given_in_input>
-    result: True
-    error:  null
+    result : True
+    error : null
 
 
 API access for web views

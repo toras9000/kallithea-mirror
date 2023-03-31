@@ -711,12 +711,9 @@ def create_repo(form_data, cur_user):
     copy_fork_permissions = form_data.get('copy_permissions')
     copy_group_permissions = form_data.get('repo_copy_permissions')
     fork_of = form_data.get('fork_parent_id')
+    enable_statistics = form_data['repo_enable_statistics']
+    enable_downloads = form_data['repo_enable_downloads']
     state = form_data.get('repo_state', db.Repository.STATE_PENDING)
-
-    # repo creation defaults, private and repo_type are filled in form
-    defs = db.Setting.get_default_repo_settings(strip_prefix=True)
-    enable_statistics = defs.get('repo_enable_statistics')
-    enable_downloads = defs.get('repo_enable_downloads')
 
     try:
         db_repo = RepoModel()._create_repo(

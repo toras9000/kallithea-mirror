@@ -65,8 +65,6 @@ def store_update(updates, attr, name):
 def get_user_or_error(userid):
     """
     Get user by id or name or return JsonRPCError if not found
-
-    :param userid:
     """
     user = UserModel().get_user(userid)
     if user is None:
@@ -77,8 +75,6 @@ def get_user_or_error(userid):
 def get_repo_or_error(repoid):
     """
     Get repo by id or name or return JsonRPCError if not found
-
-    :param repoid:
     """
     repo = RepoModel().get_repo(repoid)
     if repo is None:
@@ -89,8 +85,6 @@ def get_repo_or_error(repoid):
 def get_repo_group_or_error(repogroupid):
     """
     Get repo group by id or name or return JsonRPCError if not found
-
-    :param repogroupid:
     """
     repo_group = db.RepoGroup.guess_instance(repogroupid)
     if repo_group is None:
@@ -102,8 +96,6 @@ def get_repo_group_or_error(repogroupid):
 def get_user_group_or_error(usergroupid):
     """
     Get user group by id or name or return JsonRPCError if not found
-
-    :param usergroupid:
     """
     user_group = UserGroupModel().get_group(usergroupid)
     if user_group is None:
@@ -114,8 +106,6 @@ def get_user_group_or_error(usergroupid):
 def get_perm_or_error(permid, prefix=None):
     """
     Get permission by id or name or return JsonRPCError if not found
-
-    :param permid:
     """
     perm = db.Permission.get_by_key(permid)
     if perm is None:
@@ -130,8 +120,6 @@ def get_perm_or_error(permid, prefix=None):
 def get_gist_or_error(gistid):
     """
     Get gist by id or gist_access_id or return JsonRPCError if not found
-
-    :param gistid:
     """
     gist = GistModel().get_gist(gistid)
     if gist is None:
@@ -165,30 +153,15 @@ class ApiController(JSONRPCController):
         automatically keep remote repos up to date. This command can be executed
         only using api_key belonging to user with admin rights
 
-        :param repoid: repository name or repository id
-        :type repoid: str or int
-        :param clone_uri: repository URI to pull from (optional)
-        :type clone_uri: str
-
         OUTPUT::
 
-          id : <id_given_in_input>
-          result : {
-            "msg": "Pulled from `<repository name>`"
-            "repository": "<repository name>"
-          }
-          error :  null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "Unable to pull changes from `<reponame>`"
-          }
-
+            id : <id_given_in_input>
+            result : {
+                "msg" : "Pulled from `<repository name>`",
+                "repository" : "<repository name>"
+            }
+            error : null
         """
-
         repo = get_repo_or_error(repoid)
 
         try:
@@ -214,29 +187,15 @@ class ApiController(JSONRPCController):
         aka "clean zombies". This command can be executed only using api_key
         belonging to user with admin rights.
 
-        :param remove_obsolete: deletes repositories from
-            database that are not found on the filesystem
-        :type remove_obsolete: Optional(bool)
-
         OUTPUT::
 
-          id : <id_given_in_input>
-          result : {
-            'added': [<added repository name>,...]
-            'removed': [<removed repository name>,...]
-          }
-          error :  null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            'Error occurred during rescan repositories action'
-          }
-
+            id : <id_given_in_input>
+            result : {
+                'added': [<added repository name>,...]
+                'removed': [<removed repository name>,...]
+            }
+            error : null
         """
-
         try:
             rm_obsolete = remove_obsolete
             added, removed = repo2db_mapper(ScmModel().repo_scan(),
@@ -254,26 +213,14 @@ class ApiController(JSONRPCController):
         This command can be executed only using api_key belonging to user with admin
         rights or regular user that have write or admin or write access to repository.
 
-        :param repoid: repository name or repository id
-        :type repoid: str or int
-
         OUTPUT::
 
-          id : <id_given_in_input>
-          result : {
-            'msg': Cache for repository `<repository name>` was invalidated,
-            'repository': <repository name>
-          }
-          error :  null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            'Error occurred during cache invalidation action'
-          }
-
+            id : <id_given_in_input>
+            result : {
+                'msg': Cache for repository `<repository name>` was invalidated,
+                'repository': <repository name>
+            }
+            error : null
         """
         repo = get_repo_or_error(repoid)
         if not HasPermissionAny('hg.admin')():
@@ -301,23 +248,20 @@ class ApiController(JSONRPCController):
         This command can be executed only using api_key belonging to user with
         admin rights.
 
-        :param userid: username to show ips for
-        :type userid: Optional(str or int)
-
         OUTPUT::
 
             id : <id_given_in_input>
             result : {
-                         "server_ip_addr": "<ip_from_clien>",
-                         "user_ips": [
+                         "server_ip_addr" : "<ip_from_client>",
+                         "user_ips" : [
                                         {
-                                           "ip_addr": "<ip_with_mask>",
-                                           "ip_range": ["<start_ip>", "<end_ip>"],
+                                           "ip_addr" : "<ip_with_mask>",
+                                           "ip_range" : ["<start_ip>", "<end_ip>"]
                                         },
                                         ...
-                                     ]
+                                      ]
             }
-
+            error : null
         """
         if userid is None:
             userid = request.authuser.user_id
@@ -336,17 +280,18 @@ class ApiController(JSONRPCController):
         """
         return server info, including Kallithea version and installed packages
 
-
         OUTPUT::
 
-          id : <id_given_in_input>
-          result : {
-            'modules': [<module name>,...]
-            'py_version': <python version>,
-            'platform': <platform type>,
-            'kallithea_version': <kallithea version>
-          }
-          error :  null
+            id : <id_given_in_input>
+            result : {
+                'modules' : [ [<module name>, <module version>], ...]
+                'py_version' : <python version>,
+                'platform' : <platform type>,
+                'kallithea_version' : <kallithea version>,
+                'git_version' : '<git version>',
+                'git_path' : '<git path>'
+            }
+            error : null
         """
         return db.Setting.get_server_info()
 
@@ -358,39 +303,29 @@ class ApiController(JSONRPCController):
         belonging to user with admin rights, or regular users that cannot
         specify different userid than theirs
 
-        :param userid: user to get data for
-        :type userid: Optional(str or int)
-
         OUTPUT::
 
             id : <id_given_in_input>
-            result: None if user does not exist or
-                    {
+            result : None if user does not exist or
+                     {
                         "user_id" :     "<user_id>",
-                        "api_key" :     "<api_key>",
-                        "api_keys":     "[<list of all API keys including additional ones>]"
                         "username" :    "<username>",
-                        "firstname":    "<firstname>",
+                        "firstname" :   "<firstname>",
                         "lastname" :    "<lastname>",
                         "email" :       "<email>",
-                        "emails":       "[<list of all emails including additional ones>]",
-                        "ip_addresses": "[<ip_address_for_user>,...]",
+                        "emails" :      "[<list of all emails including additional ones>]",
                         "active" :      "<bool: user active>",
-                        "admin" :       "<bool: user is admin>",
-                        "extern_name" : "<extern_name>",
-                        "extern_type" : "<extern type>
-                        "last_login":   "<last_login>",
-                        "permissions": {
-                            "global": ["hg.create.repository",
-                                       "repository.read",
-                                       "hg.register.manual_activate"],
-                            "repositories": {"repo1": "repository.none"},
-                            "repositories_groups": {"Group1": "group.read"}
-                         },
-                    }
-
-            error:  null
-
+                        "admin" :       "<bool: user is admin>",
+                        "permissions" : {
+                            "global" : ["hg.create.repository",
+                                        "repository.read",
+                                        "hg.register.manual_activate"],
+                            "repositories" : {"repo1" : "repository.none"},
+                            "repositories_groups" : {"Group1" : "group.read"},
+                            "user_groups" : { "usrgrp1" : "usergroup.admin" }
+                         }
+                     }
+            error : null
         """
         if not HasPermissionAny('hg.admin')():
             # make sure normal user does not pass someone else userid,
@@ -414,14 +349,12 @@ class ApiController(JSONRPCController):
         Lists all existing users. This command can be executed only using api_key
         belonging to user with admin rights.
 
-
         OUTPUT::
 
             id : <id_given_in_input>
-            result: [<user_object>, ...]
-            error:  null
+            result : [<user_object>, ...]
+            error : null
         """
-
         return [
             user.get_api_data()
             for user in db.User.query()
@@ -439,49 +372,15 @@ class ApiController(JSONRPCController):
         Creates new user. Returns new user object. This command can
         be executed only using api_key belonging to user with admin rights.
 
-        :param username: new username
-        :type username: str or int
-        :param email: email
-        :type email: str
-        :param password: password
-        :type password: Optional(str)
-        :param firstname: firstname
-        :type firstname: Optional(str)
-        :param lastname: lastname
-        :type lastname: Optional(str)
-        :param active: active
-        :type active: Optional(bool)
-        :param admin: admin
-        :type admin: Optional(bool)
-        :param extern_name: name of extern
-        :type extern_name: Optional(str)
-        :param extern_type: extern_type
-        :type extern_type: Optional(str)
-
-
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
+            result : {
                       "msg" : "created new user `<username>`",
-                      "user": <user_obj>
-                    }
-            error:  null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "user `<username>` already exist"
-            or
-            "email `<email>` already exist"
-            or
-            "failed to create user `<username>`"
-          }
-
+                      "user" : <user_obj>
+                     }
+            error : null
         """
-
         if db.User.get_by_username(username):
             raise JSONRPCError("user `%s` already exist" % (username,))
 
@@ -519,47 +418,15 @@ class ApiController(JSONRPCController):
         updates given user if such user exists. This command can
         be executed only using api_key belonging to user with admin rights.
 
-        :param userid: userid to update
-        :type userid: str or int
-        :param username: new username
-        :type username: str or int
-        :param email: email
-        :type email: str
-        :param password: password
-        :type password: Optional(str)
-        :param firstname: firstname
-        :type firstname: Optional(str)
-        :param lastname: lastname
-        :type lastname: Optional(str)
-        :param active: active
-        :type active: Optional(bool)
-        :param admin: admin
-        :type admin: Optional(bool)
-        :param extern_name:
-        :type extern_name: Optional(str)
-        :param extern_type:
-        :type extern_type: Optional(str)
-
-
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
+            result : {
                       "msg" : "updated user ID:<userid> <username>",
-                      "user": <user_object>,
-                    }
-            error:  null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to update user `<username>`"
-          }
-
+                      "user" : <user_object>
+                     }
+            error : null
         """
-
         user = get_user_or_error(userid)
 
         # only non optional arguments will be stored in updates
@@ -596,26 +463,14 @@ class ApiController(JSONRPCController):
         deletes given user if such user exists. This command can
         be executed only using api_key belonging to user with admin rights.
 
-        :param userid: user to delete
-        :type userid: str or int
-
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
+            result : {
                       "msg" : "deleted user ID:<userid> <username>",
-                      "user": null
-                    }
-            error:  null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to delete user ID:<userid> <username>"
-          }
-
+                      "user" : null
+                     }
+            error : null
         """
         user = get_user_or_error(userid)
 
@@ -639,9 +494,6 @@ class ApiController(JSONRPCController):
         belonging to user with admin rights or user who has at least
         read access to user group.
 
-        :param usergroupid: id of user_group to edit
-        :type usergroupid: str or int
-
         OUTPUT::
 
             id : <id_given_in_input>
@@ -649,11 +501,12 @@ class ApiController(JSONRPCController):
                      {
                        "users_group_id" : "<id>",
                        "group_name" :     "<groupname>",
-                       "active":          "<bool>",
-                       "members" :  [<user_obj>,...]
+                       "group_description" : "<description>",
+                       "active" :         "<bool>",
+                       "owner" :          "<username>",
+                       "members" :        [<user_obj>,...]
                      }
             error : null
-
         """
         user_group = get_user_group_or_error(usergroupid)
         if not HasPermissionAny('hg.admin')():
@@ -670,14 +523,12 @@ class ApiController(JSONRPCController):
         api_key belonging to user with admin rights or user who has at least
         read access to user group.
 
-
         OUTPUT::
 
             id : <id_given_in_input>
             result : [<user_group_obj>,...]
             error : null
         """
-
         return [
             user_group.get_api_data()
             for user_group in UserGroupList(db.UserGroup.query().all(), perm_level='read')
@@ -691,36 +542,15 @@ class ApiController(JSONRPCController):
         belonging to user with admin rights or an user who has create user group
         permission
 
-        :param group_name: name of new user group
-        :type group_name: str
-        :param description: group description
-        :type description: str
-        :param owner: owner of group. If not passed apiuser is the owner
-        :type owner: Optional(str or int)
-        :param active: group is active
-        :type active: Optional(bool)
-
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
-                      "msg": "created new user group `<groupname>`",
-                      "user_group": <user_group_object>
-                    }
-            error:  null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "user group `<group name>` already exist"
-            or
-            "failed to create group `<group name>`"
-          }
-
+            result : {
+                      "msg" : "created new user group `<groupname>`",
+                      "user_group" : <user_group_object>
+                     }
+            error : null
         """
-
         if UserGroupModel().get_by_name(group_name):
             raise JSONRPCError("user group `%s` already exist" % (group_name,))
 
@@ -748,34 +578,14 @@ class ApiController(JSONRPCController):
         Updates given usergroup.  This command can be executed only using api_key
         belonging to user with admin rights or an admin of given user group
 
-        :param usergroupid: id of user group to update
-        :type usergroupid: str or int
-        :param group_name: name of new user group
-        :type group_name: str
-        :param description: group description
-        :type description: str
-        :param owner: owner of group.
-        :type owner: Optional(str or int)
-        :param active: group is active
-        :type active: Optional(bool)
-
         OUTPUT::
 
           id : <id_given_in_input>
           result : {
-            "msg": 'updated user group ID:<user group id> <user group name>',
-            "user_group": <user_group_object>
+            "msg" : 'updated user group ID:<user group id> <user group name>',
+            "user_group" : <user_group_object>
           }
-          error :  null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to update user group `<user group name>`"
-          }
-
+          error : null
         """
         user_group = get_user_group_or_error(usergroupid)
         if not HasPermissionAny('hg.admin')():
@@ -809,27 +619,13 @@ class ApiController(JSONRPCController):
         This command can be executed only using api_key
         belonging to user with admin rights or an admin of given user group
 
-        :param usergroupid:
-        :type usergroupid: int
-
         OUTPUT::
 
           id : <id_given_in_input>
           result : {
-            "msg": "deleted user group ID:<user_group_id> <user_group_name>"
+            "msg" : "deleted user group ID:<user_group_id> <user_group_name>"
           }
-          error :  null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to delete user group ID:<user_group_id> <user_group_name>"
-            or
-            "RepoGroup assigned to <repo_groups_list>"
-          }
-
+          error : null
         """
         user_group = get_user_group_or_error(usergroupid)
         if not HasPermissionAny('hg.admin')():
@@ -859,32 +655,17 @@ class ApiController(JSONRPCController):
         """
         Adds a user to a user group. If user exists in that group success will be
         `false`. This command can be executed only using api_key
-        belonging to user with admin rights  or an admin of given user group
-
-        :param usergroupid:
-        :type usergroupid: int
-        :param userid:
-        :type userid: int
+        belonging to user with admin rights or an admin of a given user group
 
         OUTPUT::
 
-          id : <id_given_in_input>
-          result : {
-              "success": True|False # depends on if member is in group
-              "msg": "added member `<username>` to user group `<groupname>` |
-                      User is already in that group"
-
-          }
-          error :  null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to add member to user group `<user_group_name>`"
-          }
-
+            id : <id_given_in_input>
+            result : {
+                "success" : True|False # depends on if member is in group
+                "msg" : "added member `<username>` to a user group `<groupname>` |
+                         User is already in that group"
+            }
+            error : null
         """
         user = get_user_or_error(userid)
         user_group = get_user_group_or_error(usergroupid)
@@ -920,20 +701,15 @@ class ApiController(JSONRPCController):
         be `false`. This command can be executed only
         using api_key belonging to user with admin rights or an admin of given user group
 
-        :param usergroupid:
-        :param userid:
-
-
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
-                      "success":  True|False,  # depends on if member is in group
-                      "msg": "removed member <username> from user group <groupname> |
-                              User wasn't in group"
-                    }
-            error:  null
-
+            result : {
+                      "success" : True|False,  # depends on if member is in group
+                      "msg" : "removed member <username> from user group <groupname> |
+                               User wasn't in group"
+                     }
+            error : null
         """
         user = get_user_or_error(userid)
         user_group = get_user_group_or_error(usergroupid)
@@ -967,66 +743,60 @@ class ApiController(JSONRPCController):
         executed only using api_key belonging to user with admin
         rights or regular user that have at least read access to repository.
 
-        :param repoid: repository name or repository id
-        :type repoid: str or int
-
         OUTPUT::
 
-          id : <id_given_in_input>
-          result : {
-            {
-                "repo_id" :          "<repo_id>",
-                "repo_name" :        "<reponame>"
-                "repo_type" :        "<repo_type>",
-                "clone_uri" :        "<clone_uri>",
-                "enable_downloads":  "<bool>",
-                "enable_statistics": "<bool>",
-                "private":           "<bool>",
-                "created_on" :       "<date_time_created>",
-                "description" :      "<description>",
-                "landing_rev":       "<landing_rev>",
-                "last_changeset":    {
-                                       "author":   "<full_author>",
-                                       "date":     "<date_time_of_commit>",
-                                       "message":  "<commit_message>",
-                                       "raw_id":   "<raw_id>",
-                                       "revision": "<numeric_revision>",
-                                       "short_id": "<short_id>"
-                                     }
-                "owner":             "<repo_owner>",
-                "fork_of":           "<name_of_fork_parent>",
-                "members" :     [
-                                  {
-                                    "name":     "<username>",
-                                    "type" :    "user",
-                                    "permission" : "repository.(read|write|admin)"
-                                  },
-                                  …
-                                  {
-                                    "name":     "<usergroup name>",
-                                    "type" :    "user_group",
-                                    "permission" : "usergroup.(read|write|admin)"
-                                  },
-                                  …
-                                ]
-                 "followers":   [<user_obj>, ...],
-                 <if with_revision_names == True>
-                 "tags": {
-                            "<tagname>": "<raw_id>",
-                            ...
-                         },
-                 "branches": {
-                            "<branchname>": "<raw_id>",
-                            ...
-                         },
-                 "bookmarks": {
-                            "<bookmarkname>": "<raw_id>",
-                            ...
-                         },
-            }
-          }
-          error :  null
-
+            id : <id_given_in_input>
+            result : {
+                        "repo_id" :          "<repo_id>",
+                        "repo_name" :        "<reponame>",
+                        "repo_type" :        "<repo_type>",
+                        "clone_uri" :        "<clone_uri>",
+                        "enable_downloads" : "<bool>",
+                        "enable_statistics": "<bool>",
+                        "private" :          "<bool>",
+                        "created_on" :       "<date_time_created>",
+                        "description" :      "<description>",
+                        "landing_rev" :      "<landing_rev>",
+                        "last_changeset" :   {
+                                                 "author" :  "<full_author>",
+                                                 "date" :    "<date_time_of_commit>",
+                                                 "message" : "<commit_message>",
+                                                 "raw_id" :  "<raw_id>",
+                                                 "revision": "<numeric_revision>",
+                                                 "short_id": "<short_id>"
+                                             },
+                        "owner" :            "<repo_owner>",
+                        "fork_of" :          "<name_of_fork_parent>",
+                        "members" :     [
+                                            {
+                                                "name" :    "<username>",
+                                                "type" :    "user",
+                                                "permission" : "repository.(read|write|admin)"
+                                            },
+                                            …
+                                            {
+                                                "name" :    "<usergroup name>",
+                                                "type" :    "user_group",
+                                                "permission" : "usergroup.(read|write|admin)"
+                                            },
+                                            …
+                                        ],
+                        "followers" :  [<user_obj>, ...],
+                        <if with_revision_names == True>
+                        "tags" : {
+                                    "<tagname>" : "<raw_id>",
+                                    ...
+                                },
+                        "branches" : {
+                                    "<branchname>" : "<raw_id>",
+                                    ...
+                                },
+                        "bookmarks" : {
+                                    "<bookmarkname>" : "<raw_id>",
+                                    ...
+                                }
+                     }
+            error : null
         """
         repo = get_repo_or_error(repoid)
 
@@ -1073,28 +843,27 @@ class ApiController(JSONRPCController):
         api_key belonging to user with admin rights or regular user that have
         admin, write or read access to repository.
 
-
         OUTPUT::
 
             id : <id_given_in_input>
-            result: [
+            result : [
                       {
                         "repo_id" :          "<repo_id>",
-                        "repo_name" :        "<reponame>"
+                        "repo_name" :        "<reponame>",
                         "repo_type" :        "<repo_type>",
                         "clone_uri" :        "<clone_uri>",
-                        "private": :         "<bool>",
+                        "private" :          "<bool>",
                         "created_on" :       "<datetimecreated>",
                         "description" :      "<description>",
-                        "landing_rev":       "<landing_rev>",
-                        "owner":             "<repo_owner>",
-                        "fork_of":           "<name_of_fork_parent>",
-                        "enable_downloads":  "<bool>",
-                        "enable_statistics": "<bool>",
+                        "landing_rev" :      "<landing_rev>",
+                        "owner" :            "<repo_owner>",
+                        "fork_of" :          "<name_of_fork_parent>",
+                        "enable_downloads" : "<bool>",
+                        "enable_statistics": "<bool>"
                       },
                       …
-                    ]
-            error:  null
+                     ]
+            error : null
         """
         if not HasPermissionAny('hg.admin')():
             repos = request.authuser.get_all_user_repos()
@@ -1115,27 +884,17 @@ class ApiController(JSONRPCController):
         `dirs`.  This command can be executed only using api_key belonging to
         user with admin rights or regular user that have at least read access to repository.
 
-        :param repoid: repository name or repository id
-        :type repoid: str or int
-        :param revision: revision for which listing should be done
-        :type revision: str
-        :param root_path: path from which start displaying
-        :type root_path: str
-        :param ret_type: return type 'all|files|dirs' nodes
-        :type ret_type: Optional(str)
-
-
         OUTPUT::
 
             id : <id_given_in_input>
-            result: [
+            result : [
                       {
-                        "name" :        "<name>"
-                        "type" :        "<type>",
+                        "name" :        "<name>",
+                        "type" :        "<type>"
                       },
                       …
-                    ]
-            error:  null
+                     ]
+            error : null
         """
         repo = get_repo_or_error(repoid)
 
@@ -1178,46 +937,14 @@ class ApiController(JSONRPCController):
         belonging to user with admin rights or regular user that have create
         repository permission. Regular users cannot specify owner parameter
 
-        :param repo_name: repository name
-        :type repo_name: str
-        :param owner: user_id or username
-        :type owner: Optional(str)
-        :param repo_type: 'hg' or 'git'
-        :type repo_type: Optional(str)
-        :param description: repository description
-        :type description: Optional(str)
-        :param private:
-        :type private: bool
-        :param clone_uri:
-        :type clone_uri: str
-        :param landing_rev: <rev_type>:<rev>
-        :type landing_rev: str
-        :param enable_downloads:
-        :type enable_downloads: bool
-        :param enable_statistics:
-        :type enable_statistics: bool
-        :param copy_permissions: Copy permission from group that repository is
-            being created.
-        :type copy_permissions: bool
-
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
-                      "msg": "Created new repository `<reponame>`",
-                      "success": true,
-                      "task": "<celery task id or None if done sync>"
-                    }
-            error:  null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-             'failed to create repository `<repo_name>`
-          }
-
+            result : {
+                      "msg" : "Created new repository `<reponame>`",
+                      "success" : true
+                     }
+            error : null
         """
         group_name = None
         repo_name_parts = repo_name.split('/')
@@ -1266,8 +993,8 @@ class ApiController(JSONRPCController):
                 clone_uri=clone_uri,
                 repo_group=group_name,
                 repo_landing_rev=landing_rev,
-                enable_statistics=enable_statistics,
-                enable_downloads=enable_downloads,
+                repo_enable_statistics=enable_statistics,
+                repo_enable_downloads=enable_downloads,
                 repo_copy_permissions=copy_permissions,
             )
 
@@ -1291,21 +1018,8 @@ class ApiController(JSONRPCController):
                     clone_uri=None, landing_rev=None,
                     enable_statistics=None,
                     enable_downloads=None):
-
         """
         Updates repo
-
-        :param repoid: repository name or repository id
-        :type repoid: str or int
-        :param name:
-        :param owner:
-        :param group:
-        :param description:
-        :param private:
-        :param clone_uri:
-        :param landing_rev:
-        :param enable_statistics:
-        :param enable_downloads:
         """
         repo = get_repo_or_error(repoid)
         if not HasPermissionAny('hg.admin')():
@@ -1365,39 +1079,29 @@ class ApiController(JSONRPCController):
         user with admin rights or regular user that have fork permission, and at least
         read access to forking repository. Regular users cannot specify owner parameter.
 
-        :param repoid: repository name or repository id
-        :type repoid: str or int
-        :param fork_name:
-        :param owner:
-        :param description:
-        :param copy_permissions:
-        :param private:
-        :param landing_rev:
-
         INPUT::
 
             id : <id_for_response>
             api_key : "<api_key>"
-            args:     {
+            method :  "fork_repo"
+            args :    {
                         "repoid" :          "<reponame or repo_id>",
-                        "fork_name":        "<forkname>",
-                        "owner":            "<username or user_id = Optional(=apiuser)>",
-                        "description":      "<description>",
+                        "fork_name" :       "<forkname>",
+                        "owner" :           "<username or user_id = Optional(=apiuser)>",
+                        "description" :     "<description>",
                         "copy_permissions": "<bool>",
-                        "private":          "<bool>",
-                        "landing_rev":      "<landing_rev>"
+                        "private" :         "<bool>",
+                        "landing_rev" :     "<landing_rev>"
                       }
 
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
-                      "msg": "Created fork of `<reponame>` as `<forkname>`",
-                      "success": true,
-                      "task": "<celery task id or None if done sync>"
-                    }
-            error:  null
-
+            result : {
+                      "msg" : "Created fork of `<reponame>` as `<forkname>`",
+                      "success" : true
+                     }
+            error : null
         """
         repo = get_repo_or_error(repoid)
         repo_name = repo.repo_name
@@ -1472,20 +1176,14 @@ class ApiController(JSONRPCController):
         When `forks` param is set it's possible to detach or delete forks of deleting
         repository
 
-        :param repoid: repository name or repository id
-        :type repoid: str or int
-        :param forks: `detach` or `delete`, what do do with attached forks for repo
-        :type forks: Optional(str)
-
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
-                      "msg": "Deleted repository `<reponame>`",
-                      "success": true
-                    }
-            error:  null
-
+            result : {
+                      "msg" : "Deleted repository `<reponame>`",
+                      "success" : true
+                     }
+            error : null
         """
         repo = get_repo_or_error(repoid)
 
@@ -1526,20 +1224,14 @@ class ApiController(JSONRPCController):
         if found. This command can be executed only using api_key belonging to user
         with admin rights.
 
-        :param repoid: repository name or repository id
-        :type repoid: str or int
-        :param userid:
-        :param perm: (repository.(none|read|write|admin))
-        :type perm: str
-
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
+            result : {
                       "msg" : "Granted perm: `<perm>` for user: `<username>` in repo: `<reponame>`",
-                      "success": true
-                    }
-            error:  null
+                      "success" : true
+                     }
+            error : null
         """
         repo = get_repo_or_error(repoid)
         user = get_user_or_error(userid)
@@ -1570,21 +1262,15 @@ class ApiController(JSONRPCController):
         Revoke permission for user on given repository. This command can be executed
         only using api_key belonging to user with admin rights.
 
-        :param repoid: repository name or repository id
-        :type repoid: str or int
-        :param userid:
-
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
+            result : {
                       "msg" : "Revoked perm for user: `<username>` in repo: `<reponame>`",
-                      "success": true
-                    }
-            error:  null
-
+                      "success" : true
+                     }
+            error : null
         """
-
         repo = get_repo_or_error(repoid)
         user = get_user_or_error(userid)
         try:
@@ -1611,31 +1297,14 @@ class ApiController(JSONRPCController):
         existing one if found. This command can be executed only using
         api_key belonging to user with admin rights.
 
-        :param repoid: repository name or repository id
-        :type repoid: str or int
-        :param usergroupid: id of usergroup
-        :type usergroupid: str or int
-        :param perm: (repository.(none|read|write|admin))
-        :type perm: str
-
         OUTPUT::
 
-          id : <id_given_in_input>
-          result : {
-            "msg" : "Granted perm: `<perm>` for group: `<usersgroupname>` in repo: `<reponame>`",
-            "success": true
-
-          }
-          error :  null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to edit permission for user group: `<usergroup>` in repo `<repo>`'
-          }
-
+            id : <id_given_in_input>
+            result : {
+                "msg" : "Granted perm: `<perm>` for group: `<usersgroupname>` in repo: `<reponame>`",
+                "success" : true
+            }
+            error : null
         """
         repo = get_repo_or_error(repoid)
         perm = get_perm_or_error(perm)
@@ -1675,18 +1344,14 @@ class ApiController(JSONRPCController):
         Revoke permission for user group on given repository. This command can be
         executed only using api_key belonging to user with admin rights.
 
-        :param repoid: repository name or repository id
-        :type repoid: str or int
-        :param usergroupid:
-
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
+            result : {
                       "msg" : "Revoked perm for group: `<usersgroupname>` in repo: `<reponame>`",
-                      "success": true
-                    }
-            error:  null
+                      "success" : true
+                     }
+            error : null
         """
         repo = get_repo_or_error(repoid)
         user_group = get_user_group_or_error(usergroupid)
@@ -1722,9 +1387,6 @@ class ApiController(JSONRPCController):
         """
         Returns given repo group together with permissions, and repositories
         inside the group
-
-        :param repogroupid: id/name of repository group
-        :type repogroupid: str or int
         """
         repo_group = get_repo_group_or_error(repogroupid)
 
@@ -1757,7 +1419,6 @@ class ApiController(JSONRPCController):
     def get_repo_groups(self):
         """
         Returns all repository groups
-
         """
         return [
             repo_group.get_api_data()
@@ -1773,34 +1434,14 @@ class ApiController(JSONRPCController):
         Creates a repository group. This command can be executed only using
         api_key belonging to user with admin rights.
 
-        :param group_name:
-        :type group_name:
-        :param description:
-        :type description:
-        :param owner:
-        :type owner:
-        :param parent:
-        :type parent:
-        :param copy_permissions:
-        :type copy_permissions:
-
         OUTPUT::
 
           id : <id_given_in_input>
           result : {
-              "msg": "created new repo group `<repo_group_name>`"
-              "repo_group": <repogroup_object>
+              "msg" : "created new repo group `<repo_group_name>`",
+              "repo_group" : <repogroup_object>
           }
-          error :  null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            failed to create repo group `<repogroupid>`
-          }
-
+          error : null
         """
         if db.RepoGroup.get_by_group_name(group_name):
             raise JSONRPCError("repo group `%s` already exist" % (group_name,))
@@ -1835,14 +1476,18 @@ class ApiController(JSONRPCController):
                           description=None,
                           owner=None,
                           parent=None):
+        """
+        TODO
+        """
         repo_group = get_repo_group_or_error(repogroupid)
+        parent_repo_group_id = None if parent is None else get_repo_group_or_error(parent).group_id
 
         updates = {}
         try:
             store_update(updates, group_name, 'group_name')
             store_update(updates, description, 'group_description')
             store_update(updates, owner, 'owner')
-            store_update(updates, parent, 'parent_group')
+            store_update(updates, parent_repo_group_id, 'parent_group_id')
             repo_group = RepoGroupModel().update(repo_group, updates)
             meta.Session().commit()
             return dict(
@@ -1858,27 +1503,14 @@ class ApiController(JSONRPCController):
     @HasPermissionAnyDecorator('hg.admin')
     def delete_repo_group(self, repogroupid):
         """
-
-        :param repogroupid: name or id of repository group
-        :type repogroupid: str or int
-
         OUTPUT::
 
           id : <id_given_in_input>
           result : {
-            'msg': 'deleted repo group ID:<repogroupid> <repogroupname>
-            'repo_group': null
+            'msg' : 'deleted repo group ID:<repogroupid> <repogroupname>
+            'repo_group' : null
           }
-          error :  null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to delete repo group ID:<repogroupid> <repogroupname>"
-          }
-
+          error : null
         """
         repo_group = get_repo_group_or_error(repogroupid)
 
@@ -1905,33 +1537,15 @@ class ApiController(JSONRPCController):
         to user with admin rights, or user who has admin right to given repository
         group.
 
-        :param repogroupid: name or id of repository group
-        :type repogroupid: str or int
-        :param userid:
-        :param perm: (group.(none|read|write|admin))
-        :type perm: str
-        :param apply_to_children: 'none', 'repos', 'groups', 'all'
-        :type apply_to_children: str
-
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
+            result : {
                       "msg" : "Granted perm: `<perm>` (recursive:<apply_to_children>) for user: `<username>` in repo group: `<repo_group_name>`",
-                      "success": true
-                    }
-            error:  null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to edit permission for user: `<userid>` in repo group: `<repo_group_name>`"
-          }
-
+                      "success" : true
+                     }
+            error : null
         """
-
         repo_group = get_repo_group_or_error(repogroupid)
 
         if not HasPermissionAny('hg.admin')():
@@ -1968,32 +1582,15 @@ class ApiController(JSONRPCController):
         be executed only using api_key belonging to user with admin rights, or
         user who has admin right to given repository group.
 
-        :param repogroupid: name or id of repository group
-        :type repogroupid: str or int
-        :param userid:
-        :type userid:
-        :param apply_to_children: 'none', 'repos', 'groups', 'all'
-        :type apply_to_children: str
-
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
+            result : {
                       "msg" : "Revoked perm (recursive:<apply_to_children>) for user: `<username>` in repo group: `<repo_group_name>`",
-                      "success": true
-                    }
-            error:  null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to edit permission for user: `<userid>` in repo group: `<repo_group_name>`"
-          }
-
+                      "success" : true
+                     }
+            error : null
         """
-
         repo_group = get_repo_group_or_error(repogroupid)
 
         if not HasPermissionAny('hg.admin')():
@@ -2031,33 +1628,14 @@ class ApiController(JSONRPCController):
         api_key belonging to user with admin rights, or user who has admin
         right to given repository group.
 
-        :param repogroupid: name or id of repository group
-        :type repogroupid: str or int
-        :param usergroupid: id of usergroup
-        :type usergroupid: str or int
-        :param perm: (group.(none|read|write|admin))
-        :type perm: str
-        :param apply_to_children: 'none', 'repos', 'groups', 'all'
-        :type apply_to_children: str
-
         OUTPUT::
 
           id : <id_given_in_input>
           result : {
             "msg" : "Granted perm: `<perm>` (recursive:<apply_to_children>) for user group: `<usersgroupname>` in repo group: `<repo_group_name>`",
-            "success": true
-
+            "success" : true
           }
-          error :  null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to edit permission for user group: `<usergroup>` in repo group: `<repo_group_name>`"
-          }
-
+          error : null
         """
         repo_group = get_repo_group_or_error(repogroupid)
         perm = get_perm_or_error(perm, prefix='group.')
@@ -2103,30 +1681,14 @@ class ApiController(JSONRPCController):
         executed only using api_key belonging to user with admin rights, or
         user who has admin right to given repository group.
 
-        :param repogroupid: name or id of repository group
-        :type repogroupid: str or int
-        :param usergroupid:
-        :param apply_to_children: 'none', 'repos', 'groups', 'all'
-        :type apply_to_children: str
-
         OUTPUT::
 
             id : <id_given_in_input>
-            result: {
+            result : {
                       "msg" : "Revoked perm (recursive:<apply_to_children>) for user group: `<usersgroupname>` in repo group: `<repo_group_name>`",
-                      "success": true
-                    }
-            error:  null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to edit permission for user group: `<usergroup>` in repo group: `<repo_group_name>`"
-          }
-
-
+                      "success" : true
+                     }
+            error : null
         """
         repo_group = get_repo_group_or_error(repogroupid)
         user_group = get_user_group_or_error(usergroupid)
@@ -2162,9 +1724,6 @@ class ApiController(JSONRPCController):
     def get_gist(self, gistid):
         """
         Get given gist by id
-
-        :param gistid: id of private or public gist
-        :type gistid: str
         """
         gist = get_gist_or_error(gistid)
         if not HasPermissionAny('hg.admin')():
@@ -2176,9 +1735,6 @@ class ApiController(JSONRPCController):
         """
         Get all gists for given user. If userid is empty returned gists
         are for user who called the api
-
-        :param userid: user to get gists for
-        :type userid: Optional(str or int)
         """
         if not HasPermissionAny('hg.admin')():
             # make sure normal user does not pass someone else userid,
@@ -2204,40 +1760,17 @@ class ApiController(JSONRPCController):
     def create_gist(self, files, owner=None,
                     gist_type=db.Gist.GIST_PUBLIC, lifetime=-1,
                     description=''):
-
         """
         Creates new Gist
-
-        :param files: files to be added to gist
-            {'filename': {'content':'...', 'lexer': null},
-             'filename2': {'content':'...', 'lexer': null}}
-        :type files: dict
-        :param owner: gist owner, defaults to api method caller
-        :type owner: Optional(str or int)
-        :param gist_type: type of gist 'public' or 'private'
-        :type gist_type: Optional(str)
-        :param lifetime: time in minutes of gist lifetime
-        :type lifetime: Optional(int)
-        :param description: gist description
-        :type description: Optional(str)
 
         OUTPUT::
 
           id : <id_given_in_input>
           result : {
-            "msg": "created new gist",
-            "gist": {}
+            "msg" : "created new gist",
+            "gist" : <gist_object>
           }
-          error :  null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to create gist"
-          }
-
+          error : null
         """
         try:
             if owner is None:
@@ -2265,26 +1798,14 @@ class ApiController(JSONRPCController):
         """
         Deletes existing gist
 
-        :param gistid: id of gist to delete
-        :type gistid: str
-
         OUTPUT::
 
           id : <id_given_in_input>
           result : {
-            "deleted gist ID: <gist_id>",
-            "gist": null
+            "msg" : "deleted gist ID: <gist_id>",
+            "gist" : null
           }
-          error :  null
-
-        ERROR OUTPUT::
-
-          id : <id_given_in_input>
-          result : null
-          error :  {
-            "failed to delete gist ID:<gist_id>"
-          }
-
+          error : null
         """
         gist = get_gist_or_error(gistid)
         if not HasPermissionAny('hg.admin')():
@@ -2306,6 +1827,9 @@ class ApiController(JSONRPCController):
     # permission check inside
     def get_changesets(self, repoid, start=None, end=None, start_date=None,
                        end_date=None, branch_name=None, reverse=False, with_file_list=False, max_revisions=None):
+        """
+        TODO
+        """
         repo = get_repo_or_error(repoid)
         if not HasRepoPermissionLevel('read')(repo.repo_name):
             raise JSONRPCError('Access denied to repo %s' % repo.repo_name)
@@ -2323,7 +1847,10 @@ class ApiController(JSONRPCController):
             raise JSONRPCError('Repository is empty')
 
     # permission check inside
-    def get_changeset(self, repoid, raw_id, with_reviews=False):
+    def get_changeset(self, repoid, raw_id, with_reviews=False, with_comments=False, with_inline_comments=False):
+        """
+        TODO
+        """
         repo = get_repo_or_error(repoid)
         if not HasRepoPermissionLevel('read')(repo.repo_name):
             raise JSONRPCError('Access denied to repo %s' % repo.repo_name)
@@ -2335,8 +1862,18 @@ class ApiController(JSONRPCController):
 
         if with_reviews:
             reviews = ChangesetStatusModel().get_statuses(
-                                repo.repo_name, raw_id)
+                                repo.repo_name, changeset.raw_id)
             info["reviews"] = reviews
+
+        if with_comments:
+            comments = ChangesetCommentsModel().get_comments(
+                                repo.repo_id, changeset.raw_id)
+            info["comments"] = comments
+
+        if with_inline_comments:
+            inline_comments = ChangesetCommentsModel().get_inline_comments(
+                                repo.repo_id, changeset.raw_id)
+            info["inline_comments"] = inline_comments
 
         return info
 

@@ -215,8 +215,8 @@ msgstr "Repository paginagrootte"
 msgid "Open New Pull Request from {0}"
 msgstr "Open nieuwe pull request vanaf {0}"
 
-msgid "Show Selected Changesets {0} &rarr; {1}"
-msgstr "Toon geselecteerde changesets {0} &rarr; {1}"
+msgid "Show Selected Changesets {0}"
+msgstr "Toon geselecteerde changesets {0}"
 
 msgid "Select changeset"
 msgstr "Selecteer een changeset"

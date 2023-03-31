@@ -173,6 +173,7 @@ def RepoGroupForm(edit=False, old_data=None, repo_groups=None,
         group_copy_permissions = v.StringBoolean(if_missing=False)
 
         if edit:
+            owner = All(v.UnicodeString(not_empty=True), v.ValidRepoUser())
             # FIXME: do a special check that we cannot move a group to one of
             # its children
             pass

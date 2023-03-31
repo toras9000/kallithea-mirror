@@ -13,6 +13,9 @@ msgstr ""
 msgid "There are no changesets yet"
 msgstr "Aún no hay cambios"
 
+msgid "SSH access is disabled."
+msgstr "El acceso mediante SSH está desactivado."
+
 msgid "None"
 msgstr "Ninguno"
 
@@ -76,6 +79,9 @@ msgstr "%s%s canal"
 
 msgid "Click here to add new file"
 msgstr "Haga clic aquí para añadir un archivo nuevo"
+
+msgid "There are no files yet."
+msgstr "Aún no hay archivos."
 
 msgid "%s at %s"
 msgstr "%s en %s"
@@ -210,6 +216,9 @@ msgstr "Petición pull actualizada"
 
 msgid "Successfully deleted pull request"
 msgstr "Petición pull eliminada correctamente"
+
+msgid "Revision %s not found in %s"
+msgstr "No se ha encontrado la revisión %s en %s"
 
 msgid "This pull request has already been merged to %s."
 msgstr "La petición pull ya ha sido incluida a %s."

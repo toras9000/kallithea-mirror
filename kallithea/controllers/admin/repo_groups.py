@@ -76,6 +76,7 @@ class RepoGroupsController(base.BaseController):
         repo_group = db.RepoGroup.get_or_404(group_id)
         data = repo_group.get_dict()
         data['group_name'] = repo_group.name
+        data['owner'] = repo_group.owner.username
 
         # fill repository group users
         for p in repo_group.repo_group_to_perm:
@@ -146,7 +147,7 @@ class RepoGroupsController(base.BaseController):
                 group_name=form_result['group_name'],
                 group_description=form_result['group_description'],
                 parent=form_result['parent_group_id'],
-                owner=request.authuser.user_id, # TODO: make editable
+                owner=request.authuser.user_id,
                 copy_permissions=form_result['group_copy_permissions']
             )
             meta.Session().commit()

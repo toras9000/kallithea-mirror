@@ -1,17 +1,22 @@
-## -*- coding: utf-8 -*-
-
 ${h.form(url('repos'))}
-<div class="form">
+    <div class="form">
         <div class="form-group">
             <label class="control-label" for="repo_name">${_('Name')}:</label>
             <div>
                 ${h.text('repo_name',class_='form-control')}
             </div>
         </div>
-        <div id="remote_clone" class="form-group">
+        <div class="form-group">
+            <label class="control-label" for="repo_type">${_('Type')}:</label>
+            <div>
+                ${h.select('repo_type','hg',c.backends,class_='form-control')}
+                <span class="help-block">${_('Type of repository to create.')}</span>
+            </div>
+        </div>
+        <div class="form-group">
             <label class="control-label" for="clone_uri">${_('Clone remote repository')}:</label>
             <div>
-                ${h.text('clone_uri',class_='form-control')}
+                ${h.text('clone_uri',class_='form-control', placeholder=_('Repository URL'))}
                 <span class="help-block">
                     ${_('Optional: URL of a remote repository. If set, the repository will be created as a clone from this URL.')}
                 </span>
@@ -39,16 +44,9 @@ ${h.form(url('repos'))}
             </div>
         </div>
         <div class="form-group">
-            <label class="control-label" for="repo_type">${_('Type')}:</label>
-            <div>
-                ${h.select('repo_type','hg',c.backends,class_='form-control')}
-                <span class="help-block">${_('Type of repository to create.')}</span>
-            </div>
-        </div>
-        <div class="form-group">
             <label class="control-label" for="repo_landing_rev">${_('Landing revision')}:</label>
             <div>
-                ${h.select('repo_landing_rev','',c.landing_revs,class_='form-control')}
+                ${h.select('repo_landing_rev',None,c.landing_revs,class_='form-control')}
                 <span class="help-block">${_('Default revision for files page, downloads, full text search index and readme generation')}</span>
             </div>
         </div>
@@ -60,14 +58,37 @@ ${h.form(url('repos'))}
             </div>
         </div>
         <div class="form-group">
+            <label class="control-label" for="repo_enable_statistics">${_('Enable statistics')}:</label>
+            <div>
+                ${h.checkbox('repo_enable_statistics',value="True")}
+                <span class="help-block">${_('Enable statistics window on summary page.')}</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label" for="repo_enable_downloads">${_('Enable downloads')}:</label>
+            <div>
+                ${h.checkbox('repo_enable_downloads',value="True")}
+                <span class="help-block">${_('Enable download menu on summary page.')}</span>
+            </div>
+        </div>
+        <div class="form-group">
             <div class="buttons">
                 ${h.submit('add',_('Add'),class_="btn btn-default")}
             </div>
         </div>
-</div>
+    </div>
+${h.end_form()}
+
 <script>
     'use strict';
     $(document).ready(function(){
+        $('#repo_type').select2({
+            'minimumResultsForSearch': -1
+        });
+        $('#repo_group').select2({
+            'dropdownAutoWidth': true
+        });
+
         function setCopyPermsOption(group_val){
             if(group_val != "-1"){
                 $('#copy_perms').show();
@@ -77,22 +98,14 @@ ${h.form(url('repos'))}
             }
         }
 
-        $("#repo_group").select2({
-            'dropdownAutoWidth': true
-        });
-
         setCopyPermsOption($('#repo_group').val());
-        $("#repo_group").on("change", function(e) {
+        $('#repo_group').on("change", function(e) {
             setCopyPermsOption(e.val);
         });
 
-        $("#repo_type").select2({
-            'minimumResultsForSearch': -1
-        });
-        $("#repo_landing_rev").select2({
+        $('#repo_landing_rev').select2({
             'minimumResultsForSearch': -1
         });
         $('#repo_name').focus();
     });
 </script>
-${h.end_form()}

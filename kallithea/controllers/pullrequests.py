@@ -35,6 +35,7 @@ from tg import tmpl_context as c
 from tg.i18n import ugettext as _
 from webob.exc import HTTPBadRequest, HTTPForbidden, HTTPFound, HTTPNotFound
 
+import kallithea
 import kallithea.lib.helpers as h
 from kallithea.controllers import base
 from kallithea.controllers.changeset import create_cs_pr_comment, delete_cs_pr_comment
@@ -494,6 +495,8 @@ class PullrequestsController(base.BaseRepoController):
         except IndexError: # probably because c.cs_ranges is empty, probably because revisions are missing
             pass
 
+        rev_limit = safe_int(kallithea.CONFIG.get('next_iteration_rev_limit'), 0)
+
         avail_revs = set()
         avail_show = []
         c.cs_branch_name = c.cs_ref_name
@@ -562,6 +565,14 @@ class PullrequestsController(base.BaseRepoController):
                 c.update_msg = _("Git pull requests don't support iterating yet.")
         except ChangesetDoesNotExistError:
             c.update_msg = _('Error: some changesets not found when displaying pull request from %s.') % c.cs_rev
+
+        if rev_limit:
+            if len(avail_revs) - 1 > rev_limit:
+                c.update_msg = _('%d additional changesets are not shown.') % (len(avail_revs) - 1)
+                avail_show = []
+            elif len(avail_show) - 1 > rev_limit:
+                c.update_msg = _('%d changesets available for merging are not shown.') % (len(avail_show) - len(avail_revs))
+                avail_show = sorted(avail_revs, reverse=True)
 
         c.avail_revs = avail_revs
         c.avail_cs = [org_scm_instance.get_changeset(r) for r in avail_show]

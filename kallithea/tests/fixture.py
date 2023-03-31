@@ -95,6 +95,8 @@ class Fixture(object):
             repo_group='-1',
             repo_description='DESC',
             repo_private=False,
+            repo_enable_statistics=False,
+            repo_enable_downloads=False,
             repo_landing_rev='rev:tip',
             repo_copy_permissions=False,
             repo_state=db.Repository.STATE_CREATED,
@@ -326,6 +328,11 @@ class Fixture(object):
         csm = ChangesetStatusModel().set_status(repo, db.ChangesetStatus.STATUS_APPROVED, author, comment, revision=revision)
         meta.Session().commit()
         return csm
+
+    def add_changeset_comment(self, repo, revision, text, author=TEST_USER_ADMIN_LOGIN, f_path=None, line_no=None):
+        comment = ChangesetCommentsModel().create(text, repo, author, revision=revision, f_path=f_path, line_no=line_no, send_email=False)
+        meta.Session().commit()
+        return comment
 
     def create_pullrequest(self, testcontroller, repo_name, pr_src_rev, pr_dst_rev, title='title'):
         org_ref = 'branch:stable:%s' % pr_src_rev

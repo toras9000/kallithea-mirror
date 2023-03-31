@@ -896,6 +896,9 @@ msgstr "Legg til ny"
 msgid "Both"
 msgstr "Begge"
 
+msgid "Type name of user"
+msgstr "Skriv inn brukerens navn"
+
 msgid "Remove this group"
 msgstr "Fjern denne gruppen"
 
@@ -954,9 +957,6 @@ msgstr "Privat pakkebrønn"
 
 msgid "Fork of repository"
 msgstr "Forgrening av pakkebrønn"
-
-msgid "Type name of user"
-msgstr "Skriv inn brukerens navn"
 
 msgid "Processed commits"
 msgstr "Behandlede innsendelser"

@@ -8,8 +8,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 
 msgid ""
 "CSRF token leak has been detected - all form tokens have been expired"
@@ -1054,6 +1054,9 @@ msgstr ""
 "Встановіть або скасуйте дозвіл для всіх дітей цієї групи, включно з "
 "неприватними репозиторіями та іншими групами, якщо вони вибрані."
 
+msgid "Type name of user"
+msgstr "Введіть ім'я користувача"
+
 msgid "Remove this group"
 msgstr "Видалити цю групу"
 
@@ -1069,14 +1072,17 @@ msgstr "Адміністрування Груп Репозиторіїв"
 msgid "Number of Top-level Repositories"
 msgstr "Кількість репозиторіїв верхнього рівня"
 
+msgid "Type of repository to create."
+msgstr "Тип сховища для створення."
+
 msgid "Clone remote repository"
 msgstr "Клонувати віддалений репозиторій"
 
+msgid "Repository URL"
+msgstr "URL репозиторію"
+
 msgid "Optionally select a group to put this repository into."
 msgstr "За бажанням виберіть групу, в яку буде розміщено цей репозиторій."
-
-msgid "Type of repository to create."
-msgstr "Тип сховища для створення."
 
 msgid "Landing revision"
 msgstr "Цільова редакція"
@@ -1205,18 +1211,12 @@ msgstr "У цьому сховищі немає URL-адреси віддале�
 msgid "Remote repository"
 msgstr "Віддалений репозиторій"
 
-msgid "Repository URL"
-msgstr "URL репозиторію"
-
 msgid ""
 "Optional: URL of a remote repository. If set, the repository can be "
 "pulled from this URL."
 msgstr ""
 "Опціонально: URL-адреса віддаленого сховища. Якщо встановлено, сховище "
 "можна витягнути з цієї URL-адреси."
-
-msgid "Type name of user"
-msgstr "Введіть ім'я користувача"
 
 msgid "Change owner of this repository."
 msgstr "Змінити власника цього сховища."

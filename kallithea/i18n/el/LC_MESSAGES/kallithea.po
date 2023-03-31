@@ -577,6 +577,13 @@ msgstr "Δημιουργήθηκε η εργασία της αποστολής �
 msgid "Hook already exists"
 msgstr "Το άγκιστρο υπάρχει ήδη"
 
+msgid ""
+"Hook names with \".kallithea_\" are reserved for internal use. Please use "
+"another hook name."
+msgstr ""
+"Άγκιστρα με το όνομα \".kallithea_\" είναι δεσμευμένα για εσωτερική "
+"χρήση. Παρακαλώ δώστε άλλο όνομα στο άγκιστρο."
+
 msgid "Added new hook"
 msgstr "Προσθήκη νέου άγκιστρου"
 
@@ -664,6 +671,12 @@ msgstr ""
 
 msgid "No changes detected"
 msgstr "Δεν εντοπίστηκαν αλλαγές"
+
+msgid "Show whitespace changes"
+msgstr "Εμφάνιση αλλαγής κενού"
+
+msgid "Ignore whitespace changes"
+msgstr "Αγνόηση αλλαγής κενού"
 
 msgid "Increase diff context to %(num)s lines"
 msgstr "Αύξηση του diff πλαισίου σε %(num)s γραμμές"
@@ -781,6 +794,54 @@ msgstr "chmod"
 
 msgid "SSH key is missing"
 msgstr "Το κλειδί SSH λείπει"
+
+msgid ""
+"Invalid SSH key - it must have both a key type and a base64 part, like "
+"'ssh-rsa ASRNeaZu4FA...xlJp='"
+msgstr ""
+"Άκυρο κλειδί SSH - πρέπει να έχει έναν τύπο κλειδιού καθώς και ένα τμήμα "
+"base64, όπως \"ssh-rsa ASRNeaZu4FA ... xlJp =\""
+
+msgid ""
+"Invalid SSH key - it must start with key type 'ssh-rsa', 'ssh-dss', 'ssh-"
+"ed448', or 'ssh-ed25519'"
+msgstr ""
+"Άκυρο κλειδί SSH - πρέπει να ξεκινά με τύπο κλειδιού 'ssh-rsa',ssh-"
+"dss','ssh-ed448' ή 'ssh-ed25519'"
+
+msgid "Invalid SSH key - unexpected characters in base64 part %r"
+msgstr "Άκυρο κλειδί SSH - μη αναμενόμενοι χαρακτήρες στο τμήμα base64 %r"
+
+msgid ""
+"Invalid SSH key - base64 part %r seems truncated (it can't be decoded)"
+msgstr ""
+"Άκυρο κλειδί SSH - το base64 μέρος %r φαίνεται κομμένο (δεν μπορεί να "
+"αποκωδικοποιηθεί)"
+
+msgid ""
+"Invalid SSH key - base64 part %r seems truncated (it contains a partial "
+"string length)"
+msgstr ""
+"Άκυρο κλειδί SSH - το base64 μέρος %r φαίνεται κομμένο (περιέχει ένα "
+"μερικό μήκος συμβολοσειράς)"
+
+msgid ""
+"Invalid SSH key - base64 part %r seems truncated (it is too short for "
+"declared string length %s)"
+msgstr ""
+"Άκυρο κλειδί SSH - το τμήμα base64 %r φαίνεται να είναι κομμένο (είναι "
+"πολύ μικρό για το δηλωμένο μήκος συμβολοσειράς %s)"
+
+msgid ""
+"Invalid SSH key - base64 part %r seems truncated (it contains too few "
+"strings for a %s key)"
+msgstr ""
+"Άκυρο κλειδί SSH - το base64 τμήμα %r φαίνεται να είναι περικομμένο "
+"(περιέχει πολύ λίγες συμβολοσειρές για ένα κλειδί %s)"
+
+msgid "Invalid SSH key - it is a %s key but the base64 part contains %r"
+msgstr ""
+"Άκυρο κλειδί SSH - είναι ένα κλειδί %s αλλά το base64 μέρος περιέχει %r"
 
 msgid "%d year"
 msgid_plural "%d years"
@@ -935,8 +996,29 @@ msgstr "Εισαγάγετε %(min)i χαρακτήρες ή περισσότε�
 msgid "Name must not contain only digits"
 msgstr "Το όνομα δεν πρέπει να περιέχει μόνο ψηφία"
 
+msgid ""
+"[Comment] %(repo_name)s changeset %(short_id)s \"%(message_short)s\" on "
+"%(branch)s by %(cs_author_username)s"
+msgstr ""
+"[Σχόλιο] %(repo_name)s changeset %(short_id)s \"%(message_short)s\" στο "
+"%(branch)s από %(cs_author_username)s"
+
 msgid "New user %(new_username)s registered"
 msgstr "Καταχωρήθηκε νέος χρήστης %(new_username)s"
+
+msgid ""
+"[Review] %(repo_name)s PR %(pr_nice_id)s \"%(pr_title_short)s\" from "
+"%(pr_source_branch)s by %(pr_owner_username)s"
+msgstr ""
+"[Κριτική] %(repo_name)s PR %(pr_nice_id)s \"%(pr_title_short)s\" στο "
+"%(pr_source_branch)s από %(pr_owner_username)s"
+
+msgid ""
+"[Comment] %(repo_name)s PR %(pr_nice_id)s \"%(pr_title_short)s\" from "
+"%(pr_source_branch)s by %(pr_owner_username)s"
+msgstr ""
+"[Σχόλιο] %(repo_name)s PR %(pr_nice_id)s \"%(pr_title_short)s\" στο "
+"%(pr_source_branch)s από %(pr_owner_username)s"
 
 msgid "Closing"
 msgstr "Κλείσιμο"
@@ -1102,6 +1184,11 @@ msgstr "Η ομάδα αποθετηρίου με το όνομα \"%(repo)s\" �
 
 msgid "Invalid repository URL"
 msgstr "Μη έγκυρη διεύθυνση URL αποθετηρίου"
+
+msgid "Invalid repository URL. It must be a valid http, https, or ssh URL"
+msgstr ""
+"Μη έγκυρο αποθετήριο URL. Πρέπει να είναι μια έγκυρη http, https ή ssh "
+"διεύθυνση URL"
 
 msgid "Fork has to be the same type as parent"
 msgstr "Ο κλώνος πρέπει να έχει τον ίδιο τύπο με τον γονέα του"
@@ -1823,6 +1910,9 @@ msgstr ""
 "συμπεριλαμβανομένων των μη ιδιωτικών αποθετηρίων και άλλων ομάδων, εάν "
 "επιλεγεί."
 
+msgid "Type name of user"
+msgstr "Πληκτρολογήστε το όνομα του χρήστη"
+
 msgid "Remove this group"
 msgstr "Κατάργηση αυτής της ομάδας"
 
@@ -1838,8 +1928,14 @@ msgstr "Διαχείριση Ομάδων Αποθετηρίου"
 msgid "Number of Top-level Repositories"
 msgstr "Αριθμός αποθετηρίων ανώτατου επιπέδου"
 
+msgid "Type of repository to create."
+msgstr "Τύπος αποθετηρίου προς δημιουργία."
+
 msgid "Clone remote repository"
 msgstr "Κλωνοποίηση απομακρυσμένου αποθετηρίου"
+
+msgid "Repository URL"
+msgstr "URL Αποθετηρίου"
 
 msgid ""
 "Optional: URL of a remote repository. If set, the repository will be "
@@ -1857,9 +1953,6 @@ msgstr ""
 msgid "Optionally select a group to put this repository into."
 msgstr ""
 "Προαιρετικά, επιλέξτε μια ομάδα για να τοποθετήσετε αυτό το αποθετήριο."
-
-msgid "Type of repository to create."
-msgstr "Τύπος αποθετηρίου προς δημιουργία."
 
 msgid "Landing revision"
 msgstr "Αναθεώρηση εκφόρτωσης"
@@ -2008,28 +2101,8 @@ msgstr ""
 msgid "Permanent URL"
 msgstr "Μόνιμη διεύθυνση URL"
 
-msgid ""
-"In case this repository is renamed or moved into another group the "
-"repository URL changes.\n"
-"                               Using the above permanent URL guarantees "
-"that this repository always will be accessible on that URL.\n"
-"                               This is useful for CI systems, or any "
-"other cases that you need to hardcode the URL into a 3rd party service."
-msgstr ""
-"Η διεύθυνση URL του αποθετηρίου αλλάζει όταν αυτό μετονομαστεί ή "
-"μετακινηθεί σε άλλη ομάδα.\n"
-"                               Η χρήση της παραπάνω μόνιμης διεύθυνσης "
-"URL εγγυάται ότι αυτό το αποθετήριο θα είναι πάντα προσβάσιμο σε αυτήν τη "
-"διεύθυνση URL.\n"
-"                               Αυτό είναι χρήσιμο για συστήματα CI ή για "
-"άλλες περιπτώσεις που χρειάζεστε να κωδικοποιήσετε τη διεύθυνση URL σε "
-"κάποια υπηρεσία τρίτου μέρους."
-
 msgid "Remote repository"
 msgstr "Απομακρυσμένο αποθετήριο"
-
-msgid "Repository URL"
-msgstr "URL Αποθετηρίου"
 
 msgid ""
 "Optional: URL of a remote repository. If set, the repository can be "
@@ -2037,13 +2110,6 @@ msgid ""
 msgstr ""
 "Προαιρετικό: Διεύθυνση URL ενός απομακρυσμένου αποθετηρίου. Εάν οριστεί, "
 "το αποθετήριο μπορεί να τραβηχτεί από αυτήν τη διεύθυνση URL."
-
-msgid "Default revision for files page, downloads, whoosh and readme"
-msgstr ""
-"Προεπιλεγμένη αναθεώρηση για τη σελίδα αρχείων, λήψεων, Whoosh και readme"
-
-msgid "Type name of user"
-msgstr "Πληκτρολογήστε το όνομα του χρήστη"
 
 msgid "Change owner of this repository."
 msgstr "Αλλάξτε τον κάτοχο αυτού του αποθετηρίου."
@@ -2136,6 +2202,9 @@ msgstr ""
 msgid "Save Settings"
 msgstr "Αποθήκευση Ρυθμίσεων"
 
+msgid "Custom Hooks are not enabled"
+msgstr "Τα προσαρμοσμένα άγκιστρα δεν είναι ενεργά"
+
 msgid "Failed to remove hook"
 msgstr "Απέτυχε η αφαίρεση γάντζου"
 
@@ -2163,6 +2232,18 @@ msgstr ""
 
 msgid "Install Git hooks"
 msgstr "Εγκατάσταση Git hooks"
+
+msgid "Install and overwrite Git hooks"
+msgstr "Εγκατάσταση και επανεγγραφή Git hooks"
+
+msgid ""
+"Install Kallithea's internal hooks for all Git repositories. Existing "
+"hooks that don't seem to come from Kallithea will be disabled by renaming "
+"to .bak extension."
+msgstr ""
+"Εγκαταστήστε τα εσωτερικά hooks της Kallithea για όλα τα αποθετήρια Git. "
+"Τα υπάρχοντα hooks που δεν φαίνεται να προέρχονται από την Kallithea θα "
+"απενεργοποιηθούν με τη μετονομασία σε επέκταση .bak."
 
 msgid "Rescan Repositories"
 msgstr "Επανασάρωση αποθετηρίων"
@@ -2665,11 +2746,11 @@ msgstr "Δεν υπάρχουν αρχεία που να ταιριάζουν"
 msgid "Open New Pull Request from {0}"
 msgstr "Άνοιγμα νέας αίτησης έλξης από {0}"
 
-msgid "Open New Pull Request for {0} &rarr; {1}"
-msgstr "Άνοιγμα νέου αιτήματος έλξης για {0} &rarr; {1}"
+msgid "Open New Pull Request for {0}"
+msgstr "Άνοιγμα νέου αιτήματος έλξης για {0}"
 
-msgid "Show Selected Changesets {0} &rarr; {1}"
-msgstr "Εμφάνιση Επιλεγμένων Σετ Αλλαγών {0} &rarr; {1}"
+msgid "Show Selected Changesets {0}"
+msgstr "Εμφάνιση Επιλεγμένων Σετ Αλλαγών {0}"
 
 msgid "Selection Link"
 msgstr "Σύνδεσμος Επιλογής"
@@ -2771,6 +2852,9 @@ msgstr ""
 
 msgid "Changeset status: %s by %s"
 msgstr "Κατάσταση σετ αλλαγών: %s από %s"
+
+msgid "(No commit message)"
+msgstr "(Χωρίς κείμενο commit)"
 
 msgid "Expand commit message"
 msgstr "Ανάπτυξη μηνύματος commit"
@@ -2933,6 +3017,12 @@ msgstr "Εμφάνιση πλήρους διαφοράς για αυτό το α
 
 msgid "Show full side-by-side diff for this file"
 msgstr "Εμφάνιση πλήρους διαφοράς δίπλα-δίπλα για αυτό το αρχείο"
+
+msgid "Raw diff for this file"
+msgstr "Διαφορές για αυτό το αρχείο"
+
+msgid "Download diff for this file"
+msgstr "Μεταφόρτωση διαφοράς για αυτό το αρχείο"
 
 msgid "Show inline comments"
 msgstr "Εμφάνιση ενσωματωμένων σχολίων"
@@ -3619,9 +3709,6 @@ msgstr "Ώθηση νέου αποθετηρίου"
 
 msgid "Existing repository?"
 msgstr "Υπάρχον αποθετήριο;"
-
-msgid "Readme file from revision %s:%s"
-msgstr "Αρχείο Readme από την αναθεώρηση %s:%s"
 
 msgid "Download %s as %s"
 msgstr "Λήψη %s ως %s"

@@ -889,6 +889,9 @@ msgstr[1] "Confirme para excluir este grupo: %s com %s repositórios"
 msgid "Add new"
 msgstr "Adicionar novo"
 
+msgid "Type of repository to create."
+msgstr "Tipo de repositório a criar."
+
 msgid ""
 "Keep it short and to the point. Use a README file for longer descriptions."
 msgstr ""
@@ -897,9 +900,6 @@ msgstr ""
 
 msgid "Optionally select a group to put this repository into."
 msgstr "Opcionalmente selecione um grupo no qual colocar esse repositório."
-
-msgid "Type of repository to create."
-msgstr "Tipo de repositório a criar."
 
 msgid "Landing revision"
 msgstr "Revisão de pouso"
@@ -942,9 +942,6 @@ msgstr "Nova descrição de campo"
 
 msgid "Enter description of a field"
 msgstr "Entre com a descrição de um campo"
-
-msgid "Default revision for files page, downloads, whoosh and readme"
-msgstr "Revisão padrão para página de arquivos, downloads, whoosh e readme"
 
 msgid "Change owner of this repository."
 msgstr "Mudar o dono desse repositório."

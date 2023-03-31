@@ -16,6 +16,7 @@
 Tests for the JSON-RPC web api.
 """
 
+import datetime
 import os
 import random
 import re
@@ -260,7 +261,7 @@ class _BaseTestApi(object):
         self._compare_error(id_, expected, given=response.body)
 
     def test_api_pull_remote(self):
-        # Note: pulling from local repos is a mis-feature - it will bypass access control
+        # Note: pulling from local repos is a misfeature - it will bypass access control
         # ... but ok, if the path already has been set in the database
         repo_name = 'test_pull'
         r = fixture.create_repo(repo_name, repo_type=self.REPO_TYPE)
@@ -784,24 +785,73 @@ class _BaseTestApi(object):
         finally:
             RepoModel().revoke_user_permission(self.REPO, self.TEST_USER_LOGIN)
 
-    def test_api_create_repo(self):
-        repo_name = 'api-repo'
+    @base.parametrize('changing_attr,updates', [
+        ('owner', {'owner': base.TEST_USER_REGULAR_LOGIN}),
+        ('description', {'description': 'new description'}),
+        ('clone_uri', {'clone_uri': 'http://example.com/repo'}), # will fail - pulling from non-existing repo should fail
+        ('clone_uri', {'clone_uri': '/repo'}), # will fail - pulling from local repo was a misfeature - it would bypass access control
+        ('clone_uri', {'clone_uri': None}),
+        ('landing_rev', {'landing_rev': 'branch:master'}),
+        ('private', {'private': True}),
+        ('enable_statistics', {'enable_statistics': True}),
+        ('enable_downloads', {'enable_downloads': True}),
+        ('repo_group', {'group': 'test_group_for_update'}),
+    ])
+    def test_api_create_repo(self, changing_attr, updates):
+        repo_name = repo_name_full = 'new_repo'
+
+        if changing_attr == 'repo_group':
+            group_name = updates['group']
+            fixture.create_repo_group(group_name)
+            repo_name_full = '/'.join([group_name, repo_name])
+            updates = {}
+
         id_, params = _build_data(self.apikey, 'create_repo',
-                                  repo_name=repo_name,
-                                  owner=base.TEST_USER_ADMIN_LOGIN,
-                                  repo_type=self.REPO_TYPE,
-        )
+                                  repo_type=self.REPO_TYPE, repo_name=repo_name_full, **updates)
         response = api_call(self, params)
 
-        repo = RepoModel().get_by_repo_name(repo_name)
-        assert repo is not None
-        ret = {
-            'msg': 'Created new repository `%s`' % repo_name,
-            'success': True,
-        }
-        expected = ret
-        self._compare_ok(id_, expected, given=response.body)
-        fixture.destroy_repo(repo_name)
+        try:
+            expected = {
+                'msg': 'Created new repository `%s`' % repo_name_full,
+                'success': True}
+            if changing_attr == 'clone_uri' and updates['clone_uri']:
+                expected = 'failed to create repository `%s`' % repo_name
+                self._compare_error(id_, expected, given=response.body)
+                return
+            else:
+                self._compare_ok(id_, expected, given=response.body)
+
+            repo = db.Repository.get_by_repo_name(repo_name_full)
+            assert repo is not None
+
+            expected_data = {
+                    'clone_uri': None,
+                    'created_on': repo.created_on,
+                    'description': repo_name,
+                    'enable_downloads': False,
+                    'enable_statistics': False,
+                    'fork_of': None,
+                    'landing_rev': ['rev', 'tip'],
+                    'last_changeset': {'author': '',
+                                       'date': datetime.datetime(1970, 1, 1, 0, 0),
+                                       'message': '',
+                                       'raw_id': '0000000000000000000000000000000000000000',
+                                       'revision': -1,
+                                       'short_id': '000000000000'},
+                    'owner': 'test_admin',
+                    'private': False,
+                    'repo_id': repo.repo_id,
+                    'repo_name': repo_name_full,
+                    'repo_type': self.REPO_TYPE,
+            }
+            expected_data.update(updates)
+            if changing_attr == 'landing_rev':
+                expected_data['landing_rev'] = expected_data['landing_rev'].split(':', 1)
+            assert repo.get_api_data() == expected_data
+        finally:
+            fixture.destroy_repo(repo_name_full)
+            if changing_attr == 'repo_group':
+                fixture.destroy_repo_group(group_name)
 
     @base.parametrize('repo_name', [
         '',
@@ -827,7 +877,7 @@ class _BaseTestApi(object):
         fixture.destroy_repo(repo_name)
 
     def test_api_create_repo_clone_uri_local(self):
-        # cloning from local repos was a mis-feature - it would bypass access control
+        # cloning from local repos was a misfeature - it would bypass access control
         # TODO: introduce other test coverage of actual remote cloning
         clone_uri = os.path.join(base.TESTS_TMP_PATH, self.REPO)
         repo_name = 'api-repo'
@@ -1004,9 +1054,10 @@ class _BaseTestApi(object):
         ('owner', {'owner': base.TEST_USER_REGULAR_LOGIN}),
         ('description', {'description': 'new description'}),
         ('clone_uri', {'clone_uri': 'http://example.com/repo'}), # will fail - pulling from non-existing repo should fail
-        ('clone_uri', {'clone_uri': '/repo'}), # will fail - pulling from local repo was a mis-feature - it would bypass access control
+        ('clone_uri', {'clone_uri': '/repo'}), # will fail - pulling from local repo was a misfeature - it would bypass access control
         ('clone_uri', {'clone_uri': None}),
         ('landing_rev', {'landing_rev': 'branch:master'}),
+        ('private', {'private': True}),
         ('enable_statistics', {'enable_statistics': True}),
         ('enable_downloads', {'enable_downloads': True}),
         ('name', {'name': 'new_repo_name'}),
@@ -1020,20 +1071,32 @@ class _BaseTestApi(object):
 
         id_, params = _build_data(self.apikey, 'update_repo',
                                   repoid=repo_name, **updates)
-        response = api_call(self, params)
+
         if changing_attr == 'name':
             repo_name = updates['name']
         if changing_attr == 'repo_group':
             repo_name = '/'.join([updates['group'], repo_name])
+        expected = {
+            'msg': 'updated repo ID:%s %s' % (repo.repo_id, repo_name),
+            'repository': repo.get_api_data()
+        }
+        expected['repository'].update(updates)
+        if changing_attr == 'clone_uri' and updates['clone_uri'] is None:
+            expected['repository']['clone_uri'] = ''
+        if changing_attr == 'landing_rev':
+            expected['repository']['landing_rev'] = expected['repository']['landing_rev'].split(':', 1)
+        if changing_attr == 'name':
+            expected['repository']['repo_name'] = expected['repository'].pop('name')
+        if changing_attr == 'repo_group':
+            expected['repository']['repo_name'] = expected['repository'].pop('group') + '/' + repo.repo_name
+
+        response = api_call(self, params)
+
         try:
             if changing_attr == 'clone_uri' and updates['clone_uri']:
                 expected = 'failed to update repo `%s`' % repo_name
                 self._compare_error(id_, expected, given=response.body)
             else:
-                expected = {
-                    'msg': 'updated repo ID:%s %s' % (repo.repo_id, repo_name),
-                    'repository': repo.get_api_data()
-                }
                 self._compare_ok(id_, expected, given=response.body)
         finally:
             fixture.destroy_repo(repo_name)
@@ -1044,7 +1107,7 @@ class _BaseTestApi(object):
         ('owner', {'owner': base.TEST_USER_REGULAR_LOGIN}),
         ('description', {'description': 'new description'}),
         ('clone_uri', {'clone_uri': 'http://example.com/repo'}), # will fail - pulling from non-existing repo should fail
-        ('clone_uri', {'clone_uri': '/repo'}), # will fail - pulling from local repo was a mis-feature - it would bypass access control
+        ('clone_uri', {'clone_uri': '/repo'}), # will fail - pulling from local repo was a misfeature - it would bypass access control
         ('clone_uri', {'clone_uri': None}),
         ('landing_rev', {'landing_rev': 'branch:master'}),
         ('enable_statistics', {'enable_statistics': True}),
@@ -1788,6 +1851,47 @@ class _BaseTestApi(object):
         )
         self._compare_error(id_, expected, given=response.body)
 
+    @base.parametrize('changing_attr,updates', [
+        ('owner', {'owner': base.TEST_USER_REGULAR_LOGIN}),
+        ('description', {'description': 'new description'}),
+        ('group_name', {'group_name': 'new_repo_name'}),
+        ('parent', {'parent': 'test_group_for_update'}),
+    ])
+    def test_api_update_repo_group(self, changing_attr, updates):
+        group_name = 'lololo'
+        repo_group = fixture.create_repo_group(group_name)
+
+        new_group_name = group_name
+        if changing_attr == 'group_name':
+            assert repo_group.parent_group_id is None  # lazy assumption for this test
+            new_group_name = updates['group_name']
+        if changing_attr == 'parent':
+            new_group_name = '/'.join([updates['parent'], group_name.rsplit('/', 1)[-1]])
+
+        expected = {
+            'msg': 'updated repository group ID:%s %s' % (repo_group.group_id, new_group_name),
+            'repo_group': repo_group.get_api_data()
+        }
+        expected['repo_group'].update(updates)
+        if 'description' in updates:
+            expected['repo_group']['group_description'] = expected['repo_group'].pop('description')
+
+        if changing_attr == 'parent':
+            new_parent = fixture.create_repo_group(updates['parent'])
+            expected['repo_group']['parent_group'] = expected['repo_group'].pop('parent')
+            expected['repo_group']['group_name'] = new_group_name
+
+        id_, params = _build_data(self.apikey, 'update_repo_group',
+                                  repogroupid=group_name, **updates)
+        response = api_call(self, params)
+
+        try:
+            self._compare_ok(id_, expected, given=response.body)
+        finally:
+            if changing_attr == 'parent':
+                fixture.destroy_repo_group(new_parent.group_id)
+            fixture.destroy_repo_group(new_group_name)
+
     @base.parametrize('name,perm,apply_to_children', [
         ('none', 'group.none', 'none'),
         ('read', 'group.read', 'none'),
@@ -2375,6 +2479,8 @@ class _BaseTestApi(object):
         result = ext_json.loads(response.body)["result"]
         assert result["raw_id"] == self.TEST_REVISION
         assert "reviews" not in result
+        assert "comments" not in result
+        assert "inline_comments" not in result
 
     def test_api_get_changeset_with_reviews(self):
         reviewobjs = fixture.review_changeset(self.REPO, self.TEST_REVISION, "approved")
@@ -2385,6 +2491,8 @@ class _BaseTestApi(object):
         result = ext_json.loads(response.body)["result"]
         assert result["raw_id"] == self.TEST_REVISION
         assert "reviews" in result
+        assert "comments" not in result
+        assert "inline_comments" not in result
         assert len(result["reviews"]) == 1
         review = result["reviews"][0]
         expected = {
@@ -2393,6 +2501,49 @@ class _BaseTestApi(object):
             'reviewer': 'test_admin',
         }
         assert review == expected
+
+    def test_api_get_changeset_with_comments(self):
+        commentobj = fixture.add_changeset_comment(self.REPO, self.TEST_REVISION, "example changeset comment")
+        id_, params = _build_data(self.apikey, 'get_changeset',
+                                  repoid=self.REPO, raw_id=self.TEST_REVISION,
+                                  with_comments=True)
+        response = api_call(self, params)
+        result = ext_json.loads(response.body)["result"]
+        assert result["raw_id"] == self.TEST_REVISION
+        assert "reviews" not in result
+        assert "comments" in result
+        assert "inline_comments" not in result
+        comment = result["comments"][-1]
+        expected = {
+            'comment_id': commentobj.comment_id,
+            'text': 'example changeset comment',
+            'username': 'test_admin',
+            'created_on': commentobj.created_on.replace(microsecond=0).isoformat(),
+        }
+        assert comment == expected
+
+    def test_api_get_changeset_with_inline_comments(self):
+        commentobj = fixture.add_changeset_comment(self.REPO, self.TEST_REVISION, "example inline comment", f_path='vcs/__init__.py', line_no="n3")
+        id_, params = _build_data(self.apikey, 'get_changeset',
+                                  repoid=self.REPO, raw_id=self.TEST_REVISION,
+                                  with_inline_comments=True)
+        response = api_call(self, params)
+        result = ext_json.loads(response.body)["result"]
+        assert result["raw_id"] == self.TEST_REVISION
+        assert "reviews" not in result
+        assert "comments" not in result
+        assert "inline_comments" in result
+        expected = [
+            ['vcs/__init__.py', {
+                'n3': [{
+                    'comment_id': commentobj.comment_id,
+                    'text': 'example inline comment',
+                    'username': 'test_admin',
+                    'created_on': commentobj.created_on.replace(microsecond=0).isoformat(),
+                }]
+            }]
+        ]
+        assert result["inline_comments"] == expected
 
     def test_api_get_changeset_that_does_not_exist(self):
         """ Fetch changeset status for non-existant changeset.
@@ -2436,7 +2587,8 @@ class _BaseTestApi(object):
             "org_ref_parts": ["branch", "stable", self.TEST_PR_SRC],
             "other_ref_parts": ["branch", "default", self.TEST_PR_DST],
             "comments": [{"username": base.TEST_USER_ADMIN_LOGIN, "text": "",
-                         "comment_id": pullrequest.comments[0].comment_id}],
+                          "comment_id": pullrequest.comments[0].comment_id,
+                          "created_on": "2000-01-01T00:00:00"}],
             "owner": base.TEST_USER_ADMIN_LOGIN,
             "statuses": [{"status": "under_review", "reviewer": base.TEST_USER_ADMIN_LOGIN, "modified_at": "2000-01-01T00:00:00"} for i in range(0, len(self.TEST_PR_REVISIONS))],
             "title": "get test",
