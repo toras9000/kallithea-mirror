@@ -78,6 +78,10 @@ base_config.update_blueprint({
 
     # Set the default i18n source language so TG doesn't search beyond 'en' in Accept-Language.
     'i18n.lang': 'en',
+
+    # For TurboGears 2.4.3, define the native language for translations to
+    # prevent fall-through to languages requested with lower priority.
+    'i18n.native': ['en', 'en_US', 'en_GB'],
 })
 
 # DebugBar, a debug toolbar for TurboGears2.
