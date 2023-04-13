@@ -94,7 +94,7 @@ install_kallithea() {
     (
         cd "$prefix"
         . "$prefix-env/bin/activate"
-        pip install --quiet --upgrade pip setuptools mercurial $EXTRA
+        pip install --quiet --upgrade pip "setuptools<67" mercurial $EXTRA
         pip install --quiet -e .
     )
 }

@@ -55,7 +55,7 @@ repository, use the following commands in your bash shell::
         cd kallithea
         python3 -m venv venv
         . venv/bin/activate
-        pip install --upgrade pip setuptools
+        pip install --upgrade pip "setuptools<67"
         pip install --upgrade -e .
         python3 setup.py compile_catalog   # for translation of the UI
 
@@ -98,7 +98,7 @@ An additional benefit of virtualenv is that it doesn't require root privileges.
   bash shell::
 
     . /srv/kallithea/venv/bin/activate
-    pip install --upgrade pip setuptools
+    pip install --upgrade pip "setuptools<67"
 
 .. note:: You can't use UNIX ``sudo`` to source the ``activate`` script; it
    will "activate" a shell that terminates immediately.

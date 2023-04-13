@@ -33,7 +33,7 @@ bash shell::
         cd kallithea
         python3 -m venv venv
         . venv/bin/activate
-        pip install --upgrade pip setuptools
+        pip install --upgrade pip "setuptools<67"
         pip install --upgrade -e . -r dev_requirements.txt python-ldap python-pam
         kallithea-cli config-create my.ini
         kallithea-cli db-create -c my.ini --user=user --email=user@example.com --password=password --repos=/tmp

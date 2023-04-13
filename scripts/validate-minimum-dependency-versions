@@ -30,7 +30,7 @@ sed 's/>=/==/p' dev_requirements.txt >> "$min_requirements"
 
 python3 -m venv "$venv"
 source "$venv/bin/activate"
-pip install --upgrade pip setuptools
+pip install --upgrade pip "setuptools<67"
 pip install -e . -r "$min_requirements" python-ldap python-pam 2> >(tee "$log" >&2)
 
 # Treat any message on stderr as a problem, for the caller to interpret.
