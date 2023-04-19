@@ -150,6 +150,10 @@ class Command(object):
         testenv['LANGUAGE'] = 'en_US:en'
         testenv['HGPLAIN'] = ''
         testenv['HGRCPATH'] = ''
+        testenv['GIT_COMMITTER_NAME'] = base.TEST_USER_ADMIN_LOGIN
+        testenv['GIT_COMMITTER_EMAIL'] = base.TEST_USER_ADMIN_EMAIL
+        testenv['GIT_AUTHOR_NAME'] = base.TEST_USER_REGULAR_LOGIN
+        testenv['GIT_AUTHOR_EMAIL'] = base.TEST_USER_REGULAR_EMAIL
         testenv.update(environ)
         p = Popen(command, shell=True, stdout=PIPE, stderr=PIPE, cwd=self.cwd, env=testenv)
         stdout, stderr = p.communicate()
@@ -195,8 +199,7 @@ def _add_files(vcs, dest_dir, files_no=3):
             cmd = """git commit -m "committed new %s" --author "%s" "%s" """ % (
                 i, author_str, added_file
             )
-        # git commit needs EMAIL on some machines
-        Command(dest_dir).execute(cmd, EMAIL=email)
+        Command(dest_dir).execute(cmd)
 
 def _add_files_and_push(webserver, vt, dest_dir, clone_url, ignoreReturnCode=False, files_no=3):
     _add_files(vt.repo_type, dest_dir, files_no=files_no)
@@ -618,7 +621,7 @@ class TestVCSOperations(base.TestController):
         # add submodule
         stdout, stderr = Command(base.TESTS_TMP_PATH).execute('git clone', fork_url, dest_dir)
         stdout, stderr = Command(dest_dir).execute('git submodule add', clone_url, 'testsubmodule')
-        stdout, stderr = Command(dest_dir).execute('git commit -am "added testsubmodule pointing to', clone_url, '"', EMAIL=base.TEST_USER_ADMIN_EMAIL)
+        stdout, stderr = Command(dest_dir).execute('git commit -am "added testsubmodule pointing to', clone_url, '"')
         stdout, stderr = Command(dest_dir).execute('git push', fork_url, 'master')
 
         # check for testsubmodule link in files page
