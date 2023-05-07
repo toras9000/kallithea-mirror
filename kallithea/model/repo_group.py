@@ -148,12 +148,6 @@ class RepoGroupModel(object):
 
             meta.Session().add(new_repo_group)
 
-            # create an ADMIN permission for owner except if we're super admin,
-            # later owner should go into the owner field of groups
-            if not owner.is_admin:
-                self.grant_user_permission(repo_group=new_repo_group,
-                                           user=owner, perm='group.admin')
-
             if parent_group and copy_permissions:
                 # copy permissions from parent
                 user_perms = db.UserRepoGroupToPerm.query() \
