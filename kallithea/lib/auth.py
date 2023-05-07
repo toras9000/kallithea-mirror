@@ -262,7 +262,10 @@ class AuthUser(object):
             # on given group
             for perm in default_repo_groups_perms:
                 rg_k = perm.group.group_name
-                p = perm.permission.permission_name
+                if perm.group.owner_id == self.user_id:
+                    p = 'group.admin'
+                else:
+                    p = perm.permission.permission_name
                 repository_group_permissions[rg_k] = p
 
             # user group for repo groups permissions
