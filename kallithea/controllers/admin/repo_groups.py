@@ -90,13 +90,6 @@ class RepoGroupsController(base.BaseController):
 
         return data
 
-    def _revoke_perms_on_yourself(self, form_result):
-        _up = [u for u in form_result['perms_updates'] if request.authuser.username == u[0]]
-        _new = [u for u in form_result['perms_new'] if request.authuser.username == u[0]]
-        if _new and _new[0][1] != 'group.admin' or _up and _up[0][1] != 'group.admin':
-            return True
-        return False
-
     def index(self, format='html'):
         _list = db.RepoGroup.query(sorted=True).all()
         group_iter = RepoGroupList(_list, perm_level='admin')
@@ -349,11 +342,6 @@ class RepoGroupsController(base.BaseController):
         c.repo_group = db.RepoGroup.guess_instance(group_name)
         valid_recursive_choices = ['none', 'repos', 'groups', 'all']
         form_result = RepoGroupPermsForm(valid_recursive_choices)().to_python(request.POST)
-        if not request.authuser.is_admin:
-            if self._revoke_perms_on_yourself(form_result):
-                msg = _('Cannot revoke permission for yourself as admin')
-                webutils.flash(msg, category='warning')
-                raise HTTPFound(location=url('edit_repo_group_perms', group_name=group_name))
         recursive = form_result['recursive']
         # iterate over all members(if in recursive mode) of this groups and
         # set the permissions !
@@ -379,11 +367,6 @@ class RepoGroupsController(base.BaseController):
             elif obj_type == 'user_group':
                 obj_id = safe_int(request.POST.get('user_group_id'))
 
-            if not request.authuser.is_admin:
-                if obj_type == 'user' and request.authuser.user_id == obj_id:
-                    msg = _('Cannot revoke permission for yourself as admin')
-                    webutils.flash(msg, category='warning')
-                    raise Exception('revoke admin permission on self')
             recursive = request.POST.get('recursive', 'none')
             if obj_type == 'user':
                 RepoGroupModel().delete_permission(repo_group=group_name,
