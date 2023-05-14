@@ -364,9 +364,6 @@ msgstr "Usunięto grupę repo %s"
 msgid "Error occurred during deletion of repository group %s"
 msgstr "Wystąpił błąd podczas usuwania z repozytorium grupy %s"
 
-msgid "Cannot revoke permission for yourself as admin"
-msgstr "Nie można cofnąć zezwolenia dla admina jako admin"
-
 msgid "Repository group permissions updated"
 msgstr "Aktualizacja uprawnień grup repozytorium"
 
@@ -511,6 +508,9 @@ msgstr "Grupa docelowa nie może być taka sama"
 
 msgid "User group permissions updated"
 msgstr "Aktualizacja uprawnień grupy użytkowników"
+
+msgid "Cannot revoke permission for yourself as admin"
+msgstr "Nie można cofnąć zezwolenia dla admina jako admin"
 
 msgid "Updated permissions"
 msgstr "Aktualizacja uprawnień"

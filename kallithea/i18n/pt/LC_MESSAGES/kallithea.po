@@ -243,9 +243,6 @@ msgstr "Grupo de repositórios %s apagado"
 msgid "Error occurred during deletion of repository group %s"
 msgstr "Ocorreu um erro durante a exclusão do grupo de repositórios %s"
 
-msgid "Cannot revoke permission for yourself as admin"
-msgstr "Não pode revocar sua própria permissão de administrador"
-
 msgid "Repository group permissions updated"
 msgstr "Permissões atualizadas do Grupo de Repositórios"
 
@@ -361,6 +358,9 @@ msgstr "O grupo destino não pode ser o mesmo"
 
 msgid "User group permissions updated"
 msgstr "Permissões do Grupo de Utilizadores atualizadas"
+
+msgid "Cannot revoke permission for yourself as admin"
+msgstr "Não pode revocar sua própria permissão de administrador"
 
 msgid "Updated permissions"
 msgstr "Permissões atualizadas"

@@ -350,9 +350,6 @@ msgstr "リポジトリグループ %s を削除しました"
 msgid "Error occurred during deletion of repository group %s"
 msgstr "リポジトリグループ %s の削除中にエラーが発生しました"
 
-msgid "Cannot revoke permission for yourself as admin"
-msgstr "自分自身の管理者としての権限を取り消すことはできません"
-
 msgid "Repository group permissions updated"
 msgstr "リポジトリグループ権限を更新しました"
 
@@ -485,6 +482,9 @@ msgstr "対象に同じ物を選ぶことはできません"
 
 msgid "User group permissions updated"
 msgstr "ユーザーグループ権限を更新しました"
+
+msgid "Cannot revoke permission for yourself as admin"
+msgstr "自分自身の管理者としての権限を取り消すことはできません"
 
 msgid "Updated permissions"
 msgstr "権限を更新しました"

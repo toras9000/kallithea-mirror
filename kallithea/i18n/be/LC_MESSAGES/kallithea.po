@@ -381,9 +381,6 @@ msgstr "Група рэпазітароў %s выдаленая"
 msgid "Error occurred during deletion of repository group %s"
 msgstr "Памылка пры выдаленні групы рэпазітароў %s"
 
-msgid "Cannot revoke permission for yourself as admin"
-msgstr "Адміністратар не можа адклікаць свае прывелеі"
-
 msgid "Repository group permissions updated"
 msgstr "Прывілеі групы рэпазітароў абноўленыя"
 
@@ -518,6 +515,9 @@ msgstr "Мэтавая група не можа быць той жа самай"
 
 msgid "User group permissions updated"
 msgstr "Прывілеі групы карыстальнікаў абноўленыя"
+
+msgid "Cannot revoke permission for yourself as admin"
+msgstr "Адміністратар не можа адклікаць свае прывелеі"
 
 msgid "Updated permissions"
 msgstr "Абноўленыя прывілеі"

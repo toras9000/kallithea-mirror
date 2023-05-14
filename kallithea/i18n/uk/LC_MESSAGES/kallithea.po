@@ -431,9 +431,6 @@ msgstr "Видалена група репозиторіїв %s"
 msgid "Error occurred during deletion of repository group %s"
 msgstr "Сталася помилка під час видалення групи репохиторіїв %s"
 
-msgid "Cannot revoke permission for yourself as admin"
-msgstr "Неможливо відкликати дозвіл для себе як адміністратора"
-
 msgid "Repository group permissions updated"
 msgstr "Оновлено дозволи групи репозиторіїв"
 
@@ -578,6 +575,9 @@ msgstr "Цільова група не може бути однаковою"
 
 msgid "User group permissions updated"
 msgstr "Права на групи користувачів оновлені"
+
+msgid "Cannot revoke permission for yourself as admin"
+msgstr "Неможливо відкликати дозвіл для себе як адміністратора"
 
 msgid "Updated permissions"
 msgstr "Оновлені дозволи"

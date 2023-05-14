@@ -413,9 +413,6 @@ msgstr "Fjernet repository-gruppen %s"
 msgid "Error occurred during deletion of repository group %s"
 msgstr "Der opstod en fejl under sletning af repository-gruppen %s"
 
-msgid "Cannot revoke permission for yourself as admin"
-msgstr "Kan ikke tilbagekalde tilladelse for én selv som admin"
-
 msgid "Repository group permissions updated"
 msgstr "Repository-gruppe tilladelser opdateret"
 
@@ -552,6 +549,9 @@ msgstr "Der opstod en fejl under sletning af brugergruppe"
 
 msgid "User group permissions updated"
 msgstr "Brugergrupper-tilladelser opdateret"
+
+msgid "Cannot revoke permission for yourself as admin"
+msgstr "Kan ikke tilbagekalde tilladelse for én selv som admin"
 
 msgid "Updated permissions"
 msgstr "Tilladelser opdateret"

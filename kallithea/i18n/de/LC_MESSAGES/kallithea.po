@@ -400,9 +400,6 @@ msgstr "Repositoriumsgruppe %s entfernt"
 msgid "Error occurred during deletion of repository group %s"
 msgstr "Fehler beim Löschen der Repositoriumsgruppe %s"
 
-msgid "Cannot revoke permission for yourself as admin"
-msgstr "Als Administrator kann man sich keine Berechtigungen entziehen"
-
 msgid "Repository group permissions updated"
 msgstr "Berechtigungen der Repositoriumsgruppe aktualisiert"
 
@@ -549,6 +546,9 @@ msgstr "Zielgruppe kann nicht die gleiche Gruppe sein"
 
 msgid "User group permissions updated"
 msgstr "Berechtigungen der Benutzergruppe wurden aktualisiert"
+
+msgid "Cannot revoke permission for yourself as admin"
+msgstr "Als Administrator kann man sich keine Berechtigungen entziehen"
 
 msgid "Updated permissions"
 msgstr "Berechtigungen wurden aktualisiert"
